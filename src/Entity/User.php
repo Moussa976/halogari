@@ -72,6 +72,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $messagesDestinataire;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Notes::class, mappedBy="noteur")
+     */
+    private $notesNoteur;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Notes::class, mappedBy="notePour")
+     */
+    private $notesPour;
+
     public function __construct()
     {
         $this->trajets = new ArrayCollection();
@@ -79,6 +89,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->messages = new ArrayCollection();
         $this->messagesExpediteur = new ArrayCollection();
         $this->messagesDestinataire = new ArrayCollection();
+        $this->notesNoteur = new ArrayCollection();
+        $this->notesPour = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -320,6 +332,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($messagesDestinataire->getDestinataire() === $this) {
                 $messagesDestinataire->setDestinataire(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notes>
+     */
+    public function getNotesNoteur(): Collection
+    {
+        return $this->notesNoteur;
+    }
+
+    public function addNotesNoteur(Notes $notesNoteur): self
+    {
+        if (!$this->notesNoteur->contains($notesNoteur)) {
+            $this->notesNoteur[] = $notesNoteur;
+            $notesNoteur->setNoteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotesNoteur(Notes $notesNoteur): self
+    {
+        if ($this->notesNoteur->removeElement($notesNoteur)) {
+            // set the owning side to null (unless already changed)
+            if ($notesNoteur->getNoteur() === $this) {
+                $notesNoteur->setNoteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notes>
+     */
+    public function getNotesPour(): Collection
+    {
+        return $this->notesPour;
+    }
+
+    public function addNotesPour(Notes $notesPour): self
+    {
+        if (!$this->notesPour->contains($notesPour)) {
+            $this->notesPour[] = $notesPour;
+            $notesPour->setNotePour($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotesPour(Notes $notesPour): self
+    {
+        if ($this->notesPour->removeElement($notesPour)) {
+            // set the owning side to null (unless already changed)
+            if ($notesPour->getNotePour() === $this) {
+                $notesPour->setNotePour(null);
             }
         }
 

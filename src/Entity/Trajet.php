@@ -64,10 +64,16 @@ class Trajet
      */
     private $messages;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Notes::class, mappedBy="trajet")
+     */
+    private $notes;
+
     public function __construct()
     {
         $this->reservations = new ArrayCollection();
         $this->messages = new ArrayCollection();
+        $this->notes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -213,6 +219,36 @@ class Trajet
             // set the owning side to null (unless already changed)
             if ($message->getTrajet() === $this) {
                 $message->setTrajet(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notes>
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(Notes $note): self
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes[] = $note;
+            $note->setTrajet($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Notes $note): self
+    {
+        if ($this->notes->removeElement($note)) {
+            // set the owning side to null (unless already changed)
+            if ($note->getTrajet() === $this) {
+                $note->setTrajet(null);
             }
         }
 
