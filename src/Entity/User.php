@@ -62,10 +62,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $reservations;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="expediteur")
+     */
+    private $messagesExpediteur;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="destinataire")
+     */
+    private $messagesDestinataire;
+
     public function __construct()
     {
         $this->trajets = new ArrayCollection();
         $this->reservations = new ArrayCollection();
+        $this->messages = new ArrayCollection();
+        $this->messagesExpediteur = new ArrayCollection();
+        $this->messagesDestinataire = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -247,6 +260,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($reservation->getPassager() === $this) {
                 $reservation->setPassager(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessagesExpediteur(): Collection
+    {
+        return $this->messagesExpediteur;
+    }
+
+    public function addMessagesExpediteur(Message $messagesExpediteur): self
+    {
+        if (!$this->messagesExpediteur->contains($messagesExpediteur)) {
+            $this->messagesExpediteur[] = $messagesExpediteur;
+            $messagesExpediteur->setExpediteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesExpediteur(Message $messagesExpediteur): self
+    {
+        if ($this->messagesExpediteur->removeElement($messagesExpediteur)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesExpediteur->getExpediteur() === $this) {
+                $messagesExpediteur->setExpediteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessagesDestinataire(): Collection
+    {
+        return $this->messagesDestinataire;
+    }
+
+    public function addMessagesDestinataire(Message $messagesDestinataire): self
+    {
+        if (!$this->messagesDestinataire->contains($messagesDestinataire)) {
+            $this->messagesDestinataire[] = $messagesDestinataire;
+            $messagesDestinataire->setDestinataire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesDestinataire(Message $messagesDestinataire): self
+    {
+        if ($this->messagesDestinataire->removeElement($messagesDestinataire)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesDestinataire->getDestinataire() === $this) {
+                $messagesDestinataire->setDestinataire(null);
             }
         }
 
