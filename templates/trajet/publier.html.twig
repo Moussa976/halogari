@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Chercher un trajet
+{% endblock %}
+
+
+{% block body %}
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-md-6">
+				<h1 class="mb-4 text-center">Publier un trajet</h1>
+				<form method="POST" action="/publier" class="p-4 border rounded shadow-sm bg-light">
+					<div class="mb-3">
+						<label for="select_departure" class="form-label">Ville de départ <span class="text-orange">*</span> :</label>
+						<select id="select_departure" name="select_departure" class="form-select" required>
+							<option value="">-- Ville de départ --</option>
+							<!-- options dynamiques ici -->
+						</select>
+					</div>
+
+					<div class="mb-3">
+						<label for="select_arrival" class="form-label">Ville d'arrivée <span class="text-orange">*</span> :</label>
+						<select id="select_arrival" name="select_arrival" class="form-select" required>
+							<option value="">-- Ville d'arrivée --</option>
+							<!-- options dynamiques ici -->
+						</select>
+					</div>
+
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="date_trajet" class="form-label">Date <span class="text-orange">*</span> :</label>
+							<input type="date" id="date_trajet" name="date_trajet" class="form-control" min="{{ "now"|date("Y-m-d") }}" required>
+						</div>
+						<div class="col-md-6">
+							<label for="heure_trajet" class="form-label">Heure <span class="text-orange">*</span> :</label>
+							<input type="time" id="heure_trajet" name="heure_trajet" class="form-control" required>
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="places" class="form-label">Nombre de places <span class="text-orange">*</span> :</label>
+							<input type="number" id="places" name="places" class="form-control" placeholder="Nombre de places" min="1" required>
+						</div>
+						<div class="col-md-6">
+							<label for="prix" class="form-label">Prix par place (€) <span class="text-orange">*</span> :</label>
+							<input type="number" id="prix" name="prix" class="form-control" placeholder="Prix (€)" min="0" step="0.01" required>
+						</div>
+					</div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-orange">Publier le trajet</button>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{% block javascripts %}
+	<script>
+		// Charger la liste des villes depuis cities.json
+fetch('/cities.json').then(response => response.json()).then(cities => {
+const departureSelect = document.getElementById('select_departure');
+const arrivalSelect = document.getElementById('select_arrival');
+
+cities.forEach(city => {
+const option1 = document.createElement('option');
+option1.value = city.name; // 👈 On utilise le nom maintenant
+option1.textContent = city.name;
+departureSelect.appendChild(option1);
+
+const option2 = document.createElement('option');
+option2.value = city.name; // 👈 Et ici aussi
+option2.textContent = city.name;
+arrivalSelect.appendChild(option2);
+});
+}).catch(error => console.error('Erreur de chargement des villes:', error));
+	</script>
+
+{% endblock %}

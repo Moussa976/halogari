@@ -39,7 +39,27 @@ class TrajetRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
+
+    public function findPopularTrajets(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT t.depart, t.arrivee, COUNT(r.id) AS total
+        FROM reservation r
+        JOIN trajet t ON r.trajet_id = t.id
+        GROUP BY t.depart, t.arrivee
+        ORDER BY total DESC
+        LIMIT 3
+    ';
+
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+
+        return $resultSet->fetchAllAssociative();
+    }
+
+    //    /**
 //     * @return Trajet[] Returns an array of Trajet objects
 //     */
 //    public function findByExampleField($value): array
@@ -54,7 +74,7 @@ class TrajetRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Trajet
+    //    public function findOneBySomeField($value): ?Trajet
 //    {
 //        return $this->createQueryBuilder('t')
 //            ->andWhere('t.exampleField = :val')

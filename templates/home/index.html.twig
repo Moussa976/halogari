@@ -1,20 +1,110 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
-
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<header class="bg-header text-white d-flex align-items-center">
+  <div class="container">
+    <div class="card bg-white bg-opacity-50 text-dark p-4">
+      <div class="text-center fade-in">
+        <h1 class="display-5 fw-bold">Bienvenue sur <span class="text-orange">Halo</span><span class="text-vert">Gari</span> !</h1>
+        <h3 class="lead fw-semibold text-muted">Trouvez ou proposez un trajet entre les villages de Mayotte.</h3>
+      </div>
+    </div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <form method="GET" action="{{ path('app_chercher') }}" class="row g-3 mt-5">
+      <div class="col-md-4 col-lg-3">
+        <input list="liste-villes" class="form-control form-control-lg" name="select_departure"
+               placeholder="Village de départ" required>
+        <datalist id="liste-villes"></datalist>
+      </div>
+      <div class="col-md-4 col-lg-3">
+        <input list="liste-villes-arrivee" name="select_arrival" class="form-control form-control-lg"
+               placeholder="Village d'arrivée *" required>
+        <datalist id="liste-villes-arrivee *"></datalist>
+      </div>
+      <div class="col-md-4 col-lg-3 mb-md-2 mb-lg-0">
+        <input type="date" class="form-control form-control-lg" name="date_trajet" required>
+      </div>
+      <div class="col-md-12 col-lg-3">
+        <button type="submit" class="btn btn-orange btn-lg w-100">Chercher</button>
+      </div>
+    </form>
+  </div>
+</header>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/wamp64/www/halogari/src/Controller/HomeController.php'|file_link(0) }}">src/Controller/HomeController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/wamp64/www/halogari/templates/home/index.html.twig'|file_link(0) }}">templates/home/index.html.twig</a></code></li>
-    </ul>
-</div>
+<section class="py-5 bg-light text-center">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <img src="/images/petit-prix.png" class="mb-3" height="40" alt="Taxi Van Mayotte">
+        <h5 class="fw-bold">Des trajets locaux à petits prix</h5>
+        <p>Voyagez entre les villages de Mayotte (Mamoudzou, Chirongui, Bandrélé…) en toute simplicité grâce au covoiturage local à prix accessible.</p>
+      </div>
+      <div class="col-md-4">
+        <img src="/images/confiance.png" class="mb-3" height="40" alt="Confiance et communauté">
+        <h5 class="fw-bold">Confiance & proximité</h5>
+        <p>Notre communauté de conducteurs est vérifiée. Profitez d’un service entre Mahorais où la confiance et le respect sont au cœur de chaque trajet.</p>
+      </div>
+      <div class="col-md-4">
+        <img src="/images/rapide.png" class="mb-3" height="40" alt="Facile et rapide">
+        <h5 class="fw-bold">Réservez en quelques clics</h5>
+        <p>Gagnez du temps avec notre plateforme simple et rapide. Réservez votre place en ligne et retrouvez votre conducteur à proximité.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container text-center">
+    <h2 class="h4 fw-bold mb-4">Trajets les plus réservés</h2>
+    <div class="row">
+      {% for trajet in popularTrajets %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-orange">
+                <i class="bi bi-geo-alt text-vert"></i> {{ trajet.depart }} → {{ trajet.arrivee }}
+              </h5>
+              <p class="card-text text-muted">{{ trajet.total }} réservations</p>
+              <a href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart ~ '&select_arrival=' ~ trajet.arrivee ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+                 class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-orange-opacity text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 order-md-2 text-center">
+        <img src="/images/securite.png" class="img-fluid" alt="Sécurité Covoiturage" style="max-height: 250px;">
+      </div>
+      <div class="col-md-6 order-md-1 mb-4 mb-md-0">
+        <h2 class="h4 fw-bold">Votre sécurité est notre priorité</h2>
+        <p class="mb-2">Chez HaloGari, nous nous engageons à créer une communauté de covoiturage fiable et digne de confiance à Mayotte.</p>
+        <p class="mb-4">Découvrez nos engagements et fonctionnalités pour voyager sereinement entre Mahorais.</p>
+        <a href="/securite" class="btn bg-vert text-white fw-bold">En savoir plus</a>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
+{% block javascripts %}
+<script>
+  fetch('/cities.json')
+    .then(res => res.json())
+    .then(cities => {
+      const datalistDepart = document.getElementById('liste-villes');
+      const datalistArrivee = document.getElementById('liste-villes-arrivee');
+      cities.forEach(city => {
+        datalistDepart.innerHTML += `<option value="${city.name}">`;
+        datalistArrivee.innerHTML += `<option value="${city.name}">`;
+      });
+    })
+    .catch(err => console.error('Erreur de chargement des villes :', err));
+</script>
+{% endblock %}
+
+

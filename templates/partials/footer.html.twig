@@ -1,0 +1,67 @@
+</main>
+<footer>
+  <div class="bg-dark text-white pt-3">
+    <div class="container">
+      <div class="row text-center text-md-start">
+        <div class="col-md-4 mb-4 mb-md-0">
+          <p>
+            <img src="{{ asset('images/logo-b.png') }}" alt="HaloGari" style="max-width:200px;" class="img-fluid">
+          </p>
+          <div class="my-3">
+            <a href="#" class="text-white me-3"><i class="bi bi-facebook fs-5"></i></a>
+            <a href="#" class="text-white me-3"><i class="bi bi-instagram fs-5"></i></a>
+            <a href="#" class="text-white"><i class="bi bi-linkedin fs-5"></i></a>
+          </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+          <h6 class="text-orange">À propos</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white text-decoration-none">Qui sommes-nous ?</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <h6 class="text-orange">Informations légales</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white text-decoration-none">Conditions d'utilisation</a></li>
+            <li><a href="#" class="text-white text-decoration-none">Mentions légales</a></li>
+            <li><a href="#" class="text-white text-decoration-none">Confidentialité</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <h6 class="text-orange">Des questions ?</h6>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white text-decoration-none">Contact</a></li>
+            <li><a href="#" class="text-white text-decoration-none">FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-subtle text-white text-center py-2">
+      <div class="container">
+        <p class="mb-1">© 2025 <strong>HaloGari - Covoiturage</strong></p>
+        <p class="fst-italic mb-0">Covoiturage innovant pas cher entre particuliers à Mayotte.</p>
+        <p class="mb-0">Tous droits réservés.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalConnexion" tabindex="-1" aria-labelledby="modalConnexionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header double-border-bottom">
+                <h1 class="modal-title fs-5" id="modalConnexionLabel">Se connecter</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'partials/form-connexion.html.twig' %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\TrajetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -11,10 +12,13 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="app_home")
      */
-    public function index(): Response
+    public function index(TrajetRepository $trajetRepository): Response
     {
+        // Simulation de "popularTrajets" comme dans Express.js
+        $popularTrajets = $trajetRepository->findPopularTrajets(); // On définira cette méthode custom
+
         return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
+            'popularTrajets' => $popularTrajets,
         ]);
     }
 }

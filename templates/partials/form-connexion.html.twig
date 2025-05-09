@@ -1,0 +1,18 @@
+<form class="bg-light p-4 rounded shadow-sm border" method="POST" action="/connexion">
+    <div class="mb-3">
+        <label for="mail" class="form-label">Adresse e-mail :</label>
+        <input type="email" id="mail" class="form-control" name="email" placeholder="Votre adresse e-mail" required>
+    </div>
+    <div class="mb-3">
+        <label for="motdepasse" class="form-label">Mot de passe :</label>
+        <input type="password" id="motdepasse" class="form-control" name="mot_de_passe" placeholder="*****************"
+            required>
+    </div>
+    <div class="text-center"><button type="submit" class="btn btn-orange">Se connecter</button></div>
+    
+    <hr>
+    <p class="text-center"><small>Pas encore de compte ?</small> </p>
+    <div class="text-center"><a class="btn btn-success" href="/inscription" role="button"><i class="bi bi-person-plus"></i>
+        S'inscrire</a></div>
+    
+</form>
