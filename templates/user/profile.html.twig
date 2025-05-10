@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mon tableau de bord{% endblock %}
+
+{% block body %}
+<<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Profile header -->
+            <div class="d-flex align-items-center mb-4">
+                <img src="/uploads/photos/default.jpg" class="rounded-circle me-3" alt="Photo de profil" width="80" height="80">
+                <div>
+                    <h3 class="mb-0">Moussa <small class="text-muted">27 ans</small></h3>
+                    <div class="text-muted">Niveau d’expérience : Ambassadeur</div>
+                    <div>
+                        <span class="text-warning">4.8/5</span> — <small class="text-muted">22 avis</small><br>
+                        <small class="text-muted">3/3 — Bonne conduite</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statut de vérification -->
+            <div class="mb-4">
+                <h5 class="fw-bold">Moussa a un Profil Vérifié</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-patch-check-fill text-primary me-2"></i> Pièce d'identité vérifiée</li>
+                    <li><i class="bi bi-patch-check-fill text-primary me-2"></i> Adresse e-mail vérifiée</li>
+                    <li><i class="bi bi-patch-check-fill text-primary me-2"></i> Numéro de téléphone vérifié</li>
+                </ul>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h5 class="fw-bold">Faites connaissance avec Moussa</h5>
+                <p class="mb-1">Bonjour,</p>
+                <p class="mb-1">Je suis d'origine mahoraise (Mayotte).</p>
+                <p class="mb-2">J'aime bien discuter, voyager ^^ !</p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-chat-dots text-primary me-2"></i> J'aime bien discuter quand je me sens à l'aise</li>
+                    <li><i class="bi bi-slash-circle text-danger me-2"></i> Pas de cigarette, svp</li>
+                    <li><i class="bi bi-slash-circle text-danger me-2"></i> Je préfère ne pas voyager en compagnie d'animaux</li>
+                </ul>
+            </div>
+
+            <div class="text-muted small">
+                <p>11 trajets publiés et complétés</p>
+                <p>Membre depuis octobre 2017</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

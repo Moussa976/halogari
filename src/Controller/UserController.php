@@ -17,4 +17,24 @@ class UserController extends AbstractController
             'controller_name' => 'UserController',
         ]);
     }
+
+    /**
+     * @Route("/dashboard/profile/", name="app_profile")
+     */
+    public function profile(): Response
+    {
+        return $this->render('user/profile.html.twig', [
+            // 'controller_name' => 'UserController',
+        ]);
+    }
+
+    /**
+     * @Route("/dashboard/compte/", name="app_compte")
+     */
+    public function compte(): Response
+    {
+        return $this->render('user/compte.html.twig', [
+            // 'controller_name' => 'UserController',
+        ]);
+    }
 }

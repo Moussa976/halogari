@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification conducteur{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4 text-center">Devenir conducteur vérifié</h1>
+
+            <div class="p-4 border rounded shadow-sm bg-light">
+                <p class="mb-4">Pour renforcer la confiance sur HaloGari, nous vous demandons de fournir les documents suivants :</p>
+
+                <form method="post" enctype="multipart/form-data" action="{{ path('app_verification') }}">
+                    <div class="mb-3">
+                        <label for="permis" class="form-label">Permis de conduire <span class="text-danger">*</span></label>
+                        <input type="file" name="permis" id="permis" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="identite" class="form-label">Carte d'identité (ou passeport) <span class="text-danger">*</span></label>
+                        <input type="file" name="identite" id="identite" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Photo de profil (facultatif)</label>
+                        <input type="file" name="photo" id="photo" class="form-control">
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-orange">Soumettre mes documents</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,52 +1,88 @@
 <main class="flex-grow-1">
-<nav class="navbar navbar-expand-lg bg-dark-subtle double-border-bottom">
-  <div class="container">
-    <a class="navbar-brand" href="{{ path('app_home') }}">
-      <img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;">
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-      aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+	<nav class="navbar navbar-expand-lg bg-dark-subtle double-border-bottom">
+		<div class="container">
+			<a class="navbar-brand" href="{{ path('app_home') }}">
+				<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;">
+			</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
 
-    <div class="collapse navbar-collapse" id="navbarMain">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item align-self-center">
-          <a class="btn nav-link" href="{{ path('app_chercher') }}">
-            <i class="text-vert bi bi-search"></i> Chercher un trajet
-          </a>
-        </li>
-        <li class="nav-item align-self-center">
-          <a class="btn nav-link" href="{{ path('app_publier') }}">
-            <i class="bi bi-plus-circle"></i> Publier un trajet
-          </a>
-        </li>
+			<div class="collapse navbar-collapse" id="navbarMain">
+				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+					<li class="nav-item align-self-center">
+						<a class="btn nav-link" href="{{ path('app_chercher') }}">
+							<i class="text-vert bi bi-search"></i>
+							Chercher un trajet
+						</a>
+					</li>
+					<li class="nav-item align-self-center">
+						<a class="btn nav-link" href="{{ path('app_publier') }}">
+							<i class="bi bi-plus-circle"></i>
+							Publier un trajet
+						</a>
+					</li>
 
-        {% if app.user is null %}
-           <li class="nav-item d-none d-lg-block">
-              <a class="btn nav-link fs-2" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion">
-                <i class="bi bi-person-circle"></i>
-              </a>
-          </li>
-          <!-- Mode téléphone -->
-          <li class="nav-item d-block d-lg-none">
-            <a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion">
-              <i class="bi bi-person-circle"></i> Se connecter
-            </a>
-        </li>
-        {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_mon_compte') }}">
-              <i class="bi bi-person"></i> Mon compte
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_logout') }}">
-              <i class="bi bi-box-arrow-right"></i> Déconnexion
-            </a>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</nav>
+					{% if app.user is null %}
+						<li class="nav-item d-none d-lg-block">
+							<a class="btn nav-link fs-2" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion">
+								<i class="bi bi-person-circle"></i>
+							</a>
+						</li>
+						<!-- Mode téléphone -->
+						<li class="nav-item d-block d-lg-none">
+							<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion">
+								<i class="bi bi-person-circle"></i>
+								Se connecter
+							</a>
+						</li>
+					{% else %}
+						{# <li class="nav-item align-self-center">
+													<a class="nav-link" href="{{ path('app_profile') }}">
+														<i class="bi bi-person"></i>
+														Mon compte
+													</a>
+												</li>
+												<li class="nav-item align-self-center">
+													<a class="nav-link" href="{{ path('app_logout') }}">
+														<i class="bi bi-box-arrow-right"></i>
+														Déconnexion
+													</a>
+												</li> #}
+
+						<li class="nav-item align-self-center">
+							<button class="nav-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+								<i class="bi bi-person"></i> {{ app.user.prenom}}
+							</button>
+						</li>
+
+
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+	</nav>
+	{% if app.user is not null %}
+	<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+		<div class="offcanvas-header">
+			<h5 id="offcanvasRightLabel">Bonjour {% if app.user is not null %} {{ app.user.prenom}}, {% endif %}</h5>
+			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+			<div class="list-group list-group-flush">
+				<a href="{{ path('app_profile') }}" class="list-group-item list-group-item-action">
+					<i class="bi bi-person"></i>
+					Mon profil</a>
+				<a href="#" class="list-group-item list-group-item-action">
+					<i class="bi bi-signpost-2"></i>
+					Mes trajets</a>
+        <a href="#" class="list-group-item list-group-item-action">
+					<i class="bi bi-gear"></i>
+					Paramètres</a>
+				<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action">
+					<i class="bi bi-box-arrow-right"></i>
+					Déconnexion</a>
+			</div>
+		</div>
+	</div>
+{% endif %}
