@@ -71,4 +71,10 @@
 		</div>
 	</div>
 {% endif %}
-<main class="flex-grow-1 pt-0 pt-md-5">
+<main class="flex-grow-1
+{% if app.request.attributes.get('_route') == 'app_home' %}
+pt-0
+{% else %}
+pt-5
+{% endif %}
+  pt-md-5">
