@@ -40,7 +40,7 @@ body {
 
 
 .bg-header {
-    height: 60vh;
+    height: 72vh;
     background-image: url('images/fond-header.png');
     background-size: cover;
     background-position: center;
@@ -82,7 +82,7 @@ h1 {
 }
 
 .double-border-bottom {
-    position: relative;
+    /* position: relative; */
     padding-bottom: 8px;
     /* pour laisser la place au pseudo */
     border-bottom: 3px solid #ee7911;
