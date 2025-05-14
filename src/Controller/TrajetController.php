@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TrajetController extends AbstractController
@@ -20,8 +21,15 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier")
      */
-    public function publier(): Response
+    public function publier(Request $request, SessionInterface $session): Response
     {
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            // Enregistre l’URL cible dans la session pour y revenir après login
+            $session->set('_security.main.target_path', $request->getUri());
+
+            $this->addFlash('error', 'Vous devez être connecté pour publier un trajet.');
+            return $this->redirectToRoute('app_login');
+        }
         return $this->render('trajet/publier.html.twig');
     }
 
