@@ -2,3 +2,4 @@ Invalid credentials.: Identifiants incorrects.
 Invalid CSRF token.: Jeton CSRF invalide.
 Authentication request could not be processed due to a system problem.: Erreur système.
 Cette valeur n'est pas valide.: Merci de saisir une valeur correcte.
+There is already an account with this email : Il existe déjà un compte avec cette adresse e-mail.
