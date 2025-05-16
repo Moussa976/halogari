@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -24,8 +25,30 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('nom', TextType::class)
             ->add('prenom', TextType::class)
-            ->add('email', EmailType::class)
-            ->add('telephone', TelType::class)
+            ->add('email', EmailType::class, [
+                'attr' => ['class' => 'form-control', 'placeholder' => 'exemple@halogari.yt'],
+                'constraints' => [
+                    new NotBlank(['message' => "L’adresse e-mail est obligatoire."]),
+                    new Email(['message'=> "L’adresse n’est pas valide."]),
+                ],
+            ])
+            ->add('telephone', TelType::class, [
+                 'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer un numéro de téléphone',
+                    ]),
+                    new Length([
+                        'min' => 8,
+                        'max' => 15,
+                        'minMessage'=> "Le numéro est trop court (minimum 8 chiffres).",
+                        'maxMessage'=> "Le numéro est trop long (maximum 15 chiffres)."
+                    ]),
+                    new Regex([
+                        'pattern' => '/^\d+$/',
+                        'message' => 'Le numéro de téléphone ne doit contenir que des chiffres.',
+                    ]),
+                ],
+            ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'label' => false,
@@ -38,14 +61,18 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
-                'first_options' => ['label' => false],
-                'second_options' => ['label' => false],
                 'mapped' => false,
-                'attr' => ['autocomplete' => 'new-password'],
+                'invalid_message' => 'Les deux mots de passe doivent correspondre.',
+                'first_options' => [
+                    'label' => 'Mot de passe',
+                    'attr' => ['class' => 'form-control', 'placeholder' => '********'],
+                ],
+                'second_options' => [
+                    'label' => 'Confirmer le mot de passe',
+                    'attr' => ['class' => 'form-control', 'placeholder' => '********'],
+                ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez entrer un mot de passe.',
-                    ]),
+                    new NotBlank(['message' => 'Veuillez entrer un mot de passe.']),
                     new Length([
                         'min' => 8,
                         'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
@@ -56,7 +83,7 @@ class RegistrationFormType extends AbstractType
                         'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.',
                     ]),
                 ],
-            ])
+            ]);
         ;
     }
 

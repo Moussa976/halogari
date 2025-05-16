@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | E-mail envoyé{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="bg-light p-4 rounded shadow-sm border">
+					<h1 class="mb-4 text-center text-success">📩 E-mail envoyé</h1>
+
+					<p class="mb-3">
+						Si un compte correspondant à cette adresse existe, un e-mail vous a été envoyé avec un lien pour réinitialiser votre mot de passe.
+					</p>
+
+					<p class="mb-3">
+						Ce lien expirera dans :
+						<strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+					</p>
+
+					<p class="mb-4">
+						📥 Si vous ne recevez rien dans les prochaines minutes, vérifiez votre dossier <strong>courrier indésirable</strong> (spam) ou
+						<a class="text-orange" href="{{ path('app_forgot_password_request') }}">réessayez</a>.
+					</p>
+
+					<div class="text-center">
+						<a href="{{ path('app_home') }}" class="btn btn-orange">Retour à l'accueil</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

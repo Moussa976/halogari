@@ -8,7 +8,7 @@
     <div class="mb-3">
         <label for="inputEmail" class="form-label">Adresse e-mail :</label>
         <input type="email" id="inputEmail" class="form-control" name="email"
-            placeholder="Votre adresse e-mail" value="{{ last_username|default('') }}" required autofocus>
+            placeholder="exemple@halogari.yt" value="{{ last_username|default('') }}" required autofocus>
     </div>
 
     <div class="mb-3">
@@ -19,7 +19,7 @@
 
     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-    <p><a class="nav-link" href="#"><small>Mot de passe oublié ? </small></a></p>
+    <p><a class="text-orange" href="{{ path('app_forgot_password_request') }}"><small>Mot de passe oublié ? </small></a></p>
 
     <div class="text-center">
         <button type="submit" class="btn btn-orange">Se connecter</button>

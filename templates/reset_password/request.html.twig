@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mot de passe oublié{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-6 col-md-8">
+				<h1 class="mb-4 text-center">Mot de passe oublié ?</h1>
+
+				{% for flash_error in app.flashes('reset_password_error') %}
+					<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+				{% endfor %}
+
+				{{ form_start(requestForm, { attr: { class: 'bg-light p-4 rounded shadow-sm border' } }) }}
+
+					<div class="mb-3">
+						{{ form_label(requestForm.email, 'Adresse e-mail :', {'label_attr': {'class': 'form-label'}}) }}
+						{{ form_widget(requestForm.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@halogari.yt'}}) }}
+						{{ form_errors(requestForm.email) }}
+					</div>
+
+					<p class="small text-muted mb-3">
+						Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+					</p>
+
+					<div class="text-center">
+						<button type="submit" class="btn btn-orange">Envoyer le lien de réinitialisation</button>
+					</div>
+
+				{{ form_end(requestForm) }}
+			</div>
+		</div>
+	</div>
+{% endblock %}

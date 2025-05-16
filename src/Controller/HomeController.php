@@ -21,12 +21,4 @@ class HomeController extends AbstractController
             'popularTrajets' => $popularTrajets,
         ]);
     }
-
-    /**
-     * @Route("/form", name="app_form")
-     */
-    public function formtest(): Response
-    {
-        return $this->render('home/form.html.twig');
-    }
 }
