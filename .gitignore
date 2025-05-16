@@ -9,6 +9,7 @@
 /vendor/
 /.env
 /migrations/
+/public/.htaccess
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
