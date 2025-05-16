@@ -4,16 +4,13 @@
 			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
 				style="max-width: 120px; height:auto;">
 		</a>
-		<ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+
+
+		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 			<li class="nav-item align-self-center d-none d-lg-block">
 				<a class="btn nav-link" href="{{ path('app_chercher') }}" title="Chercher un trajet">
 					<i class="text-vert bi bi-search"></i>
 					Chercher un trajet
-				</a>
-			</li>
-			<li class="nav-item align-self-center d-block d-lg-none">
-				<a class="btn nav-link" href="{{ path('app_chercher') }}" title="Chercher un trajet">
-					<i class="text-vert bi bi-search"></i>
 				</a>
 			</li>
 			<li class="nav-item align-self-center d-none d-lg-block">
@@ -22,11 +19,7 @@
 					Publier un trajet
 				</a>
 			</li>
-		</ul>
-
-
-		<ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-none d-lg-block">
-			<li class="nav-item">
+			<li class="nav-item d-none d-lg-block">
 				{% if app.user is null %}
 				<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion"
 					title="Se connecter">
@@ -42,16 +35,18 @@
 			</li>
 		</ul>
 
-		<button class="navbar-toggler btn dropdown-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
-			aria-controls="offcanvasRight" aria-expanded="false" aria-label="Toggle navigation">
-			<i class="bi bi-person fs-2"></i>
+		<button class="navbar-toggler btn {% if app.user is not null %}dropdown-toggle{% endif %}" type="button" data-bs-toggle="offcanvas"
+			data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false"
+			aria-label="Toggle navigation">
+			{% if app.user is null %} <i class="bi bi-list"></i> {% else %}<i class="bi bi-person fs-2"></i>{% endif %}
 		</button>
 
 	</div>
 </nav>
 
 
-<div class="offcanvas offcanvas-end bg-dark-subtle" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+<div class="offcanvas offcanvas-end bg-dark-subtle" tabindex="-1" id="offcanvasRight"
+	aria-labelledby="offcanvasRightLabel">
 	{% if app.user is null %}
 	<div class="offcanvas-header">
 		<div id="offcanvasRightLabel">

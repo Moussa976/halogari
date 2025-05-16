@@ -1,4 +1,4 @@
-<form class="bg-light p-4 rounded shadow-sm border" method="post" action="{{ path('app_login') }}">
+<form class="bg-light p-4 rounded shadow-sm border " method="post" action="{{ path('app_login') }}">
     {% if error is defined and error %}
         <div class="alert alert-danger">
             {{ error.messageKey|trans(error.messageData, 'security') }}
@@ -18,6 +18,8 @@
     </div>
 
     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+    <p><a class="nav-link" href="#"><small>Mot de passe oublié ? </small></a></p>
 
     <div class="text-center">
         <button type="submit" class="btn btn-orange">Se connecter</button>
