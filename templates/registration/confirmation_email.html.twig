@@ -1,11 +1,48 @@
-<h1>Bonjour ! Veuillez confirmer votre adresse e-mail !</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de votre adresse e-mail</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px; color: #333;">
 
-<p>
-    Veuillez confirmer votre adresse e-mail en cliquant sur le lien suivant : <br><br>
-    <a href="{{ signedUrl }}">Confirmer mon adresse e-mail</a>.<br>
-    Ce lien expirera dans {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
-</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td style="padding: 30px; text-align: center;">
+                <h1 style="color: #ff6f00; margin-bottom: 20px;">Bienvenue sur HaloGari 🚗</h1>
+                <p style="font-size: 16px;">
+                    Bonjour, merci de vous être inscrit.<br>
+                    Pour finaliser votre inscription, veuillez vérifier votre adresse e-mail en cliquant sur le bouton ci-dessous :
+                </p>
 
-<p>
-    À bientôt !
-</p>
+                <p style="margin: 30px 0;">
+                    <a href="{{ signedUrl }}"
+                       style="background-color: #ff6f00; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-size: 16px; display: inline-block;">
+                        Vérifier mon adresse e-mail
+                    </a>
+                </p>
+
+                <p style="font-size: 15px; color: #555;">
+                    Ce lien expirera dans {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.<br><br>
+                    Si vous n'avez pas créé de compte sur HaloGari, aucune action n'est requise.
+                </p>
+
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+                <p style="font-size: 14px; color: #999;">
+                    Si vous avez des difficultés à cliquer sur le bouton, copiez et collez ce lien dans votre navigateur :
+                </p>
+
+                <p style="word-break: break-all; font-size: 13px; color: #1a73e8;">
+                    {{ signedUrl }}
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: 20px;">
+        © {{ "now"|date("Y") }} HaloGari. Tous droits réservés.
+    </p>
+
+</body>
+</html>
