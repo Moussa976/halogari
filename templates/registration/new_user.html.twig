@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle inscription - HaloGari</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
+
+    <table width="100%" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 6px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td style="text-align: center;">
+                <h2 style="color: #ff6f00;">Nouvelle inscription sur HaloGari</h2>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p>Une nouvelle personne vient de créer un compte :</p>
+
+                <table style="width: 100%; margin-top: 15px; font-size: 15px;">
+                    <tr><td><strong>Nom :</strong></td><td>{{ user.nom }}</td></tr>
+                    <tr><td><strong>Prénom :</strong></td><td>{{ user.prenom }}</td></tr>
+                    <tr><td><strong>Email :</strong></td><td>{{ user.email }}</td></tr>
+                    <tr><td><strong>Téléphone :</strong></td><td>{{ user.telephone }}</td></tr>
+                    <tr><td><strong>Lien d'activation :</strong></td><td>{{ signedUrl }}</td></tr>
+                </table>
+
+                <p style="margin-top: 25px; font-size: 14px; color: #888;">
+                    — Ce message est généré automatiquement par HaloGari.
+                </p>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

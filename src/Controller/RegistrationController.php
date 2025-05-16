@@ -32,19 +32,18 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/creer-un-compte", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
-    {
-        // Si connecté, aller à la page d'acceuil
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, MailerInterface $mailer): Response {
+        // Si l'utilisateur est déjà connecté, le rediriger vers l'accueil
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
         }
+
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // encode the plain password
+            // Hachage du mot de passe
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
@@ -55,18 +54,29 @@ class RegistrationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // generate a signed url and email it to the user
+            // Envoi du mail de confirmation à l'utilisateur
             $this->emailVerifier->sendEmailConfirmation(
                 'app_verify_email',
                 $user,
                 (new TemplatedEmail())
-                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->from(new Address('noreply@halogari.yt', 'HaloGari'))
                     ->to($user->getEmail())
                     ->subject('Veuillez confirmer votre adresse e-mail')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
                     ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
             );
-            // do anything else you need here, like send an email
+
+            // Envoi d’un mail d’alerte à l’admin (HTML)
+            $mailer->send(
+                (new TemplatedEmail())
+                    ->from(new Address('noreply@halogari.yt', 'HaloGari - Notifications'))
+                    ->to('moussa@halogari.yt')
+                    ->subject('Nouvelle inscription sur HaloGari')
+                    ->htmlTemplate('emails/admin_new_user.html.twig')
+                    ->context([
+                        'user' => $user
+                    ])
+            );
 
             return $this->redirectToRoute('registration_confirmation');
         }
@@ -75,6 +85,7 @@ class RegistrationController extends AbstractController
             'registrationForm' => $form->createView(),
         ]);
     }
+
 
     /**
      * @Route("/verify/email", name="app_verify_email")
