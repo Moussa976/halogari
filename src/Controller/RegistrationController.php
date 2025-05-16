@@ -116,20 +116,4 @@ class RegistrationController extends AbstractController
         return $this->render('registration/confirmation.html.twig');
     }
 
-
-    /**
-     * @Route("/testmail", name="app_verify_email")
-     */
-    public function testMail(MailerInterface $mailer): Response
-    {
-        $email = (new Email())
-            ->from('moussa@halogari.yt')
-            ->to('moussainssa@gmail.com')
-            ->subject('Test Symfony via Infomaniak')
-            ->text('Ceci est un test.');
-
-        $mailer->send($email);
-
-        return new Response('Mail envoyé ? Vérifie ta boîte.');
-    }
 }
