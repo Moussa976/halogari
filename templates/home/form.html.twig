@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Saisie automatique - HaloGari</title>
+
+    <!-- Awesomplete CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .form-group {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-group">
+    <label for="lieu">Où partez-vous ?</label>
+    <input id="lieu" class="awesomplete" list="lieux" placeholder="Saisissez une ville..." />
+
+    <datalist id="lieux">
+        <option>Mamoudzou</option>
+        <option>Koungou</option>
+        <option>Dembéni</option>
+        <option>Dzaoudzi</option>
+        <option>Chiconi</option>
+        <option>Sada</option>
+        <option>Acoua</option>
+        <option>Ouangani</option>
+    </datalist>
+</div>
+
+</body>
+</html>
