@@ -17,6 +17,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\MailerInterface;
+
 class RegistrationController extends AbstractController
 {
     private EmailVerifier $emailVerifier;
@@ -111,5 +114,22 @@ class RegistrationController extends AbstractController
     public function confirmation(): Response
     {
         return $this->render('registration/confirmation.html.twig');
+    }
+
+
+    /**
+     * @Route("/testmail", name="app_verify_email")
+     */
+    public function testMail(MailerInterface $mailer): Response
+    {
+        $email = (new Email())
+            ->from('moussa@halogari.yt')
+            ->to('ton-adresse-perso@gmail.com')
+            ->subject('Test Symfony via Infomaniak')
+            ->text('Ceci est un test.');
+
+        $mailer->send($email);
+
+        return new Response('Mail envoyé ? Vérifie ta boîte.');
     }
 }
