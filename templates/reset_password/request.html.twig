@@ -16,7 +16,7 @@
 
 					<div class="mb-3">
 						{{ form_label(requestForm.email, 'Adresse e-mail :', {'label_attr': {'class': 'form-label'}}) }}
-						{{ form_widget(requestForm.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@halogari.yt'}}) }}
+						{{ form_widget(requestForm.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@halogari.yt', 'value': last_username|default('')}}) }}
 						{{ form_errors(requestForm.email) }}
 					</div>
 

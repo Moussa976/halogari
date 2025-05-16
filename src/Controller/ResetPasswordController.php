@@ -15,10 +15,12 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
+
 
 /**
  * @Route("/reset-password")
@@ -41,7 +43,7 @@ class ResetPasswordController extends AbstractController
      *
      * @Route("", name="app_forgot_password_request")
      */
-    public function request(Request $request, MailerInterface $mailer, TranslatorInterface $translator): Response
+    public function request(AuthenticationUtils $authenticationUtils, Request $request, MailerInterface $mailer, TranslatorInterface $translator): Response
     {
         $form = $this->createForm(ResetPasswordRequestFormType::class);
         $form->handleRequest($request);
@@ -53,9 +55,12 @@ class ResetPasswordController extends AbstractController
                 $translator
             );
         }
+        // Dernier email saisi
+        $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('reset_password/request.html.twig', [
             'requestForm' => $form->createView(),
+            'last_username' => $lastUsername,
         ]);
     }
 
@@ -82,7 +87,7 @@ class ResetPasswordController extends AbstractController
      *
      * @Route("/reset/{token}", name="app_reset_password")
      */
-    public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, TranslatorInterface $translator, string $token = null): Response
+    public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, TranslatorInterface $translator, string $token = null, MailerInterface $mailer): Response
     {
         if ($token) {
             // We store the token in session and remove it from the URL, to avoid the URL being
@@ -126,9 +131,23 @@ class ResetPasswordController extends AbstractController
             $user->setPassword($encodedPassword);
             $this->entityManager->flush();
 
+            // Envoi de l'e-mail de confirmation
+            $email = (new TemplatedEmail())
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->to($user->getEmail())
+                ->subject('Votre mot de passe a été modifié')
+                ->htmlTemplate('reset_password/password_reset_success.html.twig')
+                ->context([
+                    'user' => $user,
+                ])
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
+
+            $mailer->send($email);
+
             // The session is cleaned up after the password has been changed.
             $this->cleanSessionAfterReset();
 
+            $this->addFlash('success', 'Votre mot de passe a bien été modifié.');
             return $this->redirectToRoute('app_login');
         }
 
@@ -172,7 +191,7 @@ class ResetPasswordController extends AbstractController
             ->context([
                 'resetToken' => $resetToken,
             ])
-             ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
+            ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
         ;
 
         $mailer->send($email);
