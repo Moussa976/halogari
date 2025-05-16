@@ -72,7 +72,7 @@ class RegistrationController extends AbstractController
                     ->from(new Address('noreply@halogari.yt', 'HaloGari - Notifications'))
                     ->to('moussa@halogari.yt')
                     ->subject('Nouvelle inscription sur HaloGari')
-                    ->htmlTemplate('emails/admin_new_user.html.twig')
+                    ->htmlTemplate('registration/new_user.html.twig')
                     ->context([
                         'user' => $user
                     ])
