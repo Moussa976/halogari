@@ -5,8 +5,7 @@
     <title>Saisie automatique - HaloGari</title>
 
     <!-- Awesomplete CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
     <style>
         body {
@@ -42,20 +41,19 @@
 <body>
 
 <div class="form-group">
-    <label for="lieu">Où partez-vous ?</label>
-    <input id="lieu" class="awesomplete" list="lieux" placeholder="Saisissez une ville..." />
-
-    <datalist id="lieux">
-        <option>Mamoudzou</option>
-        <option>Koungou</option>
-        <option>Dembéni</option>
-        <option>Dzaoudzi</option>
-        <option>Chiconi</option>
-        <option>Sada</option>
-        <option>Acoua</option>
-        <option>Ouangani</option>
-    </datalist>
+    <label for="ville">Où partez-vous ?</label>
+    <input id="ville" class="awesomplete" list="lieux" placeholder="Saisissez une ville..." />
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+$(function() {
+  var villes = ["Mamoudzou", "Koungou", "Dembéni", "Dzaoudzi"];
+  $("#ville").autocomplete({
+    source: villes
+  });
+});
+</script>
 </body>
 </html>

@@ -125,13 +125,26 @@ h1 {
 .prix-euro {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #ee7911; /* ou la couleur que tu veux */
-  }
-  .prix-euro sup {
+    color: #ee7911;
+    /* ou la couleur que tu veux */
+}
+
+.prix-euro sup {
     font-size: 0.65em;
     vertical-align: baseline;
     color: #32623d !important;
-  }
+}
+
+.ui-menu {
+    background-color: #32623d;
+    color: white;
+    border: 1px solid #32623d;
+}
+
+.ui-menu-item-wrapper:hover {
+    background-color: #546232;
+    border-color: #ee7911;
+}
 
 @keyframes fadeIn {
     0% {

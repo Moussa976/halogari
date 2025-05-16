@@ -12,17 +12,15 @@
 
     <form method="GET" action="{{ path('app_chercher') }}" class="row g-3 mt-5">
       <div class="col-md-4 col-lg-3">
-        <input list="liste-villes" class="form-control form-control-lg" name="select_departure"
+        <input list="liste-villes" class="form-control form-control-lg villages" name="select_departure"
                placeholder="Village de départ" required>
-        <datalist id="liste-villes"></datalist>
       </div>
       <div class="col-md-4 col-lg-3">
-        <input list="liste-villes-arrivee" name="select_arrival" class="form-control form-control-lg"
+        <input list="liste-villes-arrivee" name="select_arrival" class="form-control form-control-lg villages"
                placeholder="Village d'arrivée" required>
-        <datalist id="liste-villes-arrivee"></datalist>
       </div>
       <div class="col-md-4 col-lg-3 mb-md-2 mb-lg-0">
-        <input type="date" class="form-control form-control-lg" name="date_trajet" placeholder="Choisir une date" required>
+        <input type="text" class="form-control form-control-lg dateDepart" name="date_trajet" placeholder="Choisir une date" required>
       </div>
       <div class="col-md-12 col-lg-3">
         <button type="submit" class="btn btn-orange btn-lg w-100">Chercher</button>
@@ -90,21 +88,6 @@
     </div>
   </div>
 </section>
-{% endblock %}
-{% block javascripts %}
-<script>
-  fetch('/cities.json')
-    .then(res => res.json())
-    .then(cities => {
-      const datalistDepart = document.getElementById('liste-villes');
-      const datalistArrivee = document.getElementById('liste-villes-arrivee');
-      cities.forEach(city => {
-        datalistDepart.innerHTML += `<option value="${city.name}">`;
-        datalistArrivee.innerHTML += `<option value="${city.name}">`;
-      });
-    })
-    .catch(err => console.error('Erreur de chargement des villes :', err));
-</script>
 {% endblock %}
 
 

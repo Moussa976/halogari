@@ -11,20 +11,18 @@
 				<form method="GET" action="/chercher" class="p-4 border rounded shadow-sm bg-light">
 					<div class="mb-3">
 						<label for="select_departure" class="form-label">Ville de départ <span class="text-orange">*</span> :</label>
-						<input list="liste-villes" name="select_departure" class="form-control" placeholder="Ville de départ" required>
-						<datalist id="liste-villes"></datalist>
+						<input list="liste-villes" name="select_departure" class="form-control villages" placeholder="Ville de départ" required>
 					</div>
 
 					<div class="mb-3">
 						<label for="select_arrival" class="form-label">Ville d'arrivée <span class="text-orange">*</span> :</label>
-						<input list="liste-villes-arrivee" name="select_arrival" class="form-control" placeholder="Ville d'arrivée" required>
-						<datalist id="liste-villes-arrivee"></datalist>
+						<input list="liste-villes-arrivee" name="select_arrival" class="form-control villages" placeholder="Ville d'arrivée" required>
 					</div>
 
 					<div class="row mb-3">
 						<div class="col-md-6">
 							<label for="date_trajet" class="form-label">Date du trajet <span class="text-orange">*</span> :</label>
-							<input type="date" id="date_trajet" name="date_trajet" class="form-control" required>
+							<input type="text" id="date_trajet" name="date_trajet" class="form-control dateDepart" placeholder="Choisir une date" required>
 						</div>
 						<div class="col-md-6">
 							<label for="prix_max" class="form-label">Prix maximum (€) :
@@ -50,21 +48,4 @@
 		</div>
 	</div>
 {% endblock %}
-{% block javascripts %}
-	<script>
-		fetch('/cities.json').then(res => res.json()).then(cities => {
-const datalistDepart = document.getElementById('liste-villes');
-const datalistArrivee = document.getElementById('liste-villes-arrivee');
 
-cities.forEach(city => {
-const option1 = document.createElement('option');
-option1.value = city.name;
-datalistDepart.appendChild(option1);
-
-const option2 = document.createElement('option');
-option2.value = city.name;
-datalistArrivee.appendChild(option2);
-});
-}).catch(error => console.error('Erreur de chargement des villes :', error));
-	</script>
-{% endblock %}
