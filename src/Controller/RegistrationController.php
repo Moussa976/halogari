@@ -124,7 +124,7 @@ class RegistrationController extends AbstractController
     {
         $email = (new Email())
             ->from('moussa@halogari.yt')
-            ->to('ton-adresse-perso@gmail.com')
+            ->to('moussainssa@gmail.com')
             ->subject('Test Symfony via Infomaniak')
             ->text('Ceci est un test.');
 
