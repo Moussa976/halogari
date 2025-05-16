@@ -19,6 +19,7 @@ use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
+use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -67,6 +68,15 @@ class RegistrationController extends AbstractController
             );
 
             // Envoi d’un mail d’alerte à l’admin (HTML)
+            $signatureComponents = $this->emailVerifier->generateSignature(
+                'app_verify_email',
+                $user->getId(),
+                $user->getEmail(),
+                ['id' => $user->getId()]
+            );
+
+            $signedUrl = $signatureComponents->getSignedUrl();
+
             $mailer->send(
                 (new TemplatedEmail())
                     ->from(new Address('noreply@halogari.yt', 'HaloGari - Notifications'))
@@ -74,7 +84,8 @@ class RegistrationController extends AbstractController
                     ->subject('Nouvelle inscription sur HaloGari')
                     ->htmlTemplate('registration/new_user.html.twig')
                     ->context([
-                        'user' => $user
+                        'user' => $user,
+                        'signedUrl' => $signedUrl
                     ])
             );
 
