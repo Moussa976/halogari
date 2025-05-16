@@ -1,13 +1,2 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  function copierLien() {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url)
-      .then(() => {
-        const confirmation = document.getElementById("copie-confirmation");
-        confirmation.style.display = "inline";
-        setTimeout(() => confirmation.style.display = "none", 2000);
-      })
-      .catch(err => console.error("Erreur copie lien :", err));
-  }
-</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>

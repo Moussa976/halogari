@@ -18,7 +18,13 @@
     {% include 'partials/footer.html.twig' %}
     {% include 'partials/bootstrap-script.html.twig' %}
 
-
+		{% for type, messages in app.flashes %}{% for message in messages %}
+		<script>
+			Swal.fire({
+				icon: "{{ type == 'success' ? 'success' : 'error' }}",title: "{% if type == 'success' %}Réussie{% else %}Échec{% endif %}",text: "{{ message }}",timer: 3000,showConfirmButton: false
+			});
+		</script>
+		{% endfor %}{% endfor %}
     {% block javascripts %}{% endblock %}
   </body>
 </html>
