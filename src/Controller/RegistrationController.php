@@ -25,9 +25,10 @@ class RegistrationController extends AbstractController
 {
     private EmailVerifier $emailVerifier;
 
-    public function __construct(EmailVerifier $emailVerifier)
+    public function __construct(EmailVerifier $emailVerifier, VerifyEmailHelperInterface $helper)
     {
         $this->emailVerifier = $emailVerifier;
+        $this->verifyEmailHelper = $helper;
     }
 
     /**
@@ -68,7 +69,7 @@ class RegistrationController extends AbstractController
             );
 
             // Envoi d’un mail d’alerte à l’admin (HTML)
-            $signatureComponents = $this->emailVerifier->generateSignature(
+            $signatureComponents = $this->verifyEmailHelper->generateSignature(
                 'app_verify_email',
                 $user->getId(),
                 $user->getEmail(),
