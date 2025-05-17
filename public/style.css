@@ -146,6 +146,25 @@ h1 {
     border-color: #ee7911;
 }
 
+.form-floating > .form-control {
+    height: calc(3.5rem + 2px); /* ou ajustable selon ton design */
+    padding: 1rem .75rem;
+    font-size: 1rem;
+}
+
+.form-floating > label {
+    padding: .5rem .75rem;
+    font-size: 0.95rem;
+    color: #6c757d;
+}
+
+.form-floating > .form-control.form-control-lg {
+    height: calc(3.8rem + 2px);
+    padding: 1.1rem .75rem;
+    font-size: 1.05rem;
+}
+
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
