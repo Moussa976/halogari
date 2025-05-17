@@ -1,27 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Réinitialiser le mot de passe{% endblock %}
+{% block title %}Réinitialiser le mot de passe{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-md-6">
-				<h1 class="mb-4 text-center">Réinitialiser le mot de passe</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded">
+                <div class="card-body p-4">
+                    <h2 class="mb-4 text-center text-dark">🔐 Réinitialiser le mot de passe</h2>
 
-				{{ form_start(resetForm, { attr: { class: 'bg-light p-4 rounded shadow-sm border' } }) }}
+                    {% for flash_error in app.flashes('reset_password_error') %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ flash_error }}
+                        </div>
+                    {% endfor %}
 
-					<div class="mb-3">
-						{{ form_label(resetForm.plainPassword, 'Nouveau mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-						{{ form_widget(resetForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': '***************'}}) }}
-						{{ form_errors(resetForm.plainPassword) }}
-					</div>
+                    {{ form_start(resetForm, { attr: { novalidate: 'novalidate' } }) }}
 
-					<div class="text-center">
-						<button type="submit" class="btn btn-orange">Réinitialiser le mot de passe</button>
-					</div>
+                    <div class="mb-3">
+                        {{ form_label(resetForm.plainPassword.first, 'Nouveau mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(resetForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
+                        {{ form_errors(resetForm.plainPassword.first) }}
+                    </div>
 
-				{{ form_end(resetForm) }}
-			</div>
-		</div>
-	</div>
+                    <div class="mb-3">
+                        {{ form_label(resetForm.plainPassword.second, 'Confirmer le mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(resetForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
+                        {{ form_errors(resetForm.plainPassword.second) }}
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-orange">
+                            Réinitialiser le mot de passe
+                        </button>
+                    </div>
+
+                    {{ form_end(resetForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -65,11 +65,11 @@ class RegistrationFormType extends AbstractType
                 'invalid_message' => 'Les deux mots de passe doivent correspondre.',
                 'first_options' => [
                     'label' => 'Mot de passe',
-                    'attr' => ['class' => 'form-control', 'placeholder' => '********'],
+                    'attr' => ['class' => 'form-control', 'placeholder' => '••••••••••••'],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['class' => 'form-control', 'placeholder' => '********'],
+                    'attr' => ['class' => 'form-control', 'placeholder' => '••••••••••••'],
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez entrer un mot de passe.']),

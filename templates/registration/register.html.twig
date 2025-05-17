@@ -81,7 +81,7 @@
     {{ form_widget(registrationForm.plainPassword.first, {
         attr: {
             class: 'form-control ' ~ (registrationForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: '*****************',
+            placeholder: '••••••••••••',
             'aria-describedby': 'passwordFeedback'
         }
     }) }}
@@ -93,7 +93,7 @@
     {{ form_widget(registrationForm.plainPassword.second, {
         attr: {
             class: 'form-control ' ~ (registrationForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: '*****************',
+            placeholder: '••••••••••••',
             'aria-describedby': 'confirmPasswordFeedback'
         }
     }) }}

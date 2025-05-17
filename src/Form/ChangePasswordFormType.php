@@ -22,7 +22,7 @@ class ChangePasswordFormType extends AbstractType
                 'invalid_message' => 'Les deux mots de passe doivent correspondre.',
                 'first_options'  => [
                     'label' => 'Nouveau mot de passe',
-                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => '********'],
+                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => '••••••••••••'],
                     'constraints' => [
                         new NotBlank([
                             'message' => 'Veuillez entrer un mot de passe.',
@@ -40,7 +40,7 @@ class ChangePasswordFormType extends AbstractType
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
-                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => '********'],
+                    'attr' => ['autocomplete' => 'new-password', 'placeholder' => '••••••••••••'],
                 ],
             ]);
     }
