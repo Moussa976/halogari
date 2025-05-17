@@ -3,10 +3,17 @@
 		<a class="navbar-brand" href="{{ path('app_home') }}">
 			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
 				style="max-width: 120px; height:auto;">
+				
 		</a>
 
 
 		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			<li class="nav-item align-self-center d-none d-lg-block">
+				
+				<button id="installAppBtn" class="btn btn-orange d-none nav-link" title="Installer HaloGari">
+				📲 Installer HaloGari
+				</button>
+			</li>
 			<li class="nav-item align-self-center d-none d-lg-block">
 				<a class="btn nav-link" href="{{ path('app_chercher') }}" title="Chercher un trajet">
 					<i class="text-vert bi bi-search"></i>

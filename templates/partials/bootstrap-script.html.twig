@@ -34,3 +34,31 @@ flatpickr(".dateDepart", {
     });
   }
 </script>
+
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Empêche l'invite automatique
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Affiche ton propre bouton d’installation
+    const installBtn = document.getElementById('installAppBtn');
+    if (installBtn) {
+      installBtn.classList.remove('d-none');
+      installBtn.addEventListener('click', () => {
+        installBtn.disabled = true;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ L’utilisateur a installé l’app');
+          } else {
+            console.log('❌ Installation refusée');
+          }
+          deferredPrompt = null;
+        });
+      });
+    }
+  });
+</script>
