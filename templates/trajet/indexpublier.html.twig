@@ -74,7 +74,19 @@
 									<label for="date">Date du trajet</label>
 								</div>
 								<span class="input-group-text text-vert">
-									<i class="bi bi-person-fill"></i>
+									<i class="bi bi-clock-fill"></i>
+								</span>
+								<div class="form-floating">
+									<input type="time" class="form-control" id="heure" name="heure" placeholder="Heure de départ" required>
+									<label for="heure">Heure de départ</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<div class="input-group">
+								<span class="input-group-text text-vert">
+									<i class="bi bi-people-fill"></i>
 								</span>
 								<div class="form-floating">
 									<select class="form-select" id="places" name="places">
@@ -82,7 +94,7 @@
 											<option value="{{ i }}">{{ i }}</option>
 										{% endfor %}
 									</select>
-									<label for="places">Passager(s)</label>
+									<label for="places">Nombre de passagers</label>
 								</div>
 							</div>
 						</div>
