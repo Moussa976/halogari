@@ -143,8 +143,9 @@ class ResetPasswordController extends AbstractController
 
             try {
                 $mailer->send($email);
-            } catch (\Exception $e) {
-                dd('Erreur envoi e-mail : ' . $e->getMessage());
+                dd('✅ Envoi terminé (aucune exception)');
+            } catch (\Throwable $e) {
+                dd('❌ Erreur envoi e-mail : ' . $e->getMessage());
             }
 
             $this->cleanSessionAfterReset();
@@ -197,7 +198,12 @@ class ResetPasswordController extends AbstractController
             ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
         ;
 
-        $mailer->send($email);
+        try {
+            $mailer->send($email);
+            dd('✅ Envoi terminé (aucune exception)');
+        } catch (\Throwable $e) {
+            dd('❌ Erreur envoi e-mail : ' . $e->getMessage());
+        }
 
         // Store the token object in session for retrieval in check-email route.
         $this->setTokenObjectInSession($resetToken);
