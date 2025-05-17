@@ -141,7 +141,11 @@ class ResetPasswordController extends AbstractController
                 ->context(['user' => $user])
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
 
-            $mailer->send($email);
+            try {
+                $mailer->send($email);
+            } catch (\Exception $e) {
+                dd('Erreur envoi e-mail : ' . $e->getMessage());
+            }
 
             $this->cleanSessionAfterReset();
 
