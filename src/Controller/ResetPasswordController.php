@@ -83,20 +83,26 @@ class ResetPasswordController extends AbstractController
     }
 
     /**
-     * Validates and process the reset URL that the user clicked in their email.
+     * Validates and processes the reset URL that the user clicked in their email.
      *
-     * @Route("/reset/{token}", name="app_reset_password")
+     * @Route("/reset/{token}", name="app_reset_password_token")
      */
-    public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, TranslatorInterface $translator, string $token = null, MailerInterface $mailer): Response
+    public function resetWithToken(Request $request, string $token): RedirectResponse
     {
-        if ($token) {
-            // We store the token in session and remove it from the URL, to avoid the URL being
-            // loaded in a browser and potentially leaking the token to 3rd party JavaScript.
-            $this->storeTokenInSession($token);
+        // We store the token in session and remove it from the URL, to avoid the URL being
+        // loaded in a browser and potentially leaking the token to 3rd party JavaScript.
+        $this->storeTokenInSession($token);
 
-            return $this->redirectToRoute('app_reset_password',  ['token' => $token]);
-        }
+        return $this->redirectToRoute('app_reset_password');
+    }
 
+    /**
+     * Displays and processes the password reset form when no token is in the URL.
+     *
+     * @Route("/reset", name="app_reset_password")
+     */
+    public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, TranslatorInterface $translator, MailerInterface $mailer): Response
+    {
         $token = $this->getTokenFromSession();
         if (null === $token) {
             throw $this->createNotFoundException('No reset password token found in the URL or in the session.');
@@ -114,37 +120,33 @@ class ResetPasswordController extends AbstractController
             return $this->redirectToRoute('app_forgot_password_request');
         }
 
-        // The token is valid; allow the user to change their password.
         $form = $this->createForm(ChangePasswordFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // A password reset token should be used only once, remove it.
             $this->resetPasswordHelper->removeResetRequest($token);
 
-            // Encode(hash) the plain password, and set it.
             $encodedPassword = $userPasswordHasher->hashPassword(
                 $user,
                 $form->get('plainPassword')->getData()
             );
-
             $user->setPassword($encodedPassword);
             $this->entityManager->flush();
 
-            // Envoi de l'e-mail de confirmation
             $email = (new TemplatedEmail())
                 ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($user->getEmail())
                 ->subject('Votre mot de passe a été modifié')
                 ->htmlTemplate('reset_password/password_reset_success.html.twig')
-                ->context([
-                    'user' => $user,
-                ])
+                ->context(['user' => $user])
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
 
-            $mailer->send($email);
+            try {
+                $mailer->send($email);
+            } catch (\Exception $e) {
+                dd('Erreur envoi e-mail : ' . $e->getMessage());
+            }
 
-            // The session is cleaned up after the password has been changed.
             $this->cleanSessionAfterReset();
 
             $this->addFlash('success', 'Votre mot de passe a bien été modifié.');
@@ -155,6 +157,7 @@ class ResetPasswordController extends AbstractController
             'resetForm' => $form->createView(),
         ]);
     }
+
 
     private function processSendingPasswordResetEmail(string $emailFormData, MailerInterface $mailer, TranslatorInterface $translator): RedirectResponse
     {
