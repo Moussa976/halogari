@@ -185,11 +185,11 @@ h1 {
     }
 
     .bg-header .display-5 {
-        font-size: calc(1rem + 1.5vw) !important ;
+        font-size: calc(1.1rem + 1.5vw) !important ;
     }
 
     .bg-header .lead {
-        font-size: 0.7rem !important;
+        font-size: 0.8rem !important;
     }
 }
 
