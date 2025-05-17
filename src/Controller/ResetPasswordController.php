@@ -167,7 +167,6 @@ class ResetPasswordController extends AbstractController
 
         // Do not reveal whether a user account was found or not.
         if (!$user) {
-            dd('dd trouvé✅');
             return $this->redirectToRoute('app_check_email');
         }
 
@@ -200,9 +199,8 @@ class ResetPasswordController extends AbstractController
 
         try {
             $mailer->send($email);
-            dd('✅ Envoi terminé (aucune exception)');
         } catch (\Throwable $e) {
-            dd('❌ Erreur envoi e-mail : ' . $e->getMessage());
+            $e->getMessage();
         }
 
         // Store the token object in session for retrieval in check-email route.
