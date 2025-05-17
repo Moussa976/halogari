@@ -30,7 +30,7 @@ class TrajetController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté pour publier un trajet.');
             return $this->redirectToRoute('app_login');
         }
-        return $this->render('trajet/publier.html.twig');
+        return $this->render('trajet/indexpublier.html.twig');
     }
 
     /**
