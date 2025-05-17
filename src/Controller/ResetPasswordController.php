@@ -137,7 +137,7 @@ class ResetPasswordController extends AbstractController
                 ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($user->getEmail())
                 ->subject('Votre mot de passe a été modifié')
-                ->htmlTemplate('reset_password/password_reset_success.html.twig')
+                ->htmlTemplate('emails/password_reset_success.html.twig')
                 ->context(['user' => $user])
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
 
@@ -190,7 +190,7 @@ class ResetPasswordController extends AbstractController
             ->from(new Address('moussa@halogari.yt', 'HaloGari'))
             ->to($user->getEmail())
             ->subject('Réinitialisation de votre mot de passe')
-            ->htmlTemplate('reset_password/email.html.twig')
+            ->htmlTemplate('emails/reset_password.html.twig')
             ->context([
                 'resetToken' => $resetToken,
             ])

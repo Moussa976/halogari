@@ -94,6 +94,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $isVerified = false;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $rib;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $justificatifIdentite;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $ribValide;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $identiteValide;
+
     public function __construct()
     {
         $this->trajets = new ArrayCollection();
@@ -430,6 +450,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getRib(): ?string
+    {
+        return $this->rib;
+    }
+
+    public function setRib(?string $rib): self
+    {
+        $this->rib = $rib;
+
+        return $this;
+    }
+
+    public function getJustificatifIdentite(): ?string
+    {
+        return $this->justificatifIdentite;
+    }
+
+    public function setJustificatifIdentite(?string $justificatifIdentite): self
+    {
+        $this->justificatifIdentite = $justificatifIdentite;
+
+        return $this;
+    }
+
+    public function isRibValide(): ?bool
+    {
+        return $this->ribValide;
+    }
+
+    public function setRibValide(?bool $ribValide): self
+    {
+        $this->ribValide = $ribValide;
+
+        return $this;
+    }
+
+    public function isIdentiteValide(): ?bool
+    {
+        return $this->identiteValide;
+    }
+
+    public function setIdentiteValide(?bool $identiteValide): self
+    {
+        $this->identiteValide = $identiteValide;
 
         return $this;
     }

@@ -64,7 +64,7 @@ class RegistrationController extends AbstractController
                     ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                     ->to($user->getEmail())
                     ->subject('Veuillez confirmer votre adresse e-mail')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
+                    ->htmlTemplate('emails/confirmation_register.html.twig')
                     ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
             );
 
@@ -83,7 +83,7 @@ class RegistrationController extends AbstractController
                     ->from(new Address('moussa@halogari.yt', 'HaloGari - Notifications'))
                     ->to('moussa@halogari.yt')
                     ->subject('Nouvelle inscription sur HaloGari')
-                    ->htmlTemplate('registration/new_user.html.twig')
+                    ->htmlTemplate('emails/new_user.html.twig')
                     ->context([
                         'user' => $user,
                         'signedUrl' => $signedUrl
