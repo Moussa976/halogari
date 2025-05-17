@@ -5,8 +5,9 @@ self.addEventListener('install', event => {
         '/',
         '/css/app.css',
         '/js/app.js',
-        '/icons/icon-192x192.png',
-        '/icons/icon-512x512.png',
+        '/images/icons/icon-192x192.png',
+        '/images/icons/icon-512x512.png',
+        '/style.css',
         // ajoute ici d'autres routes si nécessaire
       ]);
     })
