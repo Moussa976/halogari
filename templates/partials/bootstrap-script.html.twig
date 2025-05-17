@@ -39,26 +39,26 @@ flatpickr(".dateDepart", {
   let deferredPrompt;
 
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Empêche l'invite automatique
     e.preventDefault();
     deferredPrompt = e;
 
-    // Affiche ton propre bouton d’installation
-    const installBtn = document.getElementById('installAppBtn');
-    if (installBtn) {
-      installBtn.classList.remove('d-none');
-      installBtn.addEventListener('click', () => {
-        installBtn.disabled = true;
+    // Cibler tous les boutons avec la classe .installAppBtn
+    const installButtons = document.querySelectorAll('.installAppBtn');
+
+    installButtons.forEach((btn) => {
+      btn.classList.remove('d-none');
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            console.log('✅ L’utilisateur a installé l’app');
+            console.log('✅ L’app HaloGari a été installée');
           } else {
             console.log('❌ Installation refusée');
           }
           deferredPrompt = null;
         });
       });
-    }
+    });
   });
 </script>

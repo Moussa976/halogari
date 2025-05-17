@@ -3,15 +3,15 @@
 		<a class="navbar-brand" href="{{ path('app_home') }}">
 			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
 				style="max-width: 120px; height:auto;">
-				
+
 		</a>
 
 
 		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 			<li class="nav-item align-self-center d-none d-lg-block">
-				
-				<button id="installAppBtn" class="btn btn-orange d-none nav-link" title="Installer HaloGari">
-				📲 Installer HaloGari
+
+				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
+					📲 Installer HaloGari
 				</button>
 			</li>
 			<li class="nav-item align-self-center d-none d-lg-block">
@@ -33,19 +33,19 @@
 					<i class="bi bi-box-arrow-in-right"></i> Se connecter
 				</a>
 				{% else %}
-				<a class="btn nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="offcanvas"
+				<a class="btn dropdown-toggle border border-secondary text-vert py-0" href="#" role="button" data-bs-toggle="offcanvas"
 					data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false"
 					aria-label="offcanvas navigation">
-					<i class="bi bi-person"></i>
+					<i class="bi bi-person fs-4"></i>
 				</a>
 				{% endif %}
 			</li>
 		</ul>
 
-		<button class="navbar-toggler btn {% if app.user is not null %}dropdown-toggle{% endif %}" type="button" data-bs-toggle="offcanvas"
-			data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false"
-			aria-label="Toggle navigation">
-			{% if app.user is null %} <i class="bi bi-list"></i> {% else %}<i class="bi bi-person fs-2"></i>{% endif %}
+		<button class="navbar-toggler btn {% if app.user is not null %} dropdown-toggle{% endif %}" type="button"
+			data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
+			aria-expanded="false" aria-label="Toggle navigation">
+			{% if app.user is null %} <i class="bi bi-list fs-3"></i> {% else %}<i class="bi bi-person fs-3"></i>{% endif %}
 		</button>
 
 	</div>
@@ -79,6 +79,11 @@
 				<i class="bi bi-box-arrow-in-right"></i>
 				Se connecter
 			</a>
+			<div class="list-group-item list-group-item-action bg-dark-subtle">
+				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
+					📲 Installer HaloGari
+				</button>
+			</div>
 		</div>
 	</div>
 	{% else %}
@@ -118,6 +123,11 @@
 			<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-box-arrow-right"></i>
 				Déconnexion</a>
+			<div class="list-group-item list-group-item-action bg-dark-subtle">
+				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
+					📲 Installer HaloGari
+				</button>
+			</div>
 		</div>
 	</div>
 	{% endif %}
