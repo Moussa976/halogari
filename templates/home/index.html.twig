@@ -1,120 +1,137 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-	<header class="bg-header text-white d-flex align-items-center">
-		<div class="container">
-			<div class="card bg-white bg-opacity-50 text-dark p-4">
-				<div class="text-center fade-in">
-					<h1 class="display-5 fw-bold">Bienvenue sur
-						<span class="text-orange">Halo</span><span class="text-vert">Gari</span>
-						!</h1>
-					<h3 class="lead fw-semibold text-muted">Trouvez ou proposez un trajet entre les villages de Mayotte.</h3>
-				</div>
-			</div>
+<header class="bg-header text-white d-flex align-items-center">
+  <div class="container">
+    <div class="card bg-white bg-opacity-50 text-dark p-4">
+      <div class="text-center fade-in">
+        <h1 class="display-5 fw-bold">Bienvenue sur
+          <span class="text-orange">Halo</span><span class="text-vert">Gari</span>
+          !
+        </h1>
+        <h3 class="lead fw-semibold text-muted">Trouvez ou proposez un trajet entre les villages de Mayotte.</h3>
+      </div>
+    </div>
 
-			<form method="GET" action="{{ path('app_chercher') }}" class="row g-3 mt-5">
+    <form method="GET" action="{{ path('app_chercher') }}" class="row g-3 mt-5">
 
-				<div class="col-md-4 col-lg-3 form-floating">
-					<input list="liste-villes" id="select_departure" class="form-control villages" name="select_departure" placeholder="Village de départ" required>
-					<label for="select_departure">Village de départ</label>
-				</div>
-
-				<div class="col-md-4 col-lg-3 form-floating">
-					<input list="liste-villes-arrivee" id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Village d'arrivée" required>
-					<label for="select_arrival">Village d'arrivée</label>
-				</div>
-
-				<div class="col-md-4 col-lg-3 form-floating">
-					<div class="input-group">
+      <div class="col-md-4 col-lg-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
           <div class="form-floating">
-            <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" placeholder="Date du trajet" required>
-					<label for="date_trajet">Date du trajet</label>
+            <input list="liste-villes" id="select_departure" class="form-control villages" name="select_departure"
+              placeholder="Village de départ" required>
+            <label for="select_departure">Village de départ</label>
           </div>
-						<span class="input-group-text"><i class="bi bi-person"></i></span>
-						<div class="form-floating">
-							<select class="form-select" id="floatingSelectGrid" name="passager">
-                <option selected value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-              </select>
-              <label for="floatingSelectGrid">Passager(s)</label>
-						</div>
-					</div>
-				</div>
+        </div>
+      </div>
 
-				<div class="col-md-12 col-lg-3 d-grid align-content-end align-self-center">
-					<button type="submit" class="btn btn-orange btn-lg w-100 mt-md-0 mt-2">Chercher</button>
-				</div>
-			</form>
+      <div class="col-md-4 col-lg-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-flag"></i></span>
+          <div class="form-floating">
+            <input list="liste-villes-arrivee" id="select_arrival" name="select_arrival" class="form-control villages"
+              placeholder="Village d'arrivée" required>
+            <label for="select_arrival">Village d'arrivée</label>
+          </div>
 
-		</div>
-	</header>
+        </div>
+      </div>
 
-	<section class="py-5 bg-light text-center">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-4">
-					<img src="/images/petit-prix.png" class="mb-3" height="40" alt="Taxi Van Mayotte">
-					<h5 class="fw-bold">Des trajets locaux à petits prix</h5>
-					<p>Voyagez entre les villages de Mayotte (Mamoudzou, Chirongui, Bandrélé…) en toute simplicité grâce au covoiturage local à prix accessible.</p>
-				</div>
-				<div class="col-md-4">
-					<img src="/images/confiance.png" class="mb-3" height="40" alt="Confiance et communauté">
-					<h5 class="fw-bold">Confiance & proximité</h5>
-					<p>Notre communauté de conducteurs est vérifiée. Profitez d’un service entre Mahorais où la confiance et le respect sont au cœur de chaque trajet.</p>
-				</div>
-				<div class="col-md-4">
-					<img src="/images/rapide.png" class="mb-3" height="40" alt="Facile et rapide">
-					<h5 class="fw-bold">Réservez en quelques clics</h5>
-					<p>Gagnez du temps avec notre plateforme simple et rapide. Réservez votre place en ligne et retrouvez votre conducteur à proximité.</p>
-				</div>
-			</div>
-		</div>
-	</section>
+      <div class="col-md-4 col-lg-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+          <div class="form-floating">
+            <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet"
+              placeholder="Date du trajet" required>
+            <label for="date_trajet">Date du trajet</label>
+          </div>
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <div class="form-floating">
+            <select class="form-select" id="floatingSelectGrid" name="passager">
+              <option selected value="1">1</option>
+              {% for i in 2..8 %}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+            <label for="floatingSelectGrid">Passager(s)</label>
+          </div>
+        </div>
+      </div>
 
-	<section class="py-5 bg-white">
-		<div class="container text-center">
-			<h2 class="h4 fw-bold mb-4">Trajets les plus réservés</h2>
-			<div class="row">
-				{% for trajet in popularTrajets %}
-					<div class="col-md-4 mb-4">
-						<div class="card h-100 shadow-sm">
-							<div class="card-body">
-								<h5 class="card-title text-orange">
-									<i class="bi bi-geo-alt text-vert"></i>
-									{{ trajet.depart }}
-									→
-									{{ trajet.arrivee }}
-								</h5>
-								<p class="card-text text-muted">{{ trajet.total }}
-									réservations</p>
-								<a href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart ~ '&select_arrival=' ~ trajet.arrivee ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}" class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-			</div>
-		</div>
-	</section>
+      <div class="col-md-12 col-lg-3 d-grid align-content-end align-self-center">
+        <button type="submit" class="btn btn-orange btn-lg w-100 mt-md-0 mt-2">Chercher</button>
+      </div>
+    </form>
 
-	<section class="py-5 bg-orange-opacity text-white">
-		<div class="container">
-			<div class="row align-items-center">
-				<div class="col-md-6 order-md-2 text-center">
-					<img src="/images/securite.png" class="img-fluid" alt="Sécurité Covoiturage" style="max-height: 250px;">
-				</div>
-				<div class="col-md-6 order-md-1 mb-4 mb-md-0">
-					<h2 class="h4 fw-bold">Votre sécurité est notre priorité</h2>
-					<p class="mb-2">Chez HaloGari, nous nous engageons à créer une communauté de covoiturage fiable et digne de confiance à Mayotte.</p>
-					<p class="mb-4">Découvrez nos engagements et fonctionnalités pour voyager sereinement entre Mahorais.</p>
-					<a href="/securite" class="btn bg-vert text-white fw-bold">En savoir plus</a>
-				</div>
-			</div>
-		</div>
-	</section>
+  </div>
+</header>
+
+<section class="py-5 bg-light text-center">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <img src="/images/petit-prix.png" class="mb-3" height="40" alt="Taxi Van Mayotte">
+        <h5 class="fw-bold">Des trajets locaux à petits prix</h5>
+        <p>Voyagez entre les villages de Mayotte (Mamoudzou, Chirongui, Bandrélé…) en toute simplicité grâce au
+          covoiturage local à prix accessible.</p>
+      </div>
+      <div class="col-md-4">
+        <img src="/images/confiance.png" class="mb-3" height="40" alt="Confiance et communauté">
+        <h5 class="fw-bold">Confiance & proximité</h5>
+        <p>Notre communauté de conducteurs est vérifiée. Profitez d’un service entre Mahorais où la confiance et le
+          respect sont au cœur de chaque trajet.</p>
+      </div>
+      <div class="col-md-4">
+        <img src="/images/rapide.png" class="mb-3" height="40" alt="Facile et rapide">
+        <h5 class="fw-bold">Réservez en quelques clics</h5>
+        <p>Gagnez du temps avec notre plateforme simple et rapide. Réservez votre place en ligne et retrouvez votre
+          conducteur à proximité.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container text-center">
+    <h2 class="h4 fw-bold mb-4">Trajets les plus réservés</h2>
+    <div class="row">
+      {% for trajet in popularTrajets %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              {{ trajet.depart }}
+              →
+              {{ trajet.arrivee }}
+            </h5>
+            <p class="card-text text-muted">{{ trajet.total }}
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart ~ '&select_arrival=' ~ trajet.arrivee ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-orange-opacity text-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 order-md-2 text-center">
+        <img src="/images/securite.png" class="img-fluid" alt="Sécurité Covoiturage" style="max-height: 250px;">
+      </div>
+      <div class="col-md-6 order-md-1 mb-4 mb-md-0">
+        <h2 class="h4 fw-bold">Votre sécurité est notre priorité</h2>
+        <p class="mb-2">Chez HaloGari, nous nous engageons à créer une communauté de covoiturage fiable et digne de
+          confiance à Mayotte.</p>
+        <p class="mb-4">Découvrez nos engagements et fonctionnalités pour voyager sereinement entre Mahorais.</p>
+        <a href="/securite" class="btn bg-vert text-white fw-bold">En savoir plus</a>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
