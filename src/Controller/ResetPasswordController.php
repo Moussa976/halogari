@@ -143,9 +143,8 @@ class ResetPasswordController extends AbstractController
 
             try {
                 $mailer->send($email);
-                dd('✅ Envoi terminé (aucune exception)');
             } catch (\Throwable $e) {
-                dd('❌ Erreur envoi e-mail : ' . $e->getMessage());
+                $e->getMessage();
             }
 
             $this->cleanSessionAfterReset();
@@ -162,13 +161,13 @@ class ResetPasswordController extends AbstractController
 
     private function processSendingPasswordResetEmail(string $emailFormData, MailerInterface $mailer, TranslatorInterface $translator): RedirectResponse
     {
-        dd('dd trouvé✅');
         $user = $this->entityManager->getRepository(User::class)->findOneBy([
             'email' => $emailFormData,
         ]);
 
         // Do not reveal whether a user account was found or not.
         if (!$user) {
+            dd('dd trouvé✅');
             return $this->redirectToRoute('app_check_email');
         }
 
