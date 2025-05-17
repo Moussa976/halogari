@@ -44,7 +44,9 @@ body {
     background-image: url('images/fond-header.png');
     background-size: cover;
     background-position: center;
+    margin-top: 1rem !important;
 }
+
 
 h1 {
     text-align: center;
@@ -180,5 +182,19 @@ h1 {
 @media screen and (max-width: 767.99px) {
     .bg-header {
         height: 100vh;
+    }
+
+    .bg-header .display-5 {
+        font-size: calc(1rem + 1.5vw) !important ;
+    }
+
+    .bg-header .lead {
+        font-size: 0.7rem !important;
+    }
+}
+
+@media screen and (max-height: 1333.99px) {
+    .bg-header {
+        margin-top: 1.2rem !important;
     }
 }
