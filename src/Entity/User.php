@@ -114,6 +114,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $identiteValide;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Document::class, mappedBy="user")
+     */
+    private $documents;
+
     public function __construct()
     {
         $this->trajets = new ArrayCollection();
@@ -123,6 +128,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->messagesDestinataire = new ArrayCollection();
         $this->notesNoteur = new ArrayCollection();
         $this->notesPour = new ArrayCollection();
+        $this->documents = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -498,6 +504,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIdentiteValide(?bool $identiteValide): self
     {
         $this->identiteValide = $identiteValide;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Document>
+     */
+    public function getDocuments(): Collection
+    {
+        return $this->documents;
+    }
+
+    public function addDocument(Document $document): self
+    {
+        if (!$this->documents->contains($document)) {
+            $this->documents[] = $document;
+            $document->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDocument(Document $document): self
+    {
+        if ($this->documents->removeElement($document)) {
+            // set the owning side to null (unless already changed)
+            if ($document->getUser() === $this) {
+                $document->setUser(null);
+            }
+        }
 
         return $this;
     }
