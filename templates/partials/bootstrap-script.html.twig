@@ -7,17 +7,39 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-$(function() {
-    // Charger les villages depuis le fichier JSON
-    $.getJSON('/cities.json', function(data) {
-        var noms = data.map(function(item) {
-            return item.name;
-        });
-        $(".villages").autocomplete({
-            source: noms
+$(function () {
+    // Charger la liste des villages
+    $.getJSON('/cities.json', function (data) {
+        const noms = data.map(item => item.name);
+
+        // Autocomplete pour tous les champs .villages
+        $(".villages").autocomplete({ source: noms });
+
+        // Validation du formulaire
+        $("#form-recherche").on("submit", function (e) {
+            let erreur = false;
+
+            $(".villages").each(function () {
+                const valeur = $(this).val().trim();
+                const valide = noms.includes(valeur);
+
+                if (!valide) {
+                    $(this).addClass("is-invalid");
+                    erreur = true;
+                } else {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+
+            if (erreur) {
+                e.preventDefault(); // Empêche l'envoi
+                // Optionnel : ajouter un message global
+                alert("Veuillez sélectionner des villages valides depuis la liste.");
+            }
         });
     });
 });
+
 // DatePicker
 flatpickr(".dateDepart", {
     locale: "fr",                // Traduction française
