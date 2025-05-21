@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Chercher un trajet{% endblock %}
+{% block title %}HaloGari | Chercher un trajet
+{% endblock %}
 
 
 {% block body %}
@@ -8,44 +9,71 @@
 		<div class="row justify-content-center">
 			<div class="col-md-6">
 				<h1 class="mb-4 text-center">Chercher un trajet</h1>
-				<form method="GET" action="/chercher" class="p-4 border rounded shadow-sm bg-light">
-					<div class="mb-3">
-						<label for="select_departure" class="form-label">Ville de départ <span class="text-orange">*</span> :</label>
-						<input list="liste-villes" name="select_departure" class="form-control villages" placeholder="Ville de départ" required>
-					</div>
+				<form
+					method="GET" action="{{ path('app_chercher') }}" class="p-4 border rounded shadow-sm bg-light">
 
+					{# Départ #}
 					<div class="mb-3">
-						<label for="select_arrival" class="form-label">Ville d'arrivée <span class="text-orange">*</span> :</label>
-						<input list="liste-villes-arrivee" name="select_arrival" class="form-control villages" placeholder="Ville d'arrivée" required>
-					</div>
-
-					<div class="row mb-3">
-						<div class="col-md-6">
-							<label for="date_trajet" class="form-label">Date du trajet <span class="text-orange">*</span> :</label>
-							<input type="text" id="date_trajet" name="date_trajet" class="form-control dateDepart" placeholder="Choisir une date" required>
-						</div>
-						<div class="col-md-6">
-							<label for="prix_max" class="form-label">Prix maximum (€) :
-								<small>optionnel</small>
-							</label>
-							<input type="number" id="prix_max" name="prix_max" class="form-control" placeholder="Prix max (€)" min="0" step="0.01">
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-geo-fill"></i>
+							</span>
+							<div class="form-floating">
+								<input list="liste-villes" id="select_departure" class="form-control villages" name="select_departure" placeholder="Village de départ" required>
+								<label for="select_departure">Village de départ</label>
+							</div>
 						</div>
 					</div>
 
+					{# Arrivée #}
 					<div class="mb-3">
-						<label for="places_min" class="form-label">Nombre de places minimum :
-							<small>optionnel</small>
-						</label>
-						<input type="number" id="places_min" name="places_min" class="form-control" placeholder="Places min" min="1">
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-flag-fill"></i>
+							</span>
+							<div class="form-floating">
+								<input list="liste-villes-arrivee" id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Village d'arrivée" required>
+								<label for="select_arrival">Village d'arrivée</label>
+							</div>
+						</div>
 					</div>
 
+					{# Date #}
+					<div class="mb-3">
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-calendar2-event-fill"></i>
+							</span>
+							<div class="form-floating">
+								<input type="text" id="date" class="form-control dateDepart" name="date_trajet" placeholder="Date du trajet" required>
+								<label for="date">Date du trajet</label>
+							</div>
+						</div>
+					</div>
+
+					{# Places #}
+					<div class="mb-3">
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-people-fill"></i>
+							</span>
+							<div class="form-floating">
+								<select class="form-select" id="places" name="places_min" required>
+									{% for i in 1..8 %}
+										<option value="{{ i }}">{{ i }}</option>
+									{% endfor %}
+								</select>
+								<label for="places">Nombre de passagers</label>
+							</div>
+						</div>
+					</div>
+
+					{# Bouton #}
 					<div class="text-center">
 						<button type="submit" class="btn btn-orange">Rechercher</button>
 					</div>
 				</form>
-
 			</div>
 		</div>
 	</div>
 {% endblock %}
-

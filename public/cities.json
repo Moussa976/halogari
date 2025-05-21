@@ -1,74 +1,428 @@
 [
-    { "id": 1, "name": "Acoua" },
-    { "id": 2, "name": "Bambo-Est" },
-    { "id": 3, "name": "Bambo-Ouest" },
-    { "id": 4, "name": "Bandraboua" },
-    { "id": 5, "name": "Bandrélé" },
-    { "id": 6, "name": "Barakani" },
-    { "id": 7, "name": "Bouéni" },
-    { "id": 8, "name": "Bouyouni" },
-    { "id": 9, "name": "Cavani" },
-    { "id": 10, "name": "Chembenyoumba" },
-    { "id": 11, "name": "Chiconi" },
-    { "id": 12, "name": "Chirongui" },
-    { "id": 13, "name": "Choungui" },
-    { "id": 14, "name": "Coconi" },
-    { "id": 15, "name": "Combani" },
-    { "id": 16, "name": "Dapani" },
-    { "id": 17, "name": "Dembéni" },
-    { "id": 18, "name": "Dzoumogné" },
-    { "id": 19, "name": "Dzaoudzi" },
-    { "id": 20, "name": "Hamjago" },
-    { "id": 21, "name": "Hamouro" },
-    { "id": 22, "name": "Hagnoundrou" },
-    { "id": 23, "name": "Hajangoua" },
-    { "id": 24, "name": "Handréma" },
-    { "id": 25, "name": "Iloni" },
-    { "id": 26, "name": "Kahani" },
-    { "id": 27, "name": "Kangani" },
-    { "id": 28, "name": "Kani-Bé" },
-    { "id": 29, "name": "Kani-Kéli" },
-    { "id": 30, "name": "Kawéni" },
-    { "id": 31, "name": "Koungou" },
-    { "id": 32, "name": "Labattoir" },
-    { "id": 33, "name": "Longoni" },
-    { "id": 34, "name": "Majicavo-Koropa" },
-    { "id": 35, "name": "Majicavo-Lamir" },
-    { "id": 36, "name": "Majiméouni" },
-    { "id": 37, "name": "Malamani" },
-    { "id": 38, "name": "Mamoudzou" },
-    { "id": 39, "name": "Mangajou" },
-    { "id": 40, "name": "Mbouanatsa" },
-    { "id": 41, "name": "Mbouini" },
-    { "id": 42, "name": "Mliha" },
-    { "id": 43, "name": "Miréréni (Chirongui)" },
-    { "id": 44, "name": "Miréréni (Tsingoni)" },
-    { "id": 45, "name": "Moinatrindri" },
-    { "id": 46, "name": "Mramadoudou" },
-    { "id": 47, "name": "Mroalé" },
-    { "id": 48, "name": "Mronabéja" },
-    { "id": 49, "name": "M'Tsangamouji" },
-    { "id": 50, "name": "Mtsamoudou" },
-    { "id": 51, "name": "Mtsahara" },
-    { "id": 52, "name": "Mtsamboro" },
-    { "id": 53, "name": "Mtsangadoua" },
-    { "id": 54, "name": "Mtsangamboua" },
-    { "id": 55, "name": "Mtsapéré" },
-    { "id": 56, "name": "Nyambadao" },
-    { "id": 57, "name": "Ongojou" },
-    { "id": 58, "name": "Ouangani" },
-    { "id": 59, "name": "Pamandzi" },
-    { "id": 60, "name": "Passamainty" },
-    { "id": 61, "name": "Passi-Kéli" },
-    { "id": 62, "name": "Poroani" },
-    { "id": 63, "name": "Sada" },
-    { "id": 64, "name": "Sohoa" },
-    { "id": 65, "name": "Tsingoni" },
-    { "id": 66, "name": "Tsararano" },
-    { "id": 67, "name": "Tsimkoura" },
-    { "id": 68, "name": "Tsoundzou I" },
-    { "id": 69, "name": "Tsoundzou II" },
-    { "id": 70, "name": "Trévani" },
-    { "id": 71, "name": "Vahibé" }
+  {
+    "id": 1,
+    "name": "Acoua",
+    "lat": -12.7233,
+    "lon": 45.0594
+  },
+  {
+    "id": 2,
+    "name": "Bambo-Est",
+    "lat": -12.9333,
+    "lon": 45.2167
+  },
+  {
+    "id": 3,
+    "name": "Bambo-Ouest",
+    "lat": -12.9333,
+    "lon": 45.1833
+  },
+  {
+    "id": 4,
+    "name": "Bandraboua",
+    "lat": -12.7333,
+    "lon": 45.1167
+  },
+  {
+    "id": 5,
+    "name": "Bandrélé",
+    "lat": -12.9,
+    "lon": 45.2167
+  },
+  {
+    "id": 6,
+    "name": "Barakani",
+    "lat": -12.8333,
+    "lon": 45.1333
+  },
+  {
+    "id": 7,
+    "name": "Bouéni",
+    "lat": -12.8667,
+    "lon": 45.0667
+  },
+  {
+    "id": 8,
+    "name": "Bouyouni",
+    "lat": -12.7167,
+    "lon": 45.1167
+  },
+  {
+    "id": 9,
+    "name": "Cavani",
+    "lat": -12.7833,
+    "lon": 45.2333
+  },
+  {
+    "id": 10,
+    "name": "Chembenyoumba",
+    "lat": -12.7167,
+    "lon": 45.0833
+  },
+  {
+    "id": 11,
+    "name": "Chiconi",
+    "lat": -12.8333,
+    "lon": 45.1
+  },
+  {
+    "id": 12,
+    "name": "Chirongui",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 13,
+    "name": "Choungui",
+    "lat": -12.95,
+    "lon": 45.0833
+  },
+  {
+    "id": 14,
+    "name": "Coconi",
+    "lat": -12.85,
+    "lon": 45.15
+  },
+  {
+    "id": 15,
+    "name": "Combani",
+    "lat": -12.85,
+    "lon": 45.1167
+  },
+  {
+    "id": 16,
+    "name": "Dapani",
+    "lat": -12.9333,
+    "lon": 45.2333
+  },
+  {
+    "id": 17,
+    "name": "Dembéni",
+    "lat": -12.85,
+    "lon": 45.2
+  },
+  {
+    "id": 18,
+    "name": "Dzoumogné",
+    "lat": -12.7167,
+    "lon": 45.1
+  },
+  {
+    "id": 19,
+    "name": "Dzaoudzi",
+    "lat": -12.7833,
+    "lon": 45.2833
+  },
+  {
+    "id": 20,
+    "name": "Hamjago",
+    "lat": -12.6833,
+    "lon": 45.1
+  },
+  {
+    "id": 21,
+    "name": "Hamouro",
+    "lat": -12.9,
+    "lon": 45.2
+  },
+  {
+    "id": 22,
+    "name": "Hagnoundrou",
+    "lat": -12.8667,
+    "lon": 45.0833
+  },
+  {
+    "id": 23,
+    "name": "Hajangoua",
+    "lat": -12.85,
+    "lon": 45.2167
+  },
+  {
+    "id": 24,
+    "name": "Handréma",
+    "lat": -12.7,
+    "lon": 45.1
+  },
+  {
+    "id": 25,
+    "name": "Iloni",
+    "lat": -12.85,
+    "lon": 45.1833
+  },
+  {
+    "id": 26,
+    "name": "Kahani",
+    "lat": -12.85,
+    "lon": 45.15
+  },
+  {
+    "id": 27,
+    "name": "Kangani",
+    "lat": -12.7333,
+    "lon": 45.15
+  },
+  {
+    "id": 28,
+    "name": "Kani-Bé",
+    "lat": -12.95,
+    "lon": 45.0833
+  },
+  {
+    "id": 29,
+    "name": "Kani-Kéli",
+    "lat": -12.95,
+    "lon": 45.0667
+  },
+  {
+    "id": 30,
+    "name": "Kawéni",
+    "lat": -12.7667,
+    "lon": 45.2333
+  },
+  {
+    "id": 31,
+    "name": "Koungou",
+    "lat": -12.75,
+    "lon": 45.2167
+  },
+  {
+    "id": 32,
+    "name": "Labattoir",
+    "lat": -12.7833,
+    "lon": 45.2833
+  },
+  {
+    "id": 33,
+    "name": "Longoni",
+    "lat": -12.7167,
+    "lon": 45.15
+  },
+  {
+    "id": 34,
+    "name": "Majicavo-Koropa",
+    "lat": -12.75,
+    "lon": 45.2
+  },
+  {
+    "id": 35,
+    "name": "Majicavo-Lamir",
+    "lat": -12.75,
+    "lon": 45.1833
+  },
+  {
+    "id": 36,
+    "name": "Majiméouni",
+    "lat": -12.8667,
+    "lon": 45.0667
+  },
+  {
+    "id": 37,
+    "name": "Malamani",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 38,
+    "name": "Mamoudzou",
+    "lat": -12.7833,
+    "lon": 45.2333
+  },
+  {
+    "id": 39,
+    "name": "Mangajou",
+    "lat": -12.8333,
+    "lon": 45.0833
+  },
+  {
+    "id": 40,
+    "name": "Mbouanatsa",
+    "lat": -12.8667,
+    "lon": 45.05
+  },
+  {
+    "id": 41,
+    "name": "Mbouini",
+    "lat": -12.95,
+    "lon": 45.05
+  },
+  {
+    "id": 42,
+    "name": "Mliha",
+    "lat": -12.7167,
+    "lon": 45.0833
+  },
+  {
+    "id": 43,
+    "name": "Miréréni (Chirongui)",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 44,
+    "name": "Miréréni (Tsingoni)",
+    "lat": -12.85,
+    "lon": 45.1167
+  },
+  {
+    "id": 45,
+    "name": "Moinatrindri",
+    "lat": -12.8667,
+    "lon": 45.0667
+  },
+  {
+    "id": 46,
+    "name": "Mramadoudou",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 47,
+    "name": "Mroalé",
+    "lat": -12.85,
+    "lon": 45.1167
+  },
+  {
+    "id": 48,
+    "name": "Mronabéja",
+    "lat": -12.95,
+    "lon": 45.0833
+  },
+{
+    "id": 49,
+    "name": "MTsangamouji",
+    "lat": -12.8,
+    "lon": 45.1
+  },
+  {
+    "id": 50,
+    "name": "Mtsamoudou",
+    "lat": -12.9333,
+    "lon": 45.2333
+  },
+  {
+    "id": 51,
+    "name": "Mtsahara",
+    "lat": -12.6833,
+    "lon": 45.1
+  },
+  {
+    "id": 52,
+    "name": "Mtsamboro",
+    "lat": -12.6833,
+    "lon": 45.0833
+  },
+  {
+    "id": 53,
+    "name": "Mtsangadoua",
+    "lat": -12.7167,
+    "lon": 45.0667
+  },
+  {
+    "id": 54,
+    "name": "Mtsangamboua",
+    "lat": -12.7167,
+    "lon": 45.1
+  },
+  {
+    "id": 55,
+    "name": "Mtsapéré",
+    "lat": -12.7833,
+    "lon": 45.2333
+  },
+  {
+    "id": 56,
+    "name": "Nyambadao",
+    "lat": -12.9,
+    "lon": 45.2167
+  },
+  {
+    "id": 57,
+    "name": "Ongojou",
+    "lat": -12.85,
+    "lon": 45.1833
+  },
+  {
+    "id": 58,
+    "name": "Ouangani",
+    "lat": -12.85,
+    "lon": 45.15
+  },
+  {
+    "id": 59,
+    "name": "Pamandzi",
+    "lat": -12.7833,
+    "lon": 45.2833
+  },
+  {
+    "id": 60,
+    "name": "Passamainty",
+    "lat": -12.7833,
+    "lon": 45.2333
+  },
+  {
+    "id": 61,
+    "name": "Passi-Kéli",
+    "lat": -12.95,
+    "lon": 45.0667
+  },
+  {
+    "id": 62,
+    "name": "Poroani",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 63,
+    "name": "Sada",
+    "lat": -12.8333,
+    "lon": 45.0833
+  },
+  {
+    "id": 64,
+    "name": "Sohoa",
+    "lat": -12.8231,
+    "lon": 45.1062
+  },
+  {
+    "id": 65,
+    "name": "Tsingoni",
+    "lat": -12.8,
+    "lon": 45.1
+  },
+  {
+    "id": 66,
+    "name": "Tsararano",
+    "lat": -12.85,
+    "lon": 45.1833
+  },
+  {
+    "id": 67,
+    "name": "Tsimkoura",
+    "lat": -12.9333,
+    "lon": 45.1
+  },
+  {
+    "id": 68,
+    "name": "Tsoundzou I",
+    "lat": -12.8,
+    "lon": 45.2
+  },
+  {
+    "id": 69,
+    "name": "Tsoundzou II",
+    "lat": -12.8,
+    "lon": 45.2
+  },
+  {
+    "id": 70,
+    "name": "Trévani",
+    "lat": -12.75,
+    "lon": 45.2
+  },
+  {
+    "id": 71,
+    "name": "Vahibé",
+    "lat": -12.7877,
+    "lon": 45.1735
+  }
 ]
-  

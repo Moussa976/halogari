@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Trajet;
+use App\Repository\TrajetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,43 @@ class TrajetController extends AbstractController
      */
     public function chercher(Request $request): Response
     {
+        $depart = $request->query->get('select_departure');
+        $arrivee = $request->query->get('select_arrival');
+        $date = $request->query->get('date_trajet');
+        $heure = $request->query->get('heure_trajet') ?? 'any';
+        $places = $request->query->get('places_min') ?? 1;
+
+        // Vérification simple
+        if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
+            return $this->redirectToRoute('app_chercherResultats', [
+                'depart' => $depart,
+                'arrivee' => $arrivee,
+                'date' => $date,
+                'heure' => 'any', // ou tu peux le retirer aussi de la route
+                'places' => $places,
+            ]);
+        }
+
         return $this->render('trajet/chercher.html.twig');
+    }
+
+
+    /**
+     * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats")
+     */
+    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, int $places, TrajetRepository $trajetRepository): Response
+    {
+
+        $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
+
+        return $this->render('trajet/chercherResultats.html.twig', [
+            'depart' => $depart,
+            'arrivee' => $arrivee,
+            'dateTrajet' => $date,
+            'heure' => $heure,
+            'places' => $places,
+            'trajets' => $trajets,
+        ]);
     }
 
     /**
@@ -40,13 +77,13 @@ class TrajetController extends AbstractController
 
             if (!$user->getRib() || !$user->getJustificatifIdentite()) {
                 $this->addFlash('error', 'Vous devez ajouter un RIB et une pièce d’identité avant de publier un trajet.');
-                return $this->redirectToRoute('app_profile'); // ou autre page
+                return $this->redirectToRoute('app_documents'); // ou autre page
             }
 
             // Si tu as des flags de validation :
             if (!$user->isRibValide() || !$user->isIdentiteValide()) {
                 $this->addFlash('error', 'Vos documents doivent être validés par un administrateur avant de publier un trajet.');
-                return $this->redirectToRoute('app_profile');
+                return $this->redirectToRoute('app_documents');
             }
 
             $trajet = new Trajet();
@@ -83,11 +120,13 @@ class TrajetController extends AbstractController
     }
 
     /**
-     * @Route("/trajet/{id}", name="app_trajet_show")
+     * @Route("/trajet/{id}/{ledepart}->{larrive}", name="app_trajet_show")
      */
-    public function show(int $id): Response
+    public function show(int $id, string $ledepart, string $larrive, TrajetRepository $trajetRepository): Response
     {
+        
         // affichage d'un trajet
-        return $this->render('trajet/show.html.twig', ['id' => $id]);
+         $trajet = $trajetRepository->findByID($id);
+        return $this->render('trajet/show.html.twig', ['trajet' => $trajet,]);
     }
 }

@@ -59,6 +59,47 @@ class TrajetRepository extends ServiceEntityRepository
         return $resultSet->fetchAllAssociative();
     }
 
+
+    public function findByRecherche(string $depart, string $arrivee, string $date, int $places): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->where('LOWER(t.depart) = LOWER(:depart)')
+            ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
+            ->andWhere('t.dateTrajet >= :startOfDay')
+            ->andWhere('t.dateTrajet < :endOfDay')
+            ->andWhere('t.placesDisponibles >= :places')
+            ->setParameter('depart', $depart)
+            ->setParameter('arrivee', $arrivee)
+            ->setParameter('places', $places);
+
+        // Gestion de la date
+        $dateObj = new \DateTime($date);
+        $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+        $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
+
+        $qb->setParameter('startOfDay', $startOfDay);
+        $qb->setParameter('endOfDay', $endOfDay);
+
+        return $qb
+            ->orderBy('t.dateTrajet', 'ASC')
+            ->addOrderBy('t.heureTrajet', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    public function findByID(int $id): ?Trajet
+{
+    return $this->createQueryBuilder('t')
+        ->where('t.id = :id')
+        ->setParameter('id', $id)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
+
+
+
     //    /**
 //     * @return Trajet[] Returns an array of Trajet objects
 //     */

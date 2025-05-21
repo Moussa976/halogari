@@ -38,6 +38,13 @@ body {
     text-decoration: underline;
 }
 
+.sticky-under-navbar {
+    position: sticky;
+    top: 64px; /* hauteur de ta navbar */
+    z-index: 1030; /* au-dessus du contenu */
+    background-color: white;
+}
+
 
 .bg-header {
     height: 72vh;
@@ -166,6 +173,9 @@ h1 {
     font-size: 1.05rem;
 }
 
+#map {
+    height: 70vh;
+}
 
 @keyframes fadeIn {
     0% {
@@ -190,6 +200,10 @@ h1 {
 
     .bg-header .lead {
         font-size: 0.8rem !important;
+    }
+
+    #map {
+        height: 450px;
     }
 }
 

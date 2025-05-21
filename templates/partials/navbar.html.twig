@@ -10,8 +10,8 @@
 		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 			<li class="nav-item align-self-center d-none d-lg-block">
 
-				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
-					📲 Installer HaloGari
+				<button class="installAppBtn px-1 btn btn-orange d-none nav-link" title="Installer HaloGari">
+					<i class="bi bi-download"></i> Installer HaloGari
 				</button>
 			</li>
 			<li class="nav-item align-self-center d-none d-lg-block">
@@ -79,9 +79,9 @@
 				<i class="bi bi-box-arrow-in-right"></i>
 				Se connecter
 			</a>
-			<div class="list-group-item list-group-item-action bg-dark-subtle">
-				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
-					📲 Installer HaloGari
+			<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
+				<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+					<i class="bi bi-download"></i> Installer HaloGari
 				</button>
 			</div>
 		</div>
@@ -103,11 +103,11 @@
 	</div>
 	<div class="offcanvas-body">
 		<div class="list-group list-group-flush">
-			<a href="{{ path('app_chercher') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+			<a href="{{ path('app_chercher') }}" class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
 				<i class="text-vert bi bi-search"></i>
 				Chercher un trajet
 			</a>
-			<a href="{{ path('app_publier') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+			<a href="{{ path('app_publier') }}" class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
 				<i class="bi bi-plus-circle"></i>
 				Publier un trajet
 			</a>
@@ -117,15 +117,18 @@
 			<a href="#" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-signpost-2"></i>
 				Mes trajets</a>
+			<a href="{{ path('app_documents') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+				<i class="bi bi-file-earmark-text"></i>
+				Mes documents</a>
 			<a href="#" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-gear"></i>
 				Paramètres</a>
 			<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-box-arrow-right"></i>
 				Déconnexion</a>
-			<div class="list-group-item list-group-item-action bg-dark-subtle">
-				<button class="installAppBtn btn btn-orange d-none nav-link" title="Installer HaloGari">
-					📲 Installer HaloGari
+			<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
+				<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+					<i class="bi bi-download"></i> Installer HaloGari
 				</button>
 			</div>
 		</div>
