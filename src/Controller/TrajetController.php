@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Trajet;
+use App\Repository\NotesRepository;
 use App\Repository\TrajetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -27,6 +28,7 @@ class TrajetController extends AbstractController
         $heure = $request->query->get('heure_trajet') ?? 'any';
         $places = $request->query->get('places_min') ?? 1;
 
+
         // Vérification simple
         if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
             return $this->redirectToRoute('app_chercherResultats', [
@@ -45,8 +47,10 @@ class TrajetController extends AbstractController
     /**
      * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats")
      */
-    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, int $places, TrajetRepository $trajetRepository): Response
+    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository): Response
     {
+
+
 
         $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
 
@@ -75,16 +79,19 @@ class TrajetController extends AbstractController
 
             $user = $this->getUser();
 
-            if (!$user->getRib() || !$user->getJustificatifIdentite()) {
-                $this->addFlash('error', 'Vous devez ajouter un RIB et une pièce d’identité avant de publier un trajet.');
-                return $this->redirectToRoute('app_documents'); // ou autre page
-            }
+            $rib = $user->getDocumentByType('RIB');
+            $identite = $user->getDocumentByType("Justificatif d'identité");
 
-            // Si tu as des flags de validation :
-            if (!$user->isRibValide() || !$user->isIdentiteValide()) {
-                $this->addFlash('error', 'Vos documents doivent être validés par un administrateur avant de publier un trajet.');
+            if (!$rib || !$identite) {
+                $this->addFlash('error', 'Vous devez ajouter un RIB et une pièce d’identité.');
                 return $this->redirectToRoute('app_documents');
             }
+
+            if ($rib->getStatus() !== 'approved' || $identite->getStatus() !== 'approved') {
+                $this->addFlash('error', 'Vos documents doivent être validés par un administrateur.');
+                return $this->redirectToRoute('app_documents');
+            }
+
 
             $trajet = new Trajet();
             $trajet->setConducteur($this->getUser());
@@ -119,14 +126,27 @@ class TrajetController extends AbstractController
         return $this->render('trajet/publier.html.twig');
     }
 
+
+
     /**
-     * @Route("/trajet/{id}/{ledepart}->{larrive}", name="app_trajet_show")
+     * @Route("/trajet/{id}/{ledepart}/{larrive}/{nbPlaceReservee}", name="app_trajet_show")
      */
-    public function show(int $id, string $ledepart, string $larrive, TrajetRepository $trajetRepository): Response
+    public function show(int $id, string $ledepart, string $larrive, string $nbPlaceReservee, TrajetRepository $trajetRepository, NotesRepository $notesRepository): Response
     {
+
         
         // affichage d'un trajet
-         $trajet = $trajetRepository->findByID($id);
-        return $this->render('trajet/show.html.twig', ['trajet' => $trajet,]);
+        $trajet = $trajetRepository->findByID($id);
+        $moyenne = $notesRepository->getMoyennePourUtilisateur($trajet->getConducteur());
+        $nombreAvis = $notesRepository->countAvisPourUtilisateur($trajet->getConducteur());
+        return $this->render('trajet/show.html.twig', [
+            'trajet' => $trajet, 
+            'nbPlaceReservee' => $nbPlaceReservee, 
+            'moyenne' => $moyenne,
+            'nombreAvis' => $nombreAvis,
+        ]);
     }
+
+    
+
 }

@@ -113,7 +113,7 @@
                 </div>
                 {% else %}
                 {% for trajet in trajets %}
-                <a href="{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee }) }}"
+                <a href="{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee, nbPlaceReservee:places }) }}"
                     class="listtrajet text-decoration-none text-dark">
                     <div class="card mb-3 p-0 shadow-sm">
                         <div class="card-body">

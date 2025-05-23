@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Notes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Proxies\__CG__\App\Entity\User;
 
 /**
  * @extends ServiceEntityRepository<Notes>
@@ -39,7 +40,26 @@ class NotesRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
+    public function getMoyennePourUtilisateur(User $utilisateur): ?float
+    {
+        return $this->createQueryBuilder('n')
+            ->select('AVG(n.note) as moyenne')
+            ->where('n.notePour = :utilisateur')
+            ->setParameter('utilisateur', $utilisateur)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countAvisPourUtilisateur(User $utilisateur): int
+    {
+        return $this->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->where('n.notePour = :utilisateur')
+            ->setParameter('utilisateur', $utilisateur)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+    //    /**
 //     * @return Notes[] Returns an array of Notes objects
 //     */
 //    public function findByExampleField($value): array
@@ -54,7 +74,7 @@ class NotesRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Notes
+    //    public function findOneBySomeField($value): ?Notes
 //    {
 //        return $this->createQueryBuilder('n')
 //            ->andWhere('n.exampleField = :val')

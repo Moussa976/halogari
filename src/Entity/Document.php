@@ -10,6 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Document
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -18,24 +22,34 @@ class Document
     private $id;
 
     /**
+     * Type de document : "rib", "identite", "autre"
      * @ORM\Column(type="string", length=255)
      */
     private $typeDocument;
 
     /**
+     * Nom du fichier stocké
      * @ORM\Column(type="string", length=255)
      */
     private $filenameDocument;
 
     /**
+     * Date d'envoi du document
      * @ORM\Column(type="datetime")
      */
     private $dateDocument;
 
     /**
+     * L'utilisateur propriétaire du document
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="documents")
      */
     private $user;
+
+    /**
+     * Statut du document : "pending", "approved", "rejected"
+     * @ORM\Column(type="string", length=20)
+     */
+    private $status = self::STATUS_PENDING;
 
     public function getId(): ?int
     {
@@ -50,7 +64,6 @@ class Document
     public function setTypeDocument(string $typeDocument): self
     {
         $this->typeDocument = $typeDocument;
-
         return $this;
     }
 
@@ -62,7 +75,6 @@ class Document
     public function setFilenameDocument(string $filenameDocument): self
     {
         $this->filenameDocument = $filenameDocument;
-
         return $this;
     }
 
@@ -74,7 +86,6 @@ class Document
     public function setDateDocument(\DateTimeInterface $dateDocument): self
     {
         $this->dateDocument = $dateDocument;
-
         return $this;
     }
 
@@ -86,7 +97,32 @@ class Document
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
         return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
     }
 }

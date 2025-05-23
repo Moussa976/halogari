@@ -5,150 +5,162 @@
 
 {% block body %}
 <div class="container mt-3 py-5">
-    <div class="row g-4">
+	<div class="row g-4">
 
-        {# Colonne gauche — Détail du trajet #}
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="mb-3 text-center">
-                        {{ trajet.dateTrajet|date('l d F Y', 'Europe/Paris')|trans }}
-    à
-    {{ trajet.heureTrajet|date('H:i') }}
-                    </h5>
+		{# Colonne gauche — Détail du trajet #}
+		<div class="col-lg-8">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<h5 class="mb-3 text-center">
+						{{ trajet.dateTrajet|date('l d F Y', 'Europe/Paris')|trans }}
+						à
+						{{ trajet.heureTrajet|date('H:i') }}
+					</h5>
 
-                    <div class="d-flex flex-column mb-4">
-                        <div class="d-flex align-items-center">
-                            {# <strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong> #}
-                            <div>
-                                <div class="fw-bold text-orange">
-                                    <i class="bi bi-geo-fill"></i>
-                                    {{ trajet.depart }}
-                                </div>
-                                {# <small class="text-muted">Adresse départ</small> #}
-                            </div>
-                        </div>
-                        <div class="border-start ms-4 my-3" style="height: 30px; border-left: 2px solid #ccc;">
-                            <a href="#" class="ms-2" role="button" data-bs-toggle="modal"
-                                data-bs-target="#ModalLeaflet">
-                                <small>Voir la carte</small>
-                            </a>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            {# <strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong> #}
-                            <div>
-                                <div class="fw-bold text-orange">
-                                    <i class="bi bi-flag-fill"></i>
-                                    {{ trajet.arrivee }}
-                                </div>
-                                {# <small class="text-muted">Adresse arrivée</small> #}
-                            </div>
-                        </div>
-                    </div>
+					<div class="d-flex flex-column mb-4">
+						<div class="d-flex align-items-center">
+							{# <strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong> #}
+							<div>
+								<div class="fw-bold text-orange">
+									<i class="bi bi-geo-fill"></i>
+									{{ trajet.depart }}
+								</div>
+								{# <small class="text-muted">Adresse départ</small> #}
+							</div>
+						</div>
+						<div class="border-start ms-4 my-3" style="height: 30px; border-left: 2px solid #ccc;">
+							<a href="#" class="ms-2" role="button" data-bs-toggle="modal"
+								data-bs-target="#ModalLeaflet">
+								<small>Voir la carte</small>
+							</a>
+						</div>
+						<div class="d-flex align-items-center">
+							{# <strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong> #}
+							<div>
+								<div class="fw-bold text-orange">
+									<i class="bi bi-flag-fill"></i>
+									{{ trajet.arrivee }}
+								</div>
+								{# <small class="text-muted">Adresse arrivée</small> #}
+							</div>
+						</div>
+					</div>
 
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="{{ asset('images/profil.png') }}" class="rounded-circle me-3"
-                            style="width: 50px; height: 50px;" alt="Photo conducteur">
-                        <div>
-                            <strong>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</strong><br>
-                            <span class="text-muted">4,8/5 • 120 avis</span>
-                        </div>
-                    </div>
+					<div class="d-flex align-items-center mb-3">
+						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-3"
+							style="width: 50px; height: 50px;" alt="Photo conducteur">
+						<div>
+							<strong>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</strong><br>
+							{% if moyenne %}
+							<span class="text-muted">{{ moyenne|number_format(1, ',', ',') }}/5 • {{ nombreAvis }}
+								avis</span>
+							{% else %}
+							<span class="text-muted">Pas encore de note</span>
+							{% endif %}
+						</div>
+					</div>
 
-                    <div class="mb-3">
-                        <i class="bi bi-shield-check text-success"></i>
-                        <small class="text-muted">Annule rarement ses trajets</small>
-                    </div>
+					{# <div class="mb-3">
+						<i class="bi bi-shield-check text-success"></i>
+						<small class="text-muted">Annule rarement ses trajets</small>
+					</div> #}
 
-                    <div class="mb-3">
-                        <p>{{ trajet.description|nl2br }}</p>
-                    </div>
+					<div class="mb-3">
+						<p>{{ trajet.description|nl2br }}</p>
+					</div>
 
-                    <hr>
-                    <div class="text-muted small">
-                        Votre réservation sera confirmée instantanément.
-                    </div>
-                </div>
+					<hr>
+					<div class="text-muted small">
+						Le conducteur validera votre réservation.
+					</div>
+				</div>
 
-                <div class="card-footer bg-white border-top">
-                    <a href="#" class="btn btn-outline-orange w-100">
-                        <i class="bi bi-chat-text"></i>
-                        Contacter
-                        {{ trajet.conducteur.prenom ?? 'le conducteur' }}
-                    </a>
-                </div>
-            </div>
-        </div>
+				<div class="card-footer bg-white border-top">
+					<a href="#" class="btn btn-outline-orange w-100">
+						<i class="bi bi-chat-text"></i>
+						Contacter
+						{{ trajet.conducteur.prenom ?? 'le conducteur' }}
+					</a>
+				</div>
+			</div>
+		</div>
 
-        {# Colonne droite — Résumé & bouton réservation #}
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-muted mb-2">{{ trajet.dateTrajet|date('l d F') }}</h6>
+		{# Colonne droite — Résumé & bouton réservation #}
+		<div class="col-lg-4">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<h6 class="text-muted mb-2">{{ trajet.dateTrajet|date('l d F') }}</h6>
 
-                    <div class="mb-3">
-                        <div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
-                            |
-                            <i class="bi bi-geo-fill"></i>
-                            {{
-                            trajet.depart }}
-                            →
-                            <i class="bi bi-flag-fill"></i>
-                            {{ trajet.arrivee }}
-                        </div>
-                    </div>
+					<div class="mb-3">
+						<div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
+							|
+							<i class="bi bi-geo-fill"></i>
+							{{
+							trajet.depart }}
+							→
+							<i class="bi bi-flag-fill"></i>
+							{{ trajet.arrivee }}
+						</div>
+					</div>
 
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="{{ asset('images/profil.png') }}" class="rounded-circle me-2"
-                            style="width: 30px; height: 30px;">
-                        <span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
-                    </div>
+					<div class="d-flex align-items-center mb-3">
+						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-2"
+							style="width: 30px; height: 30px;">
+						<span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
+					</div>
 
-                    <div class="border-top pt-3 mt-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>{{ trajet.placesDisponibles }}
-                                passager(s)</span>
-                            <span class="fw-bold">{{ trajet.prix }}
-                                €</span>
-                        </div>
-                    </div>
-                </div>
+					<div class="border-top pt-3 mt-3">
+						<div class="d-flex justify-content-between align-items-center">
+							<span>{{ trajet.placesDisponibles }}
+								passager(s)</span>
+							<span class="fw-bold">{{ trajet.prix }}
+								€</span>
+						</div>
+					</div>
+				</div>
 
-                <div class="card-footer bg-white border-top text-center">
-                    <a href="#" class="btn btn-orange w-100">
-                        <i class="bi bi-lightning-fill"></i>
-                        Réserver
-                    </a>
-                </div>
-            </div>
-        </div>
+				<div class="card-footer bg-white border-top text-center">
+					<form action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+						<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
+						
+						{% if app.user %}
+							<button type="submit" class="btn btn-orange w-100">
+								Je réserve
+							</button>
+						{% else %}
+							<a href="{{ path('app_login', { _target: path('app_reservation', { id: trajet.id }) }) }}" class="btn btn-orange w-100">Se connecter pour réserver</a>
+						{% endif %}
+					</form>
+				</div>
+			</div>
+		</div>
 
-    </div>
+	</div>
 </div>
 
 <!-- Modal -->
 <div class="modal fade" id="ModalLeaflet" tabindex="-1" aria-labelledby="ModalLeafletLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="ModalLeafletLabel">
-                    <i class="bi bi-geo-fill"></i>
-                    {{
-                    trajet.depart }}
-                    →
-                    <i class="bi bi-flag-fill"></i>
-                    {{ trajet.arrivee }}
-                </h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="map" class="my-4 rounded shadow-sm"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="ModalLeafletLabel">
+					<i class="bi bi-geo-fill"></i>
+					{{
+					trajet.depart }}
+					→
+					<i class="bi bi-flag-fill"></i>
+					{{ trajet.arrivee }}
+				</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div id="map" class="my-4 rounded shadow-sm"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+			</div>
+		</div>
+	</div>
 </div>
 {% endblock %}
 
@@ -156,129 +168,129 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+	document.addEventListener("DOMContentLoaded", function () {
 
-        let depart = "{{ trajet.depart|e('js') }}";
-        let arrivee = "{{ trajet.arrivee|e('js') }}";
+		let depart = "{{ trajet.depart|e('js') }}";
+		let arrivee = "{{ trajet.arrivee|e('js') }}";
 
-        // Liste des villages nécessitant l'apostrophe pour le géocodage OSM
-        const corrections = {
-            "Mtsamoudou": "M'tsamoudou",
-            "Mtsahara": "M'tsahara",
-            "Mtsamboro": "M'tsamboro",
-            "Mtsangadoua": "M'tsangadoua",
-            "Mtsangamboua": "M'tsangamboua",
-            "Mtsapéré": "M'tsapéré",
-            "MTsangamouji": "M'Tsangamouji"
-        };
+		// Liste des villages nécessitant l'apostrophe pour le géocodage OSM
+		const corrections = {
+			"Mtsamoudou": "M'tsamoudou",
+			"Mtsahara": "M'tsahara",
+			"Mtsamboro": "M'tsamboro",
+			"Mtsangadoua": "M'tsangadoua",
+			"Mtsangamboua": "M'tsangamboua",
+			"Mtsapéré": "M'tsapéré",
+			"MTsangamouji": "M'Tsangamouji"
+		};
 
-        if (corrections[depart]) {
-            depart = corrections[depart];
-        }
+		if (corrections[depart]) {
+			depart = corrections[depart];
+		}
 
-        if (corrections[arrivee]) {
-            arrivee = corrections[arrivee];
-        }
+		if (corrections[arrivee]) {
+			arrivee = corrections[arrivee];
+		}
 
 
-        const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350'; // Mets ta vraie clé ORS ici
+		const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350'; // Mets ta vraie clé ORS ici
 
-        const map = L.map('map').setView([
-            -12.8, 45.2
-        ], 10);
+		const map = L.map('map').setView([
+			-12.8, 45.2
+		], 10);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
-        const icons = {
-            green: L.icon(
-                {
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-                    iconSize: [
-                        25, 41
-                    ],
-                    iconAnchor: [
-                        12, 41
-                    ],
-                    popupAnchor: [
-                        1, -34
-                    ],
-                    shadowSize: [41, 41]
-                }
-            ),
-            red: L.icon(
-                {
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-                    iconSize: [
-                        25, 41
-                    ],
-                    iconAnchor: [
-                        12, 41
-                    ],
-                    popupAnchor: [
-                        1, -34
-                    ],
-                    shadowSize: [41, 41]
-                }
-            )
-        };
+		const icons = {
+			green: L.icon(
+				{
+					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+					iconSize: [
+						25, 41
+					],
+					iconAnchor: [
+						12, 41
+					],
+					popupAnchor: [
+						1, -34
+					],
+					shadowSize: [41, 41]
+				}
+			),
+			red: L.icon(
+				{
+					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+					iconSize: [
+						25, 41
+					],
+					iconAnchor: [
+						12, 41
+					],
+					popupAnchor: [
+						1, -34
+					],
+					shadowSize: [41, 41]
+				}
+			)
+		};
 
-        function geocode(address) {
-            return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)
-                }`).then(res => res.json()).then(data => {
-                    if (data.length > 0) {
-                        return [
-                            parseFloat(data[0].lon),
-                            parseFloat(data[0].lat)
-                        ];
-                    } else {
-                        throw new Error('Adresse non trouvée : ' + address);
-                    }
-                });
-        }
+		function geocode(address) {
+			return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)
+				}`).then(res => res.json()).then(data => {
+					if (data.length > 0) {
+						return [
+							parseFloat(data[0].lon),
+							parseFloat(data[0].lat)
+						];
+					} else {
+						throw new Error('Adresse non trouvée : ' + address);
+					}
+				});
+		}
 
-        Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
-            const [from, to] = coords;
+		Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
+			const [from, to] = coords;
 
-            // Marqueurs
-            L.marker([
-                from[1], from[0]
-            ], { icon: icons.green }).addTo(map).bindPopup("Départ : " + depart);
-            L.marker([
-                to[1], to[0]
-            ], { icon: icons.red }).addTo(map).bindPopup("Arrivée : " + arrivee);
+			// Marqueurs
+			L.marker([
+				from[1], from[0]
+			], { icon: icons.green }).addTo(map).bindPopup("Départ : " + depart);
+			L.marker([
+				to[1], to[0]
+			], { icon: icons.red }).addTo(map).bindPopup("Arrivée : " + arrivee);
 
-            // Requête ORS
-            fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': apiKey
-                },
-                body: JSON.stringify(
-                    {
-                        coordinates: [from, to]
-                    }
-                )
-            }).then(res => res.json()).then(data => {
-                const route = L.geoJSON(data, {
-                    style: {
-                        color: 'blue',
-                        weight: 5
-                    }
-                }).addTo(map);
+			// Requête ORS
+			fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': apiKey
+				},
+				body: JSON.stringify(
+					{
+						coordinates: [from, to]
+					}
+				)
+			}).then(res => res.json()).then(data => {
+				const route = L.geoJSON(data, {
+					style: {
+						color: 'orange',
+						weight: 5
+					}
+				}).addTo(map);
 
-                // Forcer la carte à recalculer sa taille AVANT le centrage
-                setTimeout(() => {
-                    map.invalidateSize();
-                    map.fitBounds(route.getBounds(), {
-                        padding: [30, 30]
-                    });
-                }, 2000); // petit délai pour s'assurer que le conteneur est visible
-            }).catch(err => console.error('Erreur ORS :', err));
-        });
-    });
+				// Forcer la carte à recalculer sa taille AVANT le centrage
+				setTimeout(() => {
+					map.invalidateSize();
+					map.fitBounds(route.getBounds(), {
+						padding: [30, 30]
+					});
+				}, 2000); // petit délai pour s'assurer que le conteneur est visible
+			}).catch(err => console.error('Erreur ORS :', err));
+		});
+	});
 </script>
 
 
