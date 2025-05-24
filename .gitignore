@@ -8,7 +8,8 @@
 /var/
 /vendor/
 /.env
-/migrations/
+/migrations/*.php
+!/migrations/.gitkeep
 /public/.htaccess
 /public/uploads/
 ###< symfony/framework-bundle ###
