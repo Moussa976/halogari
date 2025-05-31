@@ -1,79 +1,128 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Conditions d'utilisation
-{% endblock %}
-
+{% block title %}HaloGari | Conditions d'utilisation{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-md-8">
-				<h1 class="mb-4 text-center">Conditions d'utilisation</h1>
-				<div class="p-4 border rounded shadow-sm bg-light">
+<div class="container py-5">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<h1 class="mb-4 text-center">Conditions d'utilisation</h1>
+			<div class="p-4 border rounded shadow-sm bg-light">
 
-					<p>
-						Les présentes conditions d'utilisation régissent l’accès et l’usage de la plateforme
-						<strong>HaloGari</strong>, mise en ligne par l’<strong>ASSOCIATION SPORTIVE ET CULTURELLE DE MTSAHARA (ASCM)</strong>, accessible à l’adresse
-						<em>www.halogari.yt</em>.
-					</p>
+				<p>
+					Les présentes conditions d'utilisation régissent l’accès et l’usage de la plateforme
+					<strong>HaloGari</strong>, mise en ligne par l’<strong>ASSOCIATION SPORTIVE ET CULTURELLE DE MTSAHARA (ASCM)</strong>, accessible à l’adresse
+					<em>www.halogari.yt</em>.
+				</p>
 
-					<hr>
+				<hr>
 
-					<h5 class="text-orange">1. Objet du service</h5>
-					<p>
-						HaloGari est une plateforme en ligne de covoiturage local à Mayotte permettant aux utilisateurs de :
-					</p>
-					<ul>
-						<li>Publier des trajets en tant que conducteurs</li>
-						<li>Rechercher et réserver des trajets en tant que passagers</li>
-						<li>Échanger des messages pour organiser les trajets</li>
-					</ul>
+				<h5 class="text-orange">1. Objet du service</h5>
+				<p>HaloGari est une plateforme en ligne de covoiturage local à Mayotte permettant aux utilisateurs de :</p>
+				<ul>
+					<li>Publier des trajets en tant que conducteurs</li>
+					<li>Rechercher et réserver des trajets en tant que passagers</li>
+					<li>Échanger des messages pour organiser les trajets</li>
+				</ul>
 
-					<hr>
+				<hr>
 
-					<h5 class="text-orange">2. Inscription et obligations des utilisateurs</h5>
-					<ul>
-						<li>L'inscription sur la plateforme est gratuite et réservée aux personnes majeures disposant d’un permis de conduire valide (pour les conducteurs).</li>
-						<li>Les informations fournies lors de l’inscription doivent être exactes et tenues à jour.</li>
-						<li>Les utilisateurs s’engagent à se comporter de manière respectueuse et ponctuelle lors des trajets.</li>
-						<li>Les trajets publiés doivent être réels, sécurisés et respecter la législation en vigueur.</li>
-					</ul>
+				<h5 class="text-orange">2. Inscription et obligations des utilisateurs</h5>
+				<ul>
+					<li>L'inscription est gratuite et réservée aux personnes majeures disposant d’un permis de conduire valide (pour les conducteurs).</li>
+					<li>Les informations fournies doivent être exactes, à jour et vérifiables.</li>
+					<li>Le respect, la ponctualité et la courtoisie sont attendus de tous les utilisateurs.</li>
+					<li>Les trajets proposés doivent être réels, sécurisés, et conformes à la législation.</li>
+				</ul>
 
-					<hr>
+				<hr>
 
-					<h5 class="text-orange">3. Réservations et commission</h5>
-					<p>
-						Lorsqu’un passager réserve une place, un montant est défini par le conducteur pour chaque trajet. La réservation implique l’accord entre les deux parties.
-					</p>
-					<p>
-						<strong>L’ASSOCIATION ASCM perçoit une commission de 5 % sur chaque réservation effectuée via la plateforme.</strong>
-						Cette commission permet de couvrir les frais de maintenance et de développement du site, dans une logique de service communautaire.
-					</p>
+				<h5 class="text-orange">3. Réservations et commission</h5>
+				<p>
+					Lorsqu’un passager réserve une place, un montant est défini par le conducteur. La réservation implique l’accord entre les deux parties.
+				</p>
+				<p>
+					<strong>HaloGari perçoit une commission de 12 % sur chaque réservation, avec un minimum de 0,50 €.</strong>
+					Ces frais permettent de couvrir le développement, la maintenance et la modération de la plateforme.
+				</p>
+				<p>
+					Les frais de traitement Stripe (1,4 % + 0,25 €) sont également appliqués par transaction. Ils sont déduits du montant reversé au conducteur.
+				</p>
 
-					<hr>
+				<hr>
 
-					<h5 class="text-orange">4. Responsabilités</h5>
-					<ul>
-						<li>HaloGari agit comme intermédiaire et ne garantit pas la réalisation effective des trajets publiés.</li>
-						<li>Les utilisateurs restent seuls responsables de leur comportement, des trajets effectués et des paiements convenus.</li>
-					</ul>
-
-					<hr>
-
-					<h5 class="text-orange">5. Suspension de compte</h5>
-					<p>
-						L’association se réserve le droit de suspendre ou supprimer un compte utilisateur en cas de non-respect des présentes conditions, de comportement inapproprié ou de publication abusive.
-					</p>
-
-					<hr>
-
-					<h5 class="text-orange">6. Modifications</h5>
-					<p>
-						Les présentes conditions peuvent être modifiées à tout moment. Les utilisateurs seront informés par message ou notification lors de leur prochaine connexion.
-					</p>
+				<h5 id="remboursement" class="text-orange">4. Politique de remboursement</h5>
+				<p>
+					En cas d’annulation d’un trajet ou d’une réservation, la politique suivante s’applique :
+				</p>
+				<div class="table-responsive">
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th>Situation</th>
+							<th>Remboursement au passager</th>
+							<th>Commission HaloGari</th>
+							<th>Frais Stripe</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Annulation par le conducteur</td>
+							<td>100%</td>
+							<td>Non prélevée</td>
+							<td>Remboursés si non encore transférés</td>
+						</tr>
+						<tr>
+							<td>Passager annule > 24h avant</td>
+							<td>100%</td>
+							<td>Non prélevée</td>
+							<td>Remboursés si possible</td>
+						</tr>
+						<tr>
+							<td>Passager annule entre 24h et 3h</td>
+							<td>50%</td>
+							<td>Partiellement conservée</td>
+							<td>Non remboursables</td>
+						</tr>
+						<tr>
+							<td>Passager annule < 3h avant ou ne se présente pas</td>
+							<td>0%</td>
+							<td>Oui</td>
+							<td>Non remboursables</td>
+						</tr>
+					</tbody>
+				</table>
 				</div>
+
+				<p>
+					Les remboursements sont effectués via Stripe. HaloGari se réserve le droit d’adapter ces règles en cas de circonstances exceptionnelles.
+				</p>
+
+				<hr>
+
+				<h5 class="text-orange">5. Responsabilités</h5>
+				<ul>
+					<li>HaloGari agit comme intermédiaire technique entre les utilisateurs.</li>
+					<li>Les conducteurs et passagers sont seuls responsables du bon déroulement des trajets.</li>
+					<li>En cas d'annulation de dernière minute, HaloGari s'efforcera d’appliquer une solution équitable selon la politique affichée.</li>
+				</ul>
+
+				<hr>
+
+				<h5 class="text-orange">6. Suspension de compte</h5>
+				<p>
+					L’association se réserve le droit de suspendre ou supprimer un compte utilisateur en cas de comportement inapproprié, d'abus ou de non-respect des présentes conditions.
+				</p>
+
+				<hr>
+
+				<h5 class="text-orange">7. Modifications</h5>
+				<p>
+					Les présentes conditions peuvent être mises à jour à tout moment. L’utilisateur sera informé lors de sa prochaine connexion, ou via notification.
+				</p>
+
 			</div>
 		</div>
 	</div>
-
+</div>
 {% endblock %}

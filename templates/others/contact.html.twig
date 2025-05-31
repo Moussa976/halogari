@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Contact{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+  <h1 class="mb-4 text-center">📧 Nous contacter</h1>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <form method="POST" action="{{ path('app_contact') }}">
+            <div class="mb-3">
+              <label for="nom" class="form-label">Nom</label>
+              <input type="text" class="form-control" id="nom" {% if app.user %}value="{{ app.user.nom ~' '~app.user.prenom}}"{% endif %} name="nom" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" {% if app.user %}value="{{ app.user.email}}"{% endif %} name="email" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="sujet" class="form-label">Sujet</label>
+              <input type="text" class="form-control" id="sujet" name="sujet" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+            </div>
+
+            <div class="text-end">
+              <button type="submit" class="btn btn-orange">Envoyer le message</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <p class="mt-4 text-center text-muted">
+        Vous pouvez aussi nous contacter directement à <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

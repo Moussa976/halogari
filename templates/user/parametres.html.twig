@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Paramètres du compte
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		<h1 class="mb-4 text-center"><i class="bi bi-gear"></i> Paramètres du compte</h1>
+
+		<!-- Photo de profil -->
+		<div class="card mb-4">
+			<div class="card-header text-center">
+				<h5 class="mb-0">🖼️ Photo de profil</h5>
+			</div>
+			<div class="card-body text-center">
+				{% if app.user.photo %}
+					<img src="{{ asset('uploads/photos/' ~ app.user.photo) }}" alt="Photo de profil" class="rounded-circle mb-3" width="120">
+				{% else %}
+					<img src="{{ asset('images/profil.png') }}" alt="Photo par défaut" class="rounded-circle mb-3" width="120">
+				{% endif %}
+				<form method="POST" enctype="multipart/form-data" action="#">
+					<input type="file" class="form-control mb-2" name="photo">
+					<div class="text-center"><button type="submit" class="btn btn-info">Mettre à jour la photo</button></div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Informations personnelles -->
+		<div class="card mb-4">
+			<div class="card-header text-center">
+				<h5 class="mb-0">👤 Informations personnelles
+				</h5>
+			</div>
+			<div class="card-body">
+				<form method="POST" action="#">
+					<div class="mb-3">
+						<label for="prenom" class="form-label">Prénom</label>
+						<input type="text" class="form-control" id="prenom" name="prenom" value="{{ app.user.prenom }}">
+					</div>
+					<div class="mb-3">
+						<label for="nom" class="form-label">Nom</label>
+						<input type="text" class="form-control" id="nom" name="nom" value="{{ app.user.nom }}">
+					</div>
+					<div class="mb-3">
+						<label for="email" class="form-label">Email</label>
+						<input type="email" class="form-control" id="email" name="email" value="{{ app.user.email }}" disabled>
+					</div>
+					<div class="mb-3">
+						<label for="telephone" class="form-label">Téléphone</label>
+						<input type="text" class="form-control" id="telephone" name="telephone" value="{{ app.user.telephone }}">
+					</div>
+					<div class="text-center"><button type="submit" class="btn btn-primary">Mettre à jour</button></div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Mot de passe -->
+		<div class="card mb-4">
+			<div class="card-header text-center">
+				<h5 class="mb-0">🔐 Changer mon mot de passe</h5>
+			</div>
+			<div class="card-body">
+				<form method="POST" action="#">
+					<div class="mb-3">
+						<label for="oldPassword" class="form-label">Mot de passe actuel</label>
+						<input type="password" class="form-control" id="oldPassword" name="oldPassword">
+					</div>
+					<div class="mb-3">
+						<label for="newPassword" class="form-label">Nouveau mot de passe</label>
+						<input type="password" class="form-control" id="newPassword" name="newPassword">
+					</div>
+					<div class="mb-3">
+						<label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
+						<input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+					</div>
+					<div class="text-center"><button type="submit" class="btn btn-warning">Changer le mot de passe</button></div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Documents -->
+		<div class="card mb-4">
+			<div class="card-header text-center">
+				<h5 class="mb-0">📄 Mes documents</h5>
+			</div>
+			<div class="card-body">
+				<p>Documents envoyés :</p>
+				<ul class="list-group mb-3">
+					{% for doc in app.user.documents %}
+						<li class="list-group-item d-flex justify-content-between align-items-center">
+							{{ doc.typeDocument }}
+							({{ doc.filenameDocument }})
+							{% if doc.status == "approved" %}
+								<span class="badge bg-success">Validé</span>
+							{% elseif doc.status == "rejected" %}
+								<span class="badge bg-danger">refusé</span>
+							{% else %}
+								<span class="badge bg-secondary">En attente</span>
+							{% endif %}
+						</li>
+					{% else %}
+						<li class="list-group-item text-muted">Aucun document ajouté.</li>
+					{% endfor %}
+				</ul>
+				<form method="POST" enctype="multipart/form-data" action="#">
+					<div class="mb-3">
+						<label for="type_doc" class="form-label">Type de document</label>
+						<select class="form-select" id="type_doc" name="type_doc">
+							<option value="identite">Justificatif d'identité</option>
+							<option value="rib">RIB</option>
+						</select>
+					</div>
+					<div class="mb-3">
+						<label for="document" class="form-label">Fichier</label>
+						<input type="file" class="form-control" id="document" name="document">
+					</div>
+					<div class="text-center"><button type="submit" class="btn btn-success">Ajouter</button></div>
+				</form>
+			</div>
+		</div>
+
+
+		<!-- Suppression du compte -->
+		<div class="card border-danger">
+			<div class="card-header text-center">
+				<h5 class="mb-0 text-danger">⚠️ Supprimer mon compte</h5>
+			</div>
+			<div class="card-body">
+				<p class="text-danger text-center">Cette action est définitive et supprimera toutes vos données. Aucune récupération possible.</p>
+				<form method="POST" action="#">
+					<div class="text-center"><button type="submit" class="btn btn-danger">Supprimer mon compte</button></div>
+				</form>
+			</div>
+		</div>
+
+	</div>
+{% endblock %}

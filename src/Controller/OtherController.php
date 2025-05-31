@@ -2,8 +2,12 @@
 
 namespace App\Controller;
 
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 
 class OtherController extends AbstractController
@@ -39,4 +43,47 @@ class OtherController extends AbstractController
     {
         return $this->render('others/confidentialite.html.twig', []);
     }
+
+    /**
+     * @Route("/contact", name="app_contact", methods={"GET", "POST"})
+     */
+    public function contact(Request $request, MailerInterface $mailer): Response
+    {
+        if ($request->isMethod('POST')) {
+            $nom = $request->request->get('nom');
+            $email = $request->request->get('email');
+            $sujet = $request->request->get('sujet');
+            $messageContent = $request->request->get('message');
+
+            // Envoi d’un e-mail
+            $emailMessage = (new TemplatedEmail())
+                ->from(new Address($email, $nom))
+                ->to('support@halogari.yt')
+                ->subject('[Contact] ' . $sujet)
+                ->htmlTemplate('emails/contact.html.twig')
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
+                ->context([
+                    'nom' => $nom,
+                    'email' => $email,
+                    'message' => $messageContent,
+                ]);
+
+            $mailer->send($emailMessage);
+
+            $this->addFlash('success', 'Votre message a bien été envoyé. Merci !');
+
+            return $this->redirectToRoute('app_contact');
+        }
+
+        return $this->render('others/contact.html.twig');
+    }
+
+    /**
+     * @Route("/faq", name="app_faq", methods={"GET"})
+     */
+    public function faq(): Response
+    {
+        return $this->render('others/faq.html.twig');
+    }
+
 }

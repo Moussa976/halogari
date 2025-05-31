@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conversation avec {{ otherUser.prenom }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h3 class="mb-4">Conversation avec {{ otherUser.prenom }}</h3>
+
+    <div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto;" id="messages-container">
+        {% for message in messages %}
+            <div class="mb-2 {% if message.expediteur.id == app.user.id %}text-end{% else %}text-start{% endif %}">
+                <div class="d-inline-block p-2 rounded {% if message.expediteur.id == app.user.id %}bg-primary text-white{% else %}bg-white border{% endif %}">
+                    {{ message.contenu }}
+                    <div class="small text-muted">
+                        {{ message.createdAt|date('d/m/Y H:i') }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-center text-muted">Aucun message pour le moment.</p>
+        {% endfor %}
+    </div>
+    <form id="message-form" class="mt-3">
+    <div class="input-group">
+        <input type="text" id="message-input" class="form-control" placeholder="Votre message..." required>
+        <button class="btn btn-orange" type="submit">Envoyer</button>
+    </div>
+</form>
+</div>
+{% endblock %}
+{% block javascripts %}
+<script>
+document.getElementById('message-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const input = document.getElementById('message-input');
+    const contenu = input.value.trim();
+    const destinataireId = {{ otherUser.id|json_encode }};
+;
+
+    if (contenu === '') return;
+
+    fetch('/user/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contenu, destinataire: destinataireId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'sent') {
+            // Afficher dans la conversation
+            const container = document.getElementById('messages-container');
+            const div = document.createElement('div');
+            div.className = 'mb-2 text-end';
+            div.innerHTML = `
+                <div class="d-inline-block p-2 rounded bg-primary text-white">
+                    ${data.contenu}
+                    <div class="small text-muted">${data.createdAt}</div>
+                </div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+
+            input.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=TrajetRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class Trajet
 {
@@ -73,6 +74,31 @@ class Trajet
      * @ORM\Column(type="text", nullable=true)
      */
     private $description;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $annule;
+
+    /**
+     * @ORM\Column(type="integer")
+     *
+     * Nombre total de places définies par le conducteur
+     */
+    private $places;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+    }
 
     public function __construct()
     {
@@ -271,4 +297,59 @@ class Trajet
 
         return $this;
     }
+
+    public function isAnnule(): ?bool
+    {
+        return $this->annule;
+    }
+
+    public function setAnnule(?bool $annule): self
+    {
+        $this->annule = $annule;
+
+        return $this;
+    }
+
+    public function getPlaces(): ?int
+    {
+        return $this->places;
+    }
+
+    public function setPlaces(int $places): self
+    {
+        $this->places = $places;
+        return $this;
+    }
+
+    /**
+     * Met à jour dynamiquement le nombre de places disponibles
+     * en fonction des réservations actives (en_attente, acceptee, payee).
+     * Ce recalcul repart de zéro à chaque appel.
+     */
+    public function majPlacesDisponibles(): void
+    {
+        $placesPrises = 0;
+
+        foreach ($this->getReservations() as $res) {
+            if (in_array($res->getStatut(), ['en_attente', 'acceptee', 'payee'])) {
+                $placesPrises += $res->getPlaces();
+            }
+        }
+
+        $this->setPlacesDisponibles($this->getPlaces() - $placesPrises);
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    
+
 }

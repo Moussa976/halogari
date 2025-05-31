@@ -2,19 +2,167 @@
 
 namespace App\Controller;
 
+use App\Entity\Message;
+use App\Entity\User;
+use App\Repository\MessageRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 
 class MessageController extends AbstractController
 {
     /**
-     * @Route("/message", name="app_message")
+     * @Route("/user/messages", name="app_message")
      */
-    public function index(): Response
+    /**
+     * @Route("/user/messages", name="app_message")
+     */
+    public function index(MessageRepository $repo, EntityManagerInterface $em): Response
     {
+        $user = $this->getUser();
+
+        $conversations = $repo->createQueryBuilder('m')
+            ->select('m')
+            ->where('m.expediteur = :user OR m.destinataire = :user')
+            ->setParameter('user', $user)
+            ->orderBy('m.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $grouped = [];
+
+        foreach ($conversations as $message) {
+            $other = $message->getExpediteur() === $user ? $message->getDestinataire() : $message->getExpediteur();
+            $id = $other->getId();
+
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'user' => $other,
+                    'lastMessage' => $message,
+                ];
+            }
+        }
+
         return $this->render('message/index.html.twig', [
-            'controller_name' => 'MessageController',
+            'conversations' => $grouped,
+        ]);
+    }
+
+    /**
+     * @Route("/user/messages/unread", name="api_messages_unread")
+     */
+    public function unreadMessages(MessageRepository $repo): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['unreadCount' => 0]);
+        }
+
+        $count = $repo->createQueryBuilder('m')
+            ->select('count(m.id)')
+            ->where('m.destinataire = :user')
+            ->andWhere('m.isRead = false')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return new JsonResponse(['unreadCount' => $count]);
+    }
+
+    /**
+     * @Route("/user/messages/{id<\d+>}", name="app_conversation")
+     */
+    public function conversation(
+        int $id,
+        MessageRepository $repo,
+        EntityManagerInterface $em
+    ): Response {
+        $currentUser = $this->getUser();
+        $otherUser = $em->getRepository(User::class)->find($id);
+
+        if (!$otherUser) {
+            throw $this->createNotFoundException("Utilisateur introuvable.");
+        }
+
+        // Récupérer tous les messages entre les deux
+        $messages = $repo->createQueryBuilder('m')
+            ->where('(m.expediteur = :me AND m.destinataire = :them) OR (m.expediteur = :them AND m.destinataire = :me)')
+            ->setParameter('me', $currentUser)
+            ->setParameter('them', $otherUser)
+            ->orderBy('m.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Marquer comme lus les messages reçus par l'utilisateur connecté
+        foreach ($messages as $message) {
+            if ($message->getDestinataire() === $currentUser && !$message->isRead()) {
+                $message->setIsRead(true);
+            }
+        }
+
+        $em->flush();
+
+        return $this->render('message/conversation.html.twig', [
+            'messages' => $messages,
+            'otherUser' => $otherUser,
+        ]);
+    }
+
+    /**
+     * @Route("/user/messages/send", name="api_message_send", methods={"POST"})
+     */
+    public function sendMessage(Request $request, EntityManagerInterface $em, MailerInterface $mailer): JsonResponse
+    {
+        $user = $this->getUser();
+        $data = json_decode($request->getContent(), true);
+        if (!$data) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Mauvais JSON'], 400);
+        }
+
+        $destinataireId = $data['destinataire'] ?? null;
+        $contenu = $data['contenu'] ?? null;
+
+        if (!$user || !$destinataireId || !$contenu) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Données invalides.'], 400);
+        }
+
+        $destinataire = $em->getRepository(User::class)->find($destinataireId);
+        if (!$destinataire) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Destinataire introuvable.'], 404);
+        }
+
+        $message = new Message();
+        $message->setExpediteur($user);
+        $message->setDestinataire($destinataire);
+        $message->setContenu($contenu);
+        $message->setCreatedAt(new \DateTime());
+
+        $em->persist($message);
+        $em->flush();
+
+        $email = (new Email())
+            ->from('no-reply@halogari.yt')
+            ->to($destinataire->getEmail())
+            ->subject('Nouveau message de ' . $user->getPrenom())
+            ->html($this->renderView('emails/nouveau_message.html.twig', [
+                'expediteur' => $user,
+                'destinataire' => $destinataire,
+                'message' => $message,
+            ]))
+            ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
+
+
+        $mailer->send($email);
+
+        return new JsonResponse([
+            'status' => 'sent',
+            'contenu' => $message->getContenu(),
+            'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
         ]);
     }
 }

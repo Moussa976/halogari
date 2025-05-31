@@ -174,7 +174,12 @@ h1 {
 }
 
 #map {
-    height: 70vh;
+    height: 350px;
+}
+
+.message-notif {
+    top: 10%;
+    left: 90%;
 }
 
 @keyframes fadeIn {
@@ -200,10 +205,6 @@ h1 {
 
     .bg-header .lead {
         font-size: 0.8rem !important;
-    }
-
-    #map {
-        height: 450px;
     }
 }
 

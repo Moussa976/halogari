@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=NotesRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class Notes
 {
@@ -45,7 +46,16 @@ class Notes
     /**
      * @ORM\Column(type="datetime")
      */
-    private $dateNote;
+    private $createdAt;
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+    }
+
 
     public function getId(): ?int
     {
@@ -112,15 +122,15 @@ class Notes
         return $this;
     }
 
-    public function getDateNote(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->dateNote;
+        return $this->createdAt;
     }
 
-    public function setDateNote(\DateTimeInterface $dateNote): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->dateNote = $dateNote;
-
+        $this->createdAt = $createdAt;
         return $this;
     }
+
 }

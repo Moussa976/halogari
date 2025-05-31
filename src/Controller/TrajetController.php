@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Carbon\Carbon;
 use App\Entity\Trajet;
 use App\Repository\NotesRepository;
 use App\Repository\TrajetRepository;
@@ -51,12 +52,17 @@ class TrajetController extends AbstractController
     {
 
 
-
+        Carbon::setLocale('fr');
+        
         $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
+
+        $dateFr = Carbon::parse($date);
+        $dateTrajet = $dateFr->translatedFormat('l d F Y');
 
         return $this->render('trajet/chercherResultats.html.twig', [
             'depart' => $depart,
             'arrivee' => $arrivee,
+            'dateTrajetFr' => $dateTrajet,
             'dateTrajet' => $date,
             'heure' => $heure,
             'places' => $places,
@@ -100,6 +106,7 @@ class TrajetController extends AbstractController
             $trajet->setDateTrajet(new \DateTime($request->request->get('date')));
             $trajet->setHeureTrajet(new \DateTime($request->request->get('heure')));
             $trajet->setPlacesDisponibles((int) $request->request->get('places'));
+            $trajet->setPlaces((int) $request->request->get('places'));
             $trajet->setPrix((float) $request->request->get('price'));
 
             $trajet->setDescription($request->request->get('description'));
@@ -133,17 +140,23 @@ class TrajetController extends AbstractController
      */
     public function show(int $id, string $ledepart, string $larrive, string $nbPlaceReservee, TrajetRepository $trajetRepository, NotesRepository $notesRepository): Response
     {
+       
+        Carbon::setLocale('fr');
 
-        
         // affichage d'un trajet
         $trajet = $trajetRepository->findByID($id);
         $moyenne = $notesRepository->getMoyennePourUtilisateur($trajet->getConducteur());
         $nombreAvis = $notesRepository->countAvisPourUtilisateur($trajet->getConducteur());
+        
+        $date = Carbon::parse($trajet->getDateTrajet());
+        $dateTrajet = $date->translatedFormat('l d F Y');
+
         return $this->render('trajet/show.html.twig', [
             'trajet' => $trajet, 
             'nbPlaceReservee' => $nbPlaceReservee, 
             'moyenne' => $moyenne,
             'nombreAvis' => $nombreAvis,
+            'dateTrajet' => $dateTrajet,
         ]);
     }
 

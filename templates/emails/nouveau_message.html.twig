@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vous avez reçu un message sur HaloGari</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px; color: #333;">
+
+    <!-- Logo HaloGari -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="cid:logo_halogari" alt="HaloGari" style="width: 180px; height: auto;">
+    </div>
+
+    <table width="100%" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td>
+                <h2 style="color: #ff6f00;">Bonjour {{ destinataire.prenom }},</h2>
+
+                <p>
+                    Vous avez reçu un nouveau message de <strong>{{ expediteur.prenom }} {{ expediteur.nom }}</strong> via la plateforme <strong>HaloGari</strong> :
+                </p>
+
+                <blockquote style="border-left: 4px solid #ff6f00; margin: 20px 0; padding-left: 15px; color: #555;">
+                    {{ message.contenu }}
+                </blockquote>
+
+                <p>
+                    Cliquez sur le bouton ci-dessous pour répondre directement depuis votre espace :
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{ url('app_conversation', { id: expediteur.id }) }}"
+                       style="background-color: #ff6f00; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Répondre au message
+                    </a>
+                </div>
+
+                <p style="margin-top: 20px;">À bientôt !<br>L’équipe <strong>HaloGari</strong></p>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; font-size: 12px; color: #aaa; margin-top: 20px;">
+        © {{ "now"|date("Y") }} HaloGari – Ensemble, on roule à Mayotte.
+    </p>
+
+</body>
+</html>

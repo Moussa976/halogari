@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification de réservation - HaloGari</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px; color: #333;">
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="cid:logo_halogari" alt="HaloGari" style="width: 180px; height: auto;">
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td style="padding: 30px;">
+                <h2 style="color: #ff6f00; text-align: center;">
+                    {% if etat == 'acceptee' %}
+                        ✅ Réservation acceptée !
+                    {% else %}
+                        ❌ Réservation refusée
+                    {% endif %}
+                </h2>
+
+                <p style="font-size: 16px;">
+                    Bonjour {{ reservation.passager.prenom }},
+                </p>
+
+                {% if etat == 'acceptee' %}
+                    <p style="font-size: 16px;">
+                        Le conducteur a accepté votre demande de réservation pour le trajet suivant :
+                    </p>
+                {% else %}
+                    <p style="font-size: 16px;">
+                        Le conducteur a refusé votre demande pour le trajet suivant :
+                    </p>
+                {% endif %}
+
+                <p style="font-size: 15px; background-color: #f8f8f8; padding: 15px; border-radius: 5px;">
+                    🚗 <strong>{{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}</strong><br>
+                    📅 Date : {{ reservation.trajet.dateTrajet|date('d/m/Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}<br>
+                    👥 Places réservées : {{ reservation.places }}<br>
+                    💰 Prix par place : {{ reservation.trajet.prix }} €
+                </p>
+
+                {% if etat == 'acceptee' %}
+                    <p style="font-size: 15px;">
+                        📞 Vous pouvez contacter le conducteur au : <strong>{{ reservation.trajet.conducteur.telephone }}</strong>
+                    </p>
+                {% endif %}
+
+                <p style="margin-top: 20px; font-size: 14px; text-align: center; color: #666;">
+                    Merci d'utiliser HaloGari 🌍<br>
+                    Ensemble, on roule à Mayotte !
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: 20px;">
+        © {{ "now"|date("Y") }} HaloGari
+    </p>
+
+</body>
+</html>

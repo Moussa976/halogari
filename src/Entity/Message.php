@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=MessageRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class Message
 {
@@ -33,14 +34,27 @@ class Message
     private $contenu;
 
     /**
-     * @ORM\Column(type="datetime")
-     */
-    private $dateEnvoi;
-
-    /**
      * @ORM\ManyToOne(targetEntity=Trajet::class, inversedBy="messages")
      */
     private $trajet;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+    }
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isRead = false;
 
     public function getId(): ?int
     {
@@ -83,18 +97,6 @@ class Message
         return $this;
     }
 
-    public function getDateEnvoi(): ?\DateTimeInterface
-    {
-        return $this->dateEnvoi;
-    }
-
-    public function setDateEnvoi(\DateTimeInterface $dateEnvoi): self
-    {
-        $this->dateEnvoi = $dateEnvoi;
-
-        return $this;
-    }
-
     public function getTrajet(): ?Trajet
     {
         return $this->trajet;
@@ -104,6 +106,28 @@ class Message
     {
         $this->trajet = $trajet;
 
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function isRead(): bool
+    {
+        return $this->isRead;
+    }
+
+    public function setIsRead(bool $isRead): self
+    {
+        $this->isRead = $isRead;
         return $this;
     }
 

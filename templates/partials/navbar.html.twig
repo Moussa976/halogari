@@ -26,6 +26,16 @@
 					Publier un trajet
 				</a>
 			</li>
+			{% if app.user %}
+			<li class="nav-item align-self-center d-none d-lg-block position-relative me-5">
+				<a class="nav-link" href="{{ path('app_message') }}" title="Messages">
+					<i class="bi bi-bell-fill fs-5"></i>
+					<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+						0
+					</span>
+				</a>
+			</li>
+		{% endif %}
 			<li class="nav-item d-none d-lg-block">
 				{% if app.user is null %}
 				<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion"
@@ -41,11 +51,17 @@
 				{% endif %}
 			</li>
 		</ul>
-
+		
+			<a class="nav-link d-lg-none me-5" href="{{ path('app_message') }}" title="Messages">
+				<i class="bi bi-bell-fill fs-5"></i>
+				<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+					0
+				</span>
+			</a>
 		<button class="navbar-toggler btn {% if app.user is not null %} dropdown-toggle{% endif %}" type="button"
 			data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
 			aria-expanded="false" aria-label="Toggle navigation">
-			{% if app.user is null %} <i class="bi bi-list fs-3"></i> {% else %}<i class="bi bi-person fs-3"></i>{% endif %}
+			{% if app.user is null %} <i class="bi bi-list fs-3"></i> {% else %}<i class="bi bi-person fs-3 position-relative "></i>{% endif %}
 		</button>
 
 	</div>
@@ -114,13 +130,13 @@
 			<a href="{{ path('app_profile') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-person"></i>
 				Mon profil</a>
-			<a href="#" class="list-group-item list-group-item-action bg-dark-subtle">
+			<a href="{{ path('app_trajets_reservations') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-signpost-2"></i>
-				Mes trajets</a>
+				Mes trajets & réservations</a>
 			<a href="{{ path('app_documents') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-file-earmark-text"></i>
 				Mes documents</a>
-			<a href="#" class="list-group-item list-group-item-action bg-dark-subtle">
+			<a href="{{ path('app_parametres') }}" class="list-group-item list-group-item-action bg-dark-subtle">
 				<i class="bi bi-gear"></i>
 				Paramètres</a>
 			<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action bg-dark-subtle">

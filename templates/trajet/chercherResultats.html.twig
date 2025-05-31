@@ -1,143 +1,225 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Résultats de recherche{% endblock %}
-{% set dateTrajetFormatfr = dateTrajet|date("m F Y") %}
+{% block title %}Résultats de recherche
+{% endblock %}
+
 {% block stylesheets %}
-<style>
-    .listtrajet .card:hover, .listtrajet .card:focus {
-        border: 2px solid #32623d;
-    }
-</style>
+	<style>
+		.listtrajet .card:hover,
+		.listtrajet .card:focus {
+			border: 2px solid #32623d;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row">
-        {# Bouton pour mobile #}
-        <div class="d-md-none text-center shadow-sm rounded py-1 mb-3">
-            <button class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRecherche">
-                <strong>{{ depart }} → {{ arrivee }} | {{ dateTrajetFormatfr }}</strong> <span class="text-end"><i
-                        class="bi bi-pencil"></i></span>
-            </button>
-        </div>
+	<div class="container py-5">
+		<div
+			class="row">
+			{# Bouton pour mobile #}
+			<div class="d-md-none text-center shadow-sm rounded py-1 mb-3">
+				<button class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRecherche">
+					<strong>{{ depart }}
+						→
+						{{ arrivee }}
+						|
+						{{ dateTrajetFr }}</strong>
+					<span class="text-end">
+						<i class="bi bi-pencil"></i>
+					</span>
+				</button>
+			</div>
 
-        {# Formulaire inline pour desktop #}
-        <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}"
-            class="d-none d-md-flex gap-2 align-items-center bg-white p-3 shadow-sm rounded mb-4">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-geo-fill"></i></span>
-                <input list="liste-villes" name="select_departure" class="form-control villages" placeholder="Départ"
-                    value="{{ depart }}" required>
-            </div>
+			{# Formulaire inline pour desktop #}
+			<form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="d-none d-md-flex gap-2 align-items-center bg-white p-3 shadow-sm rounded mb-4">
+				<div class="input-group">
+					<span class="input-group-text">
+						<i class="bi bi-geo-fill"></i>
+					</span>
+					<input list="liste-villes" name="select_departure" class="form-control villages" placeholder="Départ" value="{{ depart }}" required>
+				</div>
 
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-flag-fill"></i></span>
-                <input list="liste-villes-arrivee" name="select_arrival" class="form-control villages" placeholder="Arrivée"
-                    value="{{ arrivee }}" required>
-            </div>
+				<div class="input-group">
+					<span class="input-group-text">
+						<i class="bi bi-flag-fill"></i>
+					</span>
+					<input list="liste-villes-arrivee" name="select_arrival" class="form-control villages" placeholder="Arrivée" value="{{ arrivee }}" required>
+				</div>
 
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-calendar2-event-fill"></i></span>
-                <input type="text" name="date_trajet" class="form-control dateDepart" value="{{ dateTrajet }}" required>
-            </div>
+				<div class="input-group">
+					<span class="input-group-text">
+						<i class="bi bi-calendar2-event-fill"></i>
+					</span>
+					<input type="text" name="date_trajet" class="form-control dateDepart" value="{{ dateTrajet }}" required>
+				</div>
 
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-people-fill"></i></span>
-                <select name="places_min" class="form-select">
-                    {% for i in 1..8 %}
-                    <option value="{{ i }}" {% if i==places %}selected{% endif %}>{{ i }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+				<div class="input-group">
+					<span class="input-group-text">
+						<i class="bi bi-people-fill"></i>
+					</span>
+					<select name="places_min" class="form-select">
+						{% for i in 1..8 %}
+							<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
+						{% endfor %}
+					</select>
+				</div>
 
-            <button type="submit" class="btn btn-orange">Rechercher</button>
-        </form>
+				<button type="submit" class="btn btn-orange">Rechercher</button>
+			</form>
 
-        {# Offcanvas pour mobile #}
-        <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasRecherche" style="height: 40vh;">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title">Modifier la recherche</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-            </div>
-            <div class="offcanvas-body">
-                <form method="GET" action="{{ path('app_chercher') }}" class="d-flex flex-column gap-3">
-                    <input type="text" name="select_departure" class="form-control villages" placeholder="Départ"
-                        value="{{ depart }}" required>
-                    <input type="text" name="select_arrival" class="form-control villages" placeholder="Arrivée"
-                        value="{{ arrivee }}" required>
-                    <input type="text" name="date_trajet" class="form-control dateDepart" placeholder="Date"
-                        value="{{ dateTrajet }}" required>
-                    <select name="places_min" class="form-select">
-                        {% for i in 1..8 %}
-                        <option value="{{ i }}" {% if i==places %}selected{% endif %}>{{ i }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn btn-orange">Rechercher</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        {# Colonne gauche : Filtres (visible seulement en desktop) #}
-        <div class="col-md-3 d-none d-md-block bg-light border-end" style="min-height: 70vh; position: sticky; top: 0;">
-            <div class="p-3">
-                <h5 class="fw-bold">Filtres</h5>
-                <p class="text-muted">Aucun filtre disponible</p>
-            </div>
-        </div>
+			{# Offcanvas pour mobile #}
+			<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasRecherche" style="height: 70vh;">
+				<div class="offcanvas-header">
+					<h5 class="offcanvas-title">Modifier la recherche</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+				</div>
+				<div class="offcanvas-body">
+					<form method="GET" action="{{ path('app_chercher') }}" class="d-flex flex-column gap-3">
+						<input type="text" name="select_departure" class="form-control villages" placeholder="Départ" value="{{ depart }}" required>
+						<input type="text" name="select_arrival" class="form-control villages" placeholder="Arrivée" value="{{ arrivee }}" required>
+						<input type="text" name="date_trajet" class="form-control dateDepart" placeholder="Date" value="{{ dateTrajet }}" required>
+						<select name="places_min" class="form-select">
+							{% for i in 1..8 %}
+								<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
+							{% endfor %}
+						</select>
+						<button type="submit" class="btn btn-orange">Rechercher</button>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div
+			class="row">
+			{# Colonne gauche : Filtres (visible seulement en desktop) #}
+			<div class="col-md-3 d-none d-md-block bg-light border-end" style="min-height: 70vh; position: sticky; top: 0;">
+				<div class="p-3">
+					<h5 class="fw-bold">Filtres</h5>
+					<p class="text-muted">Aucun filtre disponible</p>
+				</div>
+			</div>
 
-        {# Colonne droite : Résultats #}
-        <div class="col-md-9 col-12" style="overflow-y: auto; max-height: 70vh;">
-            <div class="d-md-none p-3 text-end">
-                <button class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-funnel"></i> Filtrer
-                </button>
-            </div>
+			{# Colonne droite : Résultats #}
+			<div class="col-md-9 col-12" style="overflow-y: auto; max-height: 70vh;">
+				<div class="d-md-none p-3 text-end">
+					<button id="filter-btn" class="btn btn-outline-secondary btn-sm">
+						<i class="bi bi-funnel"></i>
+						Filtrer
+					</button>
+				</div>
 
-            <div class="p-3">
-                {# Onglet Covoiturage #}
-                <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item">
-                        <span class="nav-link active fw-bold"><i class="bi bi-car-front"></i> Covoiturage • {{
+				<div
+					class="p-3">
+					{# Onglet Covoiturage #}
+					<ul class="nav nav-tabs mb-4">
+						<li class="nav-item">
+							<span class="nav-link active fw-bold">
+								<i class="bi bi-car-front"></i>
+								Covoiturage •
+								{{
                             trajets|length }}</span>
-                    </li>
-                </ul>
+						</li>
+					</ul>
 
-                <p><small>Résultat(s) pour <b>{{ depart }} → {{ arrivee }} le {{ dateTrajetFormatfr }}</b></small></p>
+					<p>
+						<small>Résultat(s) pour
+							<b>{{ depart }}
+								→
+								{{ arrivee }}</b>
+						</small>
+						<small class="small-sm">
+							| le
+							{{ dateTrajetFr }}</small>
+					</p>
 
-                {# Exemple : zéro trajet trouvé #}
-                {% if trajets is empty %}
-                <div class="text-center my-5">
-                    <p class="lead">Il n'y a pas encore de trajet disponible aujourd'hui entre ces villages</p>
-                    {# <a href="#" class="btn btn-primary">Créer une alerte</a> #}
-                </div>
-                {% else %}
-                {% for trajet in trajets %}
-                <a href="{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee, nbPlaceReservee:places }) }}"
-                    class="listtrajet text-decoration-none text-dark">
-                    <div class="card mb-3 p-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-3">{{ trajet.heureTrajet|date('H:i') }}</div>
-                                <div class="col-6 border-start">
-                                    <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong>
-                                </div>
-                                <div class="col-3 text-end">{{ trajet.prix }} €</div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-muted border-top">
-                            <img src="{{ asset('images/profil.png') }}" class="img-fluid"
-                                alt="Profil de {{ trajet.conducteur.prenom ?? '...' }}" style="max-width: 30px;" />
-                            Anis | {{ trajet.placesDisponibles }} place(s) disponible(s)
-                        </div>
-                    </div>
-                </a>
+					{# Exemple : zéro trajet trouvé #}
+					{% set nowDate = "now"|date("Y-m-d") %}
+					{% set nowTime = "now"|date("H:i") %}
 
-                {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
+					{% if trajets is empty %}
+						<div class="text-center my-5">
+							<p class="lead">Il n'y a pas encore de trajet disponible aujourd'hui entre ces villages</p>
+						</div>
+					{% else %}
+						{% for trajet in trajets %}
+							{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
+							{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
+							{% set estPasse = (trajetDate == nowDate and trajetHeure < nowTime) %}
 
+							<a href="{% if not estPasse %}{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee, nbPlaceReservee: places }) }}{% else %}#{% endif %}" class="listtrajet text-decoration-none text-dark {% if estPasse %}trajet-passe{% endif %}" data-trajet-id="{{ trajet.id }}">
+								<div class="card mb-3 p-0 shadow-sm {% if estPasse %}opacity-50{% endif %}">
+									<div class="card-body">
+										<div class="row">
+											<div class="col-3">{{ trajet.heureTrajet|date('H:i') }}</div>
+											<div class="col-6 border-start">
+												<strong>{{ trajet.depart }}
+													→
+													{{ trajet.arrivee }}</strong>
+											</div>
+											<div class="col-3 text-end">
+												{% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
+												{% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
+
+												<span class="prix-euro">
+													<strong>{{ prixEntier }}</strong>
+													<sup>,{{ prixDecimal }}</sup>
+													€</span>
+											</div>
+										</div>
+									</div>
+
+									<div class="card-footer text-muted border-top d-flex justify-content-between align-items-center">
+										<div>
+											<img src="{% if trajet.conducteur.photo %}{{ asset('uploads/photos/' ~ trajet.conducteur.photo) }}{% else %}{{ asset('images/profil.png') }}{% endif %}" class="img-fluid rounded-circle" alt="Profil de {{ trajet.conducteur.prenom ?? '...' }}" style="max-width: 30px;"/>
+											{{ trajet.conducteur.prenom ?? '...' }}
+											|
+											{{ trajet.placesDisponibles }}
+											{% if trajet.placesDisponibles < 2 %}
+												place disponible
+											{% else %}
+												places disponibles
+											{% endif %}
+										</div>
+										{% if estPasse %}
+											<span class="badge bg-secondary">Déjà passé</span>
+										{% endif %}
+									</div>
+								</div>
+							</a>
+						{% endfor %}
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+{% block javascripts %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+document.querySelectorAll('.trajet-passe').forEach(function (el) {
+el.addEventListener('click', function (e) {
+e.preventDefault();
+Swal.fire({
+icon: 'info',
+title: 'Trajet déjà commencé',
+text: 'Ce trajet a déjà débuté aujourd\'hui et ne peut plus être réservé.',
+confirmButtonText: 'Ok',
+confirmButtonColor: '#ff6f00'
+});
+});
+});
+});
+	</script>
+
+    <script>
+	document.getElementById('filter-btn').addEventListener('click', function () {
+		Swal.fire({
+			icon: 'info',
+			title: 'Aucun filtre disponible',
+			text: 'Les filtres seront bientôt disponibles.',
+			confirmButtonText: 'Ok',
+            confirmButtonColor: '#ff6f00'
+		});
+	});
+</script>
 {% endblock %}

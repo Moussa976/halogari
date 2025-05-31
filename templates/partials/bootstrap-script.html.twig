@@ -7,49 +7,49 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-$(function () {
+  $(function () {
     // Charger la liste des villages
     $.getJSON('/cities.json', function (data) {
-        const noms = data.map(item => item.name);
+      const noms = data.map(item => item.name);
 
-        // Autocomplete pour tous les champs .villages
-        $(".villages").autocomplete({ source: noms });
+      // Autocomplete pour tous les champs .villages
+      $(".villages").autocomplete({ source: noms });
 
-        // Validation du formulaire
-        $("#form-recherche").on("submit", function (e) {
-            let erreur = false;
+      // Validation du formulaire
+      $("#form-recherche").on("submit", function (e) {
+        let erreur = false;
 
-            $(".villages").each(function () {
-                const valeur = $(this).val().trim();
-                const valide = noms.includes(valeur);
+        $(".villages").each(function () {
+          const valeur = $(this).val().trim();
+          const valide = noms.includes(valeur);
 
-                if (!valide) {
-                    $(this).addClass("is-invalid");
-                    erreur = true;
-                } else {
-                    $(this).removeClass("is-invalid");
-                }
-            });
-
-            if (erreur) {
-                e.preventDefault(); // Empêche l'envoi
-                // Optionnel : ajouter un message global
-                alert("Veuillez sélectionner des villages valides depuis la liste.");
-            }
+          if (!valide) {
+            $(this).addClass("is-invalid");
+            erreur = true;
+          } else {
+            $(this).removeClass("is-invalid");
+          }
         });
-    });
-});
 
-// DatePicker
-flatpickr(".dateDepart", {
+        if (erreur) {
+          e.preventDefault(); // Empêche l'envoi
+          // Optionnel : ajouter un message global
+          alert("Veuillez sélectionner des villages valides depuis la liste.");
+        }
+      });
+    });
+  });
+
+  // DatePicker
+  flatpickr(".dateDepart", {
     locale: "fr",                // Traduction française
     altInput: true,              // Affiche un champ "alternatif"
     altFormat: "j F Y",          // Format lisible : 15 mai 2025
     dateFormat: "Y-m-d",         // Format réel soumis au serveur
     minDate: "today"            // ❌ Interdit les dates passée
-});
+  });
 </script>
-<script>
+{# <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
@@ -57,7 +57,7 @@ flatpickr(".dateDepart", {
         .catch(err => console.error('❌ Erreur SW', err));
     });
   }
-</script>
+</script> #}
 
 <script>
   let deferredPrompt;
@@ -84,5 +84,36 @@ flatpickr(".dateDepart", {
         });
       });
     });
+  });
+</script>
+
+<script>
+  function checkNewMessages() {
+    fetch('/user/messages/unread')
+      .then(response => response.json())
+      .then(data => {
+        const badges = document.querySelectorAll('.message-notif');
+
+        badges.forEach(badge => {
+          if (data.unreadCount > 0) {
+            badge.textContent = data.unreadCount;
+            badge.style.display = 'inline-block';
+
+            if (!badge.dataset.notified) {
+              badge.dataset.notified = "1";
+            }
+          } else {
+            badge.style.display = 'none';
+            badge.dataset.notified = "";
+          }
+        });
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (document.querySelector('.message-notif')) {
+      checkNewMessages();
+      setInterval(checkNewMessages, 30000);
+    }
   });
 </script>
