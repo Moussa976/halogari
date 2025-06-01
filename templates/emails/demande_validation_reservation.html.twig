@@ -14,7 +14,7 @@
             <td>
                 <h2 style="color: #ff6f00;">🚗 Nouvelle demande de réservation</h2>
 
-                <p><strong>{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</strong> a fait une demande de réservation pour ton trajet :</p>
+                <p><strong>{{ reservation.passager.prenom }}</strong> a fait une demande de réservation pour ton trajet :</p>
 
                 <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; font-size: 15px;">
                     🗓️ {{ reservation.trajet.dateTrajet|date('d/m/Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}<br>
