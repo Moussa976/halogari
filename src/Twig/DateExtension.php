@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Twig;
 
@@ -18,17 +18,20 @@ class DateExtension extends AbstractExtension
     {
         $now = new \DateTime();
         $today = $now->format('Y-m-d');
-        $yesterday = $now->modify('-1 day')->format('Y-m-d');
+        $yesterday = (new \DateTime('-1 day'))->format('Y-m-d');
         $givenDate = $date->format('Y-m-d');
 
+        $heure = $date->format('H:i');
+
         if ($givenDate === $today) {
-            return 'Aujourd’hui';
+            return 'Aujourd’hui à ' . $heure;
         }
 
         if ($givenDate === $yesterday) {
-            return 'Hier';
+            return 'Hier à ' . $heure;
         }
 
         return $date->format('d/m/Y H:i');
     }
+
 }
