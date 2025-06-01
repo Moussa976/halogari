@@ -1,396 +1,453 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Détail du trajet |
-	{{ trajet.depart }}
-	-
-	{{ trajet.arrivee }}
+{{ trajet.depart }}
+-
+{{ trajet.arrivee }}
 {% endblock %}
 {% block stylesheets %}
-	<style>
-		#reservation-sticky.fixed {
-			position: fixed;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			z-index: 1030;
-		}
-	</style>
+<style>
+	#reservation-sticky.fixed {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 1030;
+	}
+</style>
 {% endblock %}
 {% block body %}
-	<div class="container mt-3 py-5">
-		<div
-			class="row g-4">
+<div class="container mt-3 py-5">
+	<div class="row g-4">
 
-			{# Colonne gauche — Détail du trajet #}
-			<div class="col-lg-8">
-				<div class="card shadow-sm">
-					<div class="card-body">
-						<h5 class="mb-3 text-center">
-							{{ dateTrajet }}
-						</h5>
+		{# Colonne gauche — Détail du trajet #}
+		<div class="col-lg-8">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<h5 class="mb-3 text-center">
+						{{ dateTrajet }}
+					</h5>
 
-						<div class="row mb-4">
+					<div class="row mb-4">
 
-							<div class="col-12 col-md-4">
-								<div class="d-flex align-items-center">
-									<strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong>
-									<div>
-										<div class="fw-bold text-orange">
-											<i class="bi bi-geo-fill"></i>
-											{{ trajet.depart }}
-										</div>
+						<div class="col-12 col-md-4">
+							<div class="d-flex align-items-center">
+								<strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong>
+								<div>
+									<div class="fw-bold text-orange">
+										<i class="bi bi-geo-fill"></i>
+										{{ trajet.depart }}
 									</div>
 								</div>
+							</div>
 
-								<div class="border-start ms-4 my-3" style="height: 30px; border-left: 2px solid #ccc;">
-									<small class="ms-2 text-muted small">
-										<span id="temps-trajet">...</span>
-									</small>
-								</div>
+							<div class="border-start ms-4 my-3" style="height: 30px; border-left: 2px solid #ccc;">
+								<small class="ms-2 text-muted small">
+									<span id="temps-trajet">...</span>
+								</small>
+							</div>
 
-								<div class="d-flex align-items-center">
-									<strong class="me-2" id="arrivee-traject-time">...</strong>
-									<div>
-										<div class="fw-bold text-orange">
-											<i class="bi bi-flag-fill"></i>
-											{{ trajet.arrivee }}
-										</div>
+							<div class="d-flex align-items-center">
+								<strong class="me-2" id="arrivee-traject-time">...</strong>
+								<div>
+									<div class="fw-bold text-orange">
+										<i class="bi bi-flag-fill"></i>
+										{{ trajet.arrivee }}
 									</div>
 								</div>
-
-								{# <div class="text-muted small">
-																<i class="bi bi-signpost-2"></i> <span id="distance-trajet">...</span><br>
-															</div> #}
 							</div>
 
-							<div class="col-12 col-md-8">
-								<div class="card-body shadow-sm" id="map"></div>
-							</div>
+							{# <div class="text-muted small">
+								<i class="bi bi-signpost-2"></i> <span id="distance-trajet">...</span><br>
+							</div> #}
 						</div>
 
-
-						<div class="d-flex align-items-center mb-3">
-							<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-3" style="width: 50px; height: 50px;" alt="Photo conducteur">
-							<div>
-								<strong>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</strong><br>
-								{% if moyenne %}
-									<span class="text-muted">{{ moyenne|number_format(1, ',', ',') }}/5 •
-										{{ nombreAvis }}
-										avis</span>
-								{% else %}
-									<span class="text-muted">Pas encore de note</span>
-								{% endif %}
-							</div>
-						</div>
-
-						{# <div class="mb-3">
-												<i class="bi bi-shield-check text-success"></i>
-												<small class="text-muted">Annule rarement ses trajets</small>
-											</div> #}
-
-						<div class="mb-3">
-							<p>{{ trajet.description|nl2br }}</p>
-						</div>
-
-						<hr>
-						<div class="text-muted small">
-							Le conducteur validera votre réservation.
+						<div class="col-12 col-md-8">
+							<div class="card-body shadow-sm" id="map"></div>
 						</div>
 					</div>
 
-					<div class="card-footer bg-white border-top">
-						<a href="#" class="btn btn-outline-orange w-100">
-							<i class="bi bi-chat-text"></i>
-							Contacter
-							{{ trajet.conducteur.prenom ?? 'le conducteur' }}
-						</a>
+
+					<div class="d-flex align-items-center mb-3">
+						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-3"
+							style="width: 50px; height: 50px;" alt="Photo conducteur">
+						<div>
+							<strong>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</strong><br>
+							{% if moyenne %}
+							<span class="text-muted">{{ moyenne|number_format(1, ',', ',') }}/5 •
+								{{ nombreAvis }}
+								avis</span>
+							{% else %}
+							<span class="text-muted">Pas encore de note</span>
+							{% endif %}
+						</div>
+					</div>
+
+					{# <div class="mb-3">
+						<i class="bi bi-shield-check text-success"></i>
+						<small class="text-muted">Annule rarement ses trajets</small>
+					</div> #}
+
+					<div class="mb-3">
+						<p>{{ trajet.description|nl2br }}</p>
+					</div>
+
+					<hr>
+					<div class="text-muted small">
+						Le conducteur validera votre réservation.
 					</div>
 				</div>
-			</div>
 
-			{# Colonne droite — Résumé & bouton réservation #}
-			<div class="col-lg-4">
-				<div class="card shadow-sm">
-					<div class="card-body">
-						<h6 class="text-muted mb-2">{{ dateTrajet }}</h6>
-
-						<div class="mb-3">
-							<div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
-								|
-								<i class="bi bi-geo-fill"></i>
-								{{
-							trajet.depart }}
-								→
-								<i class="bi bi-flag-fill"></i>
-								{{ trajet.arrivee }}
-							</div>
-						</div>
-
-						<div class="d-flex align-items-center mb-3">
-							<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-2" style="width: 30px; height: 30px;">
-							<span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
-						</div>
-
-						<div class="border-top pt-3 mt-3">
-							<div class="d-flex justify-content-between align-items-center">
-								<span>{{ nbPlaceReservee }}
-									passager(s)</span>
-								<span class="fw-bold">{{ trajet.prix|number_format(2, ',', '.') }}
-									€</span>
-							</div>
-							<div class="d-flex justify-content-between align-items-center border-top border-success">
-								<strong>Total</strong>
-								<span class="fw-bold">{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.')}}
-									€</span>
-							</div>
-						</div>
-					</div>
-
-					<div id="reservation-section" class="card-footer bg-white border-top text-center">
-
-						{% set nowDate = "now"|date("Y-m-d") %}
-						{% set nowTime = "now"|date("H:i") %}
-				
-						{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
-						{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
-						{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %}
-
-						<form action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
-							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
-
-							{% if app.user %}
-								{% if app.user.id != trajet.conducteur.id %}
-									<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
-										{% if isPassed %}
-											Trajet terminé
-										{% else %}
-											Je réserve |
-											{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
-											€
-										{% endif %}
-									</button>
-								{% else %}
-									<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
-										{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i class="bi bi-gear"></i> Gérer mon trajet {% endif %}
-									</a>
-								{% endif %}
-							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
-									{% if isPassed %} Trajet terminé {% else %} Se connecter pour réserver {% endif %}
-								</a>
-							{% endif %}
-						</form>
-
-					</div>
-
-					<div id="reservation-sticky" class="d-lg-none bg-white p-3 shadow-sm text-center d-none">
-						<form action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
-							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
-
-							{% if app.user %}
-								{% if app.user.id != trajet.conducteur.id %}
-									<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
-										{% if isPassed %}
-											Trajet terminé
-										{% else %}
-											Je réserve |
-											{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
-											€
-										{% endif %}
-									</button>
-								{% else %}
-									<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
-										
-										{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i class="bi bi-gear"></i> Gérer mon trajet {% endif %}
-									</a>
-								{% endif %}
-							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
-									{% if isPassed %} Trajet terminé {% else %} Se connecter pour réserver {% endif %}
-								</a>
-							{% endif %}
-						</form>
-					</div>
+				<div class="card-footer bg-white border-top">
+					{% if app.user %}
+					<a href="{{ path('app_conversation', { userId: conducteur.id, trajetId: trajet.id }) }}"
+						class="btn btn-outline-orange w-100">
+						<i class="bi bi-chat-dots"></i>
+						Contacter
+						{{ conducteur.prenom }}
+					</a>
+					{% else %}
+					<button class="btn btn-outline-orange w-100 contacter-non-connecte">
+						<i class="bi bi-chat-dots"></i>
+						Contacter
+						{{ conducteur.prenom }}
+					</button>
+					{% endif %}
 
 				</div>
 			</div>
-
 		</div>
+
+		{# Colonne droite — Résumé & bouton réservation #}
+		<div class="col-lg-4">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<h6 class="text-muted mb-2">{{ dateTrajet }}</h6>
+
+					<div class="mb-3">
+						<div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
+							|
+							<i class="bi bi-geo-fill"></i>
+							{{
+							trajet.depart }}
+							→
+							<i class="bi bi-flag-fill"></i>
+							{{ trajet.arrivee }}
+						</div>
+					</div>
+
+					<div class="d-flex align-items-center mb-3">
+						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-2"
+							style="width: 30px; height: 30px;">
+						<span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
+					</div>
+
+					<div class="border-top pt-3 mt-3">
+						<div class="d-flex justify-content-between align-items-center">
+							<span>{{ nbPlaceReservee }}
+								passager(s)</span>
+							<span class="fw-bold">{{ trajet.prix|number_format(2, ',', '.') }}
+								€</span>
+						</div>
+						<div class="d-flex justify-content-between align-items-center border-top border-success">
+							<strong>Total</strong>
+							<span class="fw-bold">{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.')}}
+								€</span>
+						</div>
+					</div>
+				</div>
+
+				<div id="reservation-section" class="card-footer bg-white border-top text-center">
+
+					{% set nowDate = "now"|date("Y-m-d") %}
+					{% set nowTime = "now"|date("H:i") %}
+
+					{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
+					{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
+					{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %} <form
+						action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+						<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
+
+						{% if app.user %}
+						{% if app.user.id != trajet.conducteur.id %}
+						<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled
+							style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+							{% if isPassed %}
+							Trajet terminé
+							{% else %}
+							Je réserve |
+							{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
+							€
+							{% endif %}
+						</button>
+						{% else %}
+						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
+							{% if isPassed %}
+							<i class="bi bi-eye"></i>
+							Voir mon trajet
+							{% else %}
+							<i class="bi bi-gear"></i>
+							Gérer mon trajet
+							{% endif %}
+						</a>
+						{% endif %}
+						{% else %}
+						<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %}
+							style="opacity:0.6; pointer-events: none;" {% endif %}>
+							{% if isPassed %}
+							Trajet terminé
+							{% else %}
+							Se connecter pour réserver
+							{% endif %}
+						</a>
+						{% endif %}
+						</form>
+
+				</div>
+
+				<div id="reservation-sticky" class="d-lg-none bg-white p-3 shadow-sm text-center d-none">
+					<form action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+						<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
+
+						{% if app.user %}
+						{% if app.user.id != trajet.conducteur.id %}
+						<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled
+							style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+							{% if isPassed %}
+							Trajet terminé
+							{% else %}
+							Je réserve |
+							{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
+							€
+							{% endif %}
+						</button>
+						{% else %}
+						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
+
+							{% if isPassed %}
+							<i class="bi bi-eye"></i>
+							Voir mon trajet
+							{% else %}
+							<i class="bi bi-gear"></i>
+							Gérer mon trajet
+							{% endif %}
+						</a>
+						{% endif %}
+						{% else %}
+						<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %}
+							style="opacity:0.6; pointer-events: none;" {% endif %}>
+							{% if isPassed %}
+							Trajet terminé
+							{% else %}
+							Se connecter pour réserver
+							{% endif %}
+						</a>
+						{% endif %}
+					</form>
+				</div>
+
+			</div>
+		</div>
+
 	</div>
+</div>
 
 {% endblock %}
 
 {% block javascripts %}
 
-	<script>
-		document.addEventListener("DOMContentLoaded", function () {
-let depart = "{{ trajet.depart|e('js') }}";
-let arrivee = "{{ trajet.arrivee|e('js') }}";
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		let depart = "{{ trajet.depart|e('js') }}";
+		let arrivee = "{{ trajet.arrivee|e('js') }}";
 
-const heureDepart = "{{ trajet.heureTrajet|date('H:i') }}"; // Format HH:mm
+		const heureDepart = "{{ trajet.heureTrajet|date('H:i') }}"; // Format HH:mm
 
-const corrections = {
-"Mtsamoudou": "M'tsamoudou",
-"Mtsahara": "M'tsahara",
-"Mtsamboro": "M'tsamboro",
-"Mtsangadoua": "M'tsangadoua",
-"Mtsangamboua": "M'tsangamboua",
-"Mtsapéré": "M'tsapéré",
-"MTsangamouji": "M'Tsangamouji"
-};
+		const corrections = {
+			"Mtsamoudou": "M'tsamoudou",
+			"Mtsahara": "M'tsahara",
+			"Mtsamboro": "M'tsamboro",
+			"Mtsangadoua": "M'tsangadoua",
+			"Mtsangamboua": "M'tsangamboua",
+			"Mtsapéré": "M'tsapéré",
+			"MTsangamouji": "M'Tsangamouji"
+		};
 
-if (corrections[depart]) 
-depart = corrections[depart];
-
-if (corrections[arrivee]) 
-arrivee = corrections[arrivee];
+		if (corrections[depart])
+			depart = corrections[depart];
 
 
-const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
-
-const map = L.map('map').setView([
--12.8, 45.2
-], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
-
-const icons = {
-green: L.icon(
-{
-iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-iconSize: [
-25, 41
-],
-iconAnchor: [
-12, 41
-],
-popupAnchor: [
-1, -34
-],
-shadowSize: [41, 41]
-}
-),
-red: L.icon(
-{
-iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-iconSize: [
-25, 41
-],
-iconAnchor: [
-12, 41
-],
-popupAnchor: [
-1, -34
-],
-shadowSize: [41, 41]
-}
-)
-};
-
-function geocode(address) {
-return fetch (`https://nominatim.openstreetmap.org/search?format=json&q=${
-encodeURIComponent(address)
-}`).then(res => res.json()).then(data => {
-if (data.length > 0) {
-return [
-parseFloat(data[0].lon),
-parseFloat(data[0].lat)
-];
-} else {
-throw new Error('Adresse non trouvée : ' + address);
-}
-});
-}
-
-Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
-const [from, to] = coords;
-
-L.marker([
-from[1], from[0]
-], {icon: icons.green}).addTo(map).bindPopup("Départ : " + depart);
-L.marker([
-to[1], to[0]
-], {icon: icons.red}).addTo(map).bindPopup("Arrivée : " + arrivee);
-
-fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'Authorization': apiKey
-},
-body: JSON.stringify(
-{
-coordinates: [from, to]
-}
-)
-}).then(res => res.json()).then(data => {
-const route = L.geoJSON(data, {
-style: {
-color: 'orange',
-weight: 5
-}
-}).addTo(map);
-
-const summary = data.features[0].properties.summary;
-
-// Affichage de la distance
-const distanceKm = (summary.distance / 1000).toFixed(1);
-// document.getElementById('distance-trajet').textContent = distanceKm + ' km';
-
-// Affichage de la durée
-const durationSec = summary.duration;
-const heures = Math.floor(durationSec / 3600);
-const minutes = Math.round((durationSec % 3600) / 60);
-let texteDuree = '';
-if (heures > 0) 
-texteDuree += `${heures} h `;
-
-texteDuree += `${minutes} min`;
-document.getElementById('temps-trajet').textContent = texteDuree;
-
-// Calcul de l'heure d'arrivée
-const [h, m] = heureDepart.split(':').map(Number);
-const departDate = new Date();
-departDate.setHours(h, m, 0);
-const arriveeDate = new Date(departDate.getTime() + durationSec * 1000);
-const hh = arriveeDate.getHours().toString().padStart(2, '0');
-const mm = arriveeDate.getMinutes().toString().padStart(2, '0');
-document.getElementById('arrivee-traject-time').textContent = `${hh}:${mm}`;
-
-// Affichage correct de la carte
-setTimeout(() => {
-map.invalidateSize();
-map.fitBounds(route.getBounds(), {
-padding: [30, 30]
-});
-}, 200);
-}).catch(err => console.error('Erreur ORS :', err));
-});
-});
-	</script>
-	<script>
-		document.addEventListener("DOMContentLoaded", function () {
-const sticky = document.getElementById('reservation-sticky');
-const stopAt = document.getElementById('reservation-section');
-
-if (! sticky || ! stopAt) 
-return;
+		if (corrections[arrivee])
+			arrivee = corrections[arrivee];
 
 
-const observer = new IntersectionObserver(([entry]) => {
-if (entry.isIntersecting) { // On a atteint le vrai bouton → on cache le sticky
-sticky.classList.remove('fixed');
-sticky.classList.add('d-none');
-} else { // On est loin → on affiche le sticky
-sticky.classList.add('fixed');
-sticky.classList.remove('d-none');
-}
-}, {threshold: 0.1});
 
-observer.observe(stopAt);
-});
-	</script>
+		const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
+
+		const map = L.map('map').setView([
+			-12.8, 45.2
+		], 10);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+		const icons = {
+			green: L.icon(
+				{
+					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+					iconSize: [
+						25, 41
+					],
+					iconAnchor: [
+						12, 41
+					],
+					popupAnchor: [
+						1, -34
+					],
+					shadowSize: [41, 41]
+				}
+			),
+			red: L.icon(
+				{
+					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+					iconSize: [
+						25, 41
+					],
+					iconAnchor: [
+						12, 41
+					],
+					popupAnchor: [
+						1, -34
+					],
+					shadowSize: [41, 41]
+				}
+			)
+		};
+
+		function geocode(address) {
+			return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)
+				}`).then(res => res.json()).then(data => {
+					if (data.length > 0) {
+						return [
+							parseFloat(data[0].lon),
+							parseFloat(data[0].lat)
+						];
+					} else {
+						throw new Error('Adresse non trouvée : ' + address);
+					}
+				});
+		}
+
+		Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
+			const [from, to] = coords;
+
+			L.marker([
+				from[1], from[0]
+			], { icon: icons.green }).addTo(map).bindPopup("Départ : " + depart);
+			L.marker([
+				to[1], to[0]
+			], { icon: icons.red }).addTo(map).bindPopup("Arrivée : " + arrivee);
+
+			fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': apiKey
+				},
+				body: JSON.stringify(
+					{
+						coordinates: [from, to]
+					}
+				)
+			}).then(res => res.json()).then(data => {
+				const route = L.geoJSON(data, {
+					style: {
+						color: 'orange',
+						weight: 5
+					}
+				}).addTo(map);
+
+				const summary = data.features[0].properties.summary;
+
+				// Affichage de la distance
+				const distanceKm = (summary.distance / 1000).toFixed(1);
+				// document.getElementById('distance-trajet').textContent = distanceKm + ' km';
+
+				// Affichage de la durée
+				const durationSec = summary.duration;
+				const heures = Math.floor(durationSec / 3600);
+				const minutes = Math.round((durationSec % 3600) / 60);
+				let texteDuree = '';
+				if (heures > 0)
+					texteDuree += `${heures} h `;
 
 
+				texteDuree += `${minutes} min`;
+				document.getElementById('temps-trajet').textContent = texteDuree;
+
+				// Calcul de l'heure d'arrivée
+				const [h, m] = heureDepart.split(':').map(Number);
+				const departDate = new Date();
+				departDate.setHours(h, m, 0);
+				const arriveeDate = new Date(departDate.getTime() + durationSec * 1000);
+				const hh = arriveeDate.getHours().toString().padStart(2, '0');
+				const mm = arriveeDate.getMinutes().toString().padStart(2, '0');
+				document.getElementById('arrivee-traject-time').textContent = `${hh}:${mm}`;
+
+				// Affichage correct de la carte
+				setTimeout(() => {
+					map.invalidateSize();
+					map.fitBounds(route.getBounds(), {
+						padding: [30, 30]
+					});
+				}, 200);
+			}).catch(err => console.error('Erreur ORS :', err));
+		});
+	});
+</script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		const sticky = document.getElementById('reservation-sticky');
+		const stopAt = document.getElementById('reservation-section');
+
+		if (!sticky || !stopAt)
+			return;
+
+
+
+		const observer = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) { // On a atteint le vrai bouton → on cache le sticky
+				sticky.classList.remove('fixed');
+				sticky.classList.add('d-none');
+			} else { // On est loin → on affiche le sticky
+				sticky.classList.add('fixed');
+				sticky.classList.remove('d-none');
+			}
+		}, { threshold: 0.1 });
+
+		observer.observe(stopAt);
+	});
+</script>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const buttons = document.querySelectorAll('.contacter-non-connecte');
+		buttons.forEach(btn => {
+			btn.addEventListener('click', () => {
+				Swal.fire({
+					icon: 'info',
+					title: 'Connexion requise',
+					text: 'Connecte-toi pour pouvoir contacter un conducteur.',
+					confirmButtonText: 'Se connecter',
+					showCancelButton: true,
+					cancelButtonText: 'Annuler'
+				}).then(result => {
+					if (result.isConfirmed) {
+						window.location.href = "{{ path('app_login') }}";
+					}
+				});
+			});
+		});
+	});
+</script>
 {% endblock %}
