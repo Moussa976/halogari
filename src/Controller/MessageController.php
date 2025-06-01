@@ -19,15 +19,11 @@ class MessageController extends AbstractController
     /**
      * @Route("/user/messages", name="app_message")
      */
-    /**
-     * @Route("/user/messages", name="app_message")
-     */
     public function index(MessageRepository $repo, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
 
-        $conversations = $repo->createQueryBuilder('m')
-            ->select('m')
+        $messages = $repo->createQueryBuilder('m')
             ->where('m.expediteur = :user OR m.destinataire = :user')
             ->setParameter('user', $user)
             ->orderBy('m.createdAt', 'DESC')
@@ -36,15 +32,27 @@ class MessageController extends AbstractController
 
         $grouped = [];
 
-        foreach ($conversations as $message) {
-            $other = $message->getExpediteur() === $user ? $message->getDestinataire() : $message->getExpediteur();
-            $id = $other->getId();
+        foreach ($messages as $message) {
+            $trajet = $message->getTrajet();
+            if (!$trajet) {
+                continue; // sécurité si message sans trajet
+            }
 
-            if (!isset($grouped[$id])) {
-                $grouped[$id] = [
+            $other = $message->getExpediteur() === $user ? $message->getDestinataire() : $message->getExpediteur();
+            $key = $other->getId() . '_' . $trajet->getId();
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
                     'user' => $other,
+                    'trajet' => $trajet,
                     'lastMessage' => $message,
+                    'unreadCount' => 0,
                 ];
+            }
+
+            // Incrémente si message non lu par l'utilisateur
+            if ($message->getDestinataire() === $user && !$message->isRead()) {
+                $grouped[$key]['unreadCount']++;
             }
         }
 
