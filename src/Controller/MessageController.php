@@ -137,63 +137,75 @@ class MessageController extends AbstractController
      */
     public function sendMessage(Request $request, EntityManagerInterface $em, MailerInterface $mailer): JsonResponse
     {
-        $user = $this->getUser();
-        $data = json_decode($request->getContent(), true);
+        try {
+            $user = $this->getUser();
+            $data = json_decode($request->getContent(), true);
 
-        if (!$data) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Mauvais JSON'], 400);
+            if (!$data) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Mauvais JSON'], 400);
+            }
+
+            $destinataireId = $data['destinataire'] ?? null;
+            $trajetId = $data['trajet'] ?? null;
+            $contenu = $data['contenu'] ?? null;
+
+            if (!$user || !$destinataireId || !$contenu || !$trajetId) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
+            }
+
+            $destinataire = $em->getRepository(User::class)->find($destinataireId);
+            $trajet = $em->getRepository(Trajet::class)->find($trajetId);
+
+            if (!$destinataire || !$trajet) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur ou trajet introuvable.'], 404);
+            }
+
+            $message = new Message();
+            $message->setExpediteur($user);
+            $message->setDestinataire($destinataire);
+            $message->setContenu($contenu);
+            $message->setTrajet($trajet);
+            $message->setCreatedAt(new \DateTime());
+
+            $em->persist($message);
+            $em->flush();
+
+            // Photo de profil
+            $cheminPhoto = $user->getPhoto()
+                ? $this->getParameter('kernel.project_dir') . '/public/uploads/photos/' . $user->getPhoto()
+                : $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
+
+            if (!file_exists($cheminPhoto)) {
+                $cheminPhoto = $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
+            }
+
+            $email = (new Email())
+                ->from('no-reply@halogari.yt')
+                ->to($destinataire->getEmail())
+                ->subject('Nouveau message de ' . $user->getPrenom())
+                ->html($this->renderView('emails/nouveau_message.html.twig', [
+                    'expediteur' => $user,
+                    'destinataire' => $destinataire,
+                    'message' => $message,
+                ]))
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
+                ->embedFromPath($cheminPhoto, 'profil');
+
+            $mailer->send($email);
+
+            return new JsonResponse([
+                'status' => 'sent',
+                'contenu' => $message->getContenu(),
+                'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
+            ]);
+
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $destinataireId = $data['destinataire'] ?? null;
-        $trajetId = $data['trajet'] ?? null;
-        $contenu = $data['contenu'] ?? null;
-
-        if (!$user || !$destinataireId || !$contenu || !$trajetId) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
-        }
-
-        $destinataire = $em->getRepository(User::class)->find($destinataireId);
-        $trajet = $em->getRepository(Trajet::class)->find($trajetId);
-
-        if (!$destinataire || !$trajet) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur ou trajet introuvable.'], 404);
-        }
-
-        $message = new Message();
-        $message->setExpediteur($user);
-        $message->setDestinataire($destinataire);
-        $message->setContenu($contenu);
-        $message->setTrajet($trajet);
-        $message->setCreatedAt(new \DateTime());
-
-        $em->persist($message);
-        $em->flush();
-
-        // Photo de profil de l’expéditeur
-        $cheminPhoto = $user->getPhoto()
-            ? $this->getParameter('kernel.project_dir') . '/public/uploads/photos/' . $user->getPhoto()
-            : $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
-
-        // Email au destinataire
-        $email = (new Email())
-            ->from('no-reply@halogari.yt')
-            ->to($destinataire->getEmail())
-            ->subject('Nouveau message de ' . $user->getPrenom())
-            ->html($this->renderView('emails/nouveau_message.html.twig', [
-                'expediteur' => $user,
-                'destinataire' => $destinataire,
-                'message' => $message,
-            ]))
-            ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
-            ->embedFromPath($cheminPhoto, 'profil');
-
-        $mailer->send($email);
-
-        return new JsonResponse([
-            'status' => 'sent',
-            'contenu' => $message->getContenu(),
-            'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
-        ]);
     }
+
 
 }
