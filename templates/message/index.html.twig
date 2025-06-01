@@ -14,7 +14,7 @@
                 <a href="{{ path('app_conversation', { id: conv.user.id }) }}" class="list-group-item list-group-item-action">
                     <div class="d-flex justify-content-between">
                         <strong>{{ conv.user.prenom }} {{ conv.user.nom }}</strong>
-                        <small>{{ conv.lastMessage.createdAt|date('d/m/Y H:i') }}</small>
+                        <small class="small-sm">{{ conv.lastMessage.createdAt|date_conversation }}</small>
                     </div>
                     <div class="text-muted">{{ conv.lastMessage.contenu|slice(0, 50) ~ '...' }}</div>
                 </a>
