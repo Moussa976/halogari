@@ -100,20 +100,15 @@
 
 				<div class="card-footer bg-white border-top">
 					{% if app.user %}
-					<a href="{{ path('app_conversation', { userId: conducteur.id, trajetId: trajet.id }) }}"
+					<a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}"
 						class="btn btn-outline-orange w-100">
-						<i class="bi bi-chat-dots"></i>
-						Contacter
-						{{ conducteur.prenom }}
+						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom }}
 					</a>
 					{% else %}
 					<button class="btn btn-outline-orange w-100 contacter-non-connecte">
-						<i class="bi bi-chat-dots"></i>
-						Contacter
-						{{ conducteur.prenom }}
+						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom }}
 					</button>
 					{% endif %}
-
 				</div>
 			</div>
 		</div>
@@ -182,23 +177,14 @@
 						</button>
 						{% else %}
 						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
-							{% if isPassed %}
-							<i class="bi bi-eye"></i>
-							Voir mon trajet
-							{% else %}
-							<i class="bi bi-gear"></i>
-							Gérer mon trajet
-							{% endif %}
+							{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i
+								class="bi bi-gear"></i> Gérer mon trajet {% endif %}
 						</a>
 						{% endif %}
 						{% else %}
 						<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %}
 							style="opacity:0.6; pointer-events: none;" {% endif %}>
-							{% if isPassed %}
-							Trajet terminé
-							{% else %}
-							Se connecter pour réserver
-							{% endif %}
+							{% if isPassed %} Trajet terminé {% else %} Se connecter pour réserver {% endif %}
 						</a>
 						{% endif %}
 						</form>
@@ -224,23 +210,14 @@
 						{% else %}
 						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
 
-							{% if isPassed %}
-							<i class="bi bi-eye"></i>
-							Voir mon trajet
-							{% else %}
-							<i class="bi bi-gear"></i>
-							Gérer mon trajet
-							{% endif %}
+							{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i
+								class="bi bi-gear"></i> Gérer mon trajet {% endif %}
 						</a>
 						{% endif %}
 						{% else %}
 						<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %}
 							style="opacity:0.6; pointer-events: none;" {% endif %}>
-							{% if isPassed %}
-							Trajet terminé
-							{% else %}
-							Se connecter pour réserver
-							{% endif %}
+							{% if isPassed %} Trajet terminé {% else %} Se connecter pour réserver {% endif %}
 						</a>
 						{% endif %}
 					</form>
@@ -276,10 +253,8 @@
 		if (corrections[depart])
 			depart = corrections[depart];
 
-
 		if (corrections[arrivee])
 			arrivee = corrections[arrivee];
-
 
 
 		const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
@@ -381,7 +356,6 @@
 				if (heures > 0)
 					texteDuree += `${heures} h `;
 
-
 				texteDuree += `${minutes} min`;
 				document.getElementById('temps-trajet').textContent = texteDuree;
 
@@ -412,7 +386,6 @@
 
 		if (!sticky || !stopAt)
 			return;
-
 
 
 		const observer = new IntersectionObserver(([entry]) => {
