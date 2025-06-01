@@ -39,10 +39,21 @@ class NotificationService
             ->html($html);
 
         // Ajout du logo en pièce jointe intégrée (cid)
-        $email->embedFromPath(
-            __DIR__ . '/../../public/images/logo.png',
-            'logo_halogari'
-        );
+        $email->embedFromPath( __DIR__ . '/../../public/images/logo.png', 'logo_halogari' );
+
+        $this->mailer->send($email);
+    }
+
+    public function demanderValidationReservation(Reservation $reservation): void
+    {
+        $email = (new Email())
+            ->from('no-reply@halogari.yt')
+            ->to($reservation->getTrajet()->getConducteur()->getEmail())
+            ->subject('Nouvelle demande de réservation à valider')
+            ->html($this->twig->render('emails/demande_validation_reservation.html.twig', [
+                'reservation' => $reservation
+            ]))
+            ->embedFromPath( __DIR__ . '/../../public/images/logo.png', 'logo_halogari' );
 
         $this->mailer->send($email);
     }

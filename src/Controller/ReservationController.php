@@ -29,7 +29,7 @@ class ReservationController extends AbstractController
     /**
      * @Route("/reservation/{id}", name="app_reservation", methods={"GET", "POST"})
      */
-    public function create(Request $request, int $id, EntityManagerInterface $em): Response
+    public function create(Request $request, int $id, EntityManagerInterface $em, NotificationService $notifier): Response
     {
         if (!$this->getUser()) {
             $this->addFlash('error', 'Vous devez être connecté pour réserver un trajet.');
@@ -86,6 +86,8 @@ class ReservationController extends AbstractController
         $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() - $places);
 
         $em->flush();
+
+        $notifier->demanderValidationReservation($reservation);
 
         $this->addFlash('success', "Réservation confirmée pour $places place(s).");
 
