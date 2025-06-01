@@ -145,6 +145,12 @@ class MessageController extends AbstractController
         $em->persist($message);
         $em->flush();
 
+        // Récupère le chemin de la photo de profil
+        $cheminPhoto = $user->getPhoto()
+            ? $this->getParameter('kernel.project_dir') . '/public/uploads/photos/' . $user->getPhoto()
+            : $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
+
+        // Construction de l'email
         $email = (new Email())
             ->from('no-reply@halogari.yt')
             ->to($destinataire->getEmail())
@@ -154,7 +160,9 @@ class MessageController extends AbstractController
                 'destinataire' => $destinataire,
                 'message' => $message,
             ]))
-            ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
+            ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
+            ->embedFromPath($cheminPhoto, 'profil');
+
 
 
         $mailer->send($email);

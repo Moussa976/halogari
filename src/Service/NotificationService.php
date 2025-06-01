@@ -33,14 +33,14 @@ class NotificationService
         ]);
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from('no-reply@halogari.yt')
             ->to($passager->getEmail())
             ->subject($subject)
             ->html($html);
 
         // Ajout du logo en pièce jointe intégrée (cid)
         $email->embedFromPath(
-            __DIR__ . '/../../public/images/logo_halogari.png',
+            __DIR__ . '/../../public/images/logo.png',
             'logo_halogari'
         );
 

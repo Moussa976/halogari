@@ -3,6 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Vous avez reçu un message sur HaloGari</title>
+     <style>
+    .row {
+      display: flex;
+      align-items: center; /* 💡 Centre verticalement les colonnes */
+      margin: 10px 0;
+      min-height: 100px; /* Nécessaire pour voir l'effet si le contenu est petit */
+      border: 1px solid #ccc;
+    }
+
+    .col-2 {
+      flex: 0 0 16.6666%;
+      max-width: 16.6666%;
+      background-color: #f8d7da;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .col-10 {
+      flex: 0 0 83.3333%;
+      max-width: 83.3333%;
+      background-color: #d1ecf1;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px; color: #333;">
 
@@ -17,12 +42,20 @@
                 <h2 style="color: #ff6f00;">Bonjour {{ destinataire.prenom }},</h2>
 
                 <p>
-                    Vous avez reçu un nouveau message de <strong>{{ expediteur.prenom }} {{ expediteur.nom }}</strong> via la plateforme <strong>HaloGari</strong> :
+                    Vous avez reçu un nouveau message de <strong style="color: #ff6f00;">{{ expediteur.prenom }} </strong> via la plateforme <strong>HaloGari</strong> :
                 </p>
 
-                <blockquote style="border-left: 4px solid #ff6f00; margin: 20px 0; padding-left: 15px; color: #555;">
+                <div class="row">
+                    <div class="col-2"><img src="cid:profil"
+     alt="Photo de {{ expediteur.prenom }}"
+     style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; display: block; margin: auto;">
+</div>
+                    <div class="col-10"><blockquote style="border-left: 4px solid #ff6f00; margin: 20px 0; padding-left: 15px; color: #555;">
                     {{ message.contenu }}
-                </blockquote>
+                </blockquote></div>
+                </div>
+
+                
 
                 <p>
                     Cliquez sur le bouton ci-dessous pour répondre directement depuis votre espace :
