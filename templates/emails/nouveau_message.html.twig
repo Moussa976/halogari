@@ -44,7 +44,7 @@
 									→
 									{{ message.trajet.arrivee }}</strong><br>
 								Départ :
-								{{ message.trajet.dateHeure|date('d/m/Y H:i') }}
+								{{ message.trajet.dateTrajet|date('d/m/Y') }} à {{ message.trajet.heureTrajet|date('H:i') }}
 							</p>
 						</div>
 					{% endif %}
