@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Message;
+use App\Entity\Trajet;
 use App\Entity\User;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -83,41 +84,51 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/user/messages/{id<\d+>}", name="app_conversation")
+     * @Route("/user/messages/{userId<\d+>}/{trajetId<\d+>}", name="app_conversation")
      */
     public function conversation(
-        int $id,
+        int $userId,
+        int $trajetId,
         MessageRepository $repo,
         EntityManagerInterface $em
     ): Response {
         $currentUser = $this->getUser();
-        $otherUser = $em->getRepository(User::class)->find($id);
+        $otherUser = $em->getRepository(User::class)->find($userId);
+        $trajet = $em->getRepository(Trajet::class)->find($trajetId);
 
-        if (!$otherUser) {
-            throw $this->createNotFoundException("Utilisateur introuvable.");
+        if (!$otherUser || !$trajet) {
+            throw $this->createNotFoundException("Utilisateur ou trajet introuvable.");
         }
 
-        // Récupérer tous les messages entre les deux
+        // Récupère tous les messages pour CE trajet entre ces 2 utilisateurs
         $messages = $repo->createQueryBuilder('m')
-            ->where('(m.expediteur = :me AND m.destinataire = :them) OR (m.expediteur = :them AND m.destinataire = :me)')
-            ->setParameter('me', $currentUser)
-            ->setParameter('them', $otherUser)
+            ->where('m.trajet = :trajet')
+            ->andWhere('
+            (m.expediteur = :me AND m.destinataire = :them)
+            OR
+            (m.expediteur = :them AND m.destinataire = :me)
+        ')
+            ->setParameters([
+                'me' => $currentUser,
+                'them' => $otherUser,
+                'trajet' => $trajet
+            ])
             ->orderBy('m.createdAt', 'ASC')
             ->getQuery()
             ->getResult();
 
-        // Marquer comme lus les messages reçus par l'utilisateur connecté
+        // Marquer les messages reçus comme lus
         foreach ($messages as $message) {
             if ($message->getDestinataire() === $currentUser && !$message->isRead()) {
                 $message->setIsRead(true);
             }
         }
-
         $em->flush();
 
         return $this->render('message/conversation.html.twig', [
             'messages' => $messages,
             'otherUser' => $otherUser,
+            'trajet' => $trajet,
         ]);
     }
 

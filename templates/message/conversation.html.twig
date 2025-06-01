@@ -5,7 +5,10 @@
 {% block body %}
 <div class="container py-5">
     <h3 class="mb-4">Conversation avec {{ otherUser.prenom }}</h3>
-
+    <div class="mb-4 p-3 bg-light rounded border">
+        <strong>Trajet :</strong> {{ trajet.depart }} → {{ trajet.arrivee }} <br>
+        <strong>Départ :</strong> {{ trajet.dateHeure|date('d/m/Y H:i') }}
+    </div>
     <div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto;" id="messages-container">
         {% for message in messages %}
             <div class="mb-2 {% if message.expediteur.id == app.user.id %}text-end{% else %}text-start{% endif %}">
