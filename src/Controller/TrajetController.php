@@ -122,7 +122,8 @@ class TrajetController extends AbstractController
                 ->context([
                     'user' => $user,
                     'trajet' => $trajet,
-                ]);
+                ])
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
 
             $mailer->send($email);
 

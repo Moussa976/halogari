@@ -159,10 +159,7 @@
 												{% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
 												{% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
 
-												<span class="prix-euro">
-													<strong>{{ prixEntier }}</strong>
-													<sup>,{{ prixDecimal }}</sup>
-													€</span>
+												<span class="prix-euro inline"><strong>{{ prixEntier }}</strong><sup>,{{ prixDecimal }}</sup>€</span>
 											</div>
 										</div>
 									</div>
