@@ -38,15 +38,22 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
 
     const input = document.getElementById('message-input');
     const contenu = input.value.trim();
+
     const destinataireId = {{ otherUser.id|json_encode }};
-;
+    const trajetId = {{ trajet.id|json_encode }};
 
     if (contenu === '') return;
 
     fetch('/user/messages/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contenu, destinataire: destinataireId })
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contenu: contenu,
+            destinataire: destinataireId,
+            trajet: trajetId
+        })
     })
     .then(res => res.json())
     .then(data => {
@@ -64,8 +71,15 @@ document.getElementById('message-form').addEventListener('submit', function (e) 
             container.scrollTop = container.scrollHeight;
 
             input.value = '';
+        } else {
+            alert('Erreur : ' + (data.message || 'Impossible d’envoyer le message.'));
         }
+    })
+    .catch(err => {
+        console.error('Erreur réseau :', err);
+        alert('Erreur de connexion. Veuillez réessayer.');
     });
 });
 </script>
+
 {% endblock %}

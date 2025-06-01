@@ -139,37 +139,42 @@ class MessageController extends AbstractController
     {
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
+
         if (!$data) {
             return new JsonResponse(['status' => 'error', 'message' => 'Mauvais JSON'], 400);
         }
 
         $destinataireId = $data['destinataire'] ?? null;
+        $trajetId = $data['trajet'] ?? null;
         $contenu = $data['contenu'] ?? null;
 
-        if (!$user || !$destinataireId || !$contenu) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Données invalides.'], 400);
+        if (!$user || !$destinataireId || !$contenu || !$trajetId) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
         }
 
         $destinataire = $em->getRepository(User::class)->find($destinataireId);
-        if (!$destinataire) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Destinataire introuvable.'], 404);
+        $trajet = $em->getRepository(Trajet::class)->find($trajetId);
+
+        if (!$destinataire || !$trajet) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur ou trajet introuvable.'], 404);
         }
 
         $message = new Message();
         $message->setExpediteur($user);
         $message->setDestinataire($destinataire);
         $message->setContenu($contenu);
+        $message->setTrajet($trajet);
         $message->setCreatedAt(new \DateTime());
 
         $em->persist($message);
         $em->flush();
 
-        // Récupère le chemin de la photo de profil
+        // Photo de profil de l’expéditeur
         $cheminPhoto = $user->getPhoto()
             ? $this->getParameter('kernel.project_dir') . '/public/uploads/photos/' . $user->getPhoto()
             : $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
 
-        // Construction de l'email
+        // Email au destinataire
         $email = (new Email())
             ->from('no-reply@halogari.yt')
             ->to($destinataire->getEmail())
@@ -182,8 +187,6 @@ class MessageController extends AbstractController
             ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
             ->embedFromPath($cheminPhoto, 'profil');
 
-
-
         $mailer->send($email);
 
         return new JsonResponse([
@@ -192,4 +195,5 @@ class MessageController extends AbstractController
             'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
         ]);
     }
+
 }
