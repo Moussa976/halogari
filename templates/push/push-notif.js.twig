@@ -1,0 +1,78 @@
+{# templates/push/push-notif.js.twig #}
+
+const VAPID_PUBLIC_KEY = '{{ vapidPublicKey }}'; // Injectée depuis Symfony
+
+/**
+ * Convertit une clé base64 (url-safe) en Uint8Array
+ */
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+/**
+ * Fonction principale d’abonnement Web Push
+ */
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Notifications non supportées sur ce navigateur.');
+    return;
+  }
+
+  // Enregistre le Service Worker
+  const registration = await navigator.serviceWorker.register('/js/service-worker.js');
+
+  // Abonnement Push
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+
+  // Envoie l'abonnement au backend Symfony
+  const response = await fetch('/abonnement-push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription)
+  });
+
+  if (response.ok) {
+    console.log('✅ Abonnement Push enregistré');
+  } else {
+    console.error('❌ Erreur lors de l’envoi de l’abonnement');
+  }
+}
+
+/**
+ * Dès que la page est chargée, demande à l’utilisateur s’il veut activer les notifications
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('pushPermissionAsked')) {
+    setTimeout(() => {
+      Swal.fire({
+        title: '🔔 Notifications HaloGari',
+        html: 'Souhaitez-vous recevoir les notifications pour vos réservations et messages ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Oui, activer',
+        cancelButtonText: 'Non, refuser',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then((result) => {
+        localStorage.setItem('pushPermissionAsked', '1');
+
+        if (result.isConfirmed) {
+        subscribeToPush();
+        setTimeout(() => {
+          Swal.fire('✅ Notifications activées', '', 'success');
+        }, 2000); // Attendre 2 secondes
+      } else {
+        Swal.fire('ℹ️ Notifications désactivées', '', 'info');
+      }
+      });
+    }, 5000); // 👈 délai de 5 secondes avant d'afficher la popup
+  }
+});
+
+

@@ -1,7 +1,8 @@
+// 📦 Mise en cache pour fonctionnement hors-ligne
 const CACHE_NAME = 'halogari-cache-v1';
 const urlsToCache = [
   '/',
-  '/style.css',
+  '/css/style.css',
   '/manifest.json',
   '/images/logo.png',
   '/images/icons/icon-192x192.png',
@@ -24,3 +25,17 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
+// 🔔 Gestion des notifications Web Push
+self.addEventListener('push', function(event) {
+  const data = event.data ? event.data.json() : {};
+
+  const options = {
+    body: data.body || 'Notification HaloGari',
+    icon: '/images/logo.png',
+    badge: '/images/icons/icon-192x192.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'HaloGari', options)
+  );
+});

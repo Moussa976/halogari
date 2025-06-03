@@ -1,21 +1,20 @@
+{# === 1. LIBRAIRIES EXTERNES === #}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+{# === 2. FORMULAIRES & UI (villages, datepicker) === #}
 <script>
   $(function () {
-    // Charger la liste des villages
     $.getJSON('/cities.json', function (data) {
       const noms = data.map(item => item.name);
 
-      // Autocomplete pour tous les champs .villages
       $(".villages").autocomplete({ source: noms });
 
-      // Validation du formulaire
       $("#form-recherche").on("submit", function (e) {
         let erreur = false;
 
@@ -32,61 +31,59 @@
         });
 
         if (erreur) {
-          e.preventDefault(); // Empêche l'envoi
-          // Optionnel : ajouter un message global
+          e.preventDefault();
           alert("Veuillez sélectionner des villages valides depuis la liste.");
         }
       });
     });
   });
 
-  // DatePicker
   flatpickr(".dateDepart", {
-    locale: "fr",                // Traduction française
-    altInput: true,              // Affiche un champ "alternatif"
-    altFormat: "j F Y",          // Format lisible : 15 mai 2025
-    dateFormat: "Y-m-d",         // Format réel soumis au serveur
-    minDate: "today"            // ❌ Interdit les dates passée
+    locale: "fr",
+    altInput: true,
+    altFormat: "j F Y",
+    dateFormat: "Y-m-d",
+    minDate: "today"
   });
 </script>
+
+{# === 3. SERVICE WORKER REGISTRATION === #}
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('/js/service-worker.js')
         .then(() => console.log('✅ Service Worker enregistré'))
         .catch(err => console.error('❌ Erreur SW', err));
     });
   }
 </script>
 
+{# === 4. INSTALLATION PWA & NOTIFICATIONS SAFARI === #}
 <script>
   let deferredPrompt;
 
-  // 👉 Pour Android : bouton installation
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    const installButtons = document.querySelectorAll('.installAppBtn');
-
-    installButtons.forEach((btn) => {
-      btn.classList.remove('d-none');
-      btn.addEventListener('click', () => {
-        btn.disabled = true;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('✅ L’app HaloGari a été installée');
-          } else {
-            console.log('❌ Installation refusée');
-          }
-          deferredPrompt = null;
+    if (localStorage.getItem('pushPermissionAsked')) {
+      const installButtons = document.querySelectorAll('.installAppBtn');
+      installButtons.forEach((btn) => {
+        btn.classList.remove('d-none');
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            console.log(choiceResult.outcome === 'accepted'
+              ? '✅ L’app HaloGari a été installée'
+              : '❌ Installation refusée');
+            deferredPrompt = null;
+          });
         });
       });
-    });
+    }
   });
 
-  // 👉 Pour iPhone : gestion popup selon navigateur
   window.addEventListener('load', () => {
     const ua = navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
@@ -97,11 +94,7 @@
       Swal.fire({
         icon: 'warning',
         title: 'Installation non disponible',
-        html: `
-          Pour installer <strong>HaloGari</strong>,<br>
-          vous devez utiliser le navigateur <strong><i class="bi bi-browser-safari"></i> Safari</strong>.<br><br>
-          Merci de copier l’adresse et l’ouvrir dans Safari 📱
-        `,
+        html: `Pour installer <strong>HaloGari</strong>, utilisez <strong>Safari</strong> 📱`,
         confirmButtonText: 'OK',
         allowOutsideClick: false,
         allowEscapeKey: false
@@ -113,33 +106,26 @@
       Swal.fire({
         icon: 'info',
         title: '📲 Installer HaloGari',
-        html: `
-          Appuie sur le bouton <strong><i class="bi bi-box-arrow-up"></i> Partager</strong> en bas de l’écran,
-          puis sur <strong>"Sur l’écran d’accueil <i class="bi bi-plus-square"></i>"</strong> pour installer HaloGari comme une application.
-        `,
+        html: `Appuie sur <strong><i class="bi bi-box-arrow-up"></i> Partager</strong>,
+               puis <strong>"Sur l’écran d’accueil"</strong>.`,
         confirmButtonText: 'OK'
       });
     }
   });
 </script>
 
-
-
+{# === 5. MESSAGERIE, SPLASH & PUSH NOTIF JS === #}
 <script>
   function checkNewMessages() {
     fetch('/user/messages/unread')
       .then(response => response.json())
       .then(data => {
         const badges = document.querySelectorAll('.message-notif');
-
         badges.forEach(badge => {
           if (data.unreadCount > 0) {
             badge.textContent = data.unreadCount;
             badge.style.display = 'inline-block';
-
-            if (!badge.dataset.notified) {
-              badge.dataset.notified = "1";
-            }
+            badge.dataset.notified = "1";
           } else {
             badge.style.display = 'none';
             badge.dataset.notified = "";
@@ -162,15 +148,11 @@
     const logo = document.getElementById('splash-logo');
     const text = document.getElementById('splash-text');
 
-    // Vérifie si le splash a déjà été vu cette session
     if (!sessionStorage.getItem('splashShown')) {
       sessionStorage.setItem('splashShown', 'true');
-
-      // Affiche le splash
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // Animation du logo et texte
       setTimeout(() => {
         logo.style.opacity = '1';
         logo.style.transform = 'scale(1)';
@@ -178,16 +160,15 @@
         text.style.transform = 'translateY(0)';
       }, 100);
 
-      // Disparition du splash
       setTimeout(() => {
         splash.style.opacity = '0';
         splash.style.transition = 'opacity 0.5s ease-out';
         setTimeout(() => splash.remove(), 500);
       }, 1800);
     } else {
-      // Si déjà vu dans cette session : le retirer immédiatement
       splash.remove();
     }
   });
 </script>
 
+<script src="{{ path('js_push_notif') }}"></script>

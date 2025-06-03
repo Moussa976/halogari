@@ -48,7 +48,7 @@ body {
 
 .bg-header {
     height: 72vh;
-    background-image: url('images/fond-header.png');
+    background-image: url('../images/fond-header.png');
     background-size: cover;
     background-position: center;
     margin-top: 1rem !important;

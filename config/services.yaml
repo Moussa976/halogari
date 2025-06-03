@@ -14,6 +14,8 @@ services:
     
     App\Twig\TwigExtensions:
         tags: [ 'twig.extension' ]
+    App\Twig\DateExtension:
+        tags: ['twig.extension']
 
 
 
@@ -28,3 +30,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\PushNotificationService:
+        arguments:
+            $vapidPublicKey: '%env(VAPID_PUBLIC_KEY)%'
+            $vapidPrivateKey: '%env(VAPID_PRIVATE_KEY)%'
+            $vapidEmail: '%env(VAPID_EMAIL)%'
