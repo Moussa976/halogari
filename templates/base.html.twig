@@ -1,30 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}HaloGari | Covoiturage à Mayotte{% endblock %}</title>
 
-    {% include 'partials/bootstrap-link.html.twig' %}
-    <link rel="stylesheet" href="{{ asset('style.css') }}">
-    {% block stylesheets %}{% endblock %}
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% block title %}HaloGari | Covoiturage à Mayotte
+    {% endblock %}
+  </title>
 
-  <body class="d-flex flex-column min-vh-100">
-    {% include 'partials/navbar.html.twig' %}
-    
-    {% block body %}{% endblock %}
+  {% include 'partials/bootstrap-link.html.twig' %}
+  <link rel="stylesheet" href="{{ asset('style.css') }}"> {% block stylesheets %}{% endblock %}
+</head>
 
-    {% include 'partials/footer.html.twig' %}
-    {% include 'partials/bootstrap-script.html.twig' %}
+<body class="d-flex flex-column min-vh-100">
+  <div id="splash-screen" style=" position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; ">
+    <img id="splash-logo" src="{{ asset('images/logo.png') }}" alt="HaloGari" style="max-width: 180px; opacity: 0; transform: scale(0.8); transition: all 0.8s ease-in-out;">
+    <p id="splash-text" style=" margin-top: 20px; font-size: 1.1rem; color: #f27c1e; opacity: 0; transform: translateY(10px); transition: all 0.8s ease-in-out; ">
+      Covoiturage à Mayotte
+    </p>
+  </div>
 
-		{% for type, messages in app.flashes %}{% for message in messages %}
-		<script>
-			Swal.fire({
-				icon: "{{ type == 'success' ? 'success' : 'error' }}",title: "{% if type == 'success' %}Réussie{% else %}Échec{% endif %}",text: "{{ message }}",timer: {% if type == 'success' %}3000{% else %}10000{% endif %},showConfirmButton: false
-			});
-		</script>
-		{% endfor %}{% endfor %}
-    {% block javascripts %}{% endblock %}
-  </body>
+
+
+  {% include 'partials/navbar.html.twig' %}
+
+  {% block body %}{% endblock %}
+
+  {% include 'partials/footer.html.twig' %}
+  {% include 'partials/bootstrap-script.html.twig' %}
+
+  {% for type, messages in app.flashes %}
+    {% for message in messages %}
+      <script>
+        const type = "{{ type }}";
+        const icons = ['success', 'error', 'warning', 'info', 'question'];
+
+        Swal.fire({
+          icon: icons.includes(type) ? type : 'info', // par défaut : info si type inconnu
+          title: {
+            success: "✅ Réussite",
+            error: "❌ Échec",
+            warning: "⚠️ Attention",
+            info: "ℹ️ Information",
+            question: "❓ Question"
+          }[type] || "ℹ️ Message",
+          text: "{{ message|e('js') }}",
+          timer: ['error', 'warning'].includes(type) ? 10000 : 3000,
+          showConfirmButton: false
+        });
+      </script>
+    {% endfor %}
+  {% endfor %}
+  {% block javascripts %}{% endblock %}
+</body>
+
 </html>

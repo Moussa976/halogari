@@ -192,7 +192,7 @@ class UserController extends AbstractController
         $trajet->setAnnule(true);
         $em->flush();
 
-        $this->addFlash('warning', 'Trajet annulé avec succès.');
+        $this->addFlash('info', 'Trajet annulé avec succès.');
         return $this->redirectToRoute('app_trajets_reservations');
     }
 

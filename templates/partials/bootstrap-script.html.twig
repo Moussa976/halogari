@@ -49,24 +49,25 @@
     minDate: "today"            // ❌ Interdit les dates passée
   });
 </script>
-{# <script>
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('/service-worker.js')
         .then(() => console.log('✅ Service Worker enregistré'))
         .catch(err => console.error('❌ Erreur SW', err));
     });
   }
-</script> #}
+</script>
 
 <script>
   let deferredPrompt;
 
+  // 👉 Pour Android : gérer l’événement "beforeinstallprompt"
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    // Cibler tous les boutons avec la classe .installAppBtn
+    // Cibler tous les boutons .installAppBtn
     const installButtons = document.querySelectorAll('.installAppBtn');
 
     installButtons.forEach((btn) => {
@@ -85,7 +86,26 @@
       });
     });
   });
+
+  // 👉 Pour iPhone : afficher une bannière d'instructions manuelle
+  window.addEventListener('load', () => {
+    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+
+    if (isIos && !isInStandaloneMode) {
+      const banner = document.createElement('div');
+      banner.className = 'alert alert-warning text-center m-0 rounded-0';
+      banner.style.zIndex = 9999;
+      banner.innerHTML = `
+        <strong>📱 Installer HaloGari</strong><br>
+        Appuyez sur <span style="font-weight:bold">Partager</span>
+        <i class="bi bi-share" style="font-size: 1.2em;"></i> puis <span style="font-weight:bold">"Sur l’écran d’accueil"</span>.
+      `;
+      document.body.insertBefore(banner, document.body.firstChild);
+    }
+  });
 </script>
+
 
 <script>
   function checkNewMessages() {
@@ -117,3 +137,39 @@
     }
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const splash = document.getElementById('splash-screen');
+    const logo = document.getElementById('splash-logo');
+    const text = document.getElementById('splash-text');
+
+    // Vérifie si le splash a déjà été vu cette session
+    if (!sessionStorage.getItem('splashShown')) {
+      sessionStorage.setItem('splashShown', 'true');
+
+      // Affiche le splash
+      splash.style.display = 'flex';
+      splash.style.opacity = '1';
+
+      // Animation du logo et texte
+      setTimeout(() => {
+        logo.style.opacity = '1';
+        logo.style.transform = 'scale(1)';
+        text.style.opacity = '1';
+        text.style.transform = 'translateY(0)';
+      }, 100);
+
+      // Disparition du splash
+      setTimeout(() => {
+        splash.style.opacity = '0';
+        splash.style.transition = 'opacity 0.5s ease-out';
+        setTimeout(() => splash.remove(), 500);
+      }, 1800);
+    } else {
+      // Si déjà vu dans cette session : le retirer immédiatement
+      splash.remove();
+    }
+  });
+</script>
+
