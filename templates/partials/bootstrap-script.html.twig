@@ -62,12 +62,11 @@
 <script>
   let deferredPrompt;
 
-  // 👉 Pour Android : gérer l’événement "beforeinstallprompt"
+  // 👉 Pour Android : bouton installation
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    // Cibler tous les boutons .installAppBtn
     const installButtons = document.querySelectorAll('.installAppBtn');
 
     installButtons.forEach((btn) => {
@@ -87,24 +86,43 @@
     });
   });
 
-  // 👉 Pour iPhone : afficher une bannière d'instructions manuelle
+  // 👉 Pour iPhone : gestion popup selon navigateur
   window.addEventListener('load', () => {
-    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const ua = navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
 
-    if (isIos && !isInStandaloneMode) {
-      const banner = document.createElement('div');
-      banner.className = 'alert alert-warning text-center m-0 rounded-0';
-      banner.style.zIndex = 9999;
-      banner.innerHTML = `
-        <strong>📱 Installer HaloGari</strong><br>
-        Appuyez sur <span style="font-weight:bold">Partager</span>
-        <i class="bi bi-share" style="font-size: 1.2em;"></i> puis <span style="font-weight:bold">"Sur l’écran d’accueil"</span>.
-      `;
-      document.body.insertBefore(banner, document.body.firstChild);
+    if (isIos && !isSafari) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Installation non disponible',
+        html: `
+          Pour installer <strong>HaloGari</strong>,<br>
+          vous devez utiliser le navigateur <strong><i class="bi bi-browser-safari"></i> Safari</strong>.<br><br>
+          Merci de copier l’adresse et l’ouvrir dans Safari 📱
+        `,
+        confirmButtonText: 'OK',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+      return;
+    }
+
+    if (isIos && isSafari && !isInStandaloneMode) {
+      Swal.fire({
+        icon: 'info',
+        title: '📲 Installer HaloGari',
+        html: `
+          Appuie sur le bouton <strong><i class="bi bi-box-arrow-up"></i> Partager</strong> en bas de l’écran,
+          puis sur <strong>"Sur l’écran d’accueil <i class="bi bi-plus-square"></i>"</strong> pour installer HaloGari comme une application.
+        `,
+        confirmButtonText: 'OK'
+      });
     }
   });
 </script>
+
 
 
 <script>
