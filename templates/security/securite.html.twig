@@ -1,20 +1,76 @@
+{# templates/securite.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello SecurityController!{% endblock %}
+{% block title %}HaloGari | Sécurité et confiance{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4 text-center">🔒 Votre sécurité est notre priorité</h1>
+            <div class="p-4 border rounded shadow-sm bg-light">
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+                <p class="lead">
+                    Chez <strong>HaloGari</strong>, nous faisons tout pour que votre expérience de covoiturage soit <strong>fiable, humaine et rassurante</strong>.
+                </p>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/wamp64/www/halogari/src/Controller/SecurityController.php'|file_link(0) }}">src/Controller/SecurityController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/wamp64/www/halogari/templates/security/index.html.twig'|file_link(0) }}">templates/security/index.html.twig</a></code></li>
-    </ul>
+                <hr>
+
+                <h4 class="text-orange">🔍 Vérification des profils</h4>
+                <ul>
+                    <li>Les conducteurs doivent fournir un <strong>justificatif d’identité</strong> et un <strong>RIB vérifié</strong>.</li>
+                    <li>Les documents sont validés manuellement par notre équipe.</li>
+                    <li>Un profil non vérifié ne peut pas publier de trajet.</li>
+                </ul>
+
+                <hr>
+
+                <h4 class="text-orange">💬 Notation et avis</h4>
+                <ul>
+                    <li>Après chaque trajet, passagers et conducteurs peuvent se laisser une <strong>note</strong> et un <strong>commentaire</strong>.</li>
+                    <li>Un mauvais comportement peut être signalé à tout moment.</li>
+                    <li>Les évaluations contribuent à la fiabilité de la communauté.</li>
+                </ul>
+
+                <hr>
+
+                <h4 class="text-orange">💳 Paiement sécurisé</h4>
+                <p>
+                    Nous utilisons <strong>Stripe</strong>, une solution certifiée PCI-DSS, pour tous les paiements sur la plateforme.
+                </p>
+                <ul>
+                    <li>Le paiement est bloqué jusqu’à la fin du trajet.</li>
+                    <li>Le conducteur est payé uniquement si le trajet est confirmé.</li>
+                    <li>En cas d'annulation, les règles de <a href="{{ path('app_conditionsutisation') }}#remboursement">remboursement</a> s’appliquent.</li>
+                </ul>
+
+                <hr>
+
+                <h4 class="text-orange">👮‍♂️ Modération active</h4>
+                <ul>
+                    <li>Chaque message ou trajet peut être signalé s’il ne respecte pas nos règles.</li>
+                    <li>Nous analysons les signalements sous 24h.</li>
+                    <li>Les comptes abusifs sont suspendus ou bannis.</li>
+                </ul>
+
+                <hr>
+
+                <h4 class="text-orange">📞 Assistance humaine</h4>
+                <p>
+                    Un problème ? Notre équipe locale à Mayotte est là pour vous aider :
+                </p>
+                <ul>
+                    <li>Email : <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a></li>
+                    <li>Téléphone : 0639274954</li>
+                    <li>Ou via notre formulaire de <a href="{{ path('app_contact') }}">contact</a></li>
+                </ul>
+
+                <hr>
+
+                <h5 class="text-center text-success">✔ Ensemble, construisons une plateforme de confiance pour tous les Mahorais !</h5>
+
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
