@@ -21,4 +21,12 @@ class HomeController extends AbstractController
             'popularTrajets' => $popularTrajets,
         ]);
     }
+
+    /**
+     * @Route("/securite", name="app_securite")
+     */
+    public function securite(): Response
+    {
+        return $this->render('security/securite.html.twig');
+    }
 }
