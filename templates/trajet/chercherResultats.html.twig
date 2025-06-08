@@ -65,7 +65,7 @@
 						<i class="bi bi-person-fill"></i>
 					</span>
 					<div class="form-floating">
-						<select class="form-select" id="floatingSelectGridD" name="passager">
+						<select class="form-select" id="floatingSelectGridD" name="places_min">
 							{% for i in 1..8 %}
 								<option value="{{ i }}" {% if i == places %} selected {% endif %}>{{ i }}</option>
 							{% endfor %}
@@ -125,7 +125,7 @@
 								<i class="bi bi-person-fill"></i>
 							</span>
 							<div class="form-floating">
-								<select class="form-select" id="floatingSelectGrid" name="passager">
+								<select class="form-select" id="floatingSelectGrid" name="places_min">
 									{% for i in 1..8 %}
 										<option value="{{ i }}" {% if i == places %} selected {% endif %}>{{ i }}</option>
 									{% endfor %}
