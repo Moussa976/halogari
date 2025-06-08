@@ -64,7 +64,7 @@ class OtherController extends AbstractController
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
                 ->context([
                     'nom' => $nom,
-                    'email' => $email,
+                    'expediteur_email' => $email, // <-- clé renommée ici
                     'message' => $messageContent,
                 ]);
 
