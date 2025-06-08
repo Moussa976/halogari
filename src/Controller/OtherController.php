@@ -59,7 +59,7 @@ class OtherController extends AbstractController
             // 1. Envoi à l'administrateur
             $adminEmail = (new TemplatedEmail())
                 ->from(new Address('noreply@halogari.yt', 'HaloGari'))
-                ->replyTo($email, $nom)
+                ->replyTo($email)
                 ->to('moussa@halogari.yt')
                 ->subject('[Contact] ' . $sujet)
                 ->htmlTemplate('emails/contact.html.twig')
