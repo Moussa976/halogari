@@ -3,22 +3,15 @@
 {% block title %}Résultats de recherche
 {% endblock %}
 
-{% block stylesheets %}
-	<style>
-		.listtrajet .card:hover,
-		.listtrajet .card:focus {
-			border: 2px solid #32623d;
-		}
-	</style>
-{% endblock %}
+{% block stylesheets %}{% endblock %}
 
 {% block body %}
 	<div class="container py-5">
 		<div
 			class="row">
 			{# Bouton pour mobile #}
-			<div class="d-md-none text-center shadow-sm rounded py-1 mb-3">
-				<button class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRecherche">
+			<div class="d-lg-none text-center shadow-sm rounded py-1 mb-3">
+				<button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRecherche">
 					<strong>{{ depart }}
 						→
 						{{ arrivee }}
@@ -30,63 +23,123 @@
 				</button>
 			</div>
 
-			{# Formulaire inline pour desktop #}
-			<form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="d-none d-md-flex gap-2 align-items-center bg-white p-3 shadow-sm rounded mb-4">
+			{# === FORMULAIRE INLINE POUR DESKTOP === #}
+			<form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="d-none d-lg-flex gap-2 align-items-center bg-white p-3 shadow-sm rounded mb-4">
+
 				<div class="input-group">
-					<span class="input-group-text">
+					<span class="input-group-text text-vert">
 						<i class="bi bi-geo-fill"></i>
 					</span>
-					<input list="liste-villes" name="select_departure" class="form-control villages" placeholder="Départ" value="{{ depart }}" required>
+					<div class="form-floating">
+						<select id="select_departureD" name="select_departure" class="form-select villages" data-current="{{ depart }}" required>
+							<option value="{{ depart }}" selected>{{ depart }}</option>
+						</select>
+						<label for="select_departureD">Village de départ</label>
+					</div>
 				</div>
 
 				<div class="input-group">
-					<span class="input-group-text">
+					<span class="input-group-text text-vert">
 						<i class="bi bi-flag-fill"></i>
 					</span>
-					<input list="liste-villes-arrivee" name="select_arrival" class="form-control villages" placeholder="Arrivée" value="{{ arrivee }}" required>
+					<div class="form-floating">
+						<select id="select_arrivalD" name="select_arrival" class="form-select villages" data-current="{{ arrivee }}" required>
+							<option value="{{ arrivee }}" selected>{{ arrivee }}</option>
+						</select>
+						<label for="select_arrivalD">Village d'arrivée</label>
+					</div>
 				</div>
 
 				<div class="input-group">
-					<span class="input-group-text">
+					<span class="input-group-text text-vert">
 						<i class="bi bi-calendar2-event-fill"></i>
 					</span>
-					<input type="text" name="date_trajet" class="form-control dateDepart" value="{{ dateTrajet }}" required>
+					<div class="form-floating">
+						<input type="text" id="date_trajetD" class="form-control dateDepart" name="date_trajet" value="{{ dateTrajet }}" placeholder="Date du trajet" required>
+						<label for="date_trajetD">Date du trajet</label>
+					</div>
 				</div>
 
 				<div class="input-group">
-					<span class="input-group-text">
-						<i class="bi bi-people-fill"></i>
+					<span class="input-group-text text-vert">
+						<i class="bi bi-person-fill"></i>
 					</span>
-					<select name="places_min" class="form-select">
-						{% for i in 1..8 %}
-							<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
-						{% endfor %}
-					</select>
+					<div class="form-floating">
+						<select class="form-select" id="floatingSelectGridD" name="passager">
+							{% for i in 1..8 %}
+								<option value="{{ i }}" {% if i == places %} selected {% endif %}>{{ i }}</option>
+							{% endfor %}
+						</select>
+						<label for="floatingSelectGridD">Passager(s)</label>
+					</div>
 				</div>
 
-				<button type="submit" class="btn btn-orange">Rechercher</button>
+				<button type="submit" class="btn btn-orange btn-lg">Rechercher</button>
 			</form>
 
-			{# Offcanvas pour mobile #}
-			<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasRecherche" style="height: 50vh;">
+			{# === OFFCANVAS POUR MOBILE === #}
+			<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasRecherche" style="height: 60vh;">
 				<div class="offcanvas-header">
 					<h5 class="offcanvas-title">Modifier la recherche</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
 				</div>
 				<div class="offcanvas-body">
 					<form method="GET" action="{{ path('app_chercher') }}" class="d-flex flex-column gap-3">
-						<input type="text" name="select_departure" class="form-control villages" placeholder="Départ" value="{{ depart }}" required>
-						<input type="text" name="select_arrival" class="form-control villages" placeholder="Arrivée" value="{{ arrivee }}" required>
-						<input type="text" name="date_trajet" class="form-control dateDepart" placeholder="Date" value="{{ dateTrajet }}" required>
-						<select name="places_min" class="form-select">
-							{% for i in 1..8 %}
-								<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
-							{% endfor %}
-						</select>
-						<button type="submit" class="btn btn-orange">Rechercher</button>
+						
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-geo-fill"></i>
+							</span>
+							<div class="form-floating">
+								<select id="select_departure" name="select_departure" class="form-select villages" data-current="{{ depart }}" required>
+									<option value="{{ depart }}" selected>{{ depart }}</option>
+								</select>
+								<label for="select_departure">Village de départ</label>
+							</div>
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-flag-fill"></i>
+							</span>
+							<div class="form-floating">
+								<select id="select_arrival" name="select_arrival" class="form-select villages" data-current="{{ arrivee }}" required>
+									<option value="{{ arrivee }}" selected>{{ arrivee }}</option>
+								</select>
+								<label for="select_arrival">Village d'arrivée</label>
+							</div>
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-calendar2-event-fill"></i>
+							</span>
+							<div class="form-floating">
+								<input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" value="{{ dateTrajet }}" placeholder="Date du trajet" required>
+								<label for="date_trajet">Date du trajet</label>
+							</div>
+						</div>
+
+						<div class="input-group">
+							<span class="input-group-text text-vert">
+								<i class="bi bi-person-fill"></i>
+							</span>
+							<div class="form-floating">
+								<select class="form-select" id="floatingSelectGrid" name="passager">
+									{% for i in 1..8 %}
+										<option value="{{ i }}" {% if i == places %} selected {% endif %}>{{ i }}</option>
+									{% endfor %}
+								</select>
+								<label for="floatingSelectGrid">Passager(s)</label>
+							</div>
+						</div>
+
+						<button type="submit" class="btn btn-orange w-100">Rechercher</button>
 					</form>
 				</div>
 			</div>
+
+
 		</div>
 		<div
 			class="row">
@@ -159,7 +212,9 @@
 												{% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
 												{% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
 
-												<span class="prix-euro inline"><strong>{{ prixEntier }}</strong><sup>,{{ prixDecimal }}</sup>€</span>
+												<span class="prix-euro inline">
+													<strong>{{ prixEntier }}</strong>
+													<sup>,{{ prixDecimal }}</sup>€</span>
 											</div>
 										</div>
 									</div>
@@ -208,15 +263,17 @@ confirmButtonColor: '#ff6f00'
 });
 	</script>
 
-    <script>
-	document.getElementById('filter-btn').addEventListener('click', function () {
-		Swal.fire({
-			icon: 'info',
-			title: 'Aucun filtre disponible',
-			text: 'Les filtres seront bientôt disponibles.',
-			confirmButtonText: 'Ok',
-            confirmButtonColor: '#ff6f00'
-		});
-	});
-</script>
+	<script>
+		document.getElementById('filter-btn').addEventListener('click', function () {
+Swal.fire({
+icon: 'info',
+title: 'Aucun filtre disponible',
+text: 'Les filtres seront bientôt disponibles.',
+confirmButtonText: 'Ok',
+confirmButtonColor: '#ff6f00'
+});
+});
+	</script>
+
+
 {% endblock %}

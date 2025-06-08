@@ -30,14 +30,18 @@ class TrajetController extends AbstractController
         $places = $request->query->get('places_min') ?? 1;
 
 
+
         // Vérification simple
         if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
+            // Chargement depuis fichier JSON
+            $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
             return $this->redirectToRoute('app_chercherResultats', [
                 'depart' => $depart,
                 'arrivee' => $arrivee,
                 'date' => $date,
                 'heure' => 'any', // ou tu peux le retirer aussi de la route
                 'places' => $places,
+                'villages' => $villes,
             ]);
         }
 
@@ -53,11 +57,14 @@ class TrajetController extends AbstractController
 
 
         Carbon::setLocale('fr');
-        
+
         $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
 
         $dateFr = Carbon::parse($date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
+
+        // Chargement depuis fichier JSON
+        $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
 
         return $this->render('trajet/chercherResultats.html.twig', [
             'depart' => $depart,
@@ -67,6 +74,7 @@ class TrajetController extends AbstractController
             'heure' => $heure,
             'places' => $places,
             'trajets' => $trajets,
+            'villages' => $villes,
         ]);
     }
 
@@ -141,26 +149,26 @@ class TrajetController extends AbstractController
      */
     public function show(int $id, string $ledepart, string $larrive, string $nbPlaceReservee, TrajetRepository $trajetRepository, NotesRepository $notesRepository): Response
     {
-       
+
         Carbon::setLocale('fr');
 
         // affichage d'un trajet
         $trajet = $trajetRepository->findByID($id);
         $moyenne = $notesRepository->getMoyennePourUtilisateur($trajet->getConducteur());
         $nombreAvis = $notesRepository->countAvisPourUtilisateur($trajet->getConducteur());
-        
+
         $date = Carbon::parse($trajet->getDateTrajet());
         $dateTrajet = $date->translatedFormat('l d F Y');
 
         return $this->render('trajet/show.html.twig', [
-            'trajet' => $trajet, 
-            'nbPlaceReservee' => $nbPlaceReservee, 
+            'trajet' => $trajet,
+            'nbPlaceReservee' => $nbPlaceReservee,
             'moyenne' => $moyenne,
             'nombreAvis' => $nombreAvis,
             'dateTrajet' => $dateTrajet,
         ]);
     }
 
-    
+
 
 }

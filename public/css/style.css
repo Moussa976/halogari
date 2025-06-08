@@ -183,6 +183,29 @@ h1 {
     left: 90%;
 }
 
+/* Hack pour Select2 dans form-floating Bootstrap */
+.form-floating > .select2-container {
+  height: calc(3.5rem + 2px);
+}
+.select2-selection--single {
+  height: 100% !important;
+  padding-top: 1.625rem !important;
+}
+.select2-selection__rendered {
+  padding-left: 0.75rem !important;
+}
+.select2-selection__arrow {
+  top: 10px !important;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: #ee781167;
+}
+
+.select2-results__option--selected {
+    background-color: #ee7811ab !important;
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
