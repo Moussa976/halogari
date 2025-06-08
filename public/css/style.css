@@ -148,6 +148,7 @@ h1 {
     background-color: #32623d;
     color: white;
     border: 1px solid #32623d;
+    z-index: 2000;
 }
 
 .ui-menu-item-wrapper:hover {
