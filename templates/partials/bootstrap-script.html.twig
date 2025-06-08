@@ -1,4 +1,5 @@
 {# === 1. SCRIPTS EXTERNES === #}
+<!-- Librairies JavaScript principales -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -6,8 +7,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 {# === 2. FORMULAIRES & UI === #}
@@ -15,63 +14,56 @@
   "use strict";
 
   $(document).ready(function () {
-    // Chargement du fichier JSON contenant la liste des villes
+    // Chargement dynamique des villages depuis cities.json pour autocomplete
     $.getJSON('/cities.json')
       .done(function (data) {
-        // Formatage de chaque ville en objet { id, text } utilisé par Select2
         const options = data.map(v => ({ id: v.name, text: v.name }));
 
-        // Pour chaque élément avec la classe .villages
+        // Transformation de tous les champs .villages en <select> enrichi avec Select2
         $(".villages").each(function () {
-          const $el = $(this); // Élément d'origine (input ou select)
-          const tagName = $el.prop("tagName").toLowerCase(); // Type de balise : input ou select
-          const currentValue = $el.attr("data-current") || $el.val(); // Valeur actuelle (Twig ou navigateur)
+          const $el = $(this);
+          const tagName = $el.prop("tagName").toLowerCase();
+          const currentValue = $el.attr("data-current") || $el.val();
           const name = $el.attr("name");
           const id = $el.attr("id") || name;
           const placeholder = $el.attr("placeholder") || "Choisissez un village";
+          let $select;
 
-          let $select; // Le <select> final qu'on va utiliser
-
-          // Si c’est déjà un <select>, on le vide pour le reconstruire proprement
+          // Si déjà un <select>, on le vide
           if (tagName === "select") {
             $select = $el;
             $select.empty();
-          }
-          // Sinon, c’est un <input> (souvent dans un form-floating), on le remplace par un <select>
-          else {
+          } else {
+            // Sinon, on crée un nouveau <select> à la place d’un <input>
             $select = $('<select>', {
               id: id,
               name: name,
               class: "form-select villages",
               required: true
             });
-
-            // Remplacement du <input> par <select> dans son conteneur form-floating
             const $wrapper = $el.closest(".form-floating");
             $el.remove();
             $wrapper.prepend($select);
             $wrapper.append(`<label for="${id}">${placeholder}</label>`);
           }
 
-          // Ajoute une option vide au début (pour le placeholder Select2)
+          // Placeholder vide
           $select.append('<option></option>');
 
+          // Ajout des options en les comparant à la valeur actuelle
           let foundInList = false;
-
-          // Ajoute toutes les villes dans le <select>
           options.forEach(opt => {
             const isSelected = opt.text === currentValue;
             if (isSelected) foundInList = true;
-
             $select.append(new Option(opt.text, opt.text, false, isSelected));
           });
 
-          // Si la valeur courante n'était pas dans la liste, on l'ajoute manuellement
+          // Si valeur non trouvée : l’ajouter quand même (cas de valeur personnalisée)
           if (!foundInList && currentValue) {
             $select.append(new Option(currentValue, currentValue, true, true));
           }
 
-          // Initialise Select2 sur le <select>
+          // Initialisation de Select2 avec configuration personnalisée
           $select.select2({
             placeholder: placeholder,
             allowClear: true,
@@ -79,30 +71,23 @@
           }).on('select2:open', function () {
             const searchInput = document.querySelector('.select2-search__field');
             if (searchInput) {
-              // Lors de l'ouverture du dropdown, ajoute le placeholder dans le champ de recherche interne
               searchInput.setAttribute('placeholder', 'Recherchez le nom ...');
               searchInput.classList.add('form-control');
             }
-
             $('.select2-results__options').addClass('bg-vert text-white');
           });
 
-          
-
-
-          // Forcer l'affichage de la bonne valeur
           $select.val(currentValue).trigger("change");
         });
 
-        // Validation du formulaire lors de la soumission
+        // Validation du formulaire : cohérence entre champs + erreurs bloquantes
         $("#form-recherche").on("submit", function (e) {
           let erreur = false;
 
-          // Vérifie que chaque .villages contient une valeur présente dans le JSON
+          // Validation des villages sélectionnés
           $(".villages").each(function () {
             const valeur = $(this).val();
             const valide = valeur && options.some(opt => opt.text === valeur);
-
             if (!valide) {
               $(this).addClass("is-invalid");
               erreur = true;
@@ -111,46 +96,32 @@
             }
           });
 
-          // Récupère les deux villages sélectionnés
+          // Blocage si départ et arrivée sont identiques
           const depart = $("select[name='select_departure']").val();
           const arrivee = $("select[name='select_arrival']").val();
-
-          // Si départ et arrivée sont identiques : erreur bloquante
           if (depart && arrivee && depart === arrivee) {
             erreur = true;
-            Swal.fire({
-              icon: "warning",
-              title: "Villages identiques",
-              text: "Le village de départ et d'arrivée ne peuvent pas être identiques."
-            });
-            e.preventDefault(); // Bloque l'envoi du formulaire
-            return;
+            Swal.fire({ icon: "warning", title: "Villages identiques", text: "Le village de départ et d'arrivée ne peuvent pas être identiques." });
+            e.preventDefault(); return;
           }
 
-          // Vérification sur la date trajet
+          // Vérification de la date
           const dateTrajet = $("input[name='date_trajet']").val();
           if (!dateTrajet) {
             e.preventDefault();
-            Swal.fire({
-              icon: "warning",
-              title: "Date manquante",
-              text: "Veuillez sélectionner une date de trajet."
-            });
+            Swal.fire({ icon: "warning", title: "Date manquante", text: "Veuillez sélectionner une date de trajet." });
             return;
           }
 
-          // Si une autre erreur a été détectée plus haut
+          // Erreur globale
           if (erreur) {
             e.preventDefault();
-            Swal.fire({
-              icon: "error",
-              title: "Erreur",
-              text: "Veuillez sélectionner des villages valides."
-            });
+            Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez sélectionner des villages valides." });
           }
         });
       });
 
+    // Initialisation du datepicker (flatpickr)
     flatpickr(".dateDepart", {
       locale: "fr",
       altInput: true,
@@ -161,10 +132,9 @@
   });
 </script>
 
-
-
 {# === 3. SERVICE WORKER REGISTRATION === #}
 <script>
+  // Enregistrement du service worker (PWA + notifications push)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/js/service-worker.js')
@@ -174,14 +144,16 @@
   }
 </script>
 
-{# === 4. INSTALLATION PWA & NOTIFICATIONS SAFARI === #}
+{# === 4. INSTALLATION PWA (Android uniquement via beforeinstallprompt) === #}
 <script>
+  // Gestion de l'installation sur Android avec beforeinstallprompt
   let deferredPrompt;
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
+    // Si les notifications ont déjà été autorisées, afficher le bouton
     if (localStorage.getItem('pushPermissionAsked')) {
       const installButtons = document.querySelectorAll('.installAppBtn');
       installButtons.forEach((btn) => {
@@ -199,39 +171,11 @@
       });
     }
   });
-
-  window.addEventListener('load', () => {
-    const ua = navigator.userAgent.toLowerCase();
-    const isIos = /iphone|ipad|ipod/.test(ua);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
-
-    if (isIos && !isSafari) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Installation non disponible',
-        html: `Pour installer <strong>HaloGari</strong>, utilisez <strong>Safari</strong> 📱`,
-        confirmButtonText: 'OK',
-        allowOutsideClick: false,
-        allowEscapeKey: false
-      });
-      return;
-    }
-
-    if (isIos && isSafari && !isInStandaloneMode) {
-      Swal.fire({
-        icon: 'info',
-        title: '📲 Installer HaloGari',
-        html: `Appuie sur <strong><i class="bi bi-box-arrow-up"></i> Partager</strong>,
-               puis <strong>"Sur l’écran d’accueil"</strong>.`,
-        confirmButtonText: 'OK'
-      });
-    }
-  });
 </script>
 
-{# === 5. MESSAGERIE, SPLASH & PUSH NOTIF JS === #}
+{# === 5. MESSAGERIE, SPLASH SCREEN & NOTIFICATION JS === #}
 <script>
+  // Vérifie les nouveaux messages toutes les 30 secondes
   function checkNewMessages() {
     fetch('/user/messages/unread')
       .then(response => response.json())
@@ -259,6 +203,7 @@
 </script>
 
 <script>
+  // Affiche l'écran de démarrage avec animation (logo + texte)
   document.addEventListener("DOMContentLoaded", () => {
     const splash = document.getElementById('splash-screen');
     const logo = document.getElementById('splash-logo');
@@ -287,4 +232,5 @@
   });
 </script>
 
+{# === 6. NOTIFICATIONS PUSH (fichier compilé séparé) === #}
 <script src="{{ path('js_push_notif') }}"></script>

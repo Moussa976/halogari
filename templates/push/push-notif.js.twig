@@ -1,9 +1,12 @@
 {# templates/push/push-notif.js.twig #}
 
-const VAPID_PUBLIC_KEY = '{{ vapidPublicKey }}'; // Injectée depuis Symfony
+/**
+ * Clé publique VAPID injectée par Symfony pour l’abonnement Web Push
+ */
+const VAPID_PUBLIC_KEY = '{{ vapidPublicKey }}';
 
 /**
- * Convertit une clé base64 (url-safe) en Uint8Array
+ * Convertit une clé Base64 URL-safe en Uint8Array (requis pour l’API Push)
  */
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -13,7 +16,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 /**
- * Fonction principale d’abonnement Web Push
+ * Fonction d'abonnement aux notifications Push (Web Push API)
  */
 async function subscribeToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -21,16 +24,13 @@ async function subscribeToPush() {
     return;
   }
 
-  // Enregistre le Service Worker
   const registration = await navigator.serviceWorker.register('/js/service-worker.js');
 
-  // Abonnement Push
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
   });
 
-  // Envoie l'abonnement au backend Symfony
   const response = await fetch('/abonnement-push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -45,9 +45,30 @@ async function subscribeToPush() {
 }
 
 /**
- * Dès que la page est chargée, demande à l’utilisateur s’il veut activer les notifications
+ * Gère l’affichage du popup de notifications + installation PWA sur iOS
  */
 document.addEventListener('DOMContentLoaded', () => {
+  // → Détection de l'environnement
+  const ua = navigator.userAgent.toLowerCase();
+  const isIos = /iphone|ipad|ipod/.test(ua);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+
+  // 📱 iPhone + autre navigateur que Safari ➞ Message bloquant
+  if (isIos && !isSafari) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Installation non disponible',
+      html: `Pour installer <strong>HaloGari</strong> sur votre iPhone,<br>
+             veuillez ouvrir ce site dans <strong>Safari</strong> 📱`,
+      confirmButtonText: 'OK',
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    });
+    return;
+  }
+
+  // ✅ Si l'utilisateur n'a pas encore répondu au popup notifications
   if (!localStorage.getItem('pushPermissionAsked')) {
     setTimeout(() => {
       Swal.fire({
@@ -60,19 +81,34 @@ document.addEventListener('DOMContentLoaded', () => {
         allowOutsideClick: false,
         allowEscapeKey: false
       }).then((result) => {
+        // Marquer que l'utilisateur a déjà répondu
         localStorage.setItem('pushPermissionAsked', '1');
 
         if (result.isConfirmed) {
-        subscribeToPush();
-        setTimeout(() => {
-          Swal.fire('✅ Notifications activées', '', 'success');
-        }, 2000); // Attendre 2 secondes
-      } else {
-        Swal.fire('ℹ️ Notifications désactivées', '', 'info');
-      }
+          subscribeToPush();
+
+          // Confirmer l'activation
+          setTimeout(() => {
+            Swal.fire('✅ Notifications activées', '', 'success');
+          }, 2000);
+
+          // 📱 Si Safari sur iOS, mais non installé ➞ instructions d'installation
+          if (isIos && isSafari && !isInStandaloneMode) {
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'info',
+                title: '📲 Installer HaloGari',
+                html: `Appuie sur <strong><i class="bi bi-box-arrow-up"></i> Partager</strong>,<br>
+                       puis sur <strong>\"Sur l’écran d’accueil\"</strong> pour installer HaloGari.`,
+                confirmButtonText: 'OK'
+              });
+            }, 2000);
+          }
+        } else {
+          // Refus d'autorisation
+          Swal.fire('ℹ️ Notifications désactivées', '', 'info');
+        }
       });
-    }, 5000); // 👈 délai de 5 secondes avant d'afficher la popup
+    }, 5000); // Délai avant d'afficher la première popup
   }
 });
-
-
