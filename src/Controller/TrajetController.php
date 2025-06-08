@@ -33,15 +33,12 @@ class TrajetController extends AbstractController
 
         // Vérification simple
         if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
-            // Chargement depuis fichier JSON
-            $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
             return $this->redirectToRoute('app_chercherResultats', [
                 'depart' => $depart,
                 'arrivee' => $arrivee,
                 'date' => $date,
                 'heure' => 'any', // ou tu peux le retirer aussi de la route
                 'places' => $places,
-                'villages' => $villes,
             ]);
         }
 
