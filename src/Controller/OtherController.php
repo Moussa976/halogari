@@ -44,6 +44,7 @@ class OtherController extends AbstractController
         return $this->render('others/confidentialite.html.twig', []);
     }
 
+
     /**
      * @Route("/contact", name="app_contact", methods={"GET", "POST"})
      */
@@ -55,20 +56,35 @@ class OtherController extends AbstractController
             $sujet = $request->request->get('sujet');
             $messageContent = $request->request->get('message');
 
-            // Envoi d’un e-mail
-            $emailMessage = (new TemplatedEmail())
-                ->from(new Address($email, $nom))
-                ->to('support@halogari.yt')
+            // 1. Envoi à l'administrateur
+            $adminEmail = (new TemplatedEmail())
+                ->from(new Address('noreply@halogari.yt', 'HaloGari'))
+                ->replyTo($email, $nom)
+                ->to('moussa@halogari.yt')
                 ->subject('[Contact] ' . $sujet)
                 ->htmlTemplate('emails/contact.html.twig')
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
                 ->context([
                     'nom' => $nom,
-                    'expediteur_email' => $email, // <-- clé renommée ici
+                    'expediteur_email' => $email,
                     'message' => $messageContent,
                 ]);
 
-            $mailer->send($emailMessage);
+            $mailer->send($adminEmail);
+
+            // 2. Envoi de confirmation à l’utilisateur
+            $userConfirmation = (new TemplatedEmail())
+                ->from(new Address('noreply@halogari.yt', 'HaloGari'))
+                ->to($email)
+                ->subject('Confirmation de votre message')
+                ->htmlTemplate('emails/confirmation_contact.html.twig')
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
+                ->context([
+                    'nom' => $nom,
+                    'message' => $messageContent,
+                ]);
+
+            $mailer->send($userConfirmation);
 
             $this->addFlash('success', 'Votre message a bien été envoyé. Merci !');
 
