@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mes trajets{% endblock %}
+
+{% set statutLabels = {
+    'annule': 'Annulé',
+    'passe': 'Passé',
+    'avenir': 'À venir',
+    'en_cours': 'En cours',
+    'all': 'Tous'
+} %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4 text-center"><i class="bi bi-signpost-2"></i> Mes trajets publiés</h1>
+
+    <!-- Onglets de filtrage Bootstrap -->
+    <ul class="nav nav-tabs mb-4 justify-content-center" id="filtreTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-all" type="button" onclick="filterTrajets('all')">Tous</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-avenir" type="button" onclick="filterTrajets('avenir')">À venir</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-en_cours" type="button" onclick="filterTrajets('en_cours')">En cours</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-passe" type="button" onclick="filterTrajets('passe')">Passés</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-annule" type="button" onclick="filterTrajets('annule')">Annulés</button>
+        </li>
+    </ul>
+
+    <!-- Liste des trajets -->
+    <ul class="list-group" id="liste-trajets">
+        {% set maintenant = "now"|date("U") %}
+        {% for trajet in trajets %}
+            {% set datetimeDepStr = trajet.dateTrajet|date("Y-m-d") ~ " " ~ trajet.heureTrajet|date("H:i:s") %}
+            {% set datetimeDep = datetimeDepStr|date("U") %}
+            {% set datetimeFin = datetimeDepStr|date_modify("+3 hours")|date("U") %}
+
+            {% set statut = trajet.isAnnule
+                ? 'annule'
+                : (datetimeDep <= maintenant and maintenant < datetimeFin
+                    ? 'en_cours'
+                    : (datetimeDep > maintenant ? 'avenir' : 'passe')) %}
+
+            <a href="{{ path('app_user_trajet', { id: trajet.id }) }}"
+               class="list-group-item list-group-item-action justify-content-between align-items-center"
+               data-status="{{ statut }}" style="display: flex;">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">
+                        <i class="bi bi-geo-fill"></i> {{ trajet.depart }} →
+                        <i class="bi bi-flag-fill"></i> {{ trajet.arrivee }}
+                    </div>
+                    <small>le {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
+                </div>
+                <span class="badge
+                    {% if statut == 'annule' %}bg-danger
+                    {% elseif statut == 'passe' %}bg-secondary
+                    {% elseif statut == 'en_cours' %}bg-info
+                    {% else %}bg-success{% endif %}">
+                    {{ statutLabels[statut]|default(statut) }}
+                </span>
+            </a>
+        {% else %}
+            <li class="list-group-item text-muted text-center">Aucun trajet publié.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function filterTrajets(status) {
+    document.querySelectorAll('#liste-trajets [data-status]').forEach(item => {
+        item.style.display = (status === 'all' || item.dataset.status === status) ? 'flex' : 'none';
+    });
+
+    document.querySelectorAll('#filtreTabs .nav-link').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById('tab-' + status).classList.add('active');
+}
+</script>
+{% endblock %}

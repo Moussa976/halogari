@@ -5,7 +5,9 @@
 
 {% block body %}
 	<div class="container py-5">
-		<h1 class="mb-4 text-center"><i class="bi bi-gear"></i> Paramètres du compte</h1>
+		<h1 class="mb-4 text-center">
+			<i class="bi bi-gear"></i>
+			Paramètres du compte</h1>
 
 		<!-- Photo de profil -->
 		<div class="card mb-4">
@@ -20,7 +22,9 @@
 				{% endif %}
 				<form method="POST" enctype="multipart/form-data" action="#">
 					<input type="file" class="form-control mb-2" name="photo">
-					<div class="text-center"><button type="submit" class="btn btn-info">Mettre à jour la photo</button></div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-info">Mettre à jour la photo</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -42,6 +46,11 @@
 						<input type="text" class="form-control" id="nom" name="nom" value="{{ app.user.nom }}">
 					</div>
 					<div class="mb-3">
+						<label for="dateNaissance" class="form-label">Date de naissance</label>
+						<input type="date" class="form-control" id="dateNaissance" name="dateNaissance" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '' }}" max="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" required>
+					</div>
+
+					<div class="mb-3">
 						<label for="email" class="form-label">Email</label>
 						<input type="email" class="form-control" id="email" name="email" value="{{ app.user.email }}" disabled>
 					</div>
@@ -49,7 +58,9 @@
 						<label for="telephone" class="form-label">Téléphone</label>
 						<input type="text" class="form-control" id="telephone" name="telephone" value="{{ app.user.telephone }}">
 					</div>
-					<div class="text-center"><button type="submit" class="btn btn-primary">Mettre à jour</button></div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-primary">Mettre à jour</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -73,7 +84,9 @@
 						<label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
 						<input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
 					</div>
-					<div class="text-center"><button type="submit" class="btn btn-warning">Changer le mot de passe</button></div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-warning">Changer le mot de passe</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -114,7 +127,9 @@
 						<label for="document" class="form-label">Fichier</label>
 						<input type="file" class="form-control" id="document" name="document">
 					</div>
-					<div class="text-center"><button type="submit" class="btn btn-success">Ajouter</button></div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-success">Ajouter</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -128,7 +143,9 @@
 			<div class="card-body">
 				<p class="text-danger text-center">Cette action est définitive et supprimera toutes vos données. Aucune récupération possible.</p>
 				<form method="POST" action="#">
-					<div class="text-center"><button type="submit" class="btn btn-danger">Supprimer mon compte</button></div>
+					<div class="text-center">
+						<button type="submit" class="btn btn-danger">Supprimer mon compte</button>
+					</div>
 				</form>
 			</div>
 		</div>

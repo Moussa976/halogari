@@ -28,14 +28,14 @@
 }) }}
 
 {% if not registrationForm.vars.valid %}
-    <div class="alert alert-danger">
-        <strong>Le formulaire contient des erreurs</strong>
+    <div class="alert alert-danger text-center">
+        <strong>Le formulaire contient des erreurs.</strong>
         <ul class="mb-0">
-            {% for field in registrationForm %}
+            {# {% for field in registrationForm %}
                 {% for error in field.vars.errors %}
                     <li>{{ error.message }}</li>
                 {% endfor %}
-            {% endfor %}
+            {% endfor %} #}
         </ul>
     </div>
 {% endif %}
@@ -62,6 +62,17 @@
         }
     }) }}
     <div id="prenomFeedback" class="invalid-feedback">{{ form_errors(registrationForm.prenom) }}</div>
+</div>
+
+<div class="mb-3">
+    {{ form_label(registrationForm.dateNaissance, 'Date de naissance :', {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(registrationForm.dateNaissance, {
+        attr: {
+            class: 'form-control' ~ (registrationForm.dateNaissance.vars.valid == false ? 'is-invalid' : ''),
+            'aria-describedby': 'dateNaissanceFeedback'
+        }
+    }) }}
+    <div id="dateNaissanceFeedback" class="invalid-feedback">{{ form_errors(registrationForm.dateNaissance) }}</div>
 </div>
 
 <div class="mb-3">

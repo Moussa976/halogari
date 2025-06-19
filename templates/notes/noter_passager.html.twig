@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Noter un passager{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h3 class="mb-4">Noter {{ passager.prenom }}</h3>
+    <p><strong>Trajet :</strong> {{ trajet.depart }} → {{ trajet.arrivee }} le {{ trajet.dateTrajet|date('d/m/Y') }}</p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.note) }}
+        {{ form_row(form.commentaire) }}
+        <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

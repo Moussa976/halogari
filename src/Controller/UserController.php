@@ -4,10 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Document;
 use App\Entity\Trajet;
+use App\Entity\User;
 use App\Form\DocumentFormType;
+use App\Repository\NotesRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
+use App\Repository\UserRepository;
 use App\Service\PaiementService;
+use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -30,13 +34,148 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/profil/", name="app_profile")
+     * @Route("/user/profil/{id}", name="app_profile")
      */
-    public function profile(): Response
+    public function profile(int $id, UserRepository $userRepository, NotesRepository $notesRepo): Response
     {
+        $user = $userRepository->find($id);
+
+        // Date en français
+        Carbon::setLocale('fr');
+        $dateFr = Carbon::parse($user->getCreatedAt());
+        $dateMembre = $dateFr->translatedFormat('F Y');
+
+        $notesRecues = $notesRepo->findBy(['notePour' => $user]);
+
+        // Moyenne
+        $moyenne = null;
+        if (count($notesRecues) > 0) {
+            $total = 0;
+            foreach ($notesRecues as $note) {
+                $total += $note->getNote();
+            }
+            $moyenne = round($total / count($notesRecues), 1);
+        }
+
+        $estVerifie = $user->isProfilVerifieComplet();
+
+        // autres vérifications
+        $verifications = [
+            'identite' => $user->hasVerifiedIdentity(),
+            'email' => $user->isVerified(),
+            'telephone' => $user->hasVerifiedPhone(), // ou false si pas encore actif
+        ];
+
+        $verifTotal = count($verifications);
+        $verifOk = count(array_filter($verifications));
+
+        $verifPourcentage = round($verifOk / $verifTotal * 100);
+
         return $this->render('user/profile.html.twig', [
-            // 'controller_name' => 'UserController',
+            'user' => $user,
+            'notesRecues' => $notesRecues,
+            'noteMoyenne' => $moyenne,
+            'dateMembre' => $dateMembre,
+            'estVerifie' => $estVerifie,
+            'verifications' => $verifications,
+            'verifOk' => $verifOk,
+            'verifTotal' => $verifTotal,
+            'verifPourcentage' => $verifPourcentage,
         ]);
+    }
+
+     /**
+     * @Route("/user/preferences", name="app_preferences_update", methods={"POST"})
+     */
+    public function updatePreferences(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $preferences = $request->request->all('preferences');
+        $user->setPreferences($preferences);
+        $em->flush();
+
+        $this->addFlash('success', 'Préférences mises à jour avec succès.');
+        return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+    }
+
+    /**
+     * @Route("/user/photo", name="app_photo_update", methods={"POST"})
+     */
+    public function updatePhoto(
+        Request $request,
+        SluggerInterface $slugger,
+        EntityManagerInterface $em
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($request->get('remove_photo') && $user->getPhoto()) {
+            $oldPath = $this->getParameter('photos_directory') . '/' . $user->getPhoto();
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+            $user->setPhoto(null);
+            $em->flush();
+            $this->addFlash('success', 'Votre photo de profil a été supprimée.');
+            return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+        }
+
+        $photoFile = $request->files->get('photo');
+        if ($photoFile) {
+            // Vérification des formats autorisés
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array($photoFile->getMimeType(), $allowedMimeTypes)) {
+                $this->addFlash('danger', 'Format invalide. JPG, PNG ou WebP uniquement.');
+                return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+            }
+
+            // Vérification de la taille
+            if ($photoFile->getSize() > 2 * 1024 * 1024) {
+                $this->addFlash('danger', 'Image trop lourde. Max 2 Mo.');
+                return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+            }
+
+            $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
+
+            try {
+                $photoFile->move($this->getParameter('photos_directory'), $newFilename);
+
+                // Suppression automatique de l’ancienne photo
+                if ($user->getPhoto()) {
+                    $oldPath = $this->getParameter('photos_directory') . '/' . $user->getPhoto();
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+
+                $user->setPhoto($newFilename);
+                $em->flush();
+
+                $this->addFlash('success', 'Photo mise à jour avec succès.');
+            } catch (FileException $e) {
+                $this->addFlash('danger', 'Erreur lors de l’envoi du fichier.');
+            }
+        }
+
+        return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+    }
+
+    /**
+     * @Route("/user/update-description", name="app_update_description", methods={"POST"})
+     */
+    public function updateDescription(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $description = trim($request->request->get('description'));
+
+        $user->setDescription($description);
+        $em->flush();
+
+        $this->addFlash('success', 'Description mise à jour.');
+        return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
     }
 
     /**
@@ -127,6 +266,65 @@ class UserController extends AbstractController
         ]);
     }
 
+
+    /**
+     * Affiche les trajets publiés par l'utilisateur connecté (conducteur)
+     * 
+     * @Route("/user/mes-trajets", name="app_mes_trajets")
+     */
+    public function mesTrajets(TrajetRepository $trajetRepository): Response
+    {
+        $user = $this->getUser();
+
+        // Trajets publiés par l'utilisateur, du plus récent au plus ancien
+        $trajets = $trajetRepository->findBy(
+            ['conducteur' => $user],
+            ['dateTrajet' => 'DESC', 'heureTrajet' => 'DESC']
+        );
+
+        return $this->render('user/mes_trajets.html.twig', [
+            'trajets' => $trajets,
+        ]);
+    }
+
+    /**
+     * Affiche les réservations faites par l'utilisateur connecté (passager)
+     * 
+     * @Route("/user/mes-reservations", name="app_mes_reservations")
+     */
+    /**
+     * @Route("/user/mes-reservations", name="app_mes_reservations")
+     */
+    public function mesReservations(ReservationRepository $reservationRepository): Response
+    {
+        $user = $this->getUser();
+
+        // Réservations effectuées par l'utilisateur, triées par date de trajet
+        $reservations = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.trajet', 't')
+            ->addSelect('t')
+            ->where('r.passager = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.dateTrajet', 'DESC')
+            ->addOrderBy('t.heureTrajet', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('user/mes_reservations.html.twig', [
+            'reservations' => $reservations,
+        ]);
+    }
+
+
+    /**
+     * @Route("/user/mes-paiements", name="app_mes_paiements")
+     */
+    public function mesPaiements(): Response
+    {
+        // ⚠️ À compléter plus tard avec les données Stripe ou ton entité Paiement
+        return $this->render('user/mes_paiements.html.twig');
+    }
+
     /**
      * @Route("/user/parametres", name="app_parametres")
      */
@@ -136,6 +334,8 @@ class UserController extends AbstractController
     }
 
     /**
+     * Affiche le détail d’un trajet pour le conducteur connecté
+     *
      * @Route("/user/trajet/{id}", name="app_user_trajet")
      */
     public function showTrajet(
@@ -143,39 +343,63 @@ class UserController extends AbstractController
         TrajetRepository $trajetRepository,
         ReservationRepository $reservationRepository
     ): Response {
+        // Récupération du trajet par son ID
         $trajet = $trajetRepository->find($id);
 
+        // Si le trajet n'existe pas, on renvoie une erreur 404
         if (!$trajet) {
             throw $this->createNotFoundException('Trajet introuvable.');
         }
 
+        // Vérifie que l’utilisateur connecté est bien le conducteur du trajet
         if ($trajet->getConducteur() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
 
-        // Récupère les réservations triées par ID décroissant (ou autre champ, comme createdAt)
+        // Récupère les réservations liées à ce trajet, triées par ID décroissant
         $reservations = $reservationRepository->findBy(
             ['trajet' => $trajet],
-            ['id' => 'DESC'] // ← tri ici
+            ['id' => 'DESC']
         );
 
-        // Vérification si le trajet est passé
-        $datePasse = false;
+        // Initialisation des indicateurs de statut
+        $datePasse = false; // Le trajet est-il dans le passé ?
+        $enCours = false;   // Le trajet est-il en cours actuellement ?
+
+        // Création de l'objet DateTime combinant la date et l'heure du trajet
         $datetimeTrajet = \DateTime::createFromFormat(
             'Y-m-d H:i:s',
             $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i:s')
         );
+
+        // Date et heure actuelles
         $maintenant = new \DateTime();
+
+        // Le trajet est considéré comme "passé" si sa date+heure sont inférieures à maintenant
         if ($maintenant > $datetimeTrajet) {
             $datePasse = true;
         }
 
+        // Le trajet est considéré comme "en cours" si :
+        // - il a lieu aujourd’hui
+        // - l’heure actuelle est entre l’heure de départ et +6 heures après le départ
+        if (
+            $trajet->getDateTrajet()->format('Y-m-d') === $maintenant->format('Y-m-d') &&
+            $datetimeTrajet <= $maintenant &&
+            $maintenant < (clone $datetimeTrajet)->modify('+6 hours')
+        ) {
+            $enCours = true;
+        }
+
+        // Affichage du template avec les variables nécessaires
         return $this->render('user/mon_trajet.html.twig', [
             'trajet' => $trajet,
             'reservations' => $reservations,
             'datePasse' => $datePasse,
+            'enCours' => $enCours,
         ]);
     }
+
 
 
     /**

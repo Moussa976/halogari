@@ -1,10 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail du trajet |
-{{ trajet.depart }}
--
-{{ trajet.arrivee }}
-{% endblock %}
+{% block title %}Détail du trajet | {{ trajet.depart }} - {{ trajet.arrivee }}{% endblock %}
+
 {% block stylesheets %}
 <style>
 	#reservation-sticky.fixed {
@@ -16,10 +13,10 @@
 	}
 </style>
 {% endblock %}
+
 {% block body %}
 <div class="container mt-3 py-5">
 	<div class="row g-4">
-
 		{# Colonne gauche — Détail du trajet #}
 		<div class="col-lg-8">
 			<div class="card shadow-sm">
@@ -159,8 +156,8 @@
 
 					{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
 					{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
-					{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %} <form
-						action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+					{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %} 
+					<form id="formDesk" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
 						<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 						{% if app.user %}
@@ -192,28 +189,28 @@
 				</div>
 
 				<div id="reservation-sticky" class="d-lg-none bg-white p-3 shadow-sm text-center d-none">
-					<form action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+					<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
 						<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 						{% if app.user %}
-						{% if app.user.id != trajet.conducteur.id %}
-						<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled
-							style="opacity:0.6; cursor: not-allowed;" {% endif %}>
-							{% if isPassed %}
-							Trajet terminé
+							{% if app.user.id != trajet.conducteur.id %}
+							<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled
+								style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+								{% if isPassed %}
+								Trajet terminé
+								{% else %}
+								Je réserve |
+								{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
+								€
+								{% endif %}
+							</button>
 							{% else %}
-							Je réserve |
-							{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
-							€
-							{% endif %}
-						</button>
-						{% else %}
-						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
+							<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
 
-							{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i
-								class="bi bi-gear"></i> Gérer mon trajet {% endif %}
-						</a>
-						{% endif %}
+								{% if isPassed %}<i class="bi bi-eye"></i> Voir mon trajet {% else %}<i
+									class="bi bi-gear"></i> Gérer mon trajet {% endif %}
+							</a>
+							{% endif %}
 						{% else %}
 						<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %}
 							style="opacity:0.6; pointer-events: none;" {% endif %}>
@@ -225,14 +222,46 @@
 
 			</div>
 		</div>
-
 	</div>
 </div>
-
 {% endblock %}
 
 {% block javascripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const forms = [
+    document.querySelector("#formDesk"),
+    document.querySelector("#formMobile")
+  ];
 
+  forms.forEach(form => {
+    if (!form) return;
+
+    const prix = parseFloat("{{ trajet.prix }}");
+    const nb = parseInt("{{ nbPlaceReservee }}");
+    const total = (prix * nb).toFixed(2).replace('.', ',');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'question',
+        title: 'Confirmer la réservation',
+        html: `Vous allez réserver <strong>${nb}</strong> place(s) pour <strong>${total} €</strong>.<br>Souhaitez-vous continuer ?`,
+        showCancelButton: true,
+        confirmButtonText: 'Oui, je confirme',
+        cancelButtonText: 'Annuler',
+        confirmButtonColor: '#ff6f00'
+      }).then(result => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
+
+{# ... Le reste des scripts (Leaflet, Sticky, etc.) reste inchangé ... #}
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		let depart = "{{ trajet.depart|e('js') }}";

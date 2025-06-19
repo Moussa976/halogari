@@ -3,8 +3,10 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Validator\IsAdult;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -25,23 +27,37 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('nom', TextType::class)
             ->add('prenom', TextType::class)
+            ->add('dateNaissance', DateType::class, [
+                'widget' => 'single_text',
+                'label' => 'Date de naissance :',
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'max' => (new \DateTime('-18 years'))->format('Y-m-d')
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Veuillez renseigner votre date de naissance.']),
+                    new IsAdult(),
+                ]
+            ])
+
             ->add('email', EmailType::class, [
                 'attr' => ['class' => 'form-control', 'placeholder' => 'exemple@halogari.yt'],
                 'constraints' => [
                     new NotBlank(['message' => "L’adresse e-mail est obligatoire."]),
-                    new Email(['message'=> "L’adresse n’est pas valide."]),
+                    new Email(['message' => "L’adresse n’est pas valide."]),
                 ],
             ])
             ->add('telephone', TelType::class, [
-                 'constraints' => [
+                'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer un numéro de téléphone',
                     ]),
                     new Length([
                         'min' => 8,
                         'max' => 15,
-                        'minMessage'=> "Le numéro est trop court (minimum 8 chiffres).",
-                        'maxMessage'=> "Le numéro est trop long (maximum 15 chiffres)."
+                        'minMessage' => "Le numéro est trop court (minimum 8 chiffres).",
+                        'maxMessage' => "Le numéro est trop long (maximum 15 chiffres)."
                     ]),
                     new Regex([
                         'pattern' => '/^\d+$/',

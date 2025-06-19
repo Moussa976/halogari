@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 
@@ -48,6 +49,35 @@ class PushNotificationService
         // Exécute l’envoi
         foreach ($this->webPush->flush() as $report) {
             // Tu peux logger ici si besoin
+            $endpoint = $report->getRequest()->getUri();
+            if ($report->isSuccess() && $report->isSubscriptionExpired()) {
+                // echo "✅ Notification envoyée à : {$endpoint}\n";
+            } else {
+                // echo "❌ Échec pour {$endpoint} : {$report->getReason()}\n";
+            }
         }
     }
+
+    /**
+     * Envoie une notification Web Push à tous les appareils liés à un utilisateur.
+     *
+     * @param User   $user  L'utilisateur cible (possède plusieurs abonnements possibles)
+     * @param string $title Titre de la notification
+     * @param string $body  Contenu (message) de la notification
+     */
+    public function sendToUser(User $user, string $title, string $body): void
+    {
+        // Parcourt tous les abonnements push enregistrés pour cet utilisateur
+        foreach ($user->getPushSubscriptions() as $sub) {
+            // Envoie une notification pour chaque appareil (ou navigateur) lié
+            $this->sendNotification([
+                'endpoint' => $sub->getEndpoint(), // URL d'envoi spécifique à l'appareil
+                'keys' => [
+                    'p256dh' => $sub->getPublicKey(), // Clé publique du navigateur
+                    'auth' => $sub->getAuthToken(),  // Jeton d'authentification unique
+                ]
+            ], $title, $body);
+        }
+    }
+
 }

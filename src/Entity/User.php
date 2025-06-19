@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
+ * @UniqueEntity(fields={"email"}, message="Il existe déjà un compte avec cette adresse e-mail.")
  * @ORM\HasLifecycleCallbacks()
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -49,6 +49,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string", length=100)
      */
     private $prenom;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $dateNaissance = null;
 
     /**
      * @ORM\Column(type="string", length=20)
@@ -111,12 +116,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $createdAt;
 
     /**
+     * @ORM\OneToMany(targetEntity=PushSubscription::class, mappedBy="user")
+     */
+    private $pushSubscriptions;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $description;
+
+    /**
      * @ORM\PrePersist
      */
     public function setCreatedAtValue(): void
     {
         $this->createdAt = new \DateTime();
     }
+
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $preferences = [];
 
     public function __construct()
     {
@@ -128,6 +148,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notesNoteur = new ArrayCollection();
         $this->notesPour = new ArrayCollection();
         $this->documents = new ArrayCollection();
+        $this->pushSubscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -240,6 +261,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->prenom = $prenom;
 
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->dateNaissance;
+    }
+
+    public function setDateNaissance(?\DateTimeInterface $dateNaissance): self
+    {
+        $this->dateNaissance = $dateNaissance;
         return $this;
     }
 
@@ -490,14 +522,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function getDocumentByType(string $type): ?Document
-{
-    foreach ($this->documents as $doc) {
-        if ($doc->getTypeDocument() === $type) {
-            return $doc;
+    {
+        foreach ($this->documents as $doc) {
+            if ($doc->getTypeDocument() === $type) {
+                return $doc;
+            }
         }
+        return null;
     }
-    return null;
-}
 
     public function getPhoto(): ?string
     {
@@ -520,5 +552,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = $createdAt;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, PushSubscription>
+     */
+    public function getPushSubscriptions(): Collection
+    {
+        return $this->pushSubscriptions;
+    }
+
+    public function addPushSubscription(PushSubscription $pushSubscription): self
+    {
+        if (!$this->pushSubscriptions->contains($pushSubscription)) {
+            $this->pushSubscriptions[] = $pushSubscription;
+            $pushSubscription->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePushSubscription(PushSubscription $pushSubscription): self
+    {
+        if ($this->pushSubscriptions->removeElement($pushSubscription)) {
+            // set the owning side to null (unless already changed)
+            if ($pushSubscription->getUser() === $this) {
+                $pushSubscription->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getPreferences(): array
+    {
+        return $this->preferences ?? [];
+    }
+
+    public function setPreferences(array $preferences): self
+    {
+        $this->preferences = $preferences;
+        return $this;
+    }
+
+
+    public function isProfilVerifieComplet(): bool
+    {
+        $doc = $this->getDocumentByType("Justificatif d'identité");
+
+        return $this->isVerified() && $this->hasVerifiedIdentity() && $this->hasVerifiedPhone();
+    }
+
+    public function hasVerifiedIdentity(): bool
+    {
+        $doc = $this->getDocumentByType("Justificatif d'identité");
+        return $doc && $doc->getStatus() === Document::STATUS_APPROVED;
+    }
+
+    public function hasVerifiedPhone(): bool
+    {
+        return false; // à remplacer plus tard par vraie vérif
     }
 }

@@ -40,8 +40,10 @@ body {
 
 .sticky-under-navbar {
     position: sticky;
-    top: 64px; /* hauteur de ta navbar */
-    z-index: 1030; /* au-dessus du contenu */
+    top: 64px;
+    /* hauteur de ta navbar */
+    z-index: 1030;
+    /* au-dessus du contenu */
     background-color: white;
 }
 
@@ -156,19 +158,20 @@ h1 {
     border-color: #ee7911;
 }
 
-.form-floating > .form-control {
-    height: calc(3.5rem + 2px); /* ou ajustable selon ton design */
+.form-floating>.form-control {
+    height: calc(3.5rem + 2px);
+    /* ou ajustable selon ton design */
     padding: 1rem .75rem;
     font-size: 1rem;
 }
 
-.form-floating > label {
+.form-floating>label {
     padding: .5rem .75rem;
     font-size: 0.95rem;
     color: #6c757d;
 }
 
-.form-floating > .form-control.form-control-lg {
+.form-floating>.form-control.form-control-lg {
     height: calc(3.8rem + 2px);
     padding: 1.1rem .75rem;
     font-size: 1.05rem;
@@ -184,18 +187,21 @@ h1 {
 }
 
 /* Hack pour Select2 dans form-floating Bootstrap */
-.form-floating > .select2-container {
-  height: calc(3.5rem + 2px);
+.form-floating>.select2-container {
+    height: calc(3.5rem + 2px);
 }
+
 .select2-selection--single {
-  height: 100% !important;
-  padding-top: 1.625rem !important;
+    height: 100% !important;
+    padding-top: 1.625rem !important;
 }
+
 .select2-selection__rendered {
-  padding-left: 0.75rem !important;
+    padding-left: 0.75rem !important;
 }
+
 .select2-selection__arrow {
-  top: 10px !important;
+    top: 10px !important;
 }
 
 .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
@@ -204,6 +210,91 @@ h1 {
 
 .select2-results__option--selected {
     background-color: #ee7811ab !important;
+}
+
+/* Avatar */
+.profile-card {
+    position: relative;
+    padding-top: 60px;
+    margin-top: 100px;
+}
+
+.profile-avatar-container {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 110px;
+}
+
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid rgb(206, 212, 218);
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.edit-avatar-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(30%, 30%);
+    z-index: 2;
+}
+
+.profile-avatar-container.verified .profile-avatar {
+    border: 4px solid #28a745;
+}
+
+.profile-avatar-container.verified::after {
+    content: "\F531";
+    /* bi-shield-check-fill */
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    bottom: -12px;
+    right: 40%;
+    background-color: #fff;
+    color: #28a745;
+    border-radius: 50%;
+    padding: 0px;
+    z-index: 100;
+}
+
+/* Profil sur les notes */
+
+.img-note .profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgb(206, 212, 218);
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.img-note.verified .profile-avatar{
+    border: 2px solid #28a745;
+}
+
+.img-note.verified::after {
+    content: "\F531";
+    /* bi-shield-check-fill */
+    font-family: 'bootstrap-icons';
+    font-size: 10px;
+    position: absolute;
+    bottom: -10px;
+    right: 40%;
+    background-color: #fff;
+    color: #28a745;
+    border-radius: 50%;
+    padding: 0px;
+    z-index: 100;
 }
 
 @keyframes fadeIn {
@@ -224,7 +315,7 @@ h1 {
     }
 
     .bg-header .display-5 {
-        font-size: calc(1.1rem + 1.5vw) !important ;
+        font-size: calc(1.1rem + 1.5vw) !important;
     }
 
     .bg-header .lead {

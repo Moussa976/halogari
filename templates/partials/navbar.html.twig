@@ -1,8 +1,7 @@
 <nav class="navbar fixed-top navbar-expand-lg bg-dark-subtle double-border-bottom">
 	<div class="container">
 		<a class="navbar-brand" href="{{ path('app_home') }}">
-			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
-				style="max-width: 120px; height:auto;">
+			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;">
 
 		</a>
 
@@ -11,7 +10,8 @@
 			<li class="nav-item align-self-center d-none d-lg-block">
 
 				<button class="installAppBtn px-1 btn btn-orange d-none nav-link" title="Installer HaloGari">
-					<i class="bi bi-download"></i> Installer HaloGari
+					<i class="bi bi-download"></i>
+					Installer HaloGari
 				</button>
 			</li>
 			<li class="nav-item align-self-center d-none d-lg-block">
@@ -27,142 +27,154 @@
 				</a>
 			</li>
 			{% if app.user %}
-			<li class="nav-item align-self-center d-none d-lg-block position-relative me-5">
-				<a class="nav-link" href="{{ path('app_message') }}" title="Messages">
-					<i class="bi bi-envelope-fill fs-5"></i>
-					<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger"
-						style="display: none;">
-						0
-					</span>
-				</a>
-			</li>
+				<li class="nav-item align-self-center d-none d-lg-block position-relative me-5">
+					<a class="nav-link" href="{{ path('app_message') }}" title="Messages">
+						<i class="bi bi-envelope-fill fs-5"></i>
+						<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+							0
+						</span>
+					</a>
+				</li>
 			{% endif %}
 			<li class="nav-item d-none d-lg-block">
 				{% if app.user is null %}
-				<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion"
-					title="Se connecter">
-					<i class="bi bi-box-arrow-in-right"></i> Se connecter
-				</a>
+					<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion" title="Se connecter">
+						<i class="bi bi-box-arrow-in-right"></i>
+						Se connecter
+					</a>
 				{% else %}
-				<a class="btn dropdown-toggle border border-secondary text-vert py-0" href="#" role="button"
-					data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
-					aria-expanded="false" aria-label="offcanvas navigation">
-					<i class="bi bi-person fs-4"></i>
-				</a>
+					<a class="btn dropdown-toggle border border-secondary text-vert py-0" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false" aria-label="offcanvas navigation">
+						<i class="bi bi-person fs-4"></i>
+					</a>
 				{% endif %}
 			</li>
 		</ul>
 		{% if app.user %}
-		<a class="nav-link d-lg-none me-5" href="{{ path('app_message') }}" title="Messages">
-			<i class="bi bi-envelope-fill fs-5"></i>
-			<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger"
-				style="display: none;">
-				0
-			</span>
-		</a>
+			<a class="nav-link d-lg-none me-5" href="{{ path('app_message') }}" title="Messages">
+				<i class="bi bi-envelope-fill fs-5"></i>
+				<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+					0
+				</span>
+			</a>
 		{% endif %}
-		<button class="navbar-toggler btn {% if app.user is not null %} dropdown-toggle{% endif %}" type="button"
-			data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
-			aria-expanded="false" aria-label="Toggle navigation">
-			{% if app.user is null %} <i class="bi bi-list fs-3"></i> {% else %}<i
-				class="bi bi-person fs-3 position-relative "></i>{% endif %}
+		<button class="navbar-toggler btn {% if app.user is not null %} dropdown-toggle{% endif %}" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false" aria-label="Toggle navigation">
+			{% if app.user is null %}
+				<i class="bi bi-list fs-3"></i>
+			{% else %}
+				<i class="bi bi-person fs-3 position-relative "></i>
+			{% endif %}
 		</button>
 
 	</div>
 </nav>
 
 
-<div class="offcanvas offcanvas-end bg-dark-subtle" tabindex="-1" id="offcanvasRight"
-	aria-labelledby="offcanvasRightLabel">
+<div class="offcanvas offcanvas-end bg-dark-subtle" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
 	{% if app.user is null %}
-	<div class="offcanvas-header">
-		<div id="offcanvasRightLabel">
-			<p><img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
-					style="max-width: 120px; height:auto;"></p>
+		<div class="offcanvas-header">
+			<div id="offcanvasRightLabel">
+				<p><img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;"></p>
+			</div>
+			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 		</div>
-		<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-	</div>
-	<div class="offcanvas-body">
-		<div class="list-group list-group-flush">
-			<a href="{{ path('app_chercher') }}" class="list-group-item list-group-item-action bg-dark-subtle"
-				title="Chercher un trajet">
-				<i class="text-vert bi bi-search"></i>
-				Chercher un trajet
-			</a>
-			<a href="{{ path('app_publier') }}" class="list-group-item list-group-item-action bg-dark-subtle"
-				title="Publier un trajet">
-				<i class="bi bi-plus-circle"></i>
-				Publier un trajet
-			</a>
-			<a class="list-group-item list-group-item-action bg-dark-subtle" href="#" data-bs-toggle="modal"
-				data-bs-target="#modalConnexion" title="Se connecter">
-				<i class="bi bi-box-arrow-in-right"></i>
-				Se connecter
-			</a>
-			<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
-				<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
-					<i class="bi bi-download"></i> Installer HaloGari
-				</button>
+		<div class="offcanvas-body">
+			<div class="list-group list-group-flush">
+				<a href="{{ path('app_chercher') }}" class="list-group-item list-group-item-action bg-dark-subtle" title="Chercher un trajet">
+					<i class="text-vert bi bi-search"></i>
+					Chercher un trajet
+				</a>
+				<a href="{{ path('app_publier') }}" class="list-group-item list-group-item-action bg-dark-subtle" title="Publier un trajet">
+					<i class="bi bi-plus-circle"></i>
+					Publier un trajet
+				</a>
+				<a class="list-group-item list-group-item-action bg-dark-subtle" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion" title="Se connecter">
+					<i class="bi bi-box-arrow-in-right"></i>
+					Se connecter
+				</a>
+				<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
+					<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+						<i class="bi bi-download"></i>
+						Installer HaloGari
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
 	{% else %}
-	<div class="offcanvas-header">
-		<div id="offcanvasRightLabel">
-			<p><img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid"
-					style="max-width: 120px; height:auto;"></p>
-			<h5>
-				Bonjour
-				{% if app.user is not null %}
-				{{ app.user.prenom|e }},
-				{% endif %}
-			</h5>
-		</div>
+		<div class="offcanvas-header">
+			<div id="offcanvasRightLabel">
+				<p><img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;"></p>
+				<h5>
+					Bonjour
+					{% if app.user is not null %}
+						{{ app.user.prenom|e }},
+					{% endif %}
+				</h5>
+			</div>
 
-		<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-	</div>
-	<div class="offcanvas-body">
-		<div class="list-group list-group-flush">
-			<a href="{{ path('app_chercher') }}"
-				class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
-				<i class="text-vert bi bi-search"></i>
-				Chercher un trajet
-			</a>
-			<a href="{{ path('app_publier') }}"
-				class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
-				<i class="bi bi-plus-circle"></i>
-				Publier un trajet
-			</a>
-			<a href="{{ path('app_profile') }}" class="list-group-item list-group-item-action bg-dark-subtle">
-				<i class="bi bi-person"></i>
-				Mon profil</a>
-			<a href="{{ path('app_trajets_reservations') }}"
-				class="list-group-item list-group-item-action bg-dark-subtle">
-				<i class="bi bi-signpost-2"></i>
-				Mes trajets & réservations</a>
-			<a href="{{ path('app_documents') }}" class="list-group-item list-group-item-action bg-dark-subtle">
-				<i class="bi bi-file-earmark-text"></i>
-				Mes documents</a>
-			<a href="{{ path('app_parametres') }}" class="list-group-item list-group-item-action bg-dark-subtle">
-				<i class="bi bi-gear"></i>
-				Paramètres</a>
-			<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action bg-dark-subtle">
-				<i class="bi bi-box-arrow-right"></i>
-				Déconnexion</a>
-			<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
-				<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
-					<i class="bi bi-download"></i> Installer HaloGari
-				</button>
+			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+			<div class="list-group list-group-flush">
+				<a href="{{ path('app_chercher') }}" class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
+					<i class="text-vert bi bi-search"></i>
+					Chercher un trajet
+				</a>
+
+				<a href="{{ path('app_publier') }}" class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
+					<i class="bi bi-plus-circle"></i>
+					Publier un trajet
+				</a>
+
+				<a href="{{ path('app_profile', { id: app.user.id }) }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-person"></i>
+					Mon profil
+				</a>
+
+				<a href="{{ path('app_mes_trajets') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-signpost-2"></i>
+					Mes trajets
+				</a>
+
+				<a href="{{ path('app_mes_reservations') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-calendar-check"></i>
+					Mes réservations
+				</a>
+
+				<a href="{{ path('app_mes_paiements') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-credit-card"></i>
+					Mes paiements
+				</a>
+
+				<a href="{{ path('app_documents') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-file-earmark-text"></i>
+					Mes documents
+				</a>
+
+				<a href="{{ path('app_parametres') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-gear"></i>
+					Paramètres
+				</a>
+
+				<a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action bg-dark-subtle">
+					<i class="bi bi-box-arrow-right"></i>
+					Déconnexion
+				</a>
+
+				<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
+					<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+						<i class="bi bi-download"></i>
+						Installer HaloGari
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
 	{% endif %}
 </div>
 
 <main class="flex-grow-1
-				{% if app.request.attributes.get('_route') == 'app_home' %}
-				pt-0
-				{% else %}
-				pt-5
-				{% endif %}
-				  pt-md-5">
+						{% if app.request.attributes.get('_route') == 'app_home' %}
+						pt-0
+						{% else %}
+						pt-5
+						{% endif %}
+						  pt-md-5">

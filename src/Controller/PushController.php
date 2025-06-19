@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\PushSubscriptionRepository;
 use App\Service\PushNotificationService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,42 +26,99 @@ class PushController extends AbstractController
     /**
      * @Route("/abonnement-push", name="push_abonnement", methods={"POST"})
      */
-    public function abonnementPush(Request $request): JsonResponse
-    {
-        // Récupère le corps JSON envoyé par le JS
-        $content = $request->getContent();
+    public function abonnementPush(
+        Request $request,
+        EntityManagerInterface $em,
+        PushSubscriptionRepository $repo
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
 
-        // Décode le JSON en tableau PHP
-        $data = json_decode($content, true);
+        if (!$data || !isset($data['endpoint'])) {
+            return new JsonResponse(['error' => 'Requête invalide'], 400);
+        }
 
-        // Option 1 : Affiche les données dans le log (pour tester)
-        dump($data); // s'affiche dans le profiler Symfony
+        $endpoint = $data['endpoint'];
+        $publicKey = $data['keys']['p256dh'] ?? '';
+        $authToken = $data['keys']['auth'] ?? '';
+        $userAgent = $request->headers->get('User-Agent');
 
-        // Option 2 : Affiche dans la console PHP (si tu as un terminal ouvert)
-        file_put_contents(__DIR__ . '/../../var/push_debug.json', json_encode($data, JSON_PRETTY_PRINT));
+        $subscription = $repo->findOneBy(['endpoint' => $endpoint]) ?? new \App\Entity\PushSubscription();
 
-        return new JsonResponse(['status' => 'ok']);
+        $subscription->setEndpoint($endpoint);
+        $subscription->setPublicKey($publicKey);
+        $subscription->setAuthToken($authToken);
+        $subscription->setUserAgent($userAgent);
+
+        if ($this->getUser()) {
+            $subscription->setUser($this->getUser());
+        }
+
+        $em->persist($subscription);
+        $em->flush();
+
+        return new JsonResponse(['status' => '✅ Abonnement enregistré']);
     }
+
 
     /**
      * @Route("/push/test", name="push_test", methods={"GET"})
      */
-    public function testPush(PushNotificationService $pushNotificationService): JsonResponse
-    {
-        $file = __DIR__ . '/../../var/push_debug.json';
-
-        if (!file_exists($file)) {
-            return new JsonResponse(['error' => 'Aucun abonnement trouvé.'], 404);
+    public function testPush(
+        PushNotificationService $pushNotificationService,
+        PushSubscriptionRepository $repo
+    ): JsonResponse {
+        // Si l'utilisateur est connecté, on essaie d'utiliser son abonnement
+        if ($this->getUser()) {
+            $subscription = $repo->findOneBy(['user' => $this->getUser()], ['id' => 'DESC']);
+        } else {
+            // Sinon, on prend le dernier abonnement trouvé
+            $subscription = $repo->findOneBy([], ['id' => 'DESC']);
         }
 
-        $subscriptionData = json_decode(file_get_contents($file), true);
+        if (!$subscription) {
+            return new JsonResponse(['error' => 'Aucun abonnement trouvé en base.'], 404);
+        }
 
+        // Préparer les données pour le service
+        $subscriptionData = [
+            'endpoint' => $subscription->getEndpoint(),
+            'keys' => [
+                'p256dh' => $subscription->getPublicKey(),
+                'auth' => $subscription->getAuthToken()
+            ]
+        ];
+
+        // Envoi de la notification test
         $pushNotificationService->sendNotification(
             $subscriptionData,
-            '🔔 Notification HaloGari',
-            'Ceci est un test de notification Web Push.'
+            '🔔 Test HaloGari',
+            'Ceci est une notification test depuis la base de données.'
         );
 
-        return new JsonResponse(['status' => 'Notification envoyée']);
+        return new JsonResponse(['status' => '✅ Notification envoyée depuis la base']);
     }
+
+
+    /**
+     * @Route("/push/test-user", name="push_test_user")
+     */
+    public function testUserPush(
+        PushNotificationService $pushService
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new Response("❌ Aucun utilisateur connecté", 403);
+        }
+
+        $pushService->sendToUser(
+            $user,
+            '📬 Test personnalisé',
+            'Ceci est un test de notification pour votre compte HaloGari.'
+        );
+
+        return new Response("✅ Notification envoyée à tous tes appareils !");
+    }
+
+
 }

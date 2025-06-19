@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Notes;
+use App\Entity\Reservation;
+use App\Form\NoteConducteurType;
+use App\Repository\UserRepository;
 use Carbon\Carbon;
 use App\Entity\Trajet;
 use App\Repository\NotesRepository;
@@ -163,6 +167,130 @@ class TrajetController extends AbstractController
             'moyenne' => $moyenne,
             'nombreAvis' => $nombreAvis,
             'dateTrajet' => $dateTrajet,
+        ]);
+    }
+
+    /**
+     * @Route("/user/trajet/{trajetId}/noter-passager/{passagerId}", name="app_noter_passager")
+     */
+    public function noterPassager(
+    int $trajetId,
+    int $passagerId,
+    TrajetRepository $trajetRepo,
+    UserRepository $userRepo,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    $conducteur = $this->getUser();
+    $trajet = $trajetRepo->find($trajetId);
+    $passager = $userRepo->find($passagerId);
+
+    if (!$trajet || !$passager) {
+        throw $this->createNotFoundException();
+    }
+
+    if ($trajet->getConducteur() !== $conducteur) {
+        throw $this->createAccessDeniedException();
+    }
+
+    // Vérifier que ce passager a réservé ce trajet
+    $reservation = $em->getRepository(Reservation::class)->findOneBy([
+        'trajet' => $trajet,
+        'passager' => $passager
+    ]);
+
+    if (!$reservation) {
+        throw $this->createAccessDeniedException('Ce passager n’a pas réservé ce trajet.');
+    }
+
+    // Vérifier s’il a déjà été noté
+    $existingNote = $em->getRepository(Notes::class)->findOneBy([
+        'noteur' => $conducteur,
+        'notePour' => $passager,
+        'trajet' => $trajet
+    ]);
+
+    if ($existingNote) {
+        $this->addFlash('info', 'Vous avez déjà noté ce passager.');
+        return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
+    }
+
+    $note = new Notes();
+    $form = $this->createForm(NoteConducteurType::class, $note);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $note->setNoteur($conducteur);
+        $note->setNotePour($passager);
+        $note->setTrajet($trajet);
+
+        $em->persist($note);
+        $em->flush();
+
+        $this->addFlash('success', 'Note enregistrée pour ' . $passager->getPrenom() . '.');
+        return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
+    }
+
+    return $this->render('notes/noter_passager.html.twig', [
+        'form' => $form->createView(),
+        'trajet' => $trajet,
+        'passager' => $passager
+    ]);
+}
+
+    /**
+     * @Route("/user/trajet/{id}/noter-conducteur", name="app_noter_conducteur")
+     */
+    public function noterConducteur(
+        int $id,
+        TrajetRepository $trajetRepo,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $trajet = $trajetRepo->find($id);
+        $user = $this->getUser();
+
+        // Vérification que l'utilisateur est un passager de ce trajet
+        $reservation = $em->getRepository(Reservation::class)->findOneBy([
+            'trajet' => $trajet,
+            'passager' => $user
+        ]);
+
+        if (!$reservation) {
+            throw $this->createAccessDeniedException('Vous n’avez pas réservé ce trajet.');
+        }
+
+        // Empêcher la double notation
+        $existingNote = $em->getRepository(Notes::class)->findOneBy([
+            'noteur' => $user,
+            'notePour' => $trajet->getConducteur(),
+            'trajet' => $trajet
+        ]);
+
+        if ($existingNote) {
+            $this->addFlash('info', 'Vous avez déjà noté ce conducteur pour ce trajet.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        $note = new Notes();
+        $form = $this->createForm(NoteConducteurType::class, $note);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $note->setNoteur($user);
+            $note->setNotePour($trajet->getConducteur());
+            $note->setTrajet($trajet);
+
+            $em->persist($note);
+            $em->flush();
+
+            $this->addFlash('success', 'Merci pour votre avis !');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        return $this->render('notes/noter_conducteur.html.twig', [
+            'form' => $form->createView(),
+            'trajet' => $trajet
         ]);
     }
 

@@ -1,0 +1,27 @@
+{% macro formatModifiable(user, size, withEditButton) %}
+    {% set isVerified = user.isProfilVerifieComplet() %}
+    <div class="profile-avatar-container{% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
+        <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
+             alt="Photo de {{ user.prenom }}"
+             class="profile-avatar"
+             id="previewPhoto">
+
+        {% if withEditButton %}
+            <button class="btn btn-sm btn-light border rounded-circle edit-avatar-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalPhoto"
+                    title="Modifier la photo">
+                <i class="bi bi-pencil-fill"></i>
+            </button>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro formatSimple(user, size) %}
+    {% set isVerified = user.isProfilVerifieComplet() %}
+    <div class="position-relative d-inline-block img-note {% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
+        <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
+             alt="Photo de {{ user.prenom }}"
+             class="rounded-circle img-fluid profile-avatar">
+    </div>
+{% endmacro %}

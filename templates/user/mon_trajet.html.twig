@@ -1,89 +1,124 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon trajet | HaloGari{% endblock %}
+{% block title %}Mon trajet | HaloGari
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <h1 class="mb-4">🚗 Mon trajet</h1>
+	<div class="container py-5">
+		<h1 class="mb-4">🚗 Mon trajet</h1>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">{{ trajet.depart }} → {{ trajet.arrivee }}</h5>
-            <p class="card-text">
-                Date : {{ trajet.dateTrajet|date('d/m/Y') }}<br>
-                Heure : {{ trajet.heureTrajet|date('H:i') }}<br>
-                Places disponibles : {{ trajet.placesDisponibles }}<br>
-                Prix par place : {{ trajet.prix }} €
-            </p>
-            {% if trajet.description %}
-            <p class="mt-2"><strong>Description :</strong> {{ trajet.description }}</p>
-            {% endif %}
-        </div>
-        <div class="card-footer text-muted text-center">
-            {% if not trajet.isAnnule() %}
-                {% if datePasse  %}
-                    <div class="alert alert-warning">
-                        Ce trajet est <strong>passé</strong>. Il n’est plus visible par les passagers.
-                    </div>
-                {% else %}
-                    <a href="{{ path('trajet_annuler', { id: trajet.id }) }}" class="btn btn-danger mb-3"
-                        onclick="return confirm('Êtes-vous sûr de vouloir annuler ce trajet ?');">
-                        Annuler ce trajet
-                    </a>
-                {% endif %}
-            {% else %}
-            <div class="alert alert-warning">
-                Ce trajet a été <strong>annulé</strong>. Il n’est plus visible par les passagers.
-            </div>
-            {% endif %}
-        </div>
+		<div class="card mb-4">
+			<div class="card-body">
+				<h5 class="card-title">{{ trajet.depart }}
+					→
+					{{ trajet.arrivee }}</h5>
+				<p class="card-text">
+					Date :
+					{{ trajet.dateTrajet|date('d/m/Y') }}<br>
+					Heure :
+					{{ trajet.heureTrajet|date('H:i') }}<br>
+					Places disponibles :
+					{{ trajet.placesDisponibles }}<br>
+					Prix par place :
+					{{ trajet.prix }}
+					€
+				</p>
+				{% if trajet.description %}
+					<p class="mt-2">
+						<strong>Description :</strong>
+						<br>{{ trajet.description|nl2br|raw }}</p>
+				{% endif %}
+			</div>
+			<div class="card-footer text-muted text-center">
+				{% if not trajet.isAnnule() %}
+					{% if datePasse %}
+						<div class="alert alert-warning">
+							Ce trajet est
+							<strong>passé</strong>. Il n’est plus visible par les passagers.
+						</div>
+					{% elseif enCours %}
+						<div class="alert alert-info">
+							Ce trajet est
+							<strong>en cours</strong>.
+						</div>
+					{% else %}
+						<a href="{{ path('trajet_annuler', { id: trajet.id }) }}" class="btn btn-danger mb-3" onclick="return confirm('Êtes-vous sûr de vouloir annuler ce trajet ?');">
+							Annuler ce trajet
+						</a>
+					{% endif %}
+				{% else %}
+					<div class="alert alert-warning">
+						Ce trajet a été
+						<strong>annulé</strong>. Il n’est plus visible par les passagers.
+					</div>
+				{% endif %}
+			</div>
+		</div>
 
-    </div>
-
-    {% if app.user == trajet.conducteur and reservations|length > 0 %}
-    <h4>🧾 Réservations reçues</h4>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Passager</th>
-                <th>Places</th>
-                <th>Statut</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reservation in reservations %}
-            <tr>
-                <td>{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</td>
-                <td>{{ reservation.places }}</td>
-                <td>
-                    {% set colorMap = {
-                    'en_attente': 'warning',
-                    'acceptee': 'success',
-                    'refusee': 'danger',
-                    'payee': 'primary'
+		{% if app.user == trajet.conducteur and reservations|length > 0 %}
+			<h4>🧾 Réservations reçues</h4>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Passager</th>
+						<th>Places</th>
+						<th>Statut</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for reservation in reservations %}
+						<tr>
+							<td>{{ reservation.passager.prenom }}
+								{{ reservation.passager.nom }}</td>
+							<td>{{ reservation.places }}</td>
+							<td>
+								{% set colorMap = {
+                        'en_attente': 'warning',
+                        'acceptee': 'success',
+                        'refusee': 'danger',
+                        'payee': 'primary'
                     } %}
-                    {% set color = colorMap[reservation.statut|default('en_attente')] ?? 'secondary' %}
+								{% set color = colorMap[reservation.statut|default('en_attente')] ?? 'secondary' %}
+								<span class="badge bg-{{ color }}">{{ reservation.statut|default('Inconnu')|capitalize }}</span>
+							</td>
+							<td>
+								{% if reservation.statut == 'en_attente' %}
+									{% if not datePasse and not enCours %}
+										<a href="{{ path('reservation_accepter', { id: reservation.id }) }}" class="btn btn-success btn-sm">Accepter</a>
+										<a href="{{ path('reservation_refuser', { id: reservation.id }) }}" class="btn btn-outline-danger btn-sm">Refuser</a>
+									{% elseif enCours %}
+										<small class="text-muted small-sm">Trajet en cours</small>
+									{% else %}
+										<small class="text-muted small-sm">Trop tard</small>
+									{% endif %}
+								{% else %}
+									{% set noteExistante = false %}
+									{% for note in reservation.passager.notesPour %}
+										{% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
+											{% set noteExistante = true %}
+										{% endif %}
+									{% endfor %}
 
-                    <span class="badge bg-{{ color }}">{{ reservation.statut|default('Inconnu')|capitalize }}</span>
+									{% if datePasse and (reservation.statut == 'acceptee' or reservation.statut == 'payee') %}
+										{% if not noteExistante %}
+											<a href="{{ path('app_noter_passager', { trajetId: trajet.id, passagerId: reservation.passager.id }) }}" class="btn btn-sm btn-outline-primary">Noter</a>
+										{% else %}
+											<span class="text-muted small-sm">Déjà noté</span>
+										{% endif %}
+									{% else %}
+										<small class="text-muted small-sm">Déjà
+											{{ reservation.statut }}</small>
+									{% endif %}
 
-                </td>
-                <td>
-                    {% if reservation.statut == 'en_attente' %}
-                    <a href="{{ path('reservation_accepter', { id: reservation.id }) }}"
-                        class="btn btn-success btn-sm">Accepter</a>
-                    <a href="{{ path('reservation_refuser', { id: reservation.id }) }}"
-                        class="btn btn-outline-danger btn-sm">Refuser</a>
-                    {% else %}
-                    <span class="text-muted">Déjà {{ reservation.statut }}</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p class="text-muted">Aucune réservation pour ce trajet.</p>
-    {% endif %}
-</div>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p class="text-muted">Aucune réservation pour ce trajet.</p>
+		{% endif %}
+	</div>
 {% endblock %}
