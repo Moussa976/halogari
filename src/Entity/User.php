@@ -610,14 +610,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isProfilVerifieComplet(): bool
     {
-        $doc = $this->getDocumentByType("Justificatif d'identité");
+        $doc = $this->getDocumentByType("identite");
 
         return $this->isVerified() && $this->hasVerifiedIdentity() && $this->hasVerifiedPhone();
     }
 
     public function hasVerifiedIdentity(): bool
     {
-        $doc = $this->getDocumentByType("Justificatif d'identité");
+        $doc = $this->getDocumentByType("identite");
         return $doc && $doc->getStatus() === Document::STATUS_APPROVED;
     }
 

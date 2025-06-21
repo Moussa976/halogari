@@ -47,6 +47,16 @@ class Document
     private $user;
 
     /**
+     * @ORM\PrePersist
+     */
+    public function setDateDocumentValue(): void
+    {
+        if (!$this->dateDocument) {
+            $this->dateDocument = new \DateTime();
+        }
+    }
+
+    /**
      * Statut du document : "pending", "approved", "rejected"
      * @ORM\Column(type="string", length=20)
      */

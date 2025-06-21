@@ -34,6 +34,57 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/u/{id}", name="app_profilePublic")
+     */
+    public function profilePublic(int $id, UserRepository $userRepository, NotesRepository $notesRepo): Response
+    {
+        $user = $userRepository->find($id);
+
+        // Date en français
+        Carbon::setLocale('fr');
+        $dateFr = Carbon::parse($user->getCreatedAt());
+        $dateMembre = $dateFr->translatedFormat('F Y');
+
+        $notesRecues = $notesRepo->findBy(['notePour' => $user]);
+
+        // Moyenne
+        $moyenne = null;
+        if (count($notesRecues) > 0) {
+            $total = 0;
+            foreach ($notesRecues as $note) {
+                $total += $note->getNote();
+            }
+            $moyenne = round($total / count($notesRecues), 1);
+        }
+
+        $estVerifie = $user->isProfilVerifieComplet();
+
+        // autres vérifications
+        $verifications = [
+            'identite' => $user->hasVerifiedIdentity(),
+            'email' => $user->isVerified(),
+            'telephone' => $user->hasVerifiedPhone(), // ou false si pas encore actif
+        ];
+
+        $verifTotal = count($verifications);
+        $verifOk = count(array_filter($verifications));
+
+        $verifPourcentage = round($verifOk / $verifTotal * 100);
+
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+            'notesRecues' => $notesRecues,
+            'noteMoyenne' => $moyenne,
+            'dateMembre' => $dateMembre,
+            'estVerifie' => $estVerifie,
+            'verifications' => $verifications,
+            'verifOk' => $verifOk,
+            'verifTotal' => $verifTotal,
+            'verifPourcentage' => $verifPourcentage,
+        ]);
+    }
+
+    /**
      * @Route("/user/profil/{id}", name="app_profile")
      */
     public function profile(int $id, UserRepository $userRepository, NotesRepository $notesRepo): Response
@@ -84,7 +135,7 @@ class UserController extends AbstractController
         ]);
     }
 
-     /**
+    /**
      * @Route("/user/preferences", name="app_preferences_update", methods={"POST"})
      */
     public function updatePreferences(Request $request, EntityManagerInterface $em): Response
@@ -99,7 +150,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/photo", name="app_photo_update", methods={"POST"})
+     * @Route("/user/photo", name="app_photoProfil_update", methods={"POST"})
      */
     public function updatePhoto(
         Request $request,
@@ -125,13 +176,13 @@ class UserController extends AbstractController
             // Vérification des formats autorisés
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!in_array($photoFile->getMimeType(), $allowedMimeTypes)) {
-                $this->addFlash('danger', 'Format invalide. JPG, PNG ou WebP uniquement.');
+                $this->addFlash('error', 'Format invalide. JPG, PNG ou WebP uniquement.');
                 return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
             }
 
             // Vérification de la taille
             if ($photoFile->getSize() > 2 * 1024 * 1024) {
-                $this->addFlash('danger', 'Image trop lourde. Max 2 Mo.');
+                $this->addFlash('error', 'Image trop lourde. Max 2 Mo.');
                 return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
             }
 
@@ -155,7 +206,7 @@ class UserController extends AbstractController
 
                 $this->addFlash('success', 'Photo mise à jour avec succès.');
             } catch (FileException $e) {
-                $this->addFlash('danger', 'Erreur lors de l’envoi du fichier.');
+                $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
             }
         }
 
@@ -189,61 +240,78 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/documents/", name="app_documents")
-     */
-    public function mesDocuments(
-        Request $request,
-        EntityManagerInterface $em,
-        SluggerInterface $slugger,
-        SessionInterface $session
-    ): Response {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            $session->set('_security.main.target_path', $request->getUri());
-            $this->addFlash('error', 'Vous devez être connecté pour voir vos documents.');
-            return $this->redirectToRoute('app_login');
-        }
-        $user = $this->getUser();
-        $document = new Document();
-        $form = $this->createForm(DocumentFormType::class, $document);
-        $form->handleRequest($request);
+ * @Route("/user/documents", name="app_documents", methods={"GET", "POST"})
+ */
+public function mesDocuments(
+    Request $request,
+    EntityManagerInterface $em,
+    SluggerInterface $slugger
+): Response {
+    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+    $user = $this->getUser();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $uploadedFile = $form->get('file')->getData();
+    // Soumission du formulaire manuel
+    if ($request->isMethod('POST')) {
+        $type = $request->request->get('type_doc');
+        $autreType = $request->request->get('autre_doc');
+        $file = $request->files->get('document');
 
-            if ($uploadedFile) {
-                $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
-
-                try {
-                    $uploadedFile->move(
-                        $this->getParameter('documents_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Erreur lors de l’envoi du fichier.');
-                    return $this->redirectToRoute('app_documents');
-                }
-
-                $document->setFilenameDocument($newFilename);
-                $document->setDateDocument(new \DateTime());
-                $document->setUser($user);
-
-                $em->persist($document);
-                $em->flush();
-
-                $this->addFlash('success', 'Document ajouté avec succès.');
-                return $this->redirectToRoute('app_documents');
-            }
+        if (!$type || !$file) {
+            $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
+            return $this->redirectToRoute('app_documents');
         }
 
-        $documents = $em->getRepository(Document::class)->findBy(['user' => $user]);
+        // Déterminer le type réel
+        $finalType = ($type === 'Autre' && !empty($autreType)) ? $autreType : $type;
 
-        return $this->render('user/mes_documents.html.twig', [
-            'documentForm' => $form->createView(),
-            'documents' => $documents,
-        ]);
+        // Vérification du type MIME
+        $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+            $this->addFlash('error', 'Format non autorisé. Seuls les PDF, JPG ou PNG sont acceptés.');
+            return $this->redirectToRoute('app_documents');
+        }
+
+        // Vérification taille
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            $this->addFlash('error', 'Le fichier dépasse la taille maximale autorisée (2 Mo).');
+            return $this->redirectToRoute('app_documents');
+        }
+
+        // Générer un nom de fichier unique
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeName = $slugger->slug($originalName);
+        $filename = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
+
+        try {
+            $file->move($this->getParameter('documents_directory'), $filename);
+
+            $document = new Document();
+            $document->setTypeDocument($finalType);
+            $document->setFilenameDocument($filename);
+            $document->setDateDocument(new \DateTime());
+            $document->setUser($user);
+            $document->setStatus(Document::STATUS_PENDING);
+
+            $em->persist($document);
+            $em->flush();
+
+            $this->addFlash('success', 'Document ajouté avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
+        }
+
+        return $this->redirectToRoute('app_documents');
     }
+
+    $documents = $em->getRepository(Document::class)->findBy(['user' => $user]);
+
+    return $this->render('user/mes_documents.html.twig', [
+        'documents' => $documents,
+    ]);
+}
+
+
+
 
     /**
      * @Route("/user/trajets-et-reservations/", name="app_trajets_reservations")
@@ -325,13 +393,6 @@ class UserController extends AbstractController
         return $this->render('user/mes_paiements.html.twig');
     }
 
-    /**
-     * @Route("/user/parametres", name="app_parametres")
-     */
-    public function parametres(): Response
-    {
-        return $this->render('user/parametres.html.twig');
-    }
 
     /**
      * Affiche le détail d’un trajet pour le conducteur connecté

@@ -1,173 +1,109 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} HaloGari | FAQ - Questions Fréquentes{% endblock %}
-
+{% block title %}HaloGari | FAQ - Questions fréquentes
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-  <h1 class="mb-4 text-center">❓ Foire Aux Questions (FAQ)</h1>
+	<div class="container py-5">
+		<h1 class="mb-4 text-center">Foire aux questions</h1>
 
-  <div class="accordion" id="faqAccordion">
+		<div class="accordion" id="faqAccordion">
 
-    {# Tes questions existantes légèrement reformulées #}
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading1">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
-          Comment publier un trajet sur HaloGari ?
-        </button>
-      </h2>
-      <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Connectez-vous à votre compte, puis rendez-vous dans le menu “Publier un trajet”. Remplissez les 3 étapes (informations, prix, description) et validez. Le trajet sera publié immédiatement après vérification.
-        </div>
-      </div>
-    </div>
+			{% set faq = [
+      {
+        question: "Comment publier un trajet sur HaloGari ?",
+        reponse: "Connectez-vous à votre compte, puis rendez-vous dans le menu “Publier un trajet”. Remplissez les 3 étapes (informations, prix, description) et validez. Le trajet sera publié immédiatement après vérification."
+      },
+      {
+        question: "Est-ce que je peux réserver plusieurs places ?",
+        reponse: "Oui, vous pouvez choisir jusqu’à 8 passagers lors de la recherche avant de cliquer sur “Rechercher”."
+      },
+      {
+        question: "Dois-je avoir un compte pour utiliser HaloGari ?",
+        reponse: "Oui. Un compte est nécessaire pour réserver, publier un trajet ou échanger des messages. L’inscription est gratuite."
+      },
+      {
+        question: "Comment vérifier mon profil HaloGari ?",
+        reponse: "Votre profil est vérifié lorsque votre adresse e-mail est confirmée et que votre pièce d'identité est validée. Un numéro de téléphone pourra être requis prochainement. Cela permet d’afficher un badge vert et rassure les autres utilisateurs."
+      },
+      {
+        question: "Comment changer ma photo de profil ?",
+        reponse: "Allez sur votre profil, cliquez sur le crayon en bas à droite de votre photo. Vous pourrez ensuite importer une nouvelle image ou supprimer l’ancienne."
+      },
+      {
+        question: "Que signifie le badge bouclier vert sur une photo ?",
+        reponse: "Le bouclier indique que le profil est vérifié (e-mail + pièce d'identité). C’est un gage de confiance visible sur toute la plateforme."
+      },
+      {
+        question: "Comment voir mon profil comme les autres le voient ?",
+        reponse: "Chaque profil possède une URL publique du type <code>/u/123</code>. Vous pouvez la copier depuis votre profil et la partager à d'autres personnes."
+      },
+      {
+        question: "Comment modifier ou annuler un trajet ?",
+        reponse: "Allez dans “Mes trajets”, sélectionnez le trajet concerné, puis cliquez sur “Modifier” ou “Annuler”."
+      },
+      {
+        question: "Quelles sont les conditions pour publier un trajet ?",
+        reponse: "Vous devez avoir un justificatif d'identité et un RIB validés par l'équipe HaloGari. Ces documents sont requis pour activer votre profil conducteur."
+      },
+      {
+        question: "Comment contacter le support HaloGari ?",
+        reponse: 'Vous pouvez nous écrire via la page <a href="{{ path("app_contact") }}">Contact</a> ou par email à <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>.'
+      },
+      {
+        question: "Est-ce que les paiements sont sécurisés ?",
+        reponse: "Oui, nous utilisons Stripe, une solution certifiée PCI-DSS, pour garantir la sécurité de tous les paiements sur la plateforme."
+      },
+      {
+        question: "Que faire si un conducteur est en retard ou ne se présente pas ?",
+        reponse: "Contactez-le via la messagerie HaloGari. S’il ne répond pas, signalez-le au support : nous appliquerons notre politique de remboursement."
+      },
+      {
+        question: "Puis-je laisser un avis sur un trajet ?",
+        reponse: "Oui, une fois le trajet effectué, vous pourrez noter le conducteur et laisser un commentaire visible des autres utilisateurs."
+      },
+      {
+        question: "Quand suis-je débité(e) lors d'une réservation ?",
+        reponse: "Vous n’êtes débité que lorsque le conducteur accepte votre demande. Le paiement est alors autorisé mais capturé uniquement après confirmation du trajet."
+      },
+      {
+        question: "À quoi sert le code de validation du trajet ?",
+        reponse: "Ce code garantit que le passager est bien monté à bord. Il permet de déclencher le paiement au conducteur une fois le trajet effectué."
+      },
+      {
+        question: "Quelle est la politique d’annulation ?",
+        reponse: 'Elle dépend du moment où vous annulez. Consultez notre <a href="{{ path("app_conditionsutisation") }}#remboursement">politique de remboursement</a> pour tous les détails.'
+      },
+      {
+        question: "Puis-je modifier mes informations personnelles ?",
+        reponse: "Oui, dans la page <strong>Paramètres</strong>, vous pouvez changer votre prénom, nom, date de naissance, numéro de téléphone, ainsi que votre photo de profil."
+      },
+      {
+        question: "Que deviennent mes avis si je supprime mon compte ?",
+        reponse: "Les avis que vous avez laissés seront toujours visibles pour les autres utilisateurs, mais votre nom et votre profil ne seront plus associés à ces commentaires."
+      },
+      {
+        question: "Comment ajouter un document 'autre' que l'identité ou le RIB ?",
+        reponse: "Dans la section <strong>Mes documents</strong> de votre compte, sélectionnez 'Autre' dans le menu déroulant. Un champ s'affichera pour préciser le type de document (ex. justificatif de domicile)."
+      }
 
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading2">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
-          Est-ce que je peux réserver plusieurs places ?
-        </button>
-      </h2>
-      <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Oui, vous pouvez choisir jusqu’à 8 passagers lors de la recherche avant de cliquer sur “Rechercher”.
-        </div>
-      </div>
-    </div>
+    ] %}
 
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading3">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
-          Dois-je avoir un compte pour utiliser HaloGari ?
-        </button>
-      </h2>
-      <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Oui. Un compte est nécessaire pour réserver, publier un trajet ou échanger des messages. L’inscription est gratuite.
-        </div>
-      </div>
-    </div>
+			{% for item in faq %}
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="heading{{ loop.index }}">
+						<button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse{{ loop.index }}">
+							{{ item.question }}
+						</button>
+					</h2>
+					<div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#faqAccordion">
+						<div class="accordion-body">
+							{{ item.reponse|raw }}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
 
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading4">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-          Comment modifier ou annuler un trajet ?
-        </button>
-      </h2>
-      <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Allez dans “Mes trajets”, sélectionnez le trajet concerné, puis cliquez sur “Modifier” ou “Annuler”.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading5">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
-          Quelles sont les conditions pour publier un trajet ?
-        </button>
-      </h2>
-      <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="heading5" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Vous devez avoir un justificatif d'identité et un RIB validés par l'équipe HaloGari. Ces documents sont requis pour activer votre profil conducteur.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading6">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
-          Comment contacter le support HaloGari ?
-        </button>
-      </h2>
-      <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="heading6" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Vous pouvez nous écrire via la page <a href="{{ path('app_contact') }}">Contact</a> ou par email à <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading7">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
-          Est-ce que les paiements sont sécurisés ?
-        </button>
-      </h2>
-      <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Oui, nous utilisons Stripe, une solution certifiée PCI-DSS, pour garantir la sécurité de tous les paiements sur la plateforme.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading8">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
-          Que faire si un conducteur est en retard ou ne se présente pas ?
-        </button>
-      </h2>
-      <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="heading8" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Contactez-le via la messagerie HaloGari. S’il ne répond pas, signalez-le au support : nous appliquerons notre politique de remboursement.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading9">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
-          Puis-je laisser un avis sur un trajet ?
-        </button>
-      </h2>
-      <div id="collapse9" class="accordion-collapse collapse" aria-labelledby="heading9" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Oui, une fois le trajet effectué, vous pourrez noter le conducteur et laisser un commentaire visible des autres utilisateurs.
-        </div>
-      </div>
-    </div>
-
-    {# ➕ Nouvelles questions #}
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading10">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
-          Quand suis-je débité(e) lors d'une réservation ?
-        </button>
-      </h2>
-      <div id="collapse10" class="accordion-collapse collapse" aria-labelledby="heading10" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Vous n’êtes débité que lorsque le conducteur accepte votre demande. Le paiement est alors autorisé mais capturé uniquement après confirmation du trajet.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading11">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
-          À quoi sert le code de validation du trajet ?
-        </button>
-      </h2>
-      <div id="collapse11" class="accordion-collapse collapse" aria-labelledby="heading11" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Ce code garantit que le passager est bien monté à bord. Il permet de déclencher le paiement au conducteur une fois le trajet effectué.
-        </div>
-      </div>
-    </div>
-
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="heading12">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
-          Quelle est la politique d’annulation ?
-        </button>
-      </h2>
-      <div id="collapse12" class="accordion-collapse collapse" aria-labelledby="heading12" data-bs-parent="#faqAccordion">
-        <div class="accordion-body">
-          Elle dépend du moment où vous annulez. Consultez notre <a href="{{ path('app_conditionsutisation') }}#remboursement">politique de remboursement</a> pour tous les détails.
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
+		</div>
+	</div>
 {% endblock %}

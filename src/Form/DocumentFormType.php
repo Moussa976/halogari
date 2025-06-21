@@ -10,22 +10,13 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class DocumentFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('typeDocument', ChoiceType::class, [
-                'label' => 'Type de document',
-                'choices' => [
-                    'Justificatif d\'identité' => 'Justificatif d\'identité',
-                    'RIB' => 'RIB',
-                    'Autre' => 'Autre',
-                ],
-                'placeholder' => 'Sélectionner un type',
-                'attr' => ['class' => 'form-select'],
-            ])
             ->add('file', FileType::class, [
                 'label' => 'Fichier (PDF ou image)',
                 'mapped' => false,

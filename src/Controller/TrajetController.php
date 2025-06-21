@@ -95,7 +95,7 @@ class TrajetController extends AbstractController
             $user = $this->getUser();
 
             $rib = $user->getDocumentByType('RIB');
-            $identite = $user->getDocumentByType("Justificatif d'identité");
+            $identite = $user->getDocumentByType("identite");
 
             if (!$rib || !$identite) {
                 $this->addFlash('error', 'Vous devez ajouter un RIB et une pièce d’identité.');

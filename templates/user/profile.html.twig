@@ -2,351 +2,362 @@
 {% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}HaloGari | Profil de
-	{{ user.prenom }}
+{{ user.prenom }}
 {% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-lg-6">
-				<div
-					class="card shadow profile-card position-relative">
+<div class="container py-5">
+	<div class="row justify-content-center">
+		<div class="col-lg-6">
+			<div class="card shadow profile-card position-relative">
 
-					<!-- Photo superposée avec crayon -->
-					{{ avatar.formatModifiable(user, 110, app.user and app.user.id == user.id) }}
+				<!-- Photo superposée avec crayon -->
+				{{ avatar.formatModifiable(user, 110, app.user and app.user.id == user.id) }}
 
-					<div class="card-body pt-0 mt-0 text-center">
-						<h4 class="mb-1">{{ user.prenom }}</h4>
-						<p class="text-muted">
-							{% if user.dateNaissance %}
-								{{ date().diff(user.dateNaissance).y }}
-								ans
-							{% else %}
-								Âge non renseigné
-							{% endif %}
-							<br>
-							<a href="#" data-bs-toggle="modal" data-bs-target="#modalNotes" class="btn btn-outline-light text-warning text-start">
-								{% if noteMoyenne %}
-									<span class="text-warning d-block">
-										{% for i in 1..5 %}
-											{% if i <= noteMoyenne %}
-												<i class="bi bi-star-fill"></i>
-											{% elseif i - noteMoyenne < 1 %}
-												<i class="bi bi-star-half"></i>
-											{% else %}
-												<i class="bi bi-star"></i>
-											{% endif %}
+				<div class="card-body pt-0 mt-0 text-center">
+					<h4 class="mb-1">{{ user.prenom }}</h4>
+					<p class="text-muted">
+						{% if user.dateNaissance %}
+						{{ date().diff(user.dateNaissance).y }}
+						ans
+						{% else %}
+						Âge non renseigné
+						{% endif %}
+						<br>
+						<a href="#" data-bs-toggle="modal" data-bs-target="#modalNotes"
+							class="btn btn-outline-light text-warning text-start">
+							{% if noteMoyenne %}
+							<span class="text-warning d-block">
+								{% for i in 1..5 %}
+								{% if i <= noteMoyenne %} <i class="bi bi-star-fill"></i>
+									{% elseif i - noteMoyenne < 1 %} <i class="bi bi-star-half"></i>
+										{% else %}
+										<i class="bi bi-star"></i>
+										{% endif %}
 										{% endfor %}
-									</span>
-									<small class="text-muted d-block">{{ noteMoyenne }}/5 —
-										{{ notesRecues|length }}
-										avis</small>
-								{% else %}
-									<span class="text-muted small d-block">Aucun avis pour le moment</span>
-								{% endif %}
+							</span>
+							<small class="text-muted d-block">{{ noteMoyenne }}/5 —
+								{{ notesRecues|length }}
+								avis</small>
+							{% else %}
+							<span class="text-muted small d-block">Aucun avis pour le moment</span>
+							{% endif %}
+						</a>
+					</p>
+
+					{% set verifTotal = 3 %}
+					{% set verifOk = 0 %}
+					{% if user.hasVerifiedIdentity() %}
+					{% set verifOk = verifOk + 1 %}
+					{% endif %}
+					{% if user.isVerified %}
+					{% set verifOk = verifOk + 1 %}
+					{% endif %}
+					{# ⚠️ Ajoutez ici +1 si le numéro de téléphone est vérifié #}
+
+					<!-- Statut de vérification -->
+					<div class="mb-4 text-start">
+						<h5 class="fw-bold mb-1">Statut de vérification</h5>
+
+						<!-- Badge visuel -->
+						<div class="mb-2">
+							<span class="badge
+																																																															{% if verifOk == verifTotal %}
+																																																																bg-success
+																																																															{% elseif verifOk == 0 %}
+																																																																bg-danger
+																																																															{% else %}
+																																																																bg-warning text-dark
+																																																															{% endif %}
+																																																														">
+								{{ verifOk }}/{{ verifTotal }}
+								vérifications complétées
+							</span>
+						</div>
+
+						<!-- Texte motivationnel -->
+						{% if app.user and app.user.id == user.id and verifOk < verifTotal %} <p
+							class="text-muted small fst-italic mb-2">
+							Complétez votre profil pour renforcer la confiance entre covoitureurs.<br>
+							{% if not user.hasVerifiedIdentity() %}
+							<a href="{{ path('app_documents') }}" class="text-decoration-none">
+								Ajouter mes documents →
 							</a>
-						</p>
-
-						{% set verifTotal = 3 %}
-						{% set verifOk = 0 %}
-						{% if user.hasVerifiedIdentity() %}
-							{% set verifOk = verifOk + 1 %}
-						{% endif %}
-						{% if user.isVerified %}
-							{% set verifOk = verifOk + 1 %}
-						{% endif %}
-						{# ⚠️ Ajoutez ici +1 si le numéro de téléphone est vérifié #}
-
-						<!-- Statut de vérification -->
-						<div class="mb-4 text-start">
-							<h5 class="fw-bold mb-1">Statut de vérification</h5>
-
-							<!-- Badge visuel -->
-							<div class="mb-2">
-								<span class="badge
-																																											{% if verifOk == verifTotal %}
-																																												bg-success
-																																											{% elseif verifOk == 0 %}
-																																												bg-danger
-																																											{% else %}
-																																												bg-warning text-dark
-																																											{% endif %}
-																																										">
-									{{ verifOk }}/{{ verifTotal }}
-									vérifications complétées
-								</span>
-							</div>
-
-							<!-- Texte motivationnel -->
-							{% if app.user and app.user.id == user.id and verifOk < verifTotal %}
-								<p class="text-muted small fst-italic mb-2">
-									Complétez votre profil pour renforcer la confiance entre covoitureurs.<br>
-									{% if not user.hasVerifiedIdentity() %}
-										<a href="{{ path('app_documents') }}" class="text-decoration-none">
-											Ajouter mes documents →
-										</a>
-									{% endif %}
-								</p>
+							{% endif %}
+							</p>
 							{% endif %}
 
 							<!-- Liste des éléments vérifiés -->
 							<ul class="list-unstyled mb-0">
 								<li>
-									<i class="bi {{ verifications.identite ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.identite ? 'text-success' : 'text-danger' }}"></i>
+									<i
+										class="bi {{ verifications.identite ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.identite ? 'text-success' : 'text-danger' }}"></i>
 									Pièce d'identité
 									{{ verifications.identite ? 'vérifiée' : 'non vérifiée' }}
 								</li>
 								<li>
-									<i class="bi {{ verifications.email ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.email ? 'text-success' : 'text-danger' }}"></i>
+									<i
+										class="bi {{ verifications.email ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.email ? 'text-success' : 'text-danger' }}"></i>
 									Adresse e-mail
 									{{ verifications.email ? 'vérifiée' : 'non vérifiée' }}
 								</li>
 								<li>
-									<i class="bi {{ verifications.telephone ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.telephone ? 'text-success' : 'text-danger' }}"></i>
+									<i
+										class="bi {{ verifications.telephone ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.telephone ? 'text-success' : 'text-danger' }}"></i>
 									Numéro de téléphone
 									{{ verifications.telephone ? 'vérifié' : 'non vérifié' }}
 								</li>
 							</ul>
+					</div>
+
+
+					<!-- Description -->
+					<div class="mb-4 text-start">
+						<div class="d-flex align-items-center justify-content-between">
+							<h5 class="fw-bold mb-0">Faites connaissance avec
+								{{ user.prenom }}</h5>
+							{% if app.user and app.user.id == user.id %}
+							<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+								data-bs-target="#modalDescription" title="Modifier la description">
+								<i class="bi bi-pencil-fill"></i>
+							</button>
+							{% endif %}
 						</div>
-
-
-						<!-- Description -->
-						<div class="mb-4 text-start">
-							<div class="d-flex align-items-center justify-content-between">
-								<h5 class="fw-bold mb-0">Faites connaissance avec
-									{{ user.prenom }}</h5>
-								{% if app.user and app.user.id == user.id %}
-									<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalDescription" title="Modifier la description">
-										<i class="bi bi-pencil-fill"></i>
-									</button>
-								{% endif %}
-							</div>
-							<div class="p-1 bg-light">
-								{% if user.description %}
-									<p class="mb-1 py-1 px-2">{{ user.description|nl2br|raw }}</p>
-								{% else %}
-									<p class="mb-1 text-center py-3">Aucune description renseignée</p>
-								{% endif %}
-							</div>
-						</div>
-
-						<!-- Préférences -->
-						<div class="mb-4 text-start">
-							<div class="d-flex align-items-center justify-content-between">
-								<h5 class="fw-bold mb-0">Mes préférences</h5>
-								{% if app.user and app.user.id == user.id %}
-									<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalPreferences" title="Modifier mes préférences">
-										<i class="bi bi-sliders me-1"></i>
-									</button>
-								{% endif %}
-							</div>
-
-							{% if user.preferences is not empty %}
-								<ul class="list-unstyled mt-3">
-									{% for key in user.preferences %}
-										<li>
-											{% if key == 'chat' %}
-												<i class="bi bi-chat-dots text-primary me-2"></i>
-												J’aime discuter
-											{% elseif key == 'no_smoke' %}
-												<i class="bi bi-slash-circle text-danger me-2"></i>
-												Pas de cigarette
-											{% elseif key == 'no_animals' %}
-												<i class="bi bi-slash-circle text-danger me-2"></i>
-												Pas d’animaux
-											{% elseif key == 'music' %}
-												<i class="bi bi-music-note-beamed text-primary me-2"></i>
-												J’aime écouter de la musique
-											{% elseif key == 'silence' %}
-												<i class="bi bi-volume-mute text-muted me-2"></i>
-												Je préfère un trajet calme
-											{% endif %}
-										</li>
-									{% endfor %}
-								</ul>
+						<div class="p-1 bg-light">
+							{% if user.description %}
+							<p class="mb-1 py-1 px-2">{{ user.description|nl2br|raw }}</p>
 							{% else %}
-								<p class="text-muted small">Aucune préférence indiquée.</p>
+							<p class="mb-1 text-center py-3">Aucune description renseignée</p>
+							{% endif %}
+						</div>
+					</div>
+
+					<!-- Préférences -->
+					<div class="mb-4 text-start">
+						<div class="d-flex align-items-center justify-content-between">
+							<h5 class="fw-bold mb-0">Mes préférences</h5>
+							{% if app.user and app.user.id == user.id %}
+							<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+								data-bs-target="#modalPreferences" title="Modifier mes préférences">
+								<i class="bi bi-sliders me-1"></i>
+							</button>
 							{% endif %}
 						</div>
 
+						{% if user.preferences is not empty %}
+						<ul class="list-unstyled mt-3">
+							{% for key in user.preferences %}
+							<li>
+								{% if key == 'chat' %}
+								<i class="bi bi-chat-dots text-primary me-2"></i>
+								J’aime discuter
+								{% elseif key == 'no_smoke' %}
+								<i class="bi bi-slash-circle text-danger me-2"></i>
+								Pas de cigarette
+								{% elseif key == 'no_animals' %}
+								<i class="bi bi-slash-circle text-danger me-2"></i>
+								Pas d’animaux
+								{% elseif key == 'music' %}
+								<i class="bi bi-music-note-beamed text-primary me-2"></i>
+								J’aime écouter de la musique
+								{% elseif key == 'silence' %}
+								<i class="bi bi-volume-mute text-muted me-2"></i>
+								Je préfère un trajet calme
+								{% endif %}
+							</li>
+							{% endfor %}
+						</ul>
+						{% else %}
+						<p class="text-muted small">Aucune préférence indiquée.</p>
+						{% endif %}
+					</div>
 
-						<div class="text-muted small">
-							<p class="text-muted small-sm">Membre depuis
-								<strong>{{ dateMembre }}</strong>
-							</p>
-						</div>
+
+					<div class="text-muted small">
+						<p class="text-muted small-sm">Membre depuis
+							<strong>{{ dateMembre }}</strong>
+						</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
 
-	<!-- Modal Avis -->
-	<div class="modal fade" id="modalNotes" tabindex="-1" aria-labelledby="modalNotesLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalNotesLabel">Avis sur
-						{{ user.prenom }}</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-				</div>
-				<div class="modal-body">
-					{% if notesRecues is empty %}
-						<p class="text-muted">Aucun avis pour le moment.</p>
-					{% else %}
-						{% for note in notesRecues %}
-							<div class="border-bottom pb-2 mb-2">
-								<strong>
-									{{ avatar.formatSimple(note.noteur, 40) }}
-									{{ note.noteur.prenom }}
-								</strong>
-								<span class="text-warning">
-									{% for i in 1..note.note %}
-										⭐
-									{% endfor %}
-								</span><br>
-								<small class="text-muted">{{ note.createdAt|date('d/m/Y H:i') }}</small>
-								{% if note.commentaire %}
-									<p class="mb-0">{{ note.commentaire }}</p>
-								{% endif %}
-							</div>
+<!-- Modal Avis -->
+<div class="modal fade" id="modalNotes" tabindex="-1" aria-labelledby="modalNotesLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalNotesLabel">Avis sur
+					{{ user.prenom }}</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body">
+				{% if notesRecues is empty %}
+				<p class="text-muted">Aucun avis pour le moment.</p>
+				{% else %}
+				{% for note in notesRecues %}
+				<div class="border-bottom pb-2 mb-2">
+					<strong>
+						{{ avatar.formatSimple(note.noteur, 40) }}
+						{{ note.noteur.prenom }}
+					</strong>
+					<span class="text-warning">
+						{% for i in 1..note.note %}
+						⭐
 						{% endfor %}
+					</span><br>
+					<small class="text-muted">{{ note.createdAt|date('d/m/Y H:i') }}</small>
+					{% if note.commentaire %}
+					<p class="mb-0">{{ note.commentaire }}</p>
 					{% endif %}
 				</div>
+				{% endfor %}
+				{% endif %}
 			</div>
 		</div>
 	</div>
+</div>
 
 
-	<!-- Modal Photo, Description et préférences -->
-	{% if app.user and app.user.id == user.id %}
-		<div class="modal fade" id="modalPhoto" tabindex="-1" aria-labelledby="modalPhotoLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<form method="post" action="{{ path('app_photo_update') }}" enctype="multipart/form-data">
-						<div class="modal-header">
-							<h5 class="modal-title" id="modalPhotoLabel">Changer la photo de profil</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-						</div>
+<!-- Modal Photo, Description et préférences -->
+{% if app.user and app.user.id == user.id %}
+<div class="modal fade" id="modalPhoto" tabindex="-1" aria-labelledby="modalPhotoLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalPhotoLabel">Changer la photo de profil</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
 
-						<div
-							class="modal-body">
-							<!-- Aperçu circulaire -->
-							<div class="text-center mb-3">
-								<img id="modalPreviewPhoto" src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}" class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;" alt="Aperçu de la photo">
-							</div>
+			<div class="modal-body">
 
-							<div class="form-group mb-3 text-start">
-								<label for="photoInput" class="form-label fw-semibold">
-									Nouvelle photo
-									<small class="text-muted small-sm">(JPG, PNG, WebP – max 2 Mo)</small>
-								</label>
-								<input type="file" name="photo" id="photoInput" class="form-control" accept="image/*">
-							</div>
-						</div>
-
-						<div class="modal-footer d-flex flex-column gap-2">
-							<button type="submit" class="btn btn-primary w-100">
-								<i class="bi bi-check-circle me-1"></i>
-								Enregistrer ma nouvelle photo
-							</button>
-
-							{% if user.photo %}
-								<form method="post" action="{{ path('app_photo_update') }}" onsubmit="return confirm('Supprimer votre photo actuelle ?');">
-									<input type="hidden" name="remove_photo" value="1">
-									<button type="submit" class="btn btn-outline-danger w-100">
-										<i class="bi bi-trash3 me-1"></i>
-										Supprimer ma photo
-									</button>
-								</form>
-							{% endif %}
-						</div>
+				<!-- Aperçu circulaire -->
+				<div class="text-center mb-1">
+					<img id="modalPreviewPhoto"
+						src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
+						class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;"
+						alt="Aperçu de la photo">
+				</div>
+				{% if user.photo %}
+				<div class="d-flex justify-content-center mb-3">
+					<form method="post" action="{{ path('app_photoProfil_update') }}"
+						onsubmit="return confirm('Supprimer votre photo actuelle ?');">
+						<input type="hidden" name="remove_photo" value="1">
+						<button type="submit" class="btn btn-outline-danger btn-sm">
+							<i class="bi bi-trash3 me-1"></i>
+							Supprimer ma photo
+						</button>
 					</form>
 				</div>
+
+				{% endif %}
+
+				<form method="post" action="{{ path('app_photoProfil_update') }}" enctype="multipart/form-data">
+
+
+					<div class="form-group mb-3 text-start">
+						<label for="photoInput" class="form-label fw-semibold">
+							Nouvelle photo
+							<small class="text-muted small-sm">(JPG, PNG, WebP – max 2 Mo)</small>
+						</label>
+						<input type="file" name="photo" id="photoInput" class="form-control" accept="image/*" required>
+					</div>
+
+					<button type="submit" class="btn btn-primary w-100">
+						<i class="bi bi-check-circle me-1"></i>
+						Enregistrer ma nouvelle photo
+					</button>
+				</form>
 			</div>
 		</div>
+	</div>
+</div>
 
-		<div class="modal fade" id="modalDescription" tabindex="-1" aria-labelledby="modalDescriptionLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<form method="post" action="{{ path('app_update_description') }}">
-						<div class="modal-header">
-							<h5 class="modal-title" id="modalDescriptionLabel">Modifier ma description</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-						</div>
-
-						<div class="modal-body">
-							<textarea name="description" class="form-control" rows="5" required>{{ user.description }}</textarea>
-						</div>
-
-						<div class="modal-footer">
-							<button type="submit" class="btn btn-primary w-100">
-								<i class="bi bi-check-circle me-1"></i>
-								Enregistrer la description
-							</button>
-						</div>
-					</form>
+<div class="modal fade" id="modalDescription" tabindex="-1" aria-labelledby="modalDescriptionLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form method="post" action="{{ path('app_update_description') }}">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalDescriptionLabel">Modifier ma description</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 				</div>
-			</div>
-		</div>
 
-		<div class="modal fade" id="modalPreferences" tabindex="-1" aria-labelledby="modalPreferencesLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<form method="post" action="{{ path('app_preferences_update') }}">
-						<div class="modal-header">
-							<h5 class="modal-title" id="modalPreferencesLabel">Mes préférences de trajet</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-						</div>
-						<div class="modal-body">
-							{% set options = {
-												'chat': "J’aime discuter pendant le trajet",
-												'no_smoke': "Pas de cigarette, svp",
-												'no_animals': "Je préfère sans animaux",
-												'music': "J’aime écouter de la musique",
-												'silence': "Je préfère un trajet calme"
-											} %}
-							{% for key, label in options %}
-								<div class="form-check mb-2">
-									<input type="checkbox" class="form-check-input" name="preferences[]" value="{{ key }}" id="pref_{{ key }}" {% if key in user.preferences %} checked {% endif %}>
-									<label class="form-check-label" for="pref_{{ key }}">{{ label }}</label>
-								</div>
-							{% endfor %}
-						</div>
-						<div class="modal-footer">
-							<button type="submit" class="btn btn-primary w-100">
-								<i class="bi bi-check-circle me-1"></i>
-								Enregistrer mes préférences
-							</button>
-						</div>
-					</form>
+				<div class="modal-body">
+					<textarea name="description" class="form-control" rows="5"
+						required>{{ user.description }}</textarea>
 				</div>
-			</div>
+
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary w-100">
+						<i class="bi bi-check-circle me-1"></i>
+						Enregistrer la description
+					</button>
+				</div>
+			</form>
 		</div>
-	{% endif %}
+	</div>
+</div>
+
+<div class="modal fade" id="modalPreferences" tabindex="-1" aria-labelledby="modalPreferencesLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form method="post" action="{{ path('app_preferences_update') }}">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalPreferencesLabel">Mes préférences de trajet</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body">
+					{% set options = {
+					'chat': "J’aime discuter pendant le trajet",
+					'no_smoke': "Pas de cigarette, svp",
+					'no_animals': "Je préfère sans animaux",
+					'music': "J’aime écouter de la musique",
+					'silence': "Je préfère un trajet calme"
+					} %}
+					{% for key, label in options %}
+					<div class="form-check mb-2">
+						<input type="checkbox" class="form-check-input" name="preferences[]" value="{{ key }}"
+							id="pref_{{ key }}" {% if key in user.preferences %} checked {% endif %}>
+						<label class="form-check-label" for="pref_{{ key }}">{{ label }}</label>
+					</div>
+					{% endfor %}
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary w-100">
+						<i class="bi bi-check-circle me-1"></i>
+						Enregistrer mes préférences
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endif %}
 
 {% endblock %}
 
 {% block javascripts %}
-	<script>
-		const photoInput = document.getElementById('photoInput');
-const modalPreview = document.getElementById('modalPreviewPhoto');
+<script>
+	const photoInput = document.getElementById('photoInput');
+	const modalPreview = document.getElementById('modalPreviewPhoto');
 
-if (photoInput && modalPreview) {
-photoInput.addEventListener('change', function () {
-const file = this.files[0];
-if (file && file.type.startsWith('image/')) {
-const reader = new FileReader();
-reader.onload = e => modalPreview.src = e.target.result;
-reader.readAsDataURL(file);
-}
-});
-}
+	if (photoInput && modalPreview) {
+		photoInput.addEventListener('change', function () {
+			const file = this.files[0];
+			if (file && file.type.startsWith('image/')) {
+				const reader = new FileReader();
+				reader.onload = e => modalPreview.src = e.target.result;
+				reader.readAsDataURL(file);
+			}
+		});
+	}
 
-// Bootstrap tooltips (crayon)
-document.addEventListener('DOMContentLoaded', () => {
-const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-tooltips.forEach(el => new bootstrap.Tooltip(el));
-});
-	</script>
+	// Bootstrap tooltips (crayon)
+	document.addEventListener('DOMContentLoaded', () => {
+		const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+		tooltips.forEach(el => new bootstrap.Tooltip(el));
+	});
+</script>
 {% endblock %}

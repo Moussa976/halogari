@@ -1,154 +1,271 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}HaloGari | Paramètres du compte
 {% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<h1 class="mb-4 text-center">
-			<i class="bi bi-gear"></i>
-			Paramètres du compte</h1>
+<div class="container py-5">
+	<h1 class="text-center mb-5">
+		<i class="bi bi-gear-fill"></i>
+		Paramètres du compte
+	</h1>
 
-		<!-- Photo de profil -->
-		<div class="card mb-4">
-			<div class="card-header text-center">
-				<h5 class="mb-0">🖼️ Photo de profil</h5>
-			</div>
-			<div class="card-body text-center">
-				{% if app.user.photo %}
-					<img src="{{ asset('uploads/photos/' ~ app.user.photo) }}" alt="Photo de profil" class="rounded-circle mb-3" width="120">
-				{% else %}
-					<img src="{{ asset('images/profil.png') }}" alt="Photo par défaut" class="rounded-circle mb-3" width="120">
-				{% endif %}
-				<form method="POST" enctype="multipart/form-data" action="#">
-					<input type="file" class="form-control mb-2" name="photo">
-					<div class="text-center">
-						<button type="submit" class="btn btn-info">Mettre à jour la photo</button>
+	<div class="row g-4">
+
+		{# ✅ Photo de profil #}
+		<div class="col-12">
+			<div class="card text-bg-secondary shadow-sm">
+				<div class="card-header">
+					<h5 class="mb-0">
+						<i class="bi bi-person-circle me-2"></i>
+						Photo de profil
+					</h5>
+				</div>
+				<div class="card-body text-center">
+					{{ avatar.formatSimple(app.user, 120, "photoProfil") }}
+					{% if app.user.photo %}
+					<div class="d-flex justify-content-center mb-3">
+						<form method="POST" action="{{ path('app_photo_update') }}" class="mt-2">
+							<input type="hidden" name="remove_photo" value="1">
+							<button type="submit" class="btn btn-danger  btn-sm w-100 delete-confirm"
+								data-message="Êtes-vous sûr de vouloir supprimer votre photo de profil ?">
+								<i class="bi bi-trash3 me-1"></i> Supprimer ma photo
+							</button>
+						</form>
 					</div>
-				</form>
+					{% endif %}
+					<form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}"
+						class="mt-3">
+						<input type="file" name="photo" class="form-control mb-3" accept="image/*" id="photoProfil"
+							required>
+						<button type="submit" class="btn btn-primary w-100">Mettre à jour la photo</button>
+					</form>
+
+				</div>
 			</div>
 		</div>
 
-		<!-- Informations personnelles -->
-		<div class="card mb-4">
-			<div class="card-header text-center">
-				<h5 class="mb-0">👤 Informations personnelles
-				</h5>
-			</div>
-			<div class="card-body">
-				<form method="POST" action="#">
-					<div class="mb-3">
-						<label for="prenom" class="form-label">Prénom</label>
-						<input type="text" class="form-control" id="prenom" name="prenom" value="{{ app.user.prenom }}">
-					</div>
-					<div class="mb-3">
-						<label for="nom" class="form-label">Nom</label>
-						<input type="text" class="form-control" id="nom" name="nom" value="{{ app.user.nom }}">
-					</div>
-					<div class="mb-3">
-						<label for="dateNaissance" class="form-label">Date de naissance</label>
-						<input type="date" class="form-control" id="dateNaissance" name="dateNaissance" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '' }}" max="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" required>
-					</div>
-
-					<div class="mb-3">
-						<label for="email" class="form-label">Email</label>
-						<input type="email" class="form-control" id="email" name="email" value="{{ app.user.email }}" disabled>
-					</div>
-					<div class="mb-3">
-						<label for="telephone" class="form-label">Téléphone</label>
-						<input type="text" class="form-control" id="telephone" name="telephone" value="{{ app.user.telephone }}">
-					</div>
-					<div class="text-center">
-						<button type="submit" class="btn btn-primary">Mettre à jour</button>
-					</div>
-				</form>
-			</div>
-		</div>
-
-		<!-- Mot de passe -->
-		<div class="card mb-4">
-			<div class="card-header text-center">
-				<h5 class="mb-0">🔐 Changer mon mot de passe</h5>
-			</div>
-			<div class="card-body">
-				<form method="POST" action="#">
-					<div class="mb-3">
-						<label for="oldPassword" class="form-label">Mot de passe actuel</label>
-						<input type="password" class="form-control" id="oldPassword" name="oldPassword">
-					</div>
-					<div class="mb-3">
-						<label for="newPassword" class="form-label">Nouveau mot de passe</label>
-						<input type="password" class="form-control" id="newPassword" name="newPassword">
-					</div>
-					<div class="mb-3">
-						<label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
-						<input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-					</div>
-					<div class="text-center">
-						<button type="submit" class="btn btn-warning">Changer le mot de passe</button>
-					</div>
-				</form>
+		{# ✅ Infos personnelles #}
+		<div class="col-12">
+			<div class="card border-primary shadow-sm">
+				<div class="card-header bg-light">
+					<h5 class="mb-0">
+						<i class="bi bi-person-lines-fill me-2"></i>
+						Informations personnelles
+					</h5>
+				</div>
+				<div class="card-body">
+					<form method="POST" action="{{ path('app_infos_update') }}">
+						<div class="row g-3">
+							<div class="col-md-6">
+								<label class="form-label">Prénom</label>
+								<input type="text" name="prenom" class="form-control" value="{{ app.user.prenom }}"
+									required>
+							</div>
+							<div class="col-md-6">
+								<label class="form-label">Nom</label>
+								<input type="text" name="nom" class="form-control" value="{{ app.user.nom }}" required>
+							</div>
+							<div class="col-md-6">
+								<label class="form-label">Date de naissance</label>
+								<input type="date" name="dateNaissance" class="form-control"
+									value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '' }}"
+									max="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" required>
+							</div>
+							<div class="col-md-6">
+								<label class="form-label">Téléphone</label>
+								<input type="text" name="telephone" class="form-control"
+									value="{{ app.user.telephone }}" autocomplete="off" required>
+							</div>
+							<div class="col-md-12">
+								<label class="form-label">Email (non modifiable)</label>
+								<input type="email" class="form-control" value="{{ app.user.email }}" disabled>
+							</div>
+						</div>
+						<div class="text-center mt-4">
+							<button type="submit" class="btn btn-primary w-100">Enregistrer les modifications</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 
-		<!-- Documents -->
-		<div class="card mb-4">
-			<div class="card-header text-center">
-				<h5 class="mb-0">📄 Mes documents</h5>
-			</div>
-			<div class="card-body">
-				<p>Documents envoyés :</p>
-				<ul class="list-group mb-3">
-					{% for doc in app.user.documents %}
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							{{ doc.typeDocument }}
-							({{ doc.filenameDocument }})
-							{% if doc.status == "approved" %}
-								<span class="badge bg-success">Validé</span>
-							{% elseif doc.status == "rejected" %}
-								<span class="badge bg-danger">refusé</span>
-							{% else %}
-								<span class="badge bg-secondary">En attente</span>
-							{% endif %}
-						</li>
-					{% else %}
-						<li class="list-group-item text-muted">Aucun document ajouté.</li>
-					{% endfor %}
-				</ul>
-				<form method="POST" enctype="multipart/form-data" action="#">
-					<div class="mb-3">
-						<label for="type_doc" class="form-label">Type de document</label>
-						<select class="form-select" id="type_doc" name="type_doc">
-							<option value="identite">Justificatif d'identité</option>
-							<option value="rib">RIB</option>
-						</select>
-					</div>
-					<div class="mb-3">
-						<label for="document" class="form-label">Fichier</label>
-						<input type="file" class="form-control" id="document" name="document">
-					</div>
-					<div class="text-center">
-						<button type="submit" class="btn btn-success">Ajouter</button>
-					</div>
-				</form>
+		{# ✅ Mot de passe #}
+		<div class="col-12">
+			<div class="card border-warning shadow-sm">
+				<div class="card-header bg-light">
+					<h5 class="mb-0">
+						<i class="bi bi-shield-lock-fill me-2"></i>
+						Modifier mon mot de passe
+					</h5>
+				</div>
+				<div class="card-body">
+					<form method="POST" action="{{ path('app_password_update') }}">
+						<div class="mb-3">
+							<label class="form-label">Mot de passe actuel</label>
+							<input type="password" name="oldPassword" class="form-control" autocomplete="off"
+								placeholder="••••••••••••" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Nouveau mot de passe</label>
+							<input type="password" name="newPassword" class="form-control" autocomplete="off"
+								placeholder="••••••••••••" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Confirmer le mot de passe</label>
+							<input type="password" name="confirmPassword" class="form-control" autocomplete="off"
+								placeholder="••••••••••••" required>
+						</div>
+						<div class="text-center mt-3">
+							<button type="submit" class="btn btn-warning w-100">Changer le mot de passe</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 
+		{# ✅ Documents #}
+		<div class="col-12">
+			<div class="card border-success shadow-sm">
+				<div class="card-header bg-light">
+					<h5 class="mb-0">
+						<i class="bi bi-file-earmark-arrow-up-fill me-2"></i>
+						Mes documents
+					</h5>
+				</div>
+				<div class="card-body">
+					<div class="bg-light p-2 d-flex justify-content-center align-items-center mb-3" style="height: 80px;">
+						<a class="btn btn-info btn-sm" href="{{ path('app_documents') }}" role="button">Voir mes
+							documents <i class="bi bi-box-arrow-up-right"></i></a>
 
-		<!-- Suppression du compte -->
-		<div class="card border-danger">
-			<div class="card-header text-center">
-				<h5 class="mb-0 text-danger">⚠️ Supprimer mon compte</h5>
-			</div>
-			<div class="card-body">
-				<p class="text-danger text-center">Cette action est définitive et supprimera toutes vos données. Aucune récupération possible.</p>
-				<form method="POST" action="#">
-					<div class="text-center">
-						<button type="submit" class="btn btn-danger">Supprimer mon compte</button>
 					</div>
-				</form>
+					<form id="documentForm" method="POST" enctype="multipart/form-data" action="{{ path('app_document_add') }}" novalidate>
+						<div class="row g-3">
+							<div class="col-md-12" id="selectDoc">
+								<label for="type_doc" class="form-label">Type de document :</label>
+								<select class="form-select" name="type_doc" id="type_doc" required>
+									<option value="">-- Sélectionner --</option>
+									<option value="identite">Justificatif d'identité</option>
+									<option value="rib">RIB</option>
+									<option value="autre">Autre</option>
+								</select>
+							</div>
+
+							<div class="col-md-7 d-none" id="autre_doc_container">
+								<label for="autre_doc" class="form-label">Précisez le nom du document :</label>
+								<input type="text" name="autre_doc" id="autre_doc" class="form-control"
+									placeholder="Ex : Justificatif de domicile">
+
+							</div>
+
+							<div class="col-md-12">
+								<label for="document" class="form-label">Fichier :</label>
+								<input type="file" class="form-control" id="document" name="document" required>
+								<div class="form-text">Formats autorisés : PDF, JPG, PNG – 2 Mo max.</div>
+							</div>
+						</div>
+
+						<div class="text-center mt-4">
+							<button type="submit" class="btn btn-success w-100">Ajouter le document</button>
+						</div>
+					</form>
+
+				</div>
+			</div>
+		</div>
+
+		{# ✅ Suppression du compte #}
+		<div class="col-12">
+			<div class="card border-danger shadow-sm">
+				<div class="card-header">
+					<h5 class="mb-0">
+						<i class="bi bi-trash3-fill me-2"></i>
+						Supprimer mon compte
+					</h5>
+				</div>
+				<div class="card-body">
+					<p class="text-danger text-center">⚠️ Cette action est définitive. Toutes vos données seront
+						supprimées sans possibilité de récupération.</p>
+					<form method="POST" action="{{ path('app_account_delete') }}" class="delete-account-form">
+						<div class="text-center">
+							<button type="submit" class="btn btn-danger w-100 delete-confirm"
+								data-message="Êtes-vous sûr de vouloir supprimer définitivement votre compte ?">Supprimer
+								définitivement mon compte</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 
 	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const select = document.getElementById('type_doc');
+		const autreContainer = document.getElementById('autre_doc_container');
+		const autreInput = document.getElementById('autre_doc');
+		const selectDoc = document.getElementById('selectDoc');
+		const form = document.getElementById('documentForm');
+
+		if (select && autreContainer && autreInput && form) {
+			select.addEventListener('change', function () {
+				if (this.value === 'autre') {
+					selectDoc.classList.remove('col-md-12');
+					selectDoc.classList.add('col-md-5');
+					autreContainer.classList.remove('d-none');
+					autreInput.setAttribute('required', 'required');
+				} else {
+					selectDoc.classList.remove('col-md-5');
+					selectDoc.classList.add('col-md-12');
+					autreContainer.classList.add('d-none');
+					autreInput.removeAttribute('required');
+				}
+			});
+
+			form.addEventListener('submit', function (e) {
+				if (select.value === 'autre' && autreInput.value.trim() === '') {
+					e.preventDefault();
+					autreInput.focus();
+					Swal.fire({
+						icon: 'warning',
+						title: 'Champ requis',
+						text: 'Merci de préciser le nom du document si vous choisissez "Autre".',
+						confirmButtonText: 'OK'
+					});
+				}
+			});
+		}
+	});
+</script>
+
+<script>
+	document.querySelectorAll('.delete-confirm').forEach(button => {
+		button.addEventListener('click', function (e) {
+			e.preventDefault();
+			const form = this.closest('form');
+			const message = this.dataset.message || 'Confirmez-vous cette action ?';
+			Swal.fire({
+				title: 'Confirmation',
+				text: message,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#d33',
+				cancelButtonColor: '#3085d6',
+				confirmButtonText: 'Oui, continuer',
+				cancelButtonText: 'Annuler'
+			}).then(result => {
+				if (result.isConfirmed) {
+					form.submit();
+				}
+			});
+		});
+	});
+</script>
+
+
+
 {% endblock %}

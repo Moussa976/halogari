@@ -17,9 +17,9 @@
     </div>
 {% endmacro %}
 
-{% macro formatSimple(user, size) %}
+{% macro formatSimple(user, size, forElement) %}
     {% set isVerified = user.isProfilVerifieComplet() %}
-    <div class="position-relative d-inline-block img-note {% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
+    <div {% if forElement %} onclick="document.getElementById('{{ forElement }}').click()" {% endif %} class="position-relative d-inline-block img-note {% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
              alt="Photo de {{ user.prenom }}"
              class="rounded-circle img-fluid profile-avatar">

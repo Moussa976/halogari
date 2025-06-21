@@ -39,12 +39,12 @@
         Swal.fire({
           icon: icons.includes(type) ? type : 'info', // par défaut : info si type inconnu
           title: {
-            success: "✅ Réussite",
-            error: "❌ Échec",
-            warning: "⚠️ Attention",
-            info: "ℹ️ Information",
-            question: "❓ Question"
-          }[type] || "ℹ️ Message",
+            success: "Réussite",
+            error: "Échec",
+            warning: "Attention",
+            info: "Information",
+            question: "Question"
+          }[type] || "Message",
           text: "{{ message|e('js') }}",
           timer: ['error', 'warning'].includes(type) ? 10000 : 3000,
           showConfirmButton: false

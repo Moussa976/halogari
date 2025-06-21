@@ -181,6 +181,18 @@ h1 {
     height: 350px;
 }
 
+/* Collapse */
+.accordion-button:not(.collapsed) {
+    color: #32623d !important;
+    font-weight: bold;
+    background-color:  #ee78117d !important;
+}
+
+.accordion-button.collapsed {
+    color: #32623d !important;
+    background-color:  #ee78112d !important;
+}
+
 .message-notif {
     top: 10%;
     left: 90%;
@@ -297,6 +309,10 @@ h1 {
     z-index: 100;
 }
 
+.footer-bg-dark-subtle {
+    font-size: 0.9rem !important;
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
@@ -321,6 +337,10 @@ h1 {
     .bg-header .lead {
         font-size: 0.8rem !important;
     }
+
+    .footer-bg-dark-subtle {
+    font-size: 0.7rem !important;
+}
 }
 
 @media screen and (max-height: 1333.99px) {

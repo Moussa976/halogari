@@ -41,7 +41,7 @@ class ReservationController extends AbstractController
 
         // Vérification : null ou inférieur à 1
         if ($places <= 0) {
-            $this->addFlash('danger', "Vous devez réserver au moins 1 place.");
+            $this->addFlash('error', "Vous devez réserver au moins 1 place.");
             return $this->redirectToRoute('app_trajet_show', [
                 'id' => $trajet->getId(),
                 "ledepart" => $trajet->getDepart(),
@@ -62,7 +62,7 @@ class ReservationController extends AbstractController
         $placesRestantes = $trajet->getPlacesDisponibles() - $placesDejaPrises;
 
         if ($places > $placesRestantes) {
-            $this->addFlash('danger', "Il ne reste que $placesRestantes place(s) disponibles pour ce trajet.");
+            $this->addFlash('error', "Il ne reste que $placesRestantes place(s) disponibles pour ce trajet.");
             return $this->redirectToRoute('app_trajet_show', [
                 'id' => $trajet->getId(),
                 "ledepart" => $trajet->getDepart(),
