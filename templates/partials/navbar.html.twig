@@ -1,3 +1,4 @@
+{% import 'partials/avatar.html.twig' as avatar %}
 <nav class="navbar fixed-top navbar-expand-lg bg-dark-subtle double-border-bottom">
 	<div class="container">
 		<a class="navbar-brand" href="{{ path('app_home') }}">
@@ -61,7 +62,7 @@
 			{% if app.user is null %}
 				<i class="bi bi-list fs-3"></i>
 			{% else %}
-				<i class="bi bi-person fs-3 position-relative "></i>
+				{{ avatar.formatSimple(app.user, 30) }}
 			{% endif %}
 		</button>
 
