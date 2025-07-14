@@ -30,28 +30,38 @@
             {% endfor %}
 
             <div class="mb-3">
-                {{ form_label(resetForm.plainPassword.first, 'Nouveau mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(resetForm.plainPassword.first, {
-                    attr: {
-                        class: 'form-control ' ~ (resetForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
-                        placeholder: '••••••••',
-                        'aria-describedby': 'passwordFeedback'
-                    }
-                }) }}
-                <div id="passwordFeedback" class="invalid-feedback">{{ form_errors(resetForm.plainPassword.first) }}</div>
-            </div>
+    {{ form_label(resetForm.plainPassword.first, 'Nouveau mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
+    <div class="input-group">
+        {{ form_widget(resetForm.plainPassword.first, {
+            attr: {
+                class: 'form-control ' ~ (resetForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
+                placeholder: '••••••••',
+                'aria-describedby': 'passwordFeedback'
+            }
+        }) }}
+        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="change_password_form_plainPassword_first">
+            <i class="bi bi-eye-slash-fill"></i>
+        </button>
+    </div>
+    <div id="passwordFeedback" class="invalid-feedback">{{ form_errors(resetForm.plainPassword.first) }}</div>
+</div>
 
-            <div class="mb-3">
-                {{ form_label(resetForm.plainPassword.second, 'Confirmer le mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-                {{ form_widget(resetForm.plainPassword.second, {
-                    attr: {
-                        class: 'form-control ' ~ (resetForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
-                        placeholder: '••••••••',
-                        'aria-describedby': 'confirmPasswordFeedback'
-                    }
-                }) }}
-                <div id="confirmPasswordFeedback" class="invalid-feedback">{{ form_errors(resetForm.plainPassword.second) }}</div>
-            </div>
+<div class="mb-3">
+    {{ form_label(resetForm.plainPassword.second, 'Confirmer le mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
+    <div class="input-group">
+        {{ form_widget(resetForm.plainPassword.second, {
+            attr: {
+                class: 'form-control ' ~ (resetForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
+                placeholder: '••••••••',
+                'aria-describedby': 'confirmPasswordFeedback'
+            }
+        }) }}
+        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="change_password_form_plainPassword_second">
+            <i class="bi bi-eye-slash-fill"></i>
+        </button>
+    </div>
+    <div id="confirmPasswordFeedback" class="invalid-feedback">{{ form_errors(resetForm.plainPassword.second) }}</div>
+</div>
 
             <div class="d-grid mb-4">
                 <button type="submit" class="btn btn-orange fw-bold">

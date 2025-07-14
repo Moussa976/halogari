@@ -4,11 +4,13 @@
 
 {% block stylesheets %}
 <style>
-	table,
-	tr,
-	td {
-		vertical-align: middle !important;
+	.badge-status {
+		padding: 0.4em 0.8em;
+		border-radius: 0.5rem;
 	}
+	.badge-pending { background-color: rgba(255, 166, 0, 0.25); color: #8a5d00; }
+	.badge-approved { background-color: rgba(166, 255, 0, 0.25); color: #3b6f00; }
+	.badge-rejected { background-color: rgba(255, 0, 0, 0.2); color: #a10000; }
 </style>
 {% endblock %}
 
@@ -16,109 +18,85 @@
 <div class="container py-5">
 	<h1 class="mb-4 text-center">📄 Mes documents</h1>
 
-	<div class="text-end mb-3">
-		<button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
-			<i class="bi bi-file-earmark-plus"></i> Ajouter un document
-		</button>
-	</div>
+	<div class="row justify-content-center">
+		<div class="col-lg-9">
 
-	{% set hasRIB = documents|filter(doc => doc.typeDocument == 'RIB')|length > 0 %}
-	{% set hasID = documents|filter(doc => doc.typeDocument == 'identite')|length > 0 %}
+			<div class="text-end mb-3">
+				<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
+					<i class="bi bi-file-earmark-plus"></i> Ajouter un document
+				</button>
+			</div>
 
-	{% if not hasRIB or not hasID %}
-	<div class="card text-bg-warning mb-3">
-		<div class="card-header">📌 Documents obligatoires à soumettre</div>
-		<div class="card-body py-2">
-			<ul class="mb-0">
-				{% if not hasRIB %}<li>RIB à votre nom.</li>{% endif %}
-				{% if not hasID %}<li>Justificatif d'identité.</li>{% endif %}
-			</ul>
+			{% set hasRIB = documents|filter(doc => doc.typeDocument == 'RIB')|length > 0 %}
+			{% set hasID = documents|filter(doc => doc.typeDocument == 'identite')|length > 0 %}
+
+			{% if not hasRIB or not hasID %}
+				<div class="alert alert-warning">
+					<strong>Documents obligatoires manquants :</strong>
+					<ul class="mb-0">
+						{% if not hasID %}<li>Justificatif d'identité</li>{% endif %}
+						{% if not hasRIB %}<li>RIB à votre nom</li>{% endif %}
+					</ul>
+				</div>
+			{% endif %}
+
+			{% if documents is not empty %}
+				<div class="table-responsive">
+					<table class="table table-bordered table-hover text-center align-middle">
+						<thead class="table-light">
+							<tr>
+								<th>Type</th>
+								<th>Fichier</th>
+								<th>Inséré le</th>
+								<th>Statut</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for doc in documents %}
+								<tr>
+									<td>{{ doc.typeDocument == 'identite' ? "Justificatif d'identité" : doc.typeDocument }}</td>
+									<td>
+										<a href="{{ asset('uploads/documents/' ~ doc.filenameDocument) }}" target="_blank">
+											Télécharger
+										</a>
+									</td>
+									<td>{{ doc.dateDocument|date('d/m/Y à H:i') }}</td>
+									<td>
+										{% if doc.status == 'pending' %}
+											<span class="badge badge-status badge-pending">⏳ En attente</span>
+										{% elseif doc.status == 'approved' %}
+											<span class="badge badge-status badge-approved">✅ Validé</span>
+										{% elseif doc.status == 'rejected' %}
+											<span class="badge badge-status badge-rejected">❌ Refusé</span>
+										{% else %}
+											<span class="text-muted">-</span>
+										{% endif %}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			{% else %}
+				<div class="alert alert-info text-center">
+					Aucun document n’a encore été ajouté.
+				</div>
+			{% endif %}
 		</div>
 	</div>
-	{% endif %}
 
-	{% if documents is not empty %}
-	<div class="table-responsive d-md-none" style="min-height: 160px;">
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Type</th>
-					<th>Fichier</th>
-					<th>Date</th>
-					<th>Statut</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for doc in documents %}
-				<tr>
-					<td>{{ doc.typeDocument }}</td>
-					<td><a href="{{ asset('uploads/documents/' ~ doc.filenameDocument) }}"
-							target="_blank">Télécharger</a></td>
-					<td>{{ doc.dateDocument|date('d/m/Y à H:i') }}</td>
-					<td>
-						{% if doc.status == 'pending' %}
-						<i class="bi bi-arrow-repeat text-warning" title="En attente de validation"></i>
-						{% elseif doc.status == 'approved' %}
-						<i class="bi bi-check-circle-fill text-success" title="Validé"></i>
-						{% elseif doc.status == 'rejected' %}
-						<i class="bi bi-x-circle-fill text-danger" title="Refusé"></i>
-						{% endif %}
-					</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
-
-	<table class="table table-striped d-none d-md-table">
-		<thead>
-			<tr>
-				<th>Type</th>
-				<th>Fichier</th>
-				<th>Date</th>
-				<th>Statut</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for doc in documents %}
-			<tr>
-				<td>{{ doc.typeDocument }}</td>
-				<td><a href="{{ asset('uploads/documents/' ~ doc.filenameDocument) }}" target="_blank">Télécharger</a>
-				</td>
-				<td>{{ doc.dateDocument|date('d/m/Y à H:i') }}</td>
-				<td>
-					{% if doc.status == 'pending' %}
-					<i class="bi bi-arrow-repeat text-warning" title="En attente de validation"></i>
-					{% elseif doc.status == 'approved' %}
-					<i class="bi bi-check-circle-fill text-success" title="Validé"></i>
-					{% elseif doc.status == 'rejected' %}
-					<i class="bi bi-x-circle-fill text-danger" title="Refusé"></i>
-					{% endif %}
-				</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	{% else %}
-	<p class="text-muted text-center">Aucun document pour le moment.</p>
-	{% endif %}
-
-	{# Modal d’ajout de document #}
-	<div class="modal fade" id="addDocumentModal" tabindex="-1" aria-labelledby="addDocumentModalLabel"
-		aria-hidden="true">
+	{# Modal Ajout de Document #}
+	<div class="modal fade" id="addDocumentModal" tabindex="-1" aria-labelledby="addDocumentModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form id="form-documents" method="POST" action="{{ path('app_documents') }}"
-					enctype="multipart/form-data" novalidate>
-
+				<form id="form-documents" method="POST" action="{{ path('app_documents') }}" enctype="multipart/form-data" novalidate>
 					<div class="modal-header">
 						<h5 class="modal-title" id="addDocumentModalLabel">Ajouter un document</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
 					</div>
-
 					<div class="modal-body">
-						<div id="selectDoc" class="mb-3">
-							<label for="type_doc" class="form-label">Type de document * :</label>
+						<div class="mb-3">
+							<label for="type_doc" class="form-label">Type de document *</label>
 							<select class="form-select" id="type_doc" name="type_doc" required>
 								<option value="">-- Sélectionner --</option>
 								<option value="identite">Justificatif d'identité</option>
@@ -128,63 +106,56 @@
 						</div>
 
 						<div id="autre_doc_container" class="d-none mb-3">
-							<label for="autre_doc" class="form-label">Précisez le type * :</label>
-							<input type="text" id="autre_doc" name="autre_doc"
-								class="form-control" placeholder="Ex : Justificatif de domicile">
+							<label for="autre_doc" class="form-label">Précisez le type *</label>
+							<input type="text" id="autre_doc" name="autre_doc" class="form-control" placeholder="Ex : Justificatif de domicile">
 						</div>
 
 						<div class="mb-3">
-							<label for="document" class="form-label">Fichier * :</label>
+							<label for="document" class="form-label">Fichier *</label>
 							<input type="file" class="form-control" id="document" name="document" required>
 							<div class="form-text">Formats autorisés : PDF, JPG, PNG – 2 Mo max.</div>
 						</div>
 					</div>
-
 					<div class="modal-footer">
 						<button type="submit" class="btn btn-success w-100">Ajouter</button>
 					</div>
-
 				</form>
 			</div>
 		</div>
 	</div>
-
 </div>
 {% endblock %}
 
 {% block javascripts %}
 <script>
-	document.addEventListener('DOMContentLoaded', function () {
+	document.addEventListener('DOMContentLoaded', () => {
 		const select = document.getElementById('type_doc');
 		const autreContainer = document.getElementById('autre_doc_container');
 		const autreInput = document.getElementById('autre_doc');
 		const form = document.getElementById('form-documents');
 
-		if (select && autreContainer && autreInput && form) {
-			select.addEventListener('change', function () {
-				if (this.value === 'Autre') {
-					autreContainer.classList.remove('d-none');
-					autreInput.setAttribute('required', 'required');
-				} else {
-					autreContainer.classList.add('d-none');
-					autreInput.removeAttribute('required');
-				}
-			});
+		select?.addEventListener('change', function () {
+			if (this.value === 'Autre') {
+				autreContainer.classList.remove('d-none');
+				autreInput.setAttribute('required', 'required');
+			} else {
+				autreContainer.classList.add('d-none');
+				autreInput.removeAttribute('required');
+			}
+		});
 
-			form.addEventListener('submit', function (e) {
-				if (select.value === 'Autre' && autreInput.value.trim() === '') {
-					e.preventDefault();
-					autreInput.focus();
-					Swal.fire({
-						icon: 'warning',
-						title: 'Champ requis',
-						text: 'Merci de préciser le type de document si vous choisissez "Autre".',
-						confirmButtonText: 'OK'
-					});
-				}
-			});
-		}
+		form?.addEventListener('submit', function (e) {
+			if (select.value === 'Autre' && autreInput.value.trim() === '') {
+				e.preventDefault();
+				autreInput.focus();
+				Swal.fire({
+					icon: 'warning',
+					title: 'Champ requis',
+					text: 'Merci de préciser le type de document si vous choisissez "Autre".',
+					confirmButtonText: 'OK'
+				});
+			}
+		});
 	});
 </script>
-
 {% endblock %}

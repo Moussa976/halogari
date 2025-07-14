@@ -4,7 +4,7 @@
 
 {% block body %}
 <div class="container py-5">
-    <h3 class="mb-4">Noter {{ passager.prenom }}</h3>
+    <h3 class="mb-4">Noter {{ passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : passager.prenom }}</h3>
     <p><strong>Trajet :</strong> {{ trajet.depart }} → {{ trajet.arrivee }} le {{ trajet.dateTrajet|date('d/m/Y') }}</p>
 
     {{ form_start(form) }}

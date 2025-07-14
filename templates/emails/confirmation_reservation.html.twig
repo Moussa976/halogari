@@ -24,7 +24,7 @@
                 </h2>
 
                 <p style="font-size: 16px;">
-                    Bonjour {{ reservation.passager.prenom }},
+                    Bonjour {{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom }},
                 </p>
 
                 <p style="font-size: 16px;">

@@ -1,0 +1,216 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Ma réservation | HaloGari
+{% endblock %}
+
+{% block body %}
+	<div class="container py-5">
+		<h1 class="mb-4">🧾 Ma réservation</h1>
+
+		<div class="row justify-content-center align-items-center g-2">
+			<div class="col-lg-6">
+				<a href="{{ path('app_mes_reservations') }}" class="text-decoration-none my-2">← Voir mes réservations</a>
+				<div class="card mb-4">
+					<div class="card-body">
+						<h5 class="card-title text-center">
+							<i class="bi bi-geo-fill"></i>
+							{{ trajet.depart }}
+							→
+							<i class="bi bi-flag-fill"></i>
+							{{ trajet.arrivee }}
+						</h5>
+
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item">
+								<strong>Date :</strong>
+								{{ ladateTrajet }}</li>
+							<li class="list-group-item">
+								<strong>Heure :</strong>
+								{{ trajet.heureTrajet|date('H:i') }}</li>
+							<li class="list-group-item">
+								<strong>Places réservées :</strong>
+								{{ reservation.places }}</li>
+							<li class="list-group-item">
+								<strong>Montant :</strong>
+								{{ reservation.prix|number_format(2, ',', '.') }}
+								€</li>
+							<li class="list-group-item">
+								<strong>Montant total :</strong>
+								{{ reservation.prixTotal|number_format(2, ',', '.') }}
+								€
+							</li>
+							<li class="list-group-item">
+								<strong>Statut de la réservation :</strong>
+								{% set statutResa = reservation.statut %}
+								{% set labelMap = {
+    'en_attente': 'En attente',
+    'acceptee': 'Acceptée',
+    'payee': 'Payée',
+    'refusee': 'Refusée',
+    'annulee': 'Annulée'
+  } %}
+								{% set colorMap = {
+    'en_attente': 'warning',
+    'acceptee': 'info',
+    'payee': 'success',
+    'refusee': 'danger',
+    'annulee': 'secondary'
+  } %}
+								{% set iconMap = {
+    'en_attente': 'bi-hourglass-split',
+    'acceptee': 'bi-hand-thumbs-up',
+    'payee': 'bi-currency-euro',
+    'refusee': 'bi-x-circle',
+    'annulee': 'bi-slash-circle'
+  } %}
+
+								<span class="badge bg-{{ colorMap[statutResa]|default('secondary') }}">
+									<i class="bi {{ iconMap[statutResa]|default('bi-question-circle') }}"></i>
+									{{ labelMap[statutResa]|default(statutResa|capitalize) }}
+								</span>
+							</li>
+							<li class="list-group-item">
+								<strong>Statut du paiement :</strong>
+								{% set statutPaiement = reservation.paiement.statut|default('en_attente') %}
+								{% set colorMap = {
+                'autorise': 'warning',
+                'capture': 'success',
+                'annule': 'danger',
+                'rembourse': 'info',
+                'en_attente': 'secondary'
+              } %}
+								{% set iconMap = {
+                'autorise': 'bi-shield-check',
+                'capture': 'bi-check-circle-fill',
+                'annule': 'bi-x-circle',
+                'rembourse': 'bi-arrow-counterclockwise',
+                'en_attente': 'bi-clock'
+              } %}
+								{% set labelMap = {
+                'autorise': 'Autorisé',
+                'capture': 'Payé',
+                'annule': 'Annulé',
+                'rembourse': 'Remboursé',
+                'en_attente': 'Non payé'
+              } %}
+								<span class="badge bg-{{ colorMap[statutPaiement] }}">
+									<i class="bi {{ iconMap[statutPaiement] }}"></i>
+									{{ labelMap[statutPaiement] }}
+								</span>
+								{% if reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'autorise') %}
+									<div class="d-flex justify-content-center">
+										<a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success w-100">
+											💳 Payer maintenant
+										</a>
+									</div>
+									<p class="text-muted small mt-2">
+										Le paiement est sécurisé via Stripe. Il ne sera prélevé qu'une fois le trajet terminé et validé.
+									</p>
+								{% endif %}
+							</li>
+							<li class="list-group-item">
+								<strong>Réservé le :</strong>
+								{{ reservation.createdAt|date_fr('l d F Y à H:i') }}
+							</li>
+							<li class="list-group-item">
+								<strong>Conducteur :</strong>
+								{{ avatar.formatSimple(trajet.conducteur, 30, 0, 1) }}
+								{{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : trajet.conducteur.prenom }}
+							</li>
+						</ul>
+
+						{% set dejaNote = false %}
+						{% set maNote = null %}
+						{% for note in trajet.conducteur.notesPour %}
+							{% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
+								{% set dejaNote = true %}
+								{% set maNote = note %}
+							{% endif %}
+						{% endfor %}
+
+						{% if reservation.statut == 'payee' and trajet.dateTrajet < date() and not dejaNote %}
+							<div class="text-center mt-4">
+								<a href="{{ path('app_noter_conducteur', { id: trajet.id }) }}" class="btn btn-sm btn-outline-primary">📝 Noter le conducteur</a>
+							</div>
+						{% else %}
+							{% if dejaNote and maNote is not null %}
+								<div class="text-center mt-4">
+									<p class="text-muted mb-1">Vous avez noté ce conducteur :</p>
+									<p>
+										{% for i in 1..5 %}
+											{% if i <= maNote.note %}
+												<i class="bi bi-star-fill text-warning"></i>
+											{% else %}
+												<i class="bi bi-star text-muted"></i>
+											{% endif %}
+										{% endfor %}
+									</p>
+									{% if maNote.commentaire %}
+										<p class="text-muted">"{{ maNote.commentaire }}"</p>
+									{% endif %}
+								</div>
+							{% endif %}
+						{% endif %}
+					</div>
+				</div>
+
+				{% if reservation.statut in ['acceptee', 'payee'] %}
+					<div class="card mb-4">
+						<div class="card-body">
+							<h5 class="text-orange mb-3">👥 Autres passagers</h5>
+							{% set autresPassagers = trajet.reservations|filter(r =>
+              r.passager.id != app.user.id and r.statut in ['acceptee', 'payee']
+            ) %}
+							{% if autresPassagers|length > 0 %}
+								<ul class="list-group">
+									{% for autre in autresPassagers %}
+										<li class="list-group-item">
+											{{ avatar.formatSimple(autre.passager, 30, 0, 1) }}
+											{% if autre.passager.prenom == 'Utilisateur supprimé' %}
+												<span class="text-muted">Utilisateur supprimé</span>
+											{% else %}
+												{{ autre.passager.prenom }}
+											{% endif %}
+										</li>
+									{% endfor %}
+								</ul>
+							{% else %}
+								<p class="text-muted fst-italic">Vous êtes le seul passager pour l’instant.</p>
+							{% endif %}
+						</div>
+					</div>
+
+					{% if trajet.conducteur.nom != 'Utilisateur supprimé' %}
+						<div class="card mb-4">
+							<div class="card-body">
+								<h5 class="text-orange mb-3">📞 Contact du conducteur</h5>
+								{% if (reservation.statut == 'acceptee' or reservation.statut == 'payee') and trajet.conducteur.nom != 'Utilisateur supprimé' %}
+									<div class="mt-4 text-center">
+										<a href="tel:{{ trajet.conducteur.telephone }}" class="btn btn-orange btn-sm">
+											{{ trajet.conducteur.telephone }}
+										</a>
+										<a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}" class="btn btn-outline-primary btn-sm">💬 Contacter le conducteur</a>
+									</div>
+								{% else %}
+									<p class="text-muted text-center">Les informations de contact du conducteur ne sont disponibles qu'une fois la réservation acceptée.</p>
+								{% endif %}
+							</div>
+						</div>
+					{% endif %}
+				{% endif %}
+
+				{% set trajetPasse = reservation.trajet.dateTrajet < date() %}
+
+				{% if reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
+					<div class="text-center my-4">
+						<form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Etes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
+							<input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
+							<button type="submit" class="btn btn-outline-danger">❌ Annuler ma réservation</button>
+						</form>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

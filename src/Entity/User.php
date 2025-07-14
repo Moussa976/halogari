@@ -134,6 +134,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $stripeAccountId;
+
+    /**
      * @ORM\Column(type="json", nullable=true)
      */
     private $preferences = [];
@@ -612,7 +617,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $doc = $this->getDocumentByType("identite");
 
-        return $this->isVerified() && $this->hasVerifiedIdentity() && $this->hasVerifiedPhone();
+        return $this->isVerified() && $this->hasVerifiedIdentity()
+            // && $this->hasVerifiedPhone() // Pour plus tard
+        ;
     }
 
     public function hasVerifiedIdentity(): bool
@@ -624,5 +631,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function hasVerifiedPhone(): bool
     {
         return false; // à remplacer plus tard par vraie vérif
+    }
+
+    // Compte supprimé ! 
+    public function anonymiser(): void
+    {
+        $this->setNom('');
+        $this->setPrenom('Utilisateur supprimé');
+        $this->setDateNaissance(null);
+        $this->setEmail('deleted_' . $this->getId() . '@halogari.yt');
+        $this->setTelephone(0000 . $this->getId());
+        $this->setPassword('');
+        $this->setPhoto(null);
+        $this->setDescription(null);
+        $this->setIsVerified(false);
+    }
+
+    public function getStripeAccountId(): ?string
+    {
+        return $this->stripeAccountId;
+    }
+
+    public function setStripeAccountId(?string $stripeAccountId): self
+    {
+        $this->stripeAccountId = $stripeAccountId;
+        return $this;
     }
 }

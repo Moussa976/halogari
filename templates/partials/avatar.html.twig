@@ -1,8 +1,9 @@
 {% macro formatModifiable(user, size, withEditButton) %}
     {% set isVerified = user.isProfilVerifieComplet() %}
-    <div class="profile-avatar-container{% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
+    <div class="profile-avatar-container{% if isVerified %} verified{% endif %}" {% if isVerified %} tabindex="0" data-bs-toggle="tooltip" data-bs-title="Profil vérifié à 100%" title="Profil vérifié à 100%" {% endif %} style="width: {{ size }}px; height: {{ size }}px;">
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
-             alt="Photo de {{ user.prenom }}"
+             alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}
+"
              class="profile-avatar"
              id="previewPhoto">
 
@@ -15,13 +16,41 @@
             </button>
         {% endif %}
     </div>
+    <script>
+        const tooltip = new bootstrap.Tooltip(element, {
+  popperConfig(defaultBsPopperConfig) {
+    // const newPopperConfig = {...}
+    // use defaultBsPopperConfig if needed...
+    // return newPopperConfig
+  }
+})
+    </script>
 {% endmacro %}
 
-{% macro formatSimple(user, size, forElement) %}
+{% macro formatSimple(user, size, forElement, afficheBadge) %}
     {% set isVerified = user.isProfilVerifieComplet() %}
-    <div {% if forElement %} onclick="document.getElementById('{{ forElement }}').click()" {% endif %} class="position-relative d-inline-block img-note {% if isVerified %} verified{% endif %}" style="width: {{ size }}px; height: {{ size }}px;">
+    <div
+        {% if forElement %} onclick="document.getElementById('{{ forElement }}').click()" {% endif %}
+        class="position-relative d-inline-block img-note {% if isVerified and afficheBadge %} verified{% endif %}"
+        {% if isVerified %}
+            tabindex="0"
+            data-bs-toggle="tooltip"
+            data-bs-title="Profil vérifié à 100%"
+        {% endif %}
+        style="width: {{ size }}px; height: {{ size }}px;"
+    >
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
-             alt="Photo de {{ user.prenom }}"
-             class="rounded-circle img-fluid profile-avatar">
+            alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}"
+            class="rounded-circle img-fluid profile-avatar">
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
 {% endmacro %}

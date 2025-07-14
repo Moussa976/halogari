@@ -5,30 +5,36 @@
 {% block body %}
 <div class="container py-5">
     <div class="text-center mb-4">
-        <h2>🎉 Réservation enregistrée</h2>
+        <h2 class="text-success">🎉 Réservation enregistrée</h2>
         <p>
-            Merci {{ app.user.prenom }}, votre demande de réservation a bien été enregistrée.<br>
-            <strong>Elle est maintenant en attente de validation par le conducteur.</strong>
+            Merci <strong>{{ app.user.prenom }}</strong>, votre demande de réservation a bien été enregistrée.<br>
+            <span class="text-primary fw-bold">Elle est maintenant en attente de validation par le conducteur.</span>
         </p>
         <p class="text-muted mt-2">
-            Vous recevrez une notification dès que le conducteur aura confirmé ou refusé votre réservation.
+            Vous recevrez une notification dès que le conducteur aura confirmé ou refusé votre demande.
         </p>
     </div>
 
-    <div class="card">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-vert text-white fw-bold">
+            Détails du trajet réservé
+        </div>
         <div class="card-body">
-            <h5 class="card-title">Détails du trajet réservé</h5>
-            <p><strong>Départ :</strong> {{ reservation.trajet.depart }}</p>
-            <p><strong>Arrivée :</strong> {{ reservation.trajet.arrivee }}</p>
-            <p><strong>Date :</strong> {{ reservation.trajet.dateTrajet|date('d/m/Y') }}</p>
-            <p><strong>Heure :</strong> {{ reservation.trajet.heureTrajet|date('H:i') }}</p>
-            <p><strong>Places réservées :</strong> {{ reservation.places }}</p>
-            <p><strong>Montant total :</strong> {{ reservation.prixTotal }} €</p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><i class="bi bi-geo-fill text-vert"></i> <strong>Départ :</strong> {{ reservation.trajet.depart }}</li>
+                <li class="list-group-item"><i class="bi bi-flag-fill text-vert"></i> <strong>Arrivée :</strong> {{ reservation.trajet.arrivee }}</li>
+                <li class="list-group-item"><i class="bi bi-calendar-event-fill text-vert"></i> <strong>Date :</strong> {{ reservation.trajet.dateTrajet|date('d/m/Y') }}</li>
+                <li class="list-group-item"><i class="bi bi-clock-fill text-vert"></i> <strong>Heure :</strong> {{ reservation.trajet.heureTrajet|date('H:i') }}</li>
+                <li class="list-group-item"><i class="bi bi-person-fill text-vert"></i> <strong>Places réservées :</strong> {{ reservation.places }}</li>
+                <li class="list-group-item"><i class="bi bi-cash-coin text-vert"></i> <strong>Montant total :</strong> {{ reservation.prixTotal }} €</li>
+            </ul>
         </div>
     </div>
 
     <div class="mt-4 text-center">
-        <a href="{{ path('app_trajets_reservations') }}" class="btn btn-primary">Voir mes réservations</a>
+        <a href="{{ path('app_mes_reservations') }}" class="btn btn-orange btn-lg">
+            <i class="bi bi-list-check"></i> Voir mes réservations
+        </a>
     </div>
 </div>
 {% endblock %}

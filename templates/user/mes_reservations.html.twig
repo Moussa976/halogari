@@ -3,115 +3,134 @@
 {% block title %}HaloGari | Mes réservations
 {% endblock %}
 
+{% block stylesheets %}
+<style>
+	.fs-9 {
+		font-size: 9px !important;
+	}
+</style>
+{% endblock %}
+
 {% set statutLabels = {
-    'annule': 'Annulé',
-    'passe': 'Passé',
-    'avenir': 'À venir',
-    'en_cours': 'En cours',
-    'all': 'Toutes'
+'annule': 'Annulé',
+'passe': 'Passé',
+'avenir': 'À venir',
+'en_cours': 'En cours',
+'all': 'Toutes'
 } %}
 
 {% set statusReservationLabels = {
-    'en_attente': 'En attente',
-    'acceptee': 'Acceptée',
-    'refusee': 'Refusée',
-    'annulee': 'Annulée',
-    'payee': 'Payée'
+'en_attente': 'En attente',
+'acceptee': 'Acceptée',
+'refusee': 'Refusée',
+'annulee': 'Annulée',
+'payee': 'Payée'
 } %}
 
 {% block body %}
-	<div class="container py-5">
-		<h1 class="mb-4 text-center">
-			<i class="bi bi-calendar-check"></i>
-			Mes réservations</h1>
+<div class="container py-5">
+	<h1 class="mb-4 text-center">
+		<i class="bi bi-calendar-check"></i>
+		Mes réservations
+	</h1>
 
-		<!-- Onglets Bootstrap -->
-		<ul class="nav nav-tabs mb-4 justify-content-center" id="filtreTabs" role="tablist">
-			<li class="nav-item" role="presentation">
-				<button class="nav-link active" id="tab-all" type="button" onclick="filterReservations('all')">Toutes</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="tab-avenir" type="button" onclick="filterReservations('avenir')">À venir</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="tab-en_cours" type="button" onclick="filterReservations('en_cours')">En cours</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="tab-passe" type="button" onclick="filterReservations('passe')">Passées</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="tab-annule" type="button" onclick="filterReservations('annule')">Annulées</button>
-			</li>
-		</ul>
+	<div class="row justify-content-center align-items-center g-2">
+		<div class="col-lg-8">
+			<!-- Onglets Bootstrap -->
+			<ul class="nav nav-tabs mb-4 justify-content-center" id="filtreTabs" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link fs-9 active" id="tab-all" type="button"
+						onclick="filterReservations('all')">Toutes</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link fs-9" id="tab-avenir" type="button" onclick="filterReservations('avenir')">À
+						venir</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link fs-9" id="tab-en_cours" type="button"
+						onclick="filterReservations('en_cours')">En cours</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link fs-9" id="tab-passe" type="button"
+						onclick="filterReservations('passe')">Passées</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link fs-9" id="tab-annule" type="button"
+						onclick="filterReservations('annule')">Annulées</button>
+				</li>
+			</ul>
 
-		<ul class="list-group" id="liste-reservations">
-			{% set maintenant = "now"|date("U") %}
-			{% for res in reservations %}
-				{% set datetimeDepStr = res.trajet.dateTrajet|date("Y-m-d") ~ " " ~ res.trajet.heureTrajet|date("H:i:s") %}
+			<ul class="list-group" id="liste-reservations">
+				{% set maintenant = "now"|date("U") %}
+				{% for res in reservations %}
+				{% set datetimeDepStr = res.trajet.dateTrajet|date("Y-m-d") ~ " " ~ res.trajet.heureTrajet|date("H:i:s")
+				%}
 				{% set datetimeDep = datetimeDepStr|date("U") %}
 				{% set datetimeFin = datetimeDepStr|date_modify("+3 hours")|date("U") %}
 
 				{% set statut = res.trajet.isAnnule or res.statut in ['annulee', 'refusee']
-                ? 'annule'
-                : (datetimeDep <= maintenant and maintenant < datetimeFin
-                    ? 'en_cours'
-                    : (datetimeDep > maintenant ? 'avenir' : 'passe')) %}
+				? 'annule'
+				: (datetimeDep <= maintenant and maintenant < datetimeFin ? 'en_cours' : (datetimeDep> maintenant ?
+					'avenir' : 'passe')) %}
 
-				<a href="{{ path('app_reservation', { id: res.id }) }}" class="list-group-item list-group-item-action justify-content-between align-items-center" data-status="{{ statut }}" style="display: flex;">
-					<div class="ms-2 me-auto">
-						<div class="fw-bold">
-							<i class="bi bi-geo-fill"></i>
-							{{ res.trajet.depart }}
-							→
-							<i class="bi bi-flag-fill"></i>
-							{{ res.trajet.arrivee }}
-						</div>
-						<small>le
-							{{ res.trajet.dateTrajet|date('d/m/Y') }}
-							à
-							{{ res.trajet.heureTrajet|date('H:i') }}</small>
+					<a href="{{ path('app_user_reservation', { id: res.id }) }}"
+						class="list-group-item list-group-item-action justify-content-between align-items-center"
+						data-status="{{ statut }}" style="display: flex;">
+						<div class="ms-2 me-auto">
+							<div class="fw-bold">
+								<i class="bi bi-geo-fill"></i>
+								{{ res.trajet.depart }}
+								→
+								<i class="bi bi-flag-fill"></i>
+								{{ res.trajet.arrivee }}
+							</div>
+							<small>le
+								{{ res.trajet.dateTrajet|date_fr('d F Y') }}
+								à
+								{{ res.trajet.heureTrajet|date('H:i') }}</small>
 
-						<div
-							class="mt-1">
-							<!-- Badge réservation -->
-							<span class="badge
+							<div class="mt-1">
+								<!-- Badge réservation -->
+								<span class="badge
 									                            {% if res.statut in ['refusee', 'annulee'] %}bg-danger
 									                            {% elseif res.statut == 'en_attente' %}bg-warning text-dark
 									                            {% elseif res.statut == 'acceptee' %}bg-success
 									                            {% else %}bg-primary{% endif %}">
-								<i class="bi bi-info-circle-fill me-1"></i>
-								{{ statusReservationLabels[res.statut]|default(res.statut) }}
-							</span>
+									<i class="bi bi-info-circle-fill me-1"></i>
+									{{ statusReservationLabels[res.statut]|default(res.statut) }}
+								</span>
+
+
+							</div>
 
 
 						</div>
-
-
-					</div>
-					<!-- Badge trajet -->
-					<span class="badge ms-1 bg-light text-muted border border-secondary">
-						Trajet :
-						{{ statutLabels[statut]|default(statut) }}
-					</span>
-				</a>
-			{% else %}
-				<li class="list-group-item text-muted text-center">Aucune réservation effectuée.</li>
-			{% endfor %}
-		</ul>
+						<!-- Badge trajet -->
+						<span class="badge ms-1 bg-light text-muted border border-secondary">
+							Trajet :
+							{{ statutLabels[statut]|default(statut) }}
+						</span>
+					</a>
+					{% else %}
+					<li class="list-group-item text-muted text-center">Aucune réservation effectuée.</li>
+					{% endfor %}
+			</ul>
+		</div>
 	</div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
-	<script>
-		function filterReservations(status) {
-document.querySelectorAll('#liste-reservations [data-status]').forEach(item => {
-item.style.display = (status === 'all' || item.dataset.status === status) ? 'flex' : 'none';
-});
+<script>
+	function filterReservations(status) {
+		document.querySelectorAll('#liste-reservations [data-status]').forEach(item => {
+			item.style.display = (status === 'all' || item.dataset.status === status) ? 'flex' : 'none';
+		});
 
-document.querySelectorAll('#filtreTabs .nav-link').forEach(tab => {
-tab.classList.remove('active');
-});
-document.getElementById('tab-' + status).classList.add('active');
-}
-	</script>
+		document.querySelectorAll('#filtreTabs .nav-link').forEach(tab => {
+			tab.classList.remove('active');
+		});
+		document.getElementById('tab-' + status).classList.add('active');
+	}
+</script>
 {% endblock %}

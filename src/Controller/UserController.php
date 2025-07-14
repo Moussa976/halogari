@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Utils\DateHelper;
 
 class UserController extends AbstractController
 {
@@ -240,99 +241,76 @@ class UserController extends AbstractController
     }
 
     /**
- * @Route("/user/documents", name="app_documents", methods={"GET", "POST"})
- */
-public function mesDocuments(
-    Request $request,
-    EntityManagerInterface $em,
-    SluggerInterface $slugger
-): Response {
-    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-    $user = $this->getUser();
-
-    // Soumission du formulaire manuel
-    if ($request->isMethod('POST')) {
-        $type = $request->request->get('type_doc');
-        $autreType = $request->request->get('autre_doc');
-        $file = $request->files->get('document');
-
-        if (!$type || !$file) {
-            $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
-            return $this->redirectToRoute('app_documents');
-        }
-
-        // Déterminer le type réel
-        $finalType = ($type === 'Autre' && !empty($autreType)) ? $autreType : $type;
-
-        // Vérification du type MIME
-        $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
-            $this->addFlash('error', 'Format non autorisé. Seuls les PDF, JPG ou PNG sont acceptés.');
-            return $this->redirectToRoute('app_documents');
-        }
-
-        // Vérification taille
-        if ($file->getSize() > 2 * 1024 * 1024) {
-            $this->addFlash('error', 'Le fichier dépasse la taille maximale autorisée (2 Mo).');
-            return $this->redirectToRoute('app_documents');
-        }
-
-        // Générer un nom de fichier unique
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeName = $slugger->slug($originalName);
-        $filename = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
-
-        try {
-            $file->move($this->getParameter('documents_directory'), $filename);
-
-            $document = new Document();
-            $document->setTypeDocument($finalType);
-            $document->setFilenameDocument($filename);
-            $document->setDateDocument(new \DateTime());
-            $document->setUser($user);
-            $document->setStatus(Document::STATUS_PENDING);
-
-            $em->persist($document);
-            $em->flush();
-
-            $this->addFlash('success', 'Document ajouté avec succès.');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
-        }
-
-        return $this->redirectToRoute('app_documents');
-    }
-
-    $documents = $em->getRepository(Document::class)->findBy(['user' => $user]);
-
-    return $this->render('user/mes_documents.html.twig', [
-        'documents' => $documents,
-    ]);
-}
-
-
-
-
-    /**
-     * @Route("/user/trajets-et-reservations/", name="app_trajets_reservations")
+     * @Route("/user/documents", name="app_documents", methods={"GET", "POST"})
      */
-    public function mesTrajetsetReservations(
-        TrajetRepository $trajetRepository,
-        ReservationRepository $reservationRepository
+    public function mesDocuments(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger
     ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
 
-        // Trajets publiés
-        $mesTrajets = $trajetRepository->findBy(['conducteur' => $user], ['id' => 'DESC']);
+        // Soumission du formulaire manuel
+        if ($request->isMethod('POST')) {
+            $type = $request->request->get('type_doc');
+            $autreType = $request->request->get('autre_doc');
+            $file = $request->files->get('document');
 
-        // Trajets réservés
-        $mesReservations = $reservationRepository->findBy(['passager' => $user], ['id' => 'DESC']);
+            if (!$type || !$file) {
+                $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
+                return $this->redirectToRoute('app_documents');
+            }
 
-        return $this->render('user/trajets_reservations.html.twig', [
-            'mesTrajets' => $mesTrajets,
-            'mesReservations' => $mesReservations,
+            // Déterminer le type réel
+            $finalType = ($type === 'Autre' && !empty($autreType)) ? $autreType : $type;
+
+            // Vérification du type MIME
+            $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                $this->addFlash('error', 'Format non autorisé. Seuls les PDF, JPG ou PNG sont acceptés.');
+                return $this->redirectToRoute('app_documents');
+            }
+
+            // Vérification taille
+            if ($file->getSize() > 2 * 1024 * 1024) {
+                $this->addFlash('error', 'Le fichier dépasse la taille maximale autorisée (2 Mo).');
+                return $this->redirectToRoute('app_documents');
+            }
+
+            // Générer un nom de fichier unique
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeName = $slugger->slug($originalName);
+            $filename = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
+
+            try {
+                $file->move($this->getParameter('documents_directory'), $filename);
+
+                $document = new Document();
+                $document->setTypeDocument($finalType);
+                $document->setFilenameDocument($filename);
+                $document->setDateDocument(new \DateTime());
+                $document->setUser($user);
+                $document->setStatus(Document::STATUS_PENDING);
+
+                $em->persist($document);
+                $em->flush();
+
+                $this->addFlash('success', 'Document ajouté avec succès.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
+            }
+
+            return $this->redirectToRoute('app_documents');
+        }
+
+        $documents = $em->getRepository(Document::class)->findBy(['user' => $user]);
+
+        return $this->render('user/mes_documents.html.twig', [
+            'documents' => $documents,
         ]);
     }
+
 
 
     /**
@@ -358,9 +336,6 @@ public function mesDocuments(
     /**
      * Affiche les réservations faites par l'utilisateur connecté (passager)
      * 
-     * @Route("/user/mes-reservations", name="app_mes_reservations")
-     */
-    /**
      * @Route("/user/mes-reservations", name="app_mes_reservations")
      */
     public function mesReservations(ReservationRepository $reservationRepository): Response
@@ -414,7 +389,7 @@ public function mesDocuments(
 
         // Vérifie que l’utilisateur connecté est bien le conducteur du trajet
         if ($trajet->getConducteur() !== $this->getUser()) {
-            throw $this->createAccessDeniedException();
+            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à effectuer cette action.");
         }
 
         // Récupère les réservations liées à ce trajet, triées par ID décroissant
@@ -452,35 +427,47 @@ public function mesDocuments(
             $enCours = true;
         }
 
+        $ladateTrajet = DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y');
+
+
         // Affichage du template avec les variables nécessaires
         return $this->render('user/mon_trajet.html.twig', [
             'trajet' => $trajet,
             'reservations' => $reservations,
             'datePasse' => $datePasse,
             'enCours' => $enCours,
+            'ladateTrajet' => $ladateTrajet
         ]);
     }
 
-
-
     /**
-     * @Route("/user/trajet/{id}/annuler", name="trajet_annuler")
+     * @Route("/user/reservation/{id}", name="app_user_reservation")
      */
-    public function annulerTrajet(int $id, EntityManagerInterface $em, TrajetRepository $trajetRepository): Response
-    {
-        $trajet = $trajetRepository->find($id);
+    public function showReservation(
+        int $id,
+        ReservationRepository $reservationRepository
+    ): Response {
+        $reservation = $reservationRepository->find($id);
 
-        if ($trajet->getConducteur() !== $this->getUser()) {
-            throw $this->createAccessDeniedException();
+        if (!$reservation) {
+            throw $this->createNotFoundException('Réservation introuvable.');
         }
 
-        $trajet->setAnnule(true);
-        $em->flush();
+        // Vérifie que le passager connecté est bien le propriétaire de la réservation
+        if ($reservation->getPassager() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Vous n'avez pas accès à cette réservation.");
+        }
 
-        $this->addFlash('info', 'Trajet annulé avec succès.');
-        return $this->redirectToRoute('app_trajets_reservations');
+        $trajet = $reservation->getTrajet();
+
+        $ladateTrajet = DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y');
+
+        return $this->render('user/ma_reservation.html.twig', [
+            'reservation' => $reservation,
+            'trajet' => $trajet,
+            'ladateTrajet' => $ladateTrajet,
+        ]);
     }
-
 
     /**
      * @Route("/user/reservation/{id}/annuler", name="reservation_annuler", methods={"POST"})
@@ -508,12 +495,12 @@ public function mesDocuments(
         $reservation->setStatut('annulee');
 
         // 💸 Remboursement partiel ou total → à gérer dans l'étape B
-        $paiement->rembourserSelonPolitique($reservation);
+        $paiement->rembourserSelonPolitique($reservation,false);
 
         $em->flush();
 
         $this->addFlash('info', 'Réservation annulée.');
-        return $this->redirectToRoute('app_trajets_reservations');
+        return $this->redirectToRoute('app_mes_reservations');
     }
 
 }

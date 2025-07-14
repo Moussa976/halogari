@@ -6,6 +6,9 @@ use App\Entity\Notes;
 use App\Entity\Reservation;
 use App\Form\NoteConducteurType;
 use App\Repository\UserRepository;
+use App\Service\NotificationService;
+use App\Service\StripeConnectService;
+use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
 use App\Entity\Trajet;
 use App\Repository\NotesRepository;
@@ -20,6 +23,12 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Stripe\Stripe;
+use Stripe\Account;
+use Stripe\Token;
+
+
+
 class TrajetController extends AbstractController
 {
     /**
@@ -33,15 +42,12 @@ class TrajetController extends AbstractController
         $heure = $request->query->get('heure_trajet') ?? 'any';
         $places = $request->query->get('places_min') ?? 1;
 
-
-
-        // Vérification simple
         if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
             return $this->redirectToRoute('app_chercherResultats', [
                 'depart' => $depart,
                 'arrivee' => $arrivee,
                 'date' => $date,
-                'heure' => 'any', // ou tu peux le retirer aussi de la route
+                'heure' => 'any',
                 'places' => $places,
             ]);
         }
@@ -49,22 +55,29 @@ class TrajetController extends AbstractController
         return $this->render('trajet/chercher.html.twig');
     }
 
-
     /**
      * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats")
      */
     public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository): Response
     {
-
-
         Carbon::setLocale('fr');
-
         $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
-
         $dateFr = Carbon::parse($date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
+        $dateObj = new \DateTimeImmutable($date);
 
-        // Chargement depuis fichier JSON
+        $autresTrajets = $trajetRepository->createQueryBuilder('t')
+            ->where('t.dateTrajet = :date')
+            ->andWhere('t.arrivee = :arrivee')
+            ->andWhere('t.depart != :depart')
+            ->setParameters([
+                'date' => $dateObj,
+                'arrivee' => $arrivee,
+                'depart' => $depart
+            ])
+            ->getQuery()
+            ->getResult();
+
         $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
 
         return $this->render('trajet/chercherResultats.html.twig', [
@@ -75,6 +88,7 @@ class TrajetController extends AbstractController
             'heure' => $heure,
             'places' => $places,
             'trajets' => $trajets,
+            'autresTrajets' => $autresTrajets,
             'villages' => $villes,
         ]);
     }
@@ -82,7 +96,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -91,14 +105,14 @@ class TrajetController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
-
             $user = $this->getUser();
 
             $rib = $user->getDocumentByType('RIB');
             $identite = $user->getDocumentByType("identite");
 
             if (!$rib || !$identite) {
-                $this->addFlash('error', 'Vous devez ajouter un RIB et une pièce d’identité.');
+                if (!$rib) $this->addFlash('error', 'Vous devez ajouter un RIB.');
+                if (!$identite) $this->addFlash('error', 'Vous devez ajouter une pièce d’identité.');
                 return $this->redirectToRoute('app_documents');
             }
 
@@ -107,9 +121,10 @@ class TrajetController extends AbstractController
                 return $this->redirectToRoute('app_documents');
             }
 
+            $stripeConnect->creerCompteSiBesoin($user);
 
             $trajet = new Trajet();
-            $trajet->setConducteur($this->getUser());
+            $trajet->setConducteur($user);
             $trajet->setDepart($request->request->get('departure'));
             $trajet->setArrivee($request->request->get('arrival'));
             $trajet->setDateTrajet(new \DateTime($request->request->get('date')));
@@ -117,7 +132,6 @@ class TrajetController extends AbstractController
             $trajet->setPlacesDisponibles((int) $request->request->get('places'));
             $trajet->setPlaces((int) $request->request->get('places'));
             $trajet->setPrix((float) $request->request->get('price'));
-
             $trajet->setDescription($request->request->get('description'));
 
             $em->persist($trajet);
@@ -137,7 +151,7 @@ class TrajetController extends AbstractController
             $mailer->send($email);
 
             $this->addFlash('success', 'Votre trajet a bien été publié !');
-            return $this->redirectToRoute('app_home'); // ou autre page de confirmation
+            return $this->redirectToRoute('app_home');
         }
 
         return $this->render('trajet/publier.html.twig');
@@ -174,69 +188,69 @@ class TrajetController extends AbstractController
      * @Route("/user/trajet/{trajetId}/noter-passager/{passagerId}", name="app_noter_passager")
      */
     public function noterPassager(
-    int $trajetId,
-    int $passagerId,
-    TrajetRepository $trajetRepo,
-    UserRepository $userRepo,
-    Request $request,
-    EntityManagerInterface $em
-): Response {
-    $conducteur = $this->getUser();
-    $trajet = $trajetRepo->find($trajetId);
-    $passager = $userRepo->find($passagerId);
+        int $trajetId,
+        int $passagerId,
+        TrajetRepository $trajetRepo,
+        UserRepository $userRepo,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $conducteur = $this->getUser();
+        $trajet = $trajetRepo->find($trajetId);
+        $passager = $userRepo->find($passagerId);
 
-    if (!$trajet || !$passager) {
-        throw $this->createNotFoundException();
+        if (!$trajet || !$passager) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($trajet->getConducteur() !== $conducteur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Vérifier que ce passager a réservé ce trajet
+        $reservation = $em->getRepository(Reservation::class)->findOneBy([
+            'trajet' => $trajet,
+            'passager' => $passager
+        ]);
+
+        if (!$reservation) {
+            throw $this->createAccessDeniedException('Ce passager n’a pas réservé ce trajet.');
+        }
+
+        // Vérifier s’il a déjà été noté
+        $existingNote = $em->getRepository(Notes::class)->findOneBy([
+            'noteur' => $conducteur,
+            'notePour' => $passager,
+            'trajet' => $trajet
+        ]);
+
+        if ($existingNote) {
+            $this->addFlash('info', 'Vous avez déjà noté ce passager.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
+        }
+
+        $note = new Notes();
+        $form = $this->createForm(NoteConducteurType::class, $note);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $note->setNoteur($conducteur);
+            $note->setNotePour($passager);
+            $note->setTrajet($trajet);
+
+            $em->persist($note);
+            $em->flush();
+
+            $this->addFlash('success', 'Note enregistrée pour ' . $passager->getPrenom() . '.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
+        }
+
+        return $this->render('notes/noter_passager.html.twig', [
+            'form' => $form->createView(),
+            'trajet' => $trajet,
+            'passager' => $passager
+        ]);
     }
-
-    if ($trajet->getConducteur() !== $conducteur) {
-        throw $this->createAccessDeniedException();
-    }
-
-    // Vérifier que ce passager a réservé ce trajet
-    $reservation = $em->getRepository(Reservation::class)->findOneBy([
-        'trajet' => $trajet,
-        'passager' => $passager
-    ]);
-
-    if (!$reservation) {
-        throw $this->createAccessDeniedException('Ce passager n’a pas réservé ce trajet.');
-    }
-
-    // Vérifier s’il a déjà été noté
-    $existingNote = $em->getRepository(Notes::class)->findOneBy([
-        'noteur' => $conducteur,
-        'notePour' => $passager,
-        'trajet' => $trajet
-    ]);
-
-    if ($existingNote) {
-        $this->addFlash('info', 'Vous avez déjà noté ce passager.');
-        return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
-    }
-
-    $note = new Notes();
-    $form = $this->createForm(NoteConducteurType::class, $note);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $note->setNoteur($conducteur);
-        $note->setNotePour($passager);
-        $note->setTrajet($trajet);
-
-        $em->persist($note);
-        $em->flush();
-
-        $this->addFlash('success', 'Note enregistrée pour ' . $passager->getPrenom() . '.');
-        return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
-    }
-
-    return $this->render('notes/noter_passager.html.twig', [
-        'form' => $form->createView(),
-        'trajet' => $trajet,
-        'passager' => $passager
-    ]);
-}
 
     /**
      * @Route("/user/trajet/{id}/noter-conducteur", name="app_noter_conducteur")
@@ -293,6 +307,28 @@ class TrajetController extends AbstractController
             'trajet' => $trajet
         ]);
     }
+
+    /**
+     * Permet au conducteur d’annuler son trajet.
+     * @Route("/user/trajet/{id}/annuler", name="trajet_annuler", methods={"GET", "POST"})
+     */
+    public function annulerTrajet(
+        int $id,
+        TrajetRepository $trajetRepository,
+        TrajetAnnulationService $annulationService
+    ): Response {
+        $trajet = $trajetRepository->find($id);
+
+        if (!$trajet || $trajet->getConducteur() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Accès non autorisé.");
+        }
+
+        $annulationService->annulerTrajet($trajet);
+
+        $this->addFlash('success', 'Le trajet a été annulé et les passagers ont été informés.');
+        return $this->redirectToRoute('app_mes_trajets');
+    }
+
 
 
 

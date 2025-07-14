@@ -6,7 +6,7 @@
 <div class="container py-5">
     <h3 class="mb-4">Noter le conducteur de ce trajet</h3>
 
-    <p><strong>Conducteur :</strong> {{ trajet.conducteur.prenom }}</p>
+    <p><strong>Conducteur :</strong> {{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : trajet.conducteur.prenom }}</p>
     <p><strong>Date :</strong> {{ trajet.dateTrajet|date('d/m/Y') }}</p>
 
     {{ form_start(form) }}

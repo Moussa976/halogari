@@ -1,0 +1,152 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-1">
+	<div class="row mb-4">
+		<div class="col">
+			<h1 class="h3 mb-3">Bienvenue dans l'administration de HaloGari</h1>
+			<p class="text-muted">Depuis ce tableau de bord, vous pouvez gérer les trajets, utilisateurs, réservations, documents, etc.</p>
+		</div>
+	</div>
+
+	<div class="row">
+		{% set stats = [
+			{'label': 'Trajets publiés', 'count': count_trajets, 'desc': 'Total sur la plateforme'},
+			{'label': 'Réservations', 'count': count_reservations, 'desc': 'Toutes réservations enregistrées'},
+			{'label': 'Utilisateurs', 'count': count_users, 'desc': 'Comptes inscrits'},
+			{'label': 'Documents validés', 'count': count_documents, 'desc': 'Statut “validé”'}
+		] %}
+		{% for s in stats %}
+			<div class="col-sm-6 col-xl-3">
+				<div class="card mb-3">
+					<div class="card-body">
+						<h5 class="card-title mb-4">{{ s.label }}</h5>
+						<h1 class="mt-1 mb-3">{{ s.count }}</h1>
+						<div class="mb-1">
+							<span class="text-muted">{{ s.desc }}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+	{# --- GRAPHIQUE --- #}
+	<div class="card mb-4">
+		<div class="card-header">
+			📊 Évolution mensuelle des trajets et réservations
+		</div>
+		<div class="card-body">
+			<canvas id="statsChart" height="90"></canvas>
+		</div>
+	</div>
+
+	{# --- TABLEAU : 10 derniers trajets --- #}
+	<div class="card mb-4">
+		<div class="card-header">🚌 10 derniers trajets publiés</div>
+		<div class="card-body table-responsive">
+			<table class="table table-bordered table-hover align-middle">
+				<thead class="table-light">
+					<tr>
+						<th>ID</th>
+						<th>Départ</th>
+						<th>Arrivée</th>
+						<th>Date</th>
+						<th>Heure</th>
+						<th>Conducteur</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for trajet in last_trajets %}
+						<tr>
+							<td>{{ trajet.id }}</td>
+							<td>{{ trajet.depart }}</td>
+							<td>{{ trajet.arrivee }}</td>
+							<td>{{ trajet.dateTrajet|date('d/m/Y') }}</td>
+							<td>{{ trajet.heureTrajet|date('H:i') }}</td>
+							<td>{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</td>
+						</tr>
+					{% else %}
+						<tr><td colspan="6" class="text-muted">Aucun trajet récent.</td></tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	{# --- TABLEAU : 10 dernières réservations --- #}
+	<div class="card mb-4">
+		<div class="card-header">📑 10 dernières réservations</div>
+		<div class="card-body table-responsive">
+			<table class="table table-bordered table-hover align-middle">
+				<thead class="table-light">
+					<tr>
+						<th>ID</th>
+						<th>Passager</th>
+						<th>Trajet</th>
+						<th>Date</th>
+						<th>Places</th>
+						<th>Statut</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for resa in last_reservations %}
+						<tr>
+							<td>{{ resa.id }}</td>
+							<td>{{ resa.passager.prenom }} {{ resa.passager.nom }}</td>
+							<td>{{ resa.trajet.depart }} → {{ resa.trajet.arrivee }}</td>
+							<td>{{ resa.trajet.dateTrajet|date('d/m/Y') }} à {{ resa.trajet.heureTrajet|date('H:i') }}</td>
+							<td>{{ resa.places }}</td>
+							<td>
+								<span class="badge bg-{{ resa.statut == 'acceptée' ? 'success' : (resa.statut == 'en_attente' ? 'warning text-dark' : 'danger') }}">
+									{{ resa.statut|capitalize }}
+								</span>
+							</td>
+						</tr>
+					{% else %}
+						<tr><td colspan="6" class="text-muted">Aucune réservation récente.</td></tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{# --- Script pour le graphique --- #}
+<script>
+	const ctx = document.getElementById('statsChart').getContext('2d');
+	const statsChart = new Chart(ctx, {
+		type: 'line',
+		data: {
+			labels: {{ chart_labels|json_encode|raw }},
+			datasets: [
+				{
+					label: 'Trajets',
+					data: {{ chart_trajets|json_encode|raw }},
+					borderColor: 'rgba(54, 162, 235, 1)',
+					tension: 0.3
+				},
+				{
+					label: 'Réservations',
+					data: {{ chart_reservations|json_encode|raw }},
+					borderColor: 'rgba(255, 99, 132, 1)',
+					tension: 0.3
+				}
+			]
+		},
+		options: {
+			responsive: true,
+			scales: {
+				y: { beginAtZero: true }
+			}
+		}
+	});
+</script>
+{% endblock %}

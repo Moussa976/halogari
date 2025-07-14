@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page introuvable - HaloGari{% endblock %}
+
+{% block body %}
+<div class="container text-center py-5">
+  <img src="{{ asset('images/errors/404.png') }}" alt="Erreur 404" class="img-fluid mb-4" style="max-width: 300px;">
+  <h1 class="display-4 text-danger">404</h1>
+  <p class="lead">Oups... cette page est introuvable.</p>
+  <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">Retour à l’accueil</a>
+</div>
+{% endblock %}

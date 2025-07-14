@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Publier un trajet
-{% endblock %}
+{% block title %}HaloGari | Publier un trajet{% endblock %}
 
 {% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 	.step-section {
 		display: none;
@@ -23,6 +23,20 @@
 	.text-vert {
 		color: #28a745;
 	}
+
+	select.is-invalid,
+	input.is-invalid {
+		border-color: #dc3545;
+	}
+
+	#mapItineraire {
+		height: 400px;
+		width: 100%;
+	}
+
+	.leaflet-routing-alt {
+		display: none !important;
+	}
 </style>
 {% endblock %}
 
@@ -32,7 +46,6 @@
 		<div class="col-md-8 col-lg-6">
 			<h2 class="text-center mb-4">Publier un trajet</h2>
 
-			<!-- Barre de progression -->
 			<div class="progress-container">
 				<div class="progress">
 					<div id="progressBar" class="progress-bar progress-bar-striped bg-vert" role="progressbar"
@@ -43,17 +56,14 @@
 			<form id="publishForm" class="bg-light p-4 rounded shadow-sm border" method="POST"
 				action="{{ path('app_publier') }}">
 
-				<!-- Étape 1/4 -->
+				{# Étape 1/4 #}
 				<div class="step-section active" id="step1">
 					<h4 class="mb-3">1⁄4 Informations de base</h4>
-
 					<div class="mb-3">
 						<div class="input-group">
-							<span class="input-group-text text-vert">
-								<i class="bi bi-geo-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-geo-fill"></i></span>
 							<div class="form-floating">
-								<select id="select_departure" class="form-select" name="departure" required>
+								<select id="select_departure" class="form-select villages" name="departure" required>
 									<option value="">Choisir un village</option>
 								</select>
 								<label for="select_departure">Village de départ</label>
@@ -63,11 +73,9 @@
 
 					<div class="mb-3">
 						<div class="input-group">
-							<span class="input-group-text text-vert">
-								<i class="bi bi-flag-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-flag-fill"></i></span>
 							<div class="form-floating">
-								<select id="select_arrival" class="form-select" name="arrival" required>
+								<select id="select_arrival" class="form-select villages" name="arrival" required>
 									<option value="">Choisir un village</option>
 								</select>
 								<label for="select_arrival">Village d'arrivée</label>
@@ -77,17 +85,13 @@
 
 					<div class="mb-3">
 						<div class="input-group">
-							<span class="input-group-text text-vert">
-								<i class="bi bi-calendar2-event-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-calendar2-event-fill"></i></span>
 							<div class="form-floating">
 								<input type="text" id="date" class="form-control dateDepart" name="date"
 									placeholder="Date du trajet" required>
 								<label for="date">Date du trajet</label>
 							</div>
-							<span class="input-group-text text-vert">
-								<i class="bi bi-clock-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-clock-fill"></i></span>
 							<div class="form-floating">
 								<input type="time" class="form-control" id="heure" name="heure"
 									placeholder="Heure de départ" required>
@@ -98,9 +102,7 @@
 
 					<div class="mb-3">
 						<div class="input-group">
-							<span class="input-group-text text-vert">
-								<i class="bi bi-people-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-people-fill"></i></span>
 							<div class="form-floating">
 								<select class="form-select" id="places" name="places">
 									{% for i in 1..8 %}
@@ -117,18 +119,24 @@
 					</div>
 				</div>
 
-				<!-- Étape 2/4 -->
+				{# Étape 2/4 #}
 				<div class="step-section" id="step2">
 					<h4 class="mb-3">2⁄4 Tarif</h4>
 					<div class="mb-3">
 						<div class="input-group">
 							<div class="form-floating">
-								<input type="number" class="form-control" id="price" name="price" step="0.01" min="0.00"
+								<input type="number" class="form-control" id="price" name="price" step="0.50" min="1"
 									placeholder="Prix par passager" required>
 								<label for="price">Prix par passager</label>
 							</div>
 							<span class="input-group-text text-vert">€</span>
 						</div>
+					</div>
+					<div class="alert alert-info mt-3">
+						Distance estimée : <span id="distance-km" class="fw-bold">-</span> km<br>
+						Prix maximum autorisé : <span id="prix-max" class="fw-bold text-danger">-</span> €<br>
+						<i class="bi bi-lightbulb-fill text-warning me-1"></i>
+						Suggestion : <span id="prix-suggere" class="fw-bold text-success">-</span> €
 					</div>
 					<div class="d-flex justify-content-between">
 						<button type="button" class="btn btn-secondary" onclick="prevStep()">Précédent</button>
@@ -136,65 +144,133 @@
 					</div>
 				</div>
 
-
-				<!-- Étape 3/4 -->
+				{# ---------- Étape 3 : Description ---------- #}
 				<div class="step-section" id="step3">
 					<h4 class="mb-3">3⁄4 Description</h4>
+
+					<div class="alert alert-light border mb-3">
+						<i class="bi bi-chat-left-dots text-vert me-1"></i>
+						<strong>Suggestion :</strong>
+						<pre id="suggestionText"
+							class="mt-2 mb-1">Bonjour !\nDépart à l’heure, trajet direct. Possibilité de déposer à Combani si besoin.</pre>
+						<div class="text-end">
+							<button type="button" class="btn btn-outline-success btn-sm"
+								onclick="useSuggestion()">Utiliser cette suggestion</button>
+						</div>
+					</div>
+
 					<div class="mb-3">
 						<div class="input-group">
-							<span class="input-group-text text-vert">
-								<i class="bi bi-chat-left-text-fill"></i>
-							</span>
+							<span class="input-group-text text-vert"><i class="bi bi-chat-left-text-fill"></i></span>
 							<div class="form-floating">
 								<textarea class="form-control" id="description" name="description"
-									placeholder="Description du trajet" style="height: 100px" required></textarea>
+									placeholder="Description du trajet" style="height: 100px" minlength="30"
+									maxlength="300" required oninput="updateDescriptionCounter()"></textarea>
 								<label for="description">Description du trajet</label>
 							</div>
 						</div>
+						<small class="small">Reinseignez au moins 30 caractères</small>
+						<small class="text-muted d-block mt-1 text-end">
+							<span id="descriptionCounter">0</span> / 300 caractères
+						</small>
 					</div>
+
 					<div class="d-flex justify-content-between">
 						<button type="button" class="btn btn-secondary" onclick="prevStep()">Précédent</button>
 						<button type="button" class="btn btn-primary" onclick="nextStep(3)">Suivant</button>
 					</div>
 				</div>
 
-				<!-- Étape 4/4 -->
+				{# ---------- Étape 4 : Récapitulatif ---------- #}
 				<div class="step-section" id="step4">
 					<h4 class="mb-3">4⁄4 Récapitulatif</h4>
-					<ul class="list-group mb-3">
-						<li class="list-group-item">
-							<strong>Départ :</strong>
-							<span id="recap_departure"></span>
-						</li>
-						<li class="list-group-item">
-							<strong>Arrivée :</strong>
-							<span id="recap_arrival"></span>
-						</li>
-						<li class="list-group-item">
-							<strong>Date :</strong>
-							<span id="recap_date"></span>
-						</li>
-						<li class="list-group-item">
-							<strong>Heure :</strong>
-							<span id="recap_heure"></span>
-						</li>
-						<li class="list-group-item">
-							<strong>Passagers :</strong>
-							<span id="recap_places"></span>
-						</li>
-						<li class="list-group-item">
-							<strong>Prix :</strong>
-							<span id="recap_price"></span>
-							€
-						</li>
-						<li class="list-group-item">
-							<strong>Description :</strong>
-							<br><span id="recap_description"></span>
-						</li>
-					</ul>
+
+					<div class="alert alert-warning">
+						<i class="bi bi-exclamation-triangle-fill me-2"></i>
+						Merci de vérifier vos informations avant de publier. Une fois le trajet publié, vous recevrez
+						une notification en cas de réservation.
+					</div>
+
+					<div class="card mb-3">
+						<div class="card-header bg-light fw-bold">
+							<i class="bi bi-geo-alt-fill text-vert me-2"></i>Itinéraire
+						</div>
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item"><strong>Départ :</strong> <span class="badge bg-orange"
+									id="recap_departure">-</span></li>
+							<li class="list-group-item"><strong>Arrivée :</strong> <span class="badge bg-success"
+									id="recap_arrival">-</span></li>
+							<li class="list-group-item"><strong>Date :</strong> <span class="text-primary"
+									id="recap_date">-</span></li>
+							<li class="list-group-item"><strong>Heure :</strong> <span class="text-primary"
+									id="recap_heure">-</span></li>
+						</ul>
+					</div>
+
+					<div class="card mb-3">
+						<div class="card-header bg-light fw-bold">
+							<i class="bi bi-map text-vert me-2"></i>Carte du trajet
+						</div>
+						<div class="card-body p-0">
+							<div id="mapRecap" style="height: 250px;"></div>
+						</div>
+					</div>
+
+					<div class="card mb-3">
+						<div class="card-header bg-light fw-bold">
+							<i class="bi bi-people-fill text-vert me-2"></i>Réservation
+						</div>
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item"><strong>Passagers :</strong> <span class="badge bg-secondary"
+									id="recap_places">-</span></li>
+							<li class="list-group-item"><strong>Prix :</strong> <span class="badge bg-info text-dark"
+									id="recap_price">-</span> €</li>
+						</ul>
+					</div>
+
+					<div class="card mb-4">
+						<div class="card-header bg-light fw-bold">
+							<i class="bi bi-chat-left-text-fill text-vert me-2"></i>Description
+						</div>
+						<div class="card-body">
+							<p id="recap_description" class="mb-0">-</p>
+						</div>
+					</div>
+
 					<div class="d-flex justify-content-between">
 						<button type="button" class="btn btn-secondary" onclick="prevStep()">Précédent</button>
-						<button type="submit" class="btn btn-success">Publier</button>
+						<button type="submit" class="btn btn-success">
+							<i class="bi bi-check-circle-fill me-1"></i>Publier
+						</button>
+					</div>
+				</div>
+
+
+				{# ---------- Modal avec carte Leaflet + itinéraire + durée ---------- #}
+				<div class="modal fade" id="itineraireModal" tabindex="-1" aria-labelledby="itineraireModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog modal-lg modal-dialog-centered">
+						<div class="modal-content">
+							<div class="modal-header bg-vert text-white">
+								<h5 class="modal-title" id="itineraireModalLabel">Itinéraire du trajet</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal"
+									aria-label="Fermer"></button>
+							</div>
+							<div class="modal-body p-0">
+								<div id="mapItineraire"></div>
+							</div>
+							<div class="modal-footer d-flex justify-content-between">
+								<div>
+									<span class="fw-bold">Durée estimée :</span> <span id="duree-estimee">-</span>
+								</div>
+								<div>
+									<button type="button" class="btn btn-secondary"
+										data-bs-dismiss="modal">Annuler</button>
+									<button type="button" class="btn btn-success"
+										id="confirmItineraire">Confirmer</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -204,100 +280,327 @@
 </div>
 {% endblock %}
 
+
 {% block javascripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-	let currentStep = 1;
+// ===============================
+// Script JS pour publier un trajet (HaloGari)
+// ===============================
 
-	function showStep(step) {
-		document.querySelectorAll('.step-section').forEach((section) => section.classList.remove('active'));
-		const target = document.getElementById('step' + step);
-		if (target) {
-			target.classList.add('active');
-			updateProgressBar(step);
-		} else {
-			console.error('Étape introuvable : step' + step);
-		}
+const iconHaloGari = L.icon({
+  iconUrl: '/images/marker_depart_25_41.png', // mets le bon chemin ici
+  iconSize: [25, 41],
+	iconAnchor: [12, 41],
+	popupAnchor: [1, -34],
+	shadowSize: [41, 41]
+});
+
+
+// Icônes personnalisées Leaflet
+const iconVert = L.icon({
+	iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+	shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+	iconSize: [25, 41],
+	iconAnchor: [12, 41],
+	popupAnchor: [1, -34],
+	shadowSize: [41, 41]
+});
+
+// const iconOrangeSmall = L.icon({
+// 	iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+// 	shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+// 	iconSize: [18, 30],
+// 	iconAnchor: [9, 30],
+// 	popupAnchor: [1, -25],
+// 	shadowSize: [30, 30]
+// });
+
+let currentStep = 1;
+let map, itineraireLayer;
+let itineraireMarkers = [];
+
+// Affiche une erreur sous un champ
+function showInvalidFeedback(input, message = 'Ce champ est requis.') {
+	const parent = input.closest('.form-floating') || input.parentElement;
+	if (!parent.querySelector('.invalid-feedback')) {
+		const feedback = document.createElement('div');
+		feedback.className = 'invalid-feedback';
+		feedback.textContent = message;
+		parent.appendChild(feedback);
+	}
+	input.classList.add('is-invalid');
+}
+
+// Supprime l'erreur
+function removeInvalidFeedback(input) {
+	input.classList.remove('is-invalid');
+	const parent = input.closest('.form-floating') || input.parentElement;
+	const feedback = parent.querySelector('.invalid-feedback');
+	if (feedback) feedback.remove();
+}
+
+// Affiche l'étape courante
+function showStep(step) {
+	const section = document.getElementById('step' + step);
+	if (!section) return;
+	document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+	section.classList.add('active');
+	updateProgressBar(step);
+}
+
+// Barre de progression
+function updateProgressBar(step) {
+	const progressBar = document.getElementById('progressBar');
+	const percent = step * 25;
+	progressBar.style.width = percent + '%';
+	progressBar.setAttribute('aria-valuenow', percent);
+	progressBar.innerText = step + ' / 4';
+}
+
+// Règles de prix
+function getPrixMax(distanceKm) {
+	if (distanceKm < 14) return 3;
+	if (distanceKm < 28) return 5;
+	if (distanceKm < 42) return 7;
+	if (distanceKm < 56) return 9;
+	if (distanceKm < 70) return 11;
+	return 13;
+}
+
+// Affiche l'itinéraire (modal étape 1)
+async function afficherItineraireSurCarte(depart, arrivee) {
+	const spanDuree = document.getElementById('duree-estimee');
+	if (spanDuree) spanDuree.innerText = "Chargement de l’itinéraire...";
+
+	async function geocode(village) {
+		const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(village + ', Mayotte')}`;
+		const response = await fetch(url);
+		const data = await response.json();
+		return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
 	}
 
-	function updateProgressBar(step) {
-		const progressBar = document.getElementById('progressBar');
-		const percent = step * 25;
-		progressBar.style.width = percent + '%';
-		progressBar.setAttribute('aria-valuenow', percent);
-		progressBar.innerText = step + ' / 4';
+	const coordsDepart = await geocode(depart);
+	const coordsArrivee = await geocode(arrivee);
+
+	if (!coordsDepart || !coordsArrivee) {
+		alert("Impossible de localiser les villages.");
+		if (spanDuree) spanDuree.innerText = "-";
+		return;
 	}
 
-	function nextStep(step) {
-		const inputs = document.querySelectorAll('#step' + step + ' input, #step' + step + ' select, #step' + step + ' textarea');
-		let valid = true;
+	if (!map) {
+		map = L.map('mapItineraire');
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; OpenStreetMap'
+		}).addTo(map);
+	}
 
-		const departure = document.getElementById('select_departure')?.value;
-		const arrival = document.getElementById('select_arrival')?.value;
-		if (step === 1 && departure && arrival && departure === arrival) {
+	map.setView(coordsDepart, 11);
+	if (itineraireLayer) map.removeLayer(itineraireLayer);
+	itineraireMarkers.forEach(marker => map.removeLayer(marker));
+	itineraireMarkers = [];
+
+	const routeUrl = `https://router.project-osrm.org/route/v1/driving/${coordsDepart[1]},${coordsDepart[0]};${coordsArrivee[1]},${coordsArrivee[0]}?overview=full&geometries=geojson&annotations=duration,distance`;
+	const response = await fetch(routeUrl);
+	const json = await response.json();
+
+	const routeGeo = json.routes[0].geometry;
+	const distanceKm = (json.routes[0].distance / 1000).toFixed(1);
+	const prixMax = getPrixMax(distanceKm);
+	const suggestion = Math.max(1, prixMax - 1);
+
+	itineraireLayer = L.geoJSON(routeGeo, { style: { color: 'orange', weight: 5 } }).addTo(map);
+	itineraireMarkers.push(
+		L.marker(coordsDepart, { icon: iconHaloGari }).addTo(map).bindPopup("Départ"),
+		L.marker(coordsArrivee, { icon: iconVert }).addTo(map).bindPopup("Arrivée")
+	);
+	map.fitBounds(itineraireLayer.getBounds());
+
+	document.getElementById('distance-km').innerText = distanceKm;
+	document.getElementById('prix-max').innerText = prixMax;
+	document.getElementById('prix-suggere').innerText = suggestion.toFixed(2);
+
+	const priceInput = document.getElementById('price');
+	priceInput.setAttribute('max', prixMax);
+	priceInput.setAttribute('min', 1);
+	priceInput.value = suggestion.toFixed(2);
+
+	if (spanDuree) {
+		const durationSec = json.routes[0].duration;
+		const minutes = Math.round(durationSec / 60);
+		const heures = Math.floor(minutes / 60);
+		const resteMin = minutes % 60;
+		spanDuree.innerText = (heures > 0 ? `${heures}h ` : '') + `${resteMin}min`;
+	}
+}
+
+async function geocode(village) {
+	const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(village + ', Mayotte')}`;
+	const response = await fetch(url);
+	const data = await response.json();
+	return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+}
+
+
+// Navigation des étapes
+function nextStep(step) {
+	const inputs = document.querySelectorAll('#step' + step + ' input, #step' + step + ' select, #step' + step + ' textarea');
+	let valid = true;
+
+	if (step === 1) {
+		const d = document.getElementById('select_departure')?.value;
+		const a = document.getElementById('select_arrival')?.value;
+		if (d && a && d === a) {
 			alert("Le village de départ et d'arrivée doivent être différents.");
 			return;
 		}
+	}
 
-		inputs.forEach(input => {
-			if (!input.checkValidity()) {
-				input.classList.add('is-invalid');
-				valid = false;
-			} else {
-				input.classList.remove('is-invalid');
-			}
-		});
-		if (valid) {
+	inputs.forEach(input => {
+		if (!input.checkValidity()) {
+			showInvalidFeedback(input);
+			valid = false;
+		} else {
+			removeInvalidFeedback(input);
+		}
+	});
+	if (!valid) return;
+
+	if (step === 2) {
+		const prixMax = parseFloat(document.getElementById('prix-max')?.innerText);
+		const prix = parseFloat(document.getElementById('price')?.value);
+		if (!isNaN(prixMax) && prix > prixMax) {
+			alert(`Le prix ne doit pas dépasser ${prixMax} €.`);
+			return;
+		}
+	}
+
+	if (step === 1) {
+		const departure = document.getElementById('select_departure').value;
+		const arrival = document.getElementById('select_arrival').value;
+		const modal = new bootstrap.Modal(document.getElementById('itineraireModal'));
+		modal.show();
+		afficherItineraireSurCarte(departure, arrival);
+		document.getElementById('confirmItineraire').onclick = function () {
 			currentStep++;
-			if (currentStep === 4)
-				fillRecap();
-
 			showStep(currentStep);
-		}
+			modal.hide();
+		};
+	} else {
+		currentStep++;
+		if (currentStep === 4) fillRecap();
+		showStep(currentStep);
+	}
+}
+
+function prevStep() {
+	if (currentStep > 1) {
+		currentStep--;
+		showStep(currentStep);
+	}
+}
+
+function fillRecap() {
+	document.getElementById('recap_departure').innerText = document.getElementById('select_departure').value;
+	document.getElementById('recap_arrival').innerText = document.getElementById('select_arrival').value;
+	const inputDate = document.getElementById('date').value;
+	const dateObj = new Date(inputDate);
+	document.getElementById('recap_date').innerText = isNaN(dateObj) ? inputDate :
+		dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+	document.getElementById('recap_heure').innerText = document.getElementById('heure').value;
+	document.getElementById('recap_places').innerText = document.getElementById('places').value;
+	document.getElementById('recap_price').innerText = document.getElementById('price').value;
+	document.getElementById('recap_description').innerText = document.getElementById('description').value;
+
+	afficherCarteRecap(
+		document.getElementById('select_departure').value,
+		document.getElementById('select_arrival').value
+	);
+}
+
+// Réinitialisation carte si changement de village
+document.getElementById('select_departure').addEventListener('change', resetCarte);
+document.getElementById('select_arrival').addEventListener('change', resetCarte);
+
+function resetCarte() {
+	if (map) {
+		if (itineraireLayer) map.removeLayer(itineraireLayer);
+		itineraireMarkers.forEach(m => map.removeLayer(m));
+		itineraireMarkers = [];
+		map.setView([-12.8261, 45.1662], 9);
+	}
+	document.getElementById('duree-estimee').innerText = "-";
+	document.getElementById('distance-km').innerText = "-";
+	document.getElementById('prix-max').innerText = "-";
+	document.getElementById('prix-suggere').innerText = "-";
+}
+
+// Suggestion de description
+const suggestions = [
+	"Bonjour !\nDépart à l’heure, trajet direct. Possibilité de déposer à Combani si besoin.",
+	"Bonjour !\nConduite prudente, bonne ambiance à bord. Pause possible à Tsararano.",
+	"Bonjour !\nJe pars à l’heure indiquée. Véhicule climatisé, musique tranquille.",
+	"Bonjour !\nPonctuel et sérieux, je peux accepter un petit détour selon l’heure.",
+	"Bonjour !\nTrajet sans détour, merci d’être à l’heure. Bagages limités à 1 sac par personne."
+];
+
+function useSuggestion() {
+	const textarea = document.getElementById('description');
+	const suggestion = document.getElementById('suggestionText').innerText;
+	textarea.value = suggestion;
+	updateDescriptionCounter();
+}
+
+function showRandomSuggestion() {
+	const index = Math.floor(Math.random() * suggestions.length);
+	document.getElementById('suggestionText').innerText = suggestions[index];
+}
+
+function updateDescriptionCounter() {
+	const textarea = document.getElementById('description');
+	const counter = document.getElementById('descriptionCounter');
+	counter.innerText = textarea.value.length;
+}
+
+async function afficherCarteRecap(depart, arrivee) {
+	const coords = await Promise.all([geocode(depart), geocode(arrivee)]);
+	if (!coords[0] || !coords[1]) return;
+
+	const mapElement = document.getElementById('mapRecap');
+	if (!mapElement) return;
+
+	if (!window.mapRecapInstance) {
+		window.mapRecapInstance = L.map('mapRecap', { zoomControl: false, attributionControl: false });
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.mapRecapInstance);
 	}
 
-	function prevStep() {
-		if (currentStep > 1) {
-			currentStep--;
-			showStep(currentStep);
-		}
-	}
+	if (window.recapLayer) window.mapRecapInstance.removeLayer(window.recapLayer);
+	if (window.recapMarkers) window.recapMarkers.forEach(m => window.mapRecapInstance.removeLayer(m));
+	window.recapMarkers = [];
 
-	function fillRecap() {
-		document.getElementById('recap_departure').innerText = document.getElementById('select_departure').value;
-		document.getElementById('recap_arrival').innerText = document.getElementById('select_arrival').value;
-		// Date en format français :
-		const inputDate = document.getElementById('date').value;
-		const dateObj = new Date(inputDate);
+	const url = `https://router.project-osrm.org/route/v1/driving/${coords[0][1]},${coords[0][0]};${coords[1][1]},${coords[1][0]}?overview=full&geometries=geojson`;
+	const response = await fetch(url);
+	const json = await response.json();
 
-		// Affiche la date au format "jour mois année" en français
-		const dateFr = dateObj.toLocaleDateString('fr-FR', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		});
+	window.recapLayer = L.geoJSON(json.routes[0].geometry, {
+		style: { color: 'orange', weight: 4 }
+	}).addTo(window.mapRecapInstance);
 
-		document.getElementById('recap_date').innerText = dateFr;
-		// document.getElementById('recap_date').innerText = document.getElementById('date').value;
-		document.getElementById('recap_heure').innerText = document.getElementById('heure').value;
-		document.getElementById('recap_places').innerText = document.getElementById('places').value;
-		document.getElementById('recap_price').innerText = document.getElementById('price').value;
-		document.getElementById('recap_description').innerText = document.getElementById('description').value;
-	}
+	const m1 = L.marker(coords[0], { icon: iconHaloGari }).addTo(window.mapRecapInstance).bindPopup("Départ");
+	const m2 = L.marker(coords[1], { icon: iconVert }).addTo(window.mapRecapInstance).bindPopup("Arrivée");
 
-	fetch('/cities.json').then(response => response.json()).then(cities => {
-		const departureSelect = document.getElementById('select_departure');
-		const arrivalSelect = document.getElementById('select_arrival');
-		cities.forEach(city => {
-			const opt1 = document.createElement('option');
-			opt1.value = city.name;
-			opt1.textContent = city.name;
-			departureSelect.appendChild(opt1);
+	window.recapMarkers.push(m1, m2);
+	window.mapRecapInstance.fitBounds(window.recapLayer.getBounds());
 
-			const opt2 = document.createElement('option');
-			opt2.value = city.name;
-			opt2.textContent = city.name;
-			arrivalSelect.appendChild(opt2);
-		});
-	}).catch(error => console.error('Erreur de chargement des villes:', error));
+	setTimeout(() => {
+		window.mapRecapInstance.invalidateSize();
+	}, 300);
+}
+
+document.addEventListener('DOMContentLoaded', showRandomSuggestion);
+
+
 </script>
+
 {% endblock %}

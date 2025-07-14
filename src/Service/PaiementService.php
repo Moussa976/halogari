@@ -2,11 +2,13 @@
 
 namespace App\Service;
 
+use App\Entity\Commission;
 use App\Entity\Reservation;
+use App\Entity\Paiement;
 use Doctrine\ORM\EntityManagerInterface;
-use Stripe\Refund;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Refund;
 
 class PaiementService
 {
@@ -15,137 +17,169 @@ class PaiementService
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-
-        // ✅ Initialise Stripe avec ta clé secrète (dans .env.local)
         Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
     }
 
     /**
-     * Crée un paiement Stripe en mode "autorisé mais pas capturé".
-     * Cela bloque les fonds sur la carte du passager sans les débiter.
-     * @return string le client_secret du PaymentIntent (à utiliser côté frontend)
+     * Autorise un paiement Stripe (sans le capturer immédiatement).
      */
     public function autoriserPaiement(Reservation $reservation): string
     {
-        // 💰 Calcule le montant total (prix du trajet * nb de places)
+        $paiement = $reservation->getPaiement();
         $montant = $reservation->getTrajet()->getPrix() * $reservation->getPlaces();
 
-        // ✅ Création du PaymentIntent
-        $intent = PaymentIntent::create([
-            'amount' => intval($montant * 100), // Stripe travaille en centimes
-            'currency' => 'eur',
-            'payment_method_types' => ['card'],
-            'capture_method' => 'manual', // 🔥 Très important : différé
-            'metadata' => [
-                'reservation_id' => $reservation->getId()
-            ],
-            'receipt_email' => $reservation->getPassager()->getEmail(), // ✅ pour envoyer un reçu
-        ]);
+        $destination = $reservation->getTrajet()->getConducteur()->getStripeAccountId();
 
-        // 💾 Enregistre le paymentIntentId dans la réservation
-        $reservation->setPaymentIntentId($intent->id);
+        if (!$destination) {
+            throw new \Exception("Ce conducteur n’a pas encore de compte Stripe Connect lié.");
+        }
+
+        if (!$paiement) {
+            $paiement = new Paiement();
+            $paiement->setReservation($reservation);
+            $paiement->setStatut('en_attente');
+            $this->em->persist($paiement);
+            $reservation->setPaiement($paiement);
+        }
+
+        // Réutilisation si possible
+        if ($paiement->getPaymentIntentId()) {
+            $intent = PaymentIntent::retrieve($paiement->getPaymentIntentId());
+            if (in_array($intent->status, ['canceled', 'succeeded'])) {
+                $intent = $this->createPaymentIntent($reservation, $montant);
+            }
+        } else {
+            $intent = $this->createPaymentIntent($reservation, $montant);
+        }
+
+        $paiement->setPaymentIntentId($intent->id);
+        $paiement->setMontant($montant);
+        $paiement->setStatut('autorise');
         $this->em->flush();
 
-        // 🔁 Retourne le client_secret pour le frontend (Stripe JS/Checkout)
         return $intent->client_secret;
     }
 
-
     /**
-     * Capture un paiement précédemment autorisé (bloqué).
-     *
-     * ⚠️ Cette méthode est appelée seulement après confirmation du trajet.
-     * Elle déclenche le débit réel de la carte du passager.
+     * Création d’un PaymentIntent avec manual capture + transfert vers le conducteur.
      */
-    public function capturerPaiement(Reservation $reservation): void
+    private function createPaymentIntent(Reservation $reservation, float $montant): PaymentIntent
     {
-        // 🛑 Vérifie qu'on a bien un paymentIntentId
-        if (!$reservation->getPaymentIntentId()) {
-            throw new \Exception("Aucun PaymentIntent lié à cette réservation.");
-        }
+        $user = $reservation->getPassager();
+        $trajet = $reservation->getTrajet();
+        $conducteur = $trajet->getConducteur();
 
-        // 🔁 Récupère le PaymentIntent chez Stripe
-        $intent = PaymentIntent::retrieve($reservation->getPaymentIntentId());
+        // 💸 Calcul de la commission HaloGari : 12% ou minimum 0,50€
+        $commission = max(round($montant * 0.12, 2), 0.50);
 
-        // 💳 Capture le paiement (débit)
-        $intent->capture();
-    }
-
-
-    /**
-     * Annule un paiement autorisé si le trajet est annulé ou refusé.
-     *
-     * Cette méthode libère les fonds bloqués sans frais Stripe.
-     * Elle ne fonctionne que si le paiement n'a pas encore été capturé.
-     */
-    public function annulerPaiement(Reservation $reservation): void
-    {
-        // 🔐 Sécurité : si pas de paymentIntent lié, on sort
-        if (!$reservation->getPaymentIntentId()) {
-            return;
-        }
-
-        // 🧾 Récupération du PaymentIntent chez Stripe
-        $intent = PaymentIntent::retrieve($reservation->getPaymentIntentId());
-
-        // ✅ Stripe autorise l'annulation si le paiement n’est pas capturé
-        if (in_array($intent->status, ['requires_capture', 'requires_payment_method'])) {
-            $intent->cancel();
-        }
-    }
-
-
-    /**
-     * Rembourse le passager selon la politique d'annulation.
-     *
-     * - Plus de 24h avant le trajet → 100% remboursé
-     * - Entre 24h et 3h avant le trajet → 50% remboursé
-     * - Moins de 3h ou no-show → aucun remboursement
-     *
-     * ⚠️ Cette méthode suppose que le paiement a été autorisé et capturé.
-     * Elle utilise l'ID du PaymentIntent pour exécuter un remboursement Stripe.
-     *
-     * @param Reservation $reservation La réservation à rembourser
-     */
-    public function rembourserSelonPolitique(Reservation $reservation): void
-{
-    $intentId = $reservation->getPaymentIntentId();
-    if (!$intentId) return;
-
-    $trajet = $reservation->getTrajet();
-    $maintenant = new \DateTimeImmutable();
-
-    // ✅ Recomposer une DateTime complète (date + heure)
-    $date = $trajet->getDateTrajet();
-    $heure = $trajet->getHeureTrajet();
-    $dateHeureTrajet = \DateTimeImmutable::createFromFormat(
-        'Y-m-d H:i',
-        $date->format('Y-m-d') . ' ' . $heure->format('H:i')
-    );
-
-    $interval = $dateHeureTrajet->getTimestamp() - $maintenant->getTimestamp();
-    $heuresAvant = $interval / 3600;
-
-    // 💰 Montant total payé par le passager
-    $montant = $trajet->getPrix() * $reservation->getPlaces();
-    $montantCents = intval($montant * 100);
-
-    // 🔁 Calcul du remboursement selon l'heure
-    if ($heuresAvant > 24) {
-        $remboursement = $montantCents;
-    } elseif ($heuresAvant >= 3) {
-        $remboursement = intval($montantCents / 2);
-    } else {
-        $remboursement = 0;
-    }
-
-    if ($remboursement > 0) {
-        Refund::create([
-            'payment_intent' => $intentId,
-            'amount' => $remboursement,
+        return PaymentIntent::create([
+            'amount' => intval($montant * 100),
+            'currency' => 'eur',
+            'payment_method_types' => ['card'],
+            'capture_method' => 'manual',
+            'application_fee_amount' => intval($commission * 100), // 🔧 modifie ici si tu veux une commission
+            'transfer_data' => [
+                'destination' => $conducteur->getStripeAccountId(),
+            ],
+            'metadata' => [
+                'reservation_id' => $reservation->getId(),
+                'trajet' => $trajet->getDepart() . ' → ' . $trajet->getArrivee(),
+                'nom_passager' => $user->getNom() . ' ' . $user->getPrenom(),
+                'email_passager' => $user->getEmail(),
+            ],
+            'receipt_email' => $user->getEmail(),
         ]);
     }
-}
 
+    /**
+     * Capture d’un paiement après autorisation.
+     */
+    public function capturerPaiement(string $intentId): void
+    {
+        $intent = PaymentIntent::retrieve($intentId);
+        $intent->capture();
+
+        $paiement = $this->em->getRepository(Paiement::class)->findOneBy(['paymentIntentId' => $intentId]);
+
+        if ($paiement) {
+            $paiement->setStatut('capture');
+
+            $reservation = $paiement->getReservation();
+            $montantBrut = $paiement->getMontant(); // ex: 22 €
+            $commissionHaloGari = max(round($montantBrut * 0.12, 2), 0.50); // 12% ou 0.50€
+            $fraisStripe = round($montantBrut * 0.014 + 0.25, 2); // Stripe : 1.4% + 0.25 €
+            $montantNet = $commissionHaloGari - $fraisStripe;
+
+            $commission = new Commission();
+            $commission->setReservation($reservation);
+            $commission->setMontantBrut($montantBrut);
+            $commission->setFraisStripe($fraisStripe);
+            $commission->setMontantNet($montantNet); // Ce que tu gagnes réellement
+
+            $this->em->persist($commission);
+            $this->em->flush();
+        }
+    }
+
+
+
+
+    /**
+     * Annule un paiement avant qu’il soit capturé.
+     */
+    public function annulerPaiement(string $intentId): void
+    {
+        PaymentIntent::retrieve($intentId)->cancel();
+    }
+
+    /**
+     * Rembourse un paiement déjà capturé.
+     */
+    public function rembourserPaiement(string $intentId): void
+    {
+        Refund::create(['payment_intent' => $intentId]);
+    }
+
+    public function rembourserSelonPolitique(Reservation $reservation, bool $conducteurAnnule = false): void
+    {
+        $paiement = $reservation->getPaiement();
+        $intentId = $paiement->getPaymentIntentId();
+
+        if (!$intentId || $paiement->getStatut() !== 'capture') {
+            return; // Aucun remboursement possible
+        }
+
+        $pourcentage = 0;
+        $trajet = $reservation->getTrajet();
+        $maintenant = new \DateTimeImmutable();
+        $datetimeTrajet = (new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')));
+
+        if ($conducteurAnnule) {
+            $pourcentage = 100;
+        } else {
+            $diff = $datetimeTrajet->getTimestamp() - $maintenant->getTimestamp();
+
+            if ($diff > 86400) { // > 24h
+                $pourcentage = 100;
+            } elseif ($diff > 10800) { // > 3h
+                $pourcentage = 50;
+            } else {
+                $pourcentage = 0;
+            }
+        }
+
+        if ($pourcentage > 0) {
+            $montantTotal = $paiement->getMontant(); // en euros
+            $montantRembourse = round($montantTotal * ($pourcentage / 100), 2); // en euros
+
+            \Stripe\Refund::create([
+                'payment_intent' => $intentId,
+                'amount' => intval($montantRembourse * 100),
+            ]);
+        }
+
+        // ✅ On libère les places réservées
+        $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+    }
 
 }

@@ -1,0 +1,604 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Fiche Utilisateur #{{ user.id }}
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid px-4">
+		<a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-sm mb-4">← Retour à la liste</a>
+
+		<h1 class="h3 mb-4">👤 Détails de l'utilisateur #{{ user.id }}</h1>
+
+		{# --- INFOS PERSONNELLES --- #}
+		<div class="card mb-4">
+			<div class="card-body">
+				<div class="text-center mb-3">
+					{{ avatar.formatSimple(user, 80, 0, 1) }}
+				</div>
+				<form method="post" enctype="multipart/form-data" action="{{ path('admin_user_update', {id: user.id}) }}">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label fw-bold">Nom :</label>
+							<input type="text" name="nom" class="form-control" value="{{ user.nom }}">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-bold">Prénom :</label>
+							<input type="text" name="prenom" class="form-control" value="{{ user.prenom }}">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-bold">Email :</label>
+							<input type="email" name="email" class="form-control" value="{{ user.email }}">
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-bold">Téléphone :</label>
+							<input type="text" name="telephone" class="form-control" value="{{ user.telephone }}">
+						</div>
+					</div>
+					<div class="mt-3">
+						<label class="form-label fw-bold">Photo de profil :</label>
+						<input type="file" name="photo" class="form-control mb-2" accept="image/*">
+						{% if user.photo %}
+							<div class="form-check">
+								<input type="checkbox" name="remove_photo" value="1" class="form-check-input" id="removePhoto">
+								<label for="removePhoto" class="form-check-label text-danger">Supprimer la photo
+																																																																						actuelle</label>
+							</div>
+						{% endif %}
+					</div>
+					<div class="text-center mt-4">
+						<button class="btn btn-primary btn-sm">💾 Enregistrer</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		{# --- VALIDATION EMAIL --- #}
+		<h4 class="mt-5 mb-3">📧 Adresse email</h4>
+
+		{% if not user.isVerified %}
+			<div class="alert alert-warning d-flex justify-content-between align-items-center">
+				<div>Ce compte n’a pas encore confirmé son adresse :
+					<strong>{{ user.email }}</strong>
+				</div>
+				<form method="post" action="{{ path('admin_user_resend_confirmation', { id: user.id }) }}">
+					<button class="btn btn-sm btn-primary" onclick="return confirm('Renvoyer l’e-mail de confirmation ?');">
+						📤 Renvoyer
+					</button>
+				</form>
+			</div>
+		{% else %}
+			<div class="alert alert-success">✅ Compte vérifié :
+				{{ user.email }}</div>
+		{% endif %}
+
+
+		{# --- DOCUMENTS --- #}
+		<h4 class="mt-5 mb-3">📄 Documents envoyés
+			<small class="text-muted">({{ user.documents|length }})</small>
+		</h4>
+		{% if user.documents is empty %}
+			<div class="alert alert-warning">Aucun document.</div>
+		{% else %}
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover align-middle">
+					<thead class="table-light">
+						<tr>
+							<th>ID</th>
+							<th>Type</th>
+							<th>Fichier</th>
+							<th>Statut</th>
+							<th>Date</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for doc in user.documents %}
+							<tr>
+								<td>{{ doc.id }}</td>
+								<td>{{ doc.typeDocument|capitalize }}</td>
+								<td class="text-truncate" style="max-width: 200px;">
+									<a href="{{ asset('uploads/documents/' ~ doc.filenameDocument) }}" target="_blank">
+										{{ doc.filenameDocument }}
+									</a>
+								</td>
+								<td>
+									{% set statusMap = {'approved':'success','pending':'warning text-dark','rejected':'danger'} %}
+									<span class="badge bg-{{ statusMap[doc.status]|default('secondary') }}">
+										{{ doc.status == 'approved' ? 'Validé' : (doc.status == 'pending' ? 'En attente' : 'Refusé')
+							}}
+									</span>
+								</td>
+								<td>{{ doc.dateDocument|date_fr('d F Y à H:i') }}</td>
+								<td>
+									<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal-doc-{{ doc.id }}">
+										⚙️
+									</button>
+								</td>
+							</tr>
+							{# --- MODAL DE GESTION --- #}
+							<div class="modal fade" id="modal-doc-{{ doc.id }}" tabindex="-1">
+								<div class="modal-dialog modal-lg modal-dialog-centered">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title">Gérer le document</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+										</div>
+										<div class="modal-body">
+											<p>
+												<strong>Type :</strong>
+												{{ doc.typeDocument|capitalize }}
+											</p>
+											<p>
+												<strong>Date :</strong>
+												{{ doc.dateDocument|date_fr('d F Y à H:i') }}
+											</p>
+											<p>
+												<strong>Statut actuel :</strong>
+												{% if doc.status == 'approved' %}
+													<span class="badge bg-success">Validé</span>
+												{% elseif doc.status == 'pending' %}
+													<span class="badge bg-warning text-dark">En attente</span>
+												{% else %}
+													<span class="badge bg-danger">Refusé</span>
+												{% endif %}
+											</p>
+
+											{# Aperçu du fichier #}
+											{% set fileUrl = asset('uploads/documents/' ~ doc.filenameDocument) %}
+											{% set ext = doc.filenameDocument|split('.')|last|lower %}
+											{% if ext in ['jpg','jpeg','png','webp'] %}
+												<img src="{{ fileUrl }}" alt="Aperçu" class="img-fluid rounded border w-100">
+											{% elseif ext == 'pdf' %}
+												<iframe src="{{ fileUrl }}" class="w-100 border rounded" style="height: 450px;"></iframe>
+											{% else %}
+												<a href="{{ fileUrl }}" target="_blank" class="btn btn-sm btn-outline-primary">📎
+																																																																																																				Télécharger</a>
+											{% endif %}
+
+										</div>
+
+										<div class="modal-footer">
+											<div class="m-auto">
+												{% if doc.status == 'pending' %}
+													<div class="d-flex gap-2">
+														<form method="post" action="{{ path('admin_document_validate', {id: doc.id}) }}">
+															<button class="btn btn-success btn-sm" onclick="return confirm('Confirmer la validation de ce document ?')">
+																✅ Valider
+															</button>
+														</form>
+														<form method="post" action="{{ path('admin_document_reject', {id: doc.id}) }}">
+															<button class="btn btn-danger btn-sm" onclick="return confirm('Refuser ce document ?')">
+																❌ Refuser
+															</button>
+														</form>
+													</div>
+												{% elseif doc.status != 'pending' %}
+													<form method="post" action="{{ path('admin_document_pending', {id: doc.id}) }}">
+														<button class="btn btn-outline-secondary btn-sm" onclick="return confirm('Remettre ce document en attente ?')">
+															🔄 Remettre en attente
+														</button>
+													</form>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+
+		{# --- COMPTE STRIPE CONNECT --- #}
+		<h4 class="mt-5 mb-3">💼 Compte Stripe Connect</h4>
+
+
+		{% if user.stripeAccountId %}
+			<div class="alert alert-success">
+				✅ Compte Stripe Connect déjà créé<br>
+				<strong>ID :</strong>
+				{{ user.stripeAccountId }}
+
+				<div class="text-center mt-2">
+					<form method="post" action="{{ path('admin_user_delete_stripe', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression du compte Stripe ?');">
+						<button class="btn btn-danger btn-sm">🗑️ Supprimer le compte Stripe</button>
+					</form>
+				</div>
+
+
+			</div>
+			{% if stripeStatus %}
+				<div class="alert alert-info mt-4">
+					<h5 class="mb-2">💳 Compte Stripe Connect</h5>
+					<ul class="mb-0">
+						<li>
+							<strong>Email :</strong>
+							{{ stripeStatus.email }}</li>
+						<li>
+							<strong>Type :</strong>
+							{{ stripeStatus.type }}</li>
+						<li>
+							<strong>Charges activées :</strong>
+							{{ stripeStatus.charges_enabled ? '✅ Oui' : '❌ Non' }}</li>
+						<li>
+							<strong>Paiements sortants autorisés :</strong>
+							{{ stripeStatus.payouts_enabled ? '✅ Oui' : '❌ Non' }}</li>
+						<li>
+							<strong>Infos complètes fournies :</strong>
+							{{ stripeStatus.details_submitted ? '✅ Oui' : '❌ Non' }}</li>
+
+						<li>
+							<strong>Pièce d’identité envoyée :</strong>
+							{% if stripeStatus.verification_document %}
+								✅ Oui (ID :
+								{{ stripeStatus.verification_document }})
+							{% else %}
+								❌ Non
+								<hr>
+								⚠️ Pièce d'identité requise par Stripe.
+								<form method="post" action="{{ path('admin_user_stripe_upload_identity', {id: user.id}) }}">
+									<button class="btn btn-sm btn-outline-primary mt-2">📤 Envoyer la pièce d'identité à Stripe</button>
+								</form>
+							{% endif %}
+						</li>
+					</ul>
+
+				</div>
+			{% endif %}
+		{% else %}
+			{% set rib = user.getDocumentByType('RIB') %}
+			{% set identite = user.getDocumentByType('identite') %}
+			{% if rib and identite and rib.status == 'approved' and identite.status == 'approved' %}
+				<div class="alert alert-success">Le conducteur a fourni les documents requis. Vous pouvez maintenant créer son
+																																					compte Stripe :
+					<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalStripe">
+						🚀 Créer le compte Stripe Connect maintenant
+					</button>
+				</div>
+				<!-- Modal -->
+				<div class="modal fade" id="modalStripe" tabindex="-1">
+					<div class="modal-dialog modal-lg modal-dialog-centered">
+						<div class="modal-content">
+							<form method="post" action="{{ path('admin_user_create_stripe_custom', {id: user.id}) }}">
+								<div class="modal-header">
+									<h5 class="modal-title">Création compte Stripe Connect</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+								</div>
+
+								<div class="modal-body">
+									<div class="row g-3">
+										<div class="col-12">
+											<label class="form-label">Titulaire du compte</label>
+											<input type="text" name="nom_complet" required class="form-control" value="{{ user.prenom ~ ' ' ~ user.nom }}">
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Adresse (ligne 1)</label>
+											<input type="text" name="line1" required class="form-control" value="1 rue fictive">
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Ville</label>
+											<input type="text" name="city" required class="form-control" value="Mamoudzou">
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Code postal</label>
+											<input type="text" name="postal_code" required class="form-control" value="97600">
+										</div>
+
+										<div class="col-md-6">
+											<label for="country" class="form-label">Pays</label>
+											<select name="country" id="country" class="form-control">
+												<option value="FR" selected>France</option>
+											</select>
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Téléphone</label>
+											<input type="text" name="telephone" class="form-control" required value="{{ user.telephone }}">
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Site web</label>
+											<input type="url" name="site_web" class="form-control" placeholder="https://..." value="https://halogari.yt" required>
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">Secteur d’activité</label>
+											<input type="text" name="secteur" class="form-control" required placeholder="Ex: Transport, Mobilité..." value="Mobilité">
+										</div>
+
+										<div class="col-md-6">
+											<label class="form-label">IBAN (français uniquement)</label>
+											<input type="text" name="iban" required class="form-control" placeholder="FR76..." value="FR1420041010050500013M02606">
+										</div>
+									</div>
+								</div>
+
+								<div class="modal-footer">
+									<button class="btn btn-success btn-sm">🚀 Créer le compte maintenant</button>
+								</div>
+							</form>
+
+						</div>
+					</div>
+				</div>
+
+
+				{#
+																													</form> #}
+			{% else %}
+				<div class="alert alert-warning">
+					⚠️ L’utilisateur n’a pas encore les documents nécessaires validés.
+				</div>
+			{% endif %}
+		{% endif %}
+
+
+		{# --- NOTES REÇUES --- #}
+		{% set totalNotes = user.notesPour|length %}
+		{% set sommeNotes = user.notesPour|reduce((acc, note) => acc + note.note, 0) %}
+		{% set moyenne = totalNotes > 0 ? (sommeNotes / totalNotes)|number_format(1, '.', '') : 0 %}
+
+		<h4 class="mt-5 mb-3">
+			Notes reçues
+			<small class="text-muted">({{ totalNotes }}
+				note{{ totalNotes > 1 ? 's' : '' }}, moyenne :
+				{{ moyenne }}/5)</small>
+		</h4>
+		{% if user.notesPour is empty %}
+			<div class="alert alert-info">Aucune note.</div>
+		{% else %}
+			<div class="list-group">
+				{% for note in user.notesPour %}
+					<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start {% if note.note >= 4 %}bg-light{% elseif note.note <= 2 %}bg-warning-subtle{% endif %}">
+						<div class="me-auto">
+							<div class="fw-bold">
+								⭐
+								{{ note.note }}/5
+								<small class="text-muted ms-2">par
+									<a href="{{ path('admin_user_show', {id: note.noteur.id}) }}">{{ note.noteur.prenom }}
+										{{ note.noteur.nom }}</a>
+								</small>
+							</div>
+							<div class="text-muted small">{{ note.createdAt ? note.createdAt|date_fr('d F Y à H:i') : 'Date
+					inconnue' }}</div>
+							<div>{{ note.commentaire }}</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		{% endif %}
+
+		{# --- TRAJETS PUBLIÉS --- #}
+		<h4 class="mt-5 mb-3">Trajets publiés
+			<small class="text-muted">({{ user.trajets|length }})</small>
+		</h4>
+		{% if user.trajets is empty %}
+			<div class="alert alert-info">Aucun trajet publié.</div>
+		{% else %}
+			<div class="table-responsive">
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Départ</th>
+							<th>Arrivée</th>
+							<th>Date</th>
+							<th>Places initiales</th>
+							<th>Places disponibles</th>
+							<th>Prix</th>
+							<th>Créé le</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for trajet in user.trajets %}
+							<tr>
+								<td>{{ trajet.id }}</td>
+								<td>{{ trajet.depart }}</td>
+								<td>{{ trajet.arrivee }}</td>
+								<td>{{ trajet.dateTrajet|date_fr('d F Y') }}
+									à
+									{{ trajet.heureTrajet|date('H:i') }}</td>
+								<td>{{ trajet.places }}</td>
+								<td>{{ trajet.placesDisponibles }}</td>
+								<td>{{ trajet.prix }}
+									€</td>
+								<td>{{ trajet.createdAt|date_fr('d F Y à H:i') }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+		{# --- RÉSERVATIONS FAITES --- #}
+		<h4 class="mt-5 mb-3">Réservations effectuées
+			<small class="text-muted">({{ user.reservations|length }})</small>
+		</h4>
+		{% if user.reservations is empty %}
+			<div class="alert alert-info">Aucune réservation.</div>
+		{% else %}
+			<div class="table-responsive">
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Trajet</th>
+							<th>Date</th>
+							<th>Conducteur</th>
+							<th>Places</th>
+							<th>Statut</th>
+							<th>Créé le</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for resa in user.reservations %}
+							<tr>
+								<td>{{ resa.id }}</td>
+								<td>{{ resa.trajet.depart }}
+									→
+									{{ resa.trajet.arrivee }}</td>
+								<td>{{ resa.trajet.dateTrajet|date_fr('d F Y') }}
+									à
+									{{ resa.trajet.heureTrajet|date('H:i') }}</td>
+								<td>{{ resa.trajet.conducteur.nom }}
+									{{ resa.trajet.conducteur.prenom }}</td>
+								<td>{{ resa.places }}</td>
+								<td>{{ resa.statut }}</td>
+								<td>{{ resa.createdAt|date_fr('d F Y à H:i') }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+		{# --- PAIEMENTS EFFECTUÉS --- #}
+		{% set paiementsEnvoyes = user.reservations|map(resa => resa.paiement)|filter(p => p) %}
+		<h4 class="mt-5 mb-3">
+			Paiements effectués
+			<small class="text-muted">({{ paiementsEnvoyes|length }})</small>
+		</h4>
+		{% if paiementsEnvoyes is empty %}
+			<div class="alert alert-info">Aucun paiement effectué.</div>
+		{% else %}
+			<div class="table-responsive">
+				<table class="table table-hover table-bordered">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Montant</th>
+							<th>Réservation</th>
+							<th>Trajet</th>
+							<th>Reçu par</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for paiement in paiementsEnvoyes %}
+							<tr>
+								<td>{{ paiement.id }}</td>
+								<td>{{ paiement.montant }}
+									€</td>
+								<td>ID
+									{{ paiement.reservation.id }}</td>
+								<td>{{ paiement.reservation.trajet.depart }}
+									→
+									{{ paiement.reservation.trajet.arrivee }}</td>
+								<td>{{ paiement.reservation.trajet.conducteur.nom }}</td>
+								<td>{{ paiement.createdAt|date_fr('d F Y à H:i') }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+		{# --- PAIEMENTS REÇUS --- #}
+		{% set paiementsRecus = [] %}
+		{% for trajet in user.trajets %}
+			{% for resa in trajet.reservations %}
+				{% if resa.paiement is defined and resa.paiement %}
+					{% set paiementsRecus = paiementsRecus|merge([resa.paiement]) %}
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+
+		{# Montant total reçu #}
+		{% set MontantTotalConducteur = 0 %}
+		{% for paiement in paiementsRecus %}
+			{% set commission = paiement.reservation.commissions[0] ?? null %}
+			{% if commission %}
+				{% set MontantTotalConducteur = MontantTotalConducteur + (commission.montantBrut - commission.montantNet - commission.fraisStripe) %}
+			{% endif %}
+		{% endfor %}
+
+		<h4 class="mt-5 mb-3">
+			Paiements reçus
+			<small class="text-muted">({{ paiementsRecus|length }}) -
+				{{ MontantTotalConducteur|number_format(2, ',', '.') }} €</small>
+		</h4>
+
+
+		{% if paiementsRecus is empty %}
+			<div class="alert alert-info">Aucun paiement reçu.</div>
+		{% else %}
+			<div class="table-responsive">
+				<table class="table table-hover table-bordered align-middle">
+					<thead class="table-light">
+						<tr>
+							<th>ID</th>
+							<th>Total payé</th>
+							<th>Commission / Frais Stripe</th>
+							<th>Net conducteur</th>
+							<th>Réservation</th>
+							<th>Passager</th>
+							<th>Trajet</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for paiement in paiementsRecus %}
+							{% set commission = paiement.reservation.commissions[0] ?? null %}
+							<tr>
+								<td>{{ paiement.id }}</td>
+								<td>{{ (paiement.montant)|number_format(2, ',', '.') }}
+									€</td>
+								<td>
+									{% if commission %}
+										{{ (commission.montantNet)|number_format(2, ',', '.') }}
+										€ +
+										{{ (commission.fraisStripe)|number_format(2, ',', '.') }}
+										€ =
+										{{ (commission.montantNet + commission.fraisStripe)|number_format(2, ',', '.') }}
+										€
+									{% else %}
+										<em class="text-muted">-</em>
+									{% endif %}
+
+								</td>
+								<td>
+									{% if commission %}
+										{{ (commission.montantBrut - commission.montantNet - commission.fraisStripe)|number_format(2, ',', '.') }}
+										€
+									{% else %}
+										<em class="text-muted">-</em>
+									{% endif %}
+								</td>
+
+								<td>ID
+									{{ paiement.reservation.id }}</td>
+								<td>{{ paiement.reservation.passager.nom }}</td>
+								<td>{{ paiement.reservation.trajet.depart }}
+									→
+									{{ paiement.reservation.trajet.arrivee }}</td>
+								<td>{{ paiement.createdAt|date_fr('d F Y à H:i') }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+
+		{# --- ACTIONS --- #}
+		<div class="mt-4 d-flex gap-2">
+			<form method="post" action="{{ path('admin_user_promote', {id: user.id}) }}" onsubmit="return confirm('Promouvoir cet utilisateur au rôle ADMIN ?');">
+				<button type="submit" class="btn btn-outline-success btn-sm" disabled>👑 Promouvoir en admin</button>
+			</form>
+			<form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression (anonymisation) de ce compte ?');">
+				<button type="submit" class="btn btn-outline-danger btn-sm">🗑️ Supprimer ce compte</button>
+			</form>
+		</div>
+
+		<div class="mt-4">
+			<a href="{{ path('admin_users') }}" class="btn btn-sm btn-outline-secondary">← Retour à la liste</a>
+		</div>
+	</div>
+{% endblock %}

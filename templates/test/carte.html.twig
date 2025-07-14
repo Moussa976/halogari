@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test Carte & Villages{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<style>
+  #map {
+    height: 500px;
+    width: 100%;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <h2 class="mb-4">Test Carte & Villages</h2>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label>Départ</label>
+      <select id="select_departure" class="form-select"></select>
+    </div>
+    <div class="col-md-6">
+      <label>Arrivée</label>
+      <select id="select_arrival" class="form-select"></select>
+    </div>
+  </div>
+
+  <div id="map" class="mb-3"></div>
+
+  <div class="alert alert-info">
+    <strong>Distance :</strong> <span id="distance-result">-</span> km<br>
+    <strong>Prix maximum autorisé :</strong> <span id="prix-max-result">-</span> €
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+let map = L.map('map').setView([-12.8, 45.2], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let citiesData = [];
+let markers = [];
+let routeLayer = null;
+
+const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
+
+function getCoords(name) {
+  return citiesData.find(c => c.name === name);
+}
+
+ getPrixMax(distanceKm) {
+    if (distanceKm < 14) return 3;
+    if (distanceKm < 28) return 5;
+    if (distanceKm < 42) return 7;
+    if (distanceKm < 56) return 9;
+    if (distanceKm < 70) return 11;
+    return 13;
+  },
+
+
+function clearMap() {
+  markers.forEach(marker => map.removeLayer(marker));
+  markers = [];
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+    routeLayer = null;
+  }
+}
+
+function getRouteData(fromCoords, toCoords) {
+  return fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': apiKey
+    },
+    body: JSON.stringify({
+      coordinates: [fromCoords.reverse(), toCoords.reverse()] // ORS attend [lon, lat]
+    })
+  }).then(res => res.json());
+}
+
+function updateMapAndInfos() {
+  const depName = document.getElementById('select_departure').value;
+  const arrName = document.getElementById('select_arrival').value;
+
+  if (!depName || !arrName || depName === arrName) return;
+
+  const dep = getCoords(depName);
+  const arr = getCoords(arrName);
+  if (!dep || !arr) return;
+
+  clearMap();
+
+  const from = [dep.lat, dep.lon];
+  const to = [arr.lat, arr.lon];
+
+  const m1 = L.marker(from).addTo(map).bindPopup("Départ : " + depName);
+  const m2 = L.marker(to).addTo(map).bindPopup("Arrivée : " + arrName);
+  markers.push(m1, m2);
+
+  getRouteData([...from], [...to]).then(data => {
+    const summary = data.features[0].properties.summary;
+    const distanceKm = (summary.distance / 1000).toFixed(1);
+    const prixMax = getPrixMax(distanceKm);
+
+    document.getElementById('distance-result').textContent = distanceKm;
+    document.getElementById('prix-max-result').textContent = prixMax;
+
+    routeLayer = L.geoJSON(data, {
+      style: {
+        color: 'orange',
+        weight: 5
+      }
+    }).addTo(map);
+
+    map.fitBounds(routeLayer.getBounds(), { padding: [30, 30] });
+  }).catch(err => {
+    console.error("Erreur lors du calcul du trajet :", err);
+    alert("Impossible de tracer le trajet. Vérifie que les villages existent dans cities.json.");
+  });
+}
+
+fetch('/cities.json')
+  .then(res => res.json())
+  .then(cities => {
+    citiesData = cities;
+    const selectDep = document.getElementById('select_departure');
+    const selectArr = document.getElementById('select_arrival');
+
+    cities.forEach(city => {
+      const opt1 = document.createElement('option');
+      const opt2 = document.createElement('option');
+      opt1.value = opt2.value = city.name;
+      opt1.textContent = opt2.textContent = city.name_2;
+      selectDep.appendChild(opt1);
+      selectArr.appendChild(opt2);
+    });
+  });
+
+document.getElementById('select_departure').addEventListener('change', updateMapAndInfos);
+document.getElementById('select_arrival').addEventListener('change', updateMapAndInfos);
+</script>
+{% endblock %}

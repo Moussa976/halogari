@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}Détail du trajet | {{ trajet.depart }} - {{ trajet.arrivee }}{% endblock %}
 
@@ -66,10 +67,11 @@
 
 
 					<div class="d-flex align-items-center mb-3">
-						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-3"
-							style="width: 50px; height: 50px;" alt="Photo conducteur">
-						<div>
-							<strong>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</strong><br>
+						{{ avatar.formatSimple(trajet.conducteur, 50,0,1) }}
+						<div class="ms-2">
+							<strong>
+								<a href="{{ path('app_profile', {id: trajet.conducteur.id}) }}">{{ trajet.conducteur.prenom ?? 'Conducteur' }}</a>
+							</strong><br>
 							{% if moyenne %}
 							<span class="text-muted">{{ moyenne|number_format(1, ',', ',') }}/5 •
 								{{ nombreAvis }}
@@ -99,11 +101,11 @@
 					{% if app.user %}
 					<a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}"
 						class="btn btn-outline-orange w-100">
-						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom }}
+						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : trajet.conducteur.prenom }}
 					</a>
 					{% else %}
 					<button class="btn btn-outline-orange w-100 contacter-non-connecte">
-						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom }}
+						<i class="bi bi-chat-dots"></i> Contacter {{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : trajet.conducteur.prenom }}
 					</button>
 					{% endif %}
 				</div>
@@ -129,9 +131,7 @@
 					</div>
 
 					<div class="d-flex align-items-center mb-3">
-						<img src="{{ asset('images/profil.png') }}" class="rounded-circle me-2"
-							style="width: 30px; height: 30px;">
-						<span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
+						{{ avatar.formatSimple(trajet.conducteur, 30,0,1) }}<span class="ms-2">{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
 					</div>
 
 					<div class="border-top pt-3 mt-3">
@@ -263,151 +263,103 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {# ... Le reste des scripts (Leaflet, Sticky, etc.) reste inchangé ... #}
 <script>
-	document.addEventListener("DOMContentLoaded", function () {
-		let depart = "{{ trajet.depart|e('js') }}";
-		let arrivee = "{{ trajet.arrivee|e('js') }}";
+document.addEventListener("DOMContentLoaded", function () {
+	let depart = "{{ trajet.depart|e('js') }}";
+	let arrivee = "{{ trajet.arrivee|e('js') }}";
+	const heureDepart = "{{ trajet.heureTrajet|date('H:i') }}";
 
-		const heureDepart = "{{ trajet.heureTrajet|date('H:i') }}"; // Format HH:mm
+	const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
 
-		const corrections = {
-			"Mtsamoudou": "M'tsamoudou",
-			"Mtsahara": "M'tsahara",
-			"Mtsamboro": "M'tsamboro",
-			"Mtsangadoua": "M'tsangadoua",
-			"Mtsangamboua": "M'tsangamboua",
-			"Mtsapéré": "M'tsapéré",
-			"MTsangamouji": "M'Tsangamouji"
-		};
+	const map = L.map('map').setView([-12.8, 45.2], 10);
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; OpenStreetMap contributors'
+	}).addTo(map);
 
-		if (corrections[depart])
-			depart = corrections[depart];
+	const icons = {
+		depart: L.icon({
+			iconUrl: '/images/marker_depart_25_41.png', // Ton icône personnalisée
+			shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+			iconSize: [25, 41],
+			iconAnchor: [12, 41],
+			popupAnchor: [1, -34],
+			shadowSize: [41, 41]
+		}),
+		arrivee: L.icon({
+			iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+			shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+			iconSize: [25, 41],
+			iconAnchor: [12, 41],
+			popupAnchor: [1, -34],
+			shadowSize: [41, 41]
+		})
+	};
 
-		if (corrections[arrivee])
-			arrivee = corrections[arrivee];
-
-
-		const apiKey = '5b3ce3597851110001cf6248c90e14bce4464ae992638cb4242e3350';
-
-		const map = L.map('map').setView([
-			-12.8, 45.2
-		], 10);
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
-
-		const icons = {
-			green: L.icon(
-				{
-					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-					iconSize: [
-						25, 41
-					],
-					iconAnchor: [
-						12, 41
-					],
-					popupAnchor: [
-						1, -34
-					],
-					shadowSize: [41, 41]
+	function geocode(address) {
+		return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Mayotte')}`)
+			.then(res => res.json())
+			.then(data => {
+				if (data.length > 0) {
+					return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+				} else {
+					throw new Error('Adresse non trouvée : ' + address);
 				}
-			),
-			red: L.icon(
-				{
-					iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-					shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-					iconSize: [
-						25, 41
-					],
-					iconAnchor: [
-						12, 41
-					],
-					popupAnchor: [
-						1, -34
-					],
-					shadowSize: [41, 41]
-				}
-			)
-		};
+			});
+	}
 
-		function geocode(address) {
-			return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)
-				}`).then(res => res.json()).then(data => {
-					if (data.length > 0) {
-						return [
-							parseFloat(data[0].lon),
-							parseFloat(data[0].lat)
-						];
-					} else {
-						throw new Error('Adresse non trouvée : ' + address);
-					}
-				});
-		}
+	Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
+		const [from, to] = coords;
 
-		Promise.all([geocode(depart), geocode(arrivee)]).then(coords => {
-			const [from, to] = coords;
+		// Ajout des marqueurs
+		L.marker([from[1], from[0]], { icon: icons.depart }).addTo(map).bindPopup("Départ : " + depart);
+		L.marker([to[1], to[0]], { icon: icons.arrivee }).addTo(map).bindPopup("Arrivée : " + arrivee);
 
-			L.marker([
-				from[1], from[0]
-			], { icon: icons.green }).addTo(map).bindPopup("Départ : " + depart);
-			L.marker([
-				to[1], to[0]
-			], { icon: icons.red }).addTo(map).bindPopup("Arrivée : " + arrivee);
+		// Tracé de l'itinéraire avec OpenRouteService
+		fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': apiKey
+			},
+			body: JSON.stringify({ coordinates: [from, to] })
+		})
+		.then(res => res.json())
+		.then(data => {
+			const route = L.geoJSON(data, {
+				style: { color: 'orange', weight: 5 }
+			}).addTo(map);
 
-			fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': apiKey
-				},
-				body: JSON.stringify(
-					{
-						coordinates: [from, to]
-					}
-				)
-			}).then(res => res.json()).then(data => {
-				const route = L.geoJSON(data, {
-					style: {
-						color: 'orange',
-						weight: 5
-					}
-				}).addTo(map);
+			const summary = data.features[0].properties.summary;
+			const distanceKm = (summary.distance / 1000).toFixed(1);
+			const durationSec = summary.duration;
+			const heures = Math.floor(durationSec / 3600);
+			const minutes = Math.round((durationSec % 3600) / 60);
 
-				const summary = data.features[0].properties.summary;
+			// Affichage durée estimée
+			let texteDuree = '';
+			if (heures > 0) texteDuree += `${heures} h `;
+			texteDuree += `${minutes} min`;
+			document.getElementById('temps-trajet').textContent = texteDuree;
 
-				// Affichage de la distance
-				const distanceKm = (summary.distance / 1000).toFixed(1);
-				// document.getElementById('distance-trajet').textContent = distanceKm + ' km';
+			// Heure d’arrivée
+			const [h, m] = heureDepart.split(':').map(Number);
+			const departDate = new Date();
+			departDate.setHours(h, m, 0);
+			const arriveeDate = new Date(departDate.getTime() + durationSec * 1000);
+			const hh = arriveeDate.getHours().toString().padStart(2, '0');
+			const mm = arriveeDate.getMinutes().toString().padStart(2, '0');
+			document.getElementById('arrivee-traject-time').textContent = `${hh}:${mm}`;
 
-				// Affichage de la durée
-				const durationSec = summary.duration;
-				const heures = Math.floor(durationSec / 3600);
-				const minutes = Math.round((durationSec % 3600) / 60);
-				let texteDuree = '';
-				if (heures > 0)
-					texteDuree += `${heures} h `;
-
-				texteDuree += `${minutes} min`;
-				document.getElementById('temps-trajet').textContent = texteDuree;
-
-				// Calcul de l'heure d'arrivée
-				const [h, m] = heureDepart.split(':').map(Number);
-				const departDate = new Date();
-				departDate.setHours(h, m, 0);
-				const arriveeDate = new Date(departDate.getTime() + durationSec * 1000);
-				const hh = arriveeDate.getHours().toString().padStart(2, '0');
-				const mm = arriveeDate.getMinutes().toString().padStart(2, '0');
-				document.getElementById('arrivee-traject-time').textContent = `${hh}:${mm}`;
-
-				// Affichage correct de la carte
-				setTimeout(() => {
-					map.invalidateSize();
-					map.fitBounds(route.getBounds(), {
-						padding: [30, 30]
-					});
-				}, 200);
-			}).catch(err => console.error('Erreur ORS :', err));
-		});
+			// Redimensionne la carte au tracé
+			setTimeout(() => {
+				map.invalidateSize();
+				map.fitBounds(route.getBounds(), { padding: [30, 30] });
+			}, 100);
+		})
+		.catch(err => console.error('Erreur ORS :', err));
 	});
+});
 </script>
+
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		const sticky = document.getElementById('reservation-sticky');

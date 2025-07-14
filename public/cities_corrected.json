@@ -1,0 +1,1071 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.7 375dc00a",
+  "osm3s": {
+    "timestamp_osm_base": "2025-07-06T16:20:46Z",
+    "timestamp_areas_base": "2025-07-06T14:11:16Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 246843429,
+      "lat": -12.7804136,
+      "lon": 45.2279761,
+      "tags": {
+        "addr:postcode": "97600",
+        "admin_level": "8",
+        "capital": "4",
+        "name": "Mamoudzou",
+        "name:ar": "مامودزو",
+        "name:el": "Μαμουντζού",
+        "name:fr": "Mamoudzou",
+        "name:he": "מאמודזו",
+        "name:lt": "Mamudzu",
+        "name:ru": "Мамудзу",
+        "name:swb": "Momoju",
+        "name:uk": "Мамудзу",
+        "place": "town",
+        "population": "71437",
+        "source": "Bing",
+        "website": "https://www.villedemamoudzou.fr/",
+        "wikidata": "Q132676",
+        "wikipedia": "fr:Mamoudzou"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1081882263,
+      "lat": -12.7045482,
+      "lon": 45.1221926,
+      "tags": {
+        "name": "Bandraboua",
+        "name:uk": "Бандрабуа",
+        "place": "town",
+        "population": "13989",
+        "postal_code": "97650",
+        "source": "Bing",
+        "wikidata": "Q691779",
+        "wikipedia": "fr:Bandraboua"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941947,
+      "lat": -12.8995921,
+      "lon": 45.0972850,
+      "tags": {
+        "name": "Moinatrindri",
+        "place": "village",
+        "population": "1054",
+        "source": "bing+wikipedia+INSEE"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941951,
+      "lat": -12.6813389,
+      "lon": 45.1000625,
+      "tags": {
+        "name": "Handréma",
+        "place": "village",
+        "population": "1829",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941953,
+      "lat": -12.9445438,
+      "lon": 45.1017630,
+      "tags": {
+        "name": "Mbouanatsa",
+        "place": "village",
+        "population": "215",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q6799767"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941973,
+      "lat": -12.7538017,
+      "lon": 45.2312179,
+      "tags": {
+        "name": "Majicavo-Lamir",
+        "place": "village",
+        "population": "2081",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q3280509"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941976,
+      "lat": -12.6888807,
+      "lon": 45.0743117,
+      "tags": {
+        "name": "Hamjago",
+        "place": "village",
+        "population": "1899",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941977,
+      "lat": -12.6810328,
+      "lon": 45.0832807,
+      "tags": {
+        "name": "M'Tsahara",
+        "place": "village",
+        "population": "2538",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q6930486"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941979,
+      "lat": -12.8228018,
+      "lon": 45.1064737,
+      "tags": {
+        "name": "Sohoa",
+        "place": "village",
+        "population": "1545",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q15278385"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941997,
+      "lat": -12.7871723,
+      "lon": 45.1326194,
+      "tags": {
+        "name": "Combani",
+        "place": "village",
+        "population": "6665",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230941999,
+      "lat": -12.7218733,
+      "lon": 45.1202720,
+      "tags": {
+        "name": "Dzoumogné",
+        "place": "village",
+        "population": "6075",
+        "ref:FR:FANTOIR": "97602B095P",
+        "source": "cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2016",
+        "wikidata": "Q3042251",
+        "wikipedia": "en:Dzoumogne"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942000,
+      "lat": -12.7118787,
+      "lon": 45.0513739,
+      "tags": {
+        "name": "M'Tsangadoua",
+        "place": "village",
+        "population": "1534",
+        "ref:FR:FANTOIR": "97601B450E",
+        "source": "cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2016",
+        "wikidata": "Q6930489",
+        "wikipedia": "en:Mtsangadoua"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942001,
+      "lat": -12.7348706,
+      "lon": 45.1989628,
+      "tags": {
+        "name": "Trévani",
+        "place": "village",
+        "population": "4022",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q7849153"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942002,
+      "lat": -12.9711781,
+      "lon": 45.1607517,
+      "tags": {
+        "name": "Dapani",
+        "name:en": "Dapani",
+        "name:fr": "Dapani",
+        "place": "village",
+        "population": "824",
+        "wikidata": "Q5221562",
+        "wikipedia": "en:Dapani"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942007,
+      "lat": -12.7893103,
+      "lon": 45.1275979,
+      "tags": {
+        "name": "Mroalé",
+        "place": "village",
+        "population": "833",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q6929665"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942009,
+      "lat": -12.9393877,
+      "lon": 45.1368889,
+      "tags": {
+        "name": "Tsimkoura",
+        "place": "village",
+        "population": "1406",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q7849677"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942010,
+      "lat": -12.7243245,
+      "lon": 45.0589372,
+      "tags": {
+        "name": "Acoua",
+        "name:ar": "أكوا",
+        "name:fr": "Acoua",
+        "name:uk": "Акуа",
+        "place": "town",
+        "population": "5192",
+        "postal_code": "97630",
+        "source": "Bing;Wikipedia",
+        "wikidata": "Q2086991",
+        "wikipedia": "fr:Acoua"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942015,
+      "lat": -12.8159683,
+      "lon": 45.1992405,
+      "tags": {
+        "name": "Tsoundzou 2",
+        "name:ar": "تسوندزو 2",
+        "name:fr": "Tsoundzou 2",
+        "place": "village",
+        "population": "2559",
+        "source": "Bing;INSEE"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942016,
+      "lat": -12.8920760,
+      "lon": 45.1419095,
+      "tags": {
+        "name": "Poroani",
+        "place": "village",
+        "population": "2297",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q7230247"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942017,
+      "lat": -12.8498235,
+      "lon": 45.1398664,
+      "tags": {
+        "name": "Ouangani",
+        "name:ar": "وانغاني",
+        "name:fr": "Ouangani",
+        "name:uk": "Уангані",
+        "place": "town",
+        "population": "10203",
+        "postal_code": "97670",
+        "source": "Bing",
+        "wikidata": "Q427213",
+        "wikipedia": "fr:Ouangani"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942019,
+      "lat": -12.9285408,
+      "lon": 45.1542131,
+      "tags": {
+        "name": "Mramadoudou",
+        "place": "village",
+        "population": "1423",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q787938"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942027,
+      "lat": -12.9292776,
+      "lon": 45.1763906,
+      "tags": {
+        "name": "Bambo-Est",
+        "place": "village",
+        "population": "613",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942028,
+      "lat": -12.9203660,
+      "lon": 45.1578754,
+      "tags": {
+        "name": "Malamani",
+        "place": "village",
+        "population": "779",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q15244104"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942029,
+      "lat": -12.9649896,
+      "lon": 45.1119005,
+      "tags": {
+        "name": "Kani-Bé",
+        "place": "village",
+        "population": "948",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q15233534"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942030,
+      "lat": -12.9037141,
+      "lon": 45.1013200,
+      "tags": {
+        "name": "Hagnoundrou",
+        "place": "village",
+        "population": "847",
+        "source": "Bing+wikipedia+INSEE",
+        "wikidata": "Q15222520"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942036,
+      "lat": -12.6898196,
+      "lon": 45.1086259,
+      "tags": {
+        "alt_name": "Mtsangamboua",
+        "name": "M'Tsangamboua",
+        "place": "village",
+        "population": "1304",
+        "ref:FR:FANTOIR": "97602B510R",
+        "source": "cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2016",
+        "wikidata": "Q6930490",
+        "wikipedia": "en:Mtsangamboua"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942038,
+      "lat": -12.7306024,
+      "lon": 45.1869349,
+      "tags": {
+        "name": "Kangani",
+        "place": "village",
+        "population": "1022",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q15233480"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942041,
+      "lat": -12.8323497,
+      "lon": 45.1149766,
+      "tags": {
+        "name": "Chiconi",
+        "name:ar": "شيكني",
+        "name:fr": "Chiconi",
+        "name:uk": "Шиконі",
+        "place": "town",
+        "population": "8295",
+        "postal_code": "97670",
+        "source": "Bing",
+        "wikidata": "Q2087010",
+        "wikipedia": "fr:Chiconi"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942044,
+      "lat": -12.9250979,
+      "lon": 45.1027849,
+      "tags": {
+        "name": "M'Zouazia",
+        "place": "village",
+        "population": "1159",
+        "source": "Bing+wikipedia+INSEE",
+        "wikidata": "Q6949492"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942055,
+      "lat": -12.9863933,
+      "lon": 45.1271445,
+      "tags": {
+        "name": "Passi-Kéli",
+        "place": "village",
+        "population": "419",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q7142886"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942058,
+      "lat": -12.8391335,
+      "lon": 45.1311297,
+      "tags": {
+        "name": "Barakani",
+        "place": "village",
+        "population": "3153",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q4858249"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942059,
+      "lat": -12.8446053,
+      "lon": 45.1165192,
+      "tags": {
+        "name": "Mangajou",
+        "place": "village",
+        "population": "1588",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942078,
+      "lat": -12.9107086,
+      "lon": 45.0801256,
+      "tags": {
+        "name": "Bouéni",
+        "name:ar": "بويني",
+        "name:fr": "Bouéni",
+        "name:uk": "Буені",
+        "place": "town",
+        "population": "6189",
+        "postal_code": "97620",
+        "source": "Bing",
+        "wikidata": "Q2087082",
+        "wikipedia": "fr:Bouéni"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942081,
+      "lat": -12.9625378,
+      "lon": 45.1736103,
+      "tags": {
+        "name": "M'Tsamoudou",
+        "place": "village",
+        "population": "1923",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942083,
+      "lat": -12.9354400,
+      "lon": 45.1492157,
+      "tags": {
+        "name": "Chirongui",
+        "name:ar": "شيرنغي",
+        "name:fr": "Chirongui",
+        "name:uk": "Широнгі",
+        "place": "village",
+        "population": "1643",
+        "postal_code": "97620",
+        "source": "Bing",
+        "wikidata": "Q2087001",
+        "wikipedia": "fr:Chirongui"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942084,
+      "lat": -12.9054739,
+      "lon": 45.1536316,
+      "tags": {
+        "name": "Miréréni",
+        "place": "village",
+        "population": "3364",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q6874970"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942092,
+      "lat": -12.7819359,
+      "lon": 45.2215397,
+      "tags": {
+        "name": "Cavani",
+        "place": "village",
+        "population": "9740",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q1051788",
+        "wikipedia": "fr:Edinson Cavani"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942095,
+      "lat": -12.7640920,
+      "lon": 45.0761774,
+      "tags": {
+        "name": "Chembenyoumba",
+        "place": "village",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942099,
+      "lat": -12.7908971,
+      "lon": 45.1768384,
+      "tags": {
+        "name": "Vahibé",
+        "place": "village",
+        "population": "6067",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q7908619"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942103,
+      "lat": -12.9794089,
+      "lon": 45.1234104,
+      "tags": {
+        "name": "M'Ronabéja",
+        "place": "village",
+        "population": "550",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q15260142"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942104,
+      "lat": -12.7897252,
+      "lon": 45.1038055,
+      "tags": {
+        "name": "Tsingoni",
+        "name:uk": "Тсенгоні",
+        "place": "town",
+        "population": "13934",
+        "postal_code": "97680",
+        "source": "Bing;Wikipedia",
+        "wikidata": "Q2087020",
+        "wikipedia": "fr:Tsingoni"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942105,
+      "lat": -12.8342807,
+      "lon": 45.1354533,
+      "tags": {
+        "name": "Coconi",
+        "place": "village",
+        "population": "241",
+        "source": "Bing;wikipedia",
+        "wikipedia": "fr:Coconi"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942108,
+      "lat": -12.9123008,
+      "lon": 45.1938968,
+      "tags": {
+        "name": "Bandrélé",
+        "name:ar": "باندريلي",
+        "name:fr": "Bandrélé",
+        "name:pl": "Bandrele",
+        "name:uk": "Бандреле",
+        "place": "town",
+        "population": "10282",
+        "postal_code": "97620",
+        "source": "Bing",
+        "wikidata": "Q2087100",
+        "wikipedia": "fr:Bandrele"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942110,
+      "lat": -12.9565222,
+      "lon": 45.1052606,
+      "tags": {
+        "name": "Kani-Kéli",
+        "name:ar": "كاني كيلي",
+        "name:fr": "Kani-Kéli",
+        "name:uk": "Кані-Келі",
+        "place": "town",
+        "population": "5507",
+        "postal_code": "97625",
+        "source": "Bing;Wikipedia",
+        "wikidata": "Q2087092",
+        "wikipedia": "fr:Kani-Kéli"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942128,
+      "lat": -12.6996969,
+      "lon": 45.0679904,
+      "tags": {
+        "name": "M'Tsamboro",
+        "name:uk": "Мтсамборо",
+        "place": "village",
+        "population": "7705",
+        "postal_code": "97630",
+        "source": "Bing;Wikipedia",
+        "wikidata": "Q745108",
+        "wikipedia": "fr:Mtsamboro"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942142,
+      "lat": -12.7344866,
+      "lon": 45.1631604,
+      "tags": {
+        "name": "Longoni",
+        "place": "village",
+        "population": "3983",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q6674199"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942149,
+      "lat": -12.7897733,
+      "lon": 45.1404833,
+      "tags": {
+        "name": "Miréréni",
+        "place": "village",
+        "population": "3364",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942183,
+      "lat": -12.7506904,
+      "lon": 45.0554761,
+      "tags": {
+        "name": "Mliha",
+        "place": "village",
+        "population": "495",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q3272353",
+        "wikipedia": "fr:M'liha"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942190,
+      "lat": -12.7357368,
+      "lon": 45.1397595,
+      "tags": {
+        "name": "Bouyouni",
+        "place": "village",
+        "population": "1948",
+        "ref:FR:FANTOIR": "97602B055W",
+        "source": "cadastre-dgi-fr source : Direction Générale des Finances Publiques - Cadastre. Mise à jour : 2016"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942194,
+      "lat": -12.9612834,
+      "lon": 45.1269186,
+      "tags": {
+        "name": "Choungui",
+        "place": "village",
+        "population": "753",
+        "source": "Bing+wikipedia",
+        "wikidata": "Q5105464"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942206,
+      "lat": -12.7357530,
+      "lon": 45.2067459,
+      "tags": {
+        "name": "Koungou",
+        "name:ar": "كونغو",
+        "name:fr": "Koungou",
+        "name:uk": "Коенгу",
+        "place": "town",
+        "population": "32156",
+        "postal_code": "97600",
+        "source": "Bing;Wikipedia",
+        "wikidata": "Q770411",
+        "wikipedia": "fr:Koungou"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942211,
+      "lat": -12.7442495,
+      "lon": 45.2190802,
+      "tags": {
+        "name": "Majicavo-Koropa",
+        "name:ar": "ماجيكافو كربا",
+        "name:fr": "Majicavo-Koropa",
+        "place": "town",
+        "population": "11698",
+        "source": "Bing",
+        "wikidata": "Q6737809",
+        "wikipedia": "fr:Majicavo-Koropa"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942215,
+      "lat": -12.8239072,
+      "lon": 45.1317017,
+      "tags": {
+        "name": "Kahani",
+        "place": "village",
+        "population": "3073",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942234,
+      "lat": -12.9243449,
+      "lon": 45.0898727,
+      "tags": {
+        "name": "Bambo-Ouest",
+        "place": "village",
+        "population": "364",
+        "source": "Bing+wikipedia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942236,
+      "lat": -12.7727280,
+      "lon": 45.2247989,
+      "tags": {
+        "alt_name": "Kaouéni",
+        "alt_name:fr": "Kaouéni",
+        "name": "Kawéni",
+        "name:ar": "كاويني",
+        "name:fr": "Kawéni",
+        "place": "town",
+        "population": "17060",
+        "source": "Bing",
+        "wikidata": "Q3194368",
+        "wikipedia": "fr:Kawéni"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1230942239,
+      "lat": -12.8518289,
+      "lon": 45.0993169,
+      "tags": {
+        "name": "Sada",
+        "name:ar": "سادا",
+        "name:fr": "Sada",
+        "place": "town",
+        "population": "11156",
+        "postal_code": "97640",
+        "source": "Bing",
+        "wikidata": "Q1920630",
+        "wikipedia": "fr:Sada (Mayotte)"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1790768455,
+      "lat": -12.7891649,
+      "lon": 45.1128458,
+      "tags": {
+        "name": "Hachénoi",
+        "place": "village",
+        "source": "BDOrtho IGN (2020) and Mapillary SIG_3CO (2022-10-26)"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1901406299,
+      "lat": -12.7601941,
+      "lon": 45.0876892,
+      "tags": {
+        "name": "M'Tsangamouji",
+        "name:ar": "متسنغموجي",
+        "name:fr": "M'Tsangamouji",
+        "name:pl": "M'Tsangamouji",
+        "name:uk": "М'тсангамужі",
+        "place": "town",
+        "population": "6432",
+        "postal_code": "97650",
+        "source": "Bing",
+        "wikidata": "Q955825",
+        "wikipedia": "fr:M'Tsangamouji"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2568554116,
+      "lat": -12.8674251,
+      "lon": 45.1955586,
+      "tags": {
+        "name": "Hajangoua",
+        "place": "village",
+        "population": "2130"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2724899719,
+      "lat": -12.7997413,
+      "lon": 45.1387835,
+      "tags": {
+        "name": "Boudraguela",
+        "place": "hamlet"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3928717654,
+      "lat": -12.9250733,
+      "lon": 45.1069202,
+      "tags": {
+        "name": "Majiméouni",
+        "place": "village",
+        "population": "388"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5134915763,
+      "lat": -12.9185981,
+      "lon": 45.1837099,
+      "tags": {
+        "name": "M'Tsatroundrou",
+        "place": "hamlet"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6334146086,
+      "lat": -12.8433081,
+      "lon": 45.1839954,
+      "tags": {
+        "name": "Dembéni",
+        "name:ar": "دمبيني",
+        "name:fr": "Dembéni",
+        "place": "village",
+        "population": "3799"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6355974561,
+      "lat": -12.8011275,
+      "lon": 45.2091600,
+      "tags": {
+        "name": "Passamainty",
+        "place": "village",
+        "population": "8430",
+        "postal_code": "97605",
+        "wikidata": "Q7142530",
+        "wikipedia": "fr:Passamaïnty"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6355990065,
+      "lat": -12.7892337,
+      "lon": 45.2206901,
+      "tags": {
+        "name": "M'Tsapéré",
+        "place": "village",
+        "population": "15880",
+        "postal_code": "97605",
+        "wikipedia": "fr:Mtsapéré"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6355996303,
+      "lat": -12.8072400,
+      "lon": 45.2051474,
+      "tags": {
+        "name": "Tsoundzou 1",
+        "name:ar": "تسوندزو 1",
+        "name:fr": "Tsoundzou 1",
+        "place": "village",
+        "population": "5570"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6356006973,
+      "lat": -12.8932327,
+      "lon": 45.2016941,
+      "tags": {
+        "name": "Nyambadao",
+        "place": "village",
+        "population": "1692"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6356022001,
+      "lat": -12.8812798,
+      "lon": 45.2149911,
+      "tags": {
+        "name": "Hamouro",
+        "place": "village",
+        "population": "1050"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6356029031,
+      "lat": -12.8365395,
+      "lon": 45.1716714,
+      "tags": {
+        "name": "Tsararano",
+        "place": "village",
+        "population": "4838"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6880894166,
+      "lat": -12.7883902,
+      "lon": 45.2725533,
+      "tags": {
+        "name": "Labattoir",
+        "place": "village",
+        "population": "17739",
+        "postal_code": "97615",
+        "wikidata": "Q15241190",
+        "wikipedia": "fr:Labattoir"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6880903494,
+      "lat": -12.7821510,
+      "lon": 45.2556923,
+      "tags": {
+        "name": "Dzaoudzi",
+        "name:fr": "Dzaoudzi",
+        "place": "town",
+        "population": "17831",
+        "postal_code": "97615",
+        "wikidata": "Q846048",
+        "wikipedia": "fr:Dzaoudzi"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6880916624,
+      "lat": -12.7983446,
+      "lon": 45.2746515,
+      "tags": {
+        "name": "Pamandzi",
+        "name:fr": "Pamandzi",
+        "place": "town",
+        "population": "11442",
+        "postal_code": "97610",
+        "wikidata": "Q846048",
+        "wikipedia": "fr:Dzaoudzi"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7044876534,
+      "lat": -12.7592190,
+      "lon": 45.0701861,
+      "tags": {
+        "name": "Tanaraki",
+        "place": "hamlet"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7868868960,
+      "lat": -12.7957353,
+      "lon": 45.2154631,
+      "tags": {
+        "name": "Doujani",
+        "place": "village",
+        "postal_code": "97600"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7889478000,
+      "lat": -12.9882479,
+      "lon": 45.1371679,
+      "tags": {
+        "name": "M'Bouini",
+        "place": "village",
+        "population": "524",
+        "source": "insee rp 2017"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7889486262,
+      "lat": -12.8369679,
+      "lon": 45.1586516,
+      "tags": {
+        "name": "Ongojou",
+        "place": "village",
+        "population": "2111",
+        "source": "insee rp 2017"
+      }
+    },
+    {
+      "type": "node",
+      "id": 12467002729,
+      "lat": -12.9389131,
+      "lon": 45.1037693,
+      "tags": {
+        "name": "M'Tsanga M'Titi",
+        "place": "hamlet"
+      }
+    }
+  ]
+}

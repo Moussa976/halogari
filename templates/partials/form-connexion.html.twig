@@ -1,49 +1,60 @@
 <form class="bg-light p-4 rounded shadow-sm border" method="post" action="{{ path('app_login') }}">
-    {% if error is defined and error %}
-        <div class="alert alert-danger text-center">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            {{ error.messageKey|trans(error.messageData, 'security') }}
-        </div>
-    {% endif %}
+	{% if error is defined and error %}
+		<div class="alert alert-danger text-center">
+			<i class="bi bi-exclamation-triangle-fill"></i>
+			{{ error.messageKey|trans(error.messageData, 'security') }}
+		</div>
+	{% endif %}
 
-    <div class="mb-3">
-        <label for="inputEmail" class="form-label">Adresse e-mail :</label>
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-            <input type="email" id="inputEmail" name="email" class="form-control" placeholder="exemple@halogari.yt"
-                   value="{{ last_username|default('') }}" required autofocus>
-        </div>
-    </div>
+	<div class="mb-3">
+		<label for="inputEmail" class="form-label">Adresse e-mail :</label>
+		<div class="input-group">
+			<span class="input-group-text">
+				<i class="bi bi-envelope"></i>
+			</span>
+			<input type="email" id="inputEmail" name="email" class="form-control" placeholder="exemple@halogari.yt" value="{{ last_username|default('') }}" required autofocus>
+		</div>
+	</div>
 
-    <div class="mb-3">
-        <label for="inputPassword" class="form-label">Mot de passe :</label>
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-            <input type="password" id="inputPassword" name="password" class="form-control"
-                   placeholder="••••••••••••" required>
-        </div>
-    </div>
+	<div class="mb-3">
+		<label for="inputPassword" class="form-label">Mot de passe :</label>
+		<div class="input-group">
+			<span class="input-group-text">
+				<i class="bi bi-lock-fill"></i>
+			</span>
+			<input type="password" id="inputPassword" name="password" class="form-control" placeholder="••••••••••••" required>
+			<button class="btn btn-outline-secondary toggle-password" type="button" data-target="inputPassword">
+				<i class="bi bi-eye-slash-fill"></i>
+			</button>
+		</div>
+	</div>
 
-    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+	<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-    <div class="text-end mb-3">
-        <a class="link-secondary text-decoration-none" href="{{ path('app_forgot_password_request') }}">
-            <small><i class="bi bi-question-circle"></i> Mot de passe oublié ?</small>
-        </a>
-    </div>
+	<div class="text-end mb-3">
+		<a class="link-secondary text-decoration-none" href="{{ path('app_forgot_password_request') }}">
+			<small>
+				<i class="bi bi-question-circle"></i>
+				Mot de passe oublié ?</small>
+		</a>
+	</div>
 
-    <div class="d-grid mb-4">
-        <button type="submit" class="btn btn-orange fw-bold">
-            <i class="bi bi-box-arrow-in-right"></i> Se connecter
-        </button>
-    </div>
+	<div class="d-grid mb-4">
+		<button type="submit" class="btn btn-orange fw-bold">
+			<i class="bi bi-box-arrow-in-right"></i>
+			Se connecter
+		</button>
+	</div>
 
-    <hr>
+	<hr>
 
-    <p class="text-center"><small>Pas encore de compte ?</small></p>
-    <div class="text-center">
-        <a class="btn btn-success" href="{{ path('app_register') }}">
-            <i class="bi bi-person-plus-fill"></i> S'inscrire
-        </a>
-    </div>
+	<p class="text-center">
+		<small>Pas encore de compte ?</small>
+	</p>
+	<div class="text-center">
+		<a class="btn btn-success" href="{{ path('app_register') }}">
+			<i class="bi bi-person-plus-fill"></i>
+			S'inscrire
+		</a>
+	</div>
 </form>

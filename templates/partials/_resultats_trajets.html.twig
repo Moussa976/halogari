@@ -1,0 +1,52 @@
+{% import 'partials/avatar.html.twig' as avatar %}
+{% set nowDate = "now"|date("Y-m-d") %}
+{% set nowTime = "now"|date("H:i") %}
+
+{% if trajets is empty %}
+    <div class="text-center my-5">
+        <p class="lead">Aucun covoiturage trouvé</p>
+    </div>
+{% else %}
+    <div style="overflow-y: auto; max-height: 60vh;">
+        {% for trajet in trajets %}
+            {% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
+            {% set trajetHeure = trajet.heureTrajet|date("H:i") %}
+            {% set estPasse = (trajetDate == nowDate and trajetHeure < nowTime) %}
+
+            <a href="{% if not estPasse %}{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee, nbPlaceReservee: places }) }}{% else %}#{% endif %}"
+               class="listtrajet text-decoration-none text-dark {% if estPasse %}trajet-passe{% endif %}" data-trajet-id="{{ trajet.id }}">
+                <div class="card mb-3 p-0 shadow-sm {% if estPasse %}opacity-50{% endif %}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3 col-md-2">{{ trajet.heureTrajet|date('H:i') }}</div>
+                            <div class="col-6 col-md-7 border-start">
+                                <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong>
+                            </div>
+                            <div class="col-3 text-end">
+                                {% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
+                                {% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
+                                <span class="prix-euro inline">
+                                    <strong>{{ prixEntier }}</strong><sup>,{{ prixDecimal }}</sup>€</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted border-top d-flex justify-content-between align-items-center">
+                        <div>
+                            {{ avatar.formatSimple(trajet.conducteur, 30, 0, 1) }}
+                            {{ trajet.conducteur.prenom ?? '...' }} |
+                            {{ trajet.placesDisponibles }}
+                            {% if trajet.placesDisponibles < 2 %}
+                                place disponible
+                            {% else %}
+                                places disponibles
+                            {% endif %}
+                        </div>
+                        {% if estPasse %}
+                            <span class="badge bg-secondary">Déjà passé</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}

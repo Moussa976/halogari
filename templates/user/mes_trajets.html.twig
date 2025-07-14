@@ -2,6 +2,14 @@
 
 {% block title %}HaloGari | Mes trajets{% endblock %}
 
+{% block stylesheets %}
+<style>
+	.fs-9 {
+		font-size: 9px !important;
+	}
+</style>
+{% endblock %}
+
 {% set statutLabels = {
     'annule': 'Annulé',
     'passe': 'Passé',
@@ -17,19 +25,19 @@
     <!-- Onglets de filtrage Bootstrap -->
     <ul class="nav nav-tabs mb-4 justify-content-center" id="filtreTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-all" type="button" onclick="filterTrajets('all')">Tous</button>
+            <button class="nav-link fs-9 active" id="tab-all" type="button" onclick="filterTrajets('all')">Tous</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-avenir" type="button" onclick="filterTrajets('avenir')">À venir</button>
+            <button class="nav-link fs-9" id="tab-avenir" type="button" onclick="filterTrajets('avenir')">À venir</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-en_cours" type="button" onclick="filterTrajets('en_cours')">En cours</button>
+            <button class="nav-link fs-9" id="tab-en_cours" type="button" onclick="filterTrajets('en_cours')">En cours</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-passe" type="button" onclick="filterTrajets('passe')">Passés</button>
+            <button class="nav-link fs-9" id="tab-passe" type="button" onclick="filterTrajets('passe')">Passés</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-annule" type="button" onclick="filterTrajets('annule')">Annulés</button>
+            <button class="nav-link fs-9" id="tab-annule" type="button" onclick="filterTrajets('annule')">Annulés</button>
         </li>
     </ul>
 

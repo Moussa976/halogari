@@ -14,8 +14,7 @@
 				{% for conv in conversations %}
 					<a href="{{ path('app_conversation', { userId: conv.user.id, trajetId: conv.trajet.id }) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
 						<div>
-							<strong>{{ conv.user.prenom }}
-								{{ conv.user.nom }}</strong><br>
+							<strong>{{ conv.user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : conv.user.prenom }}</strong><br>
 							<small class="text-muted">Trajet :
 								{{ conv.trajet.depart }}
 								→

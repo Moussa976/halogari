@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Utils\DateHelper;
 
 class MessageController extends AbstractController
 {
@@ -125,10 +126,13 @@ class MessageController extends AbstractController
         }
         $em->flush();
 
+        $ladateTrajet = DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y');
+
         return $this->render('message/conversation.html.twig', [
             'messages' => $messages,
             'otherUser' => $otherUser,
             'trajet' => $trajet,
+            'ladateTrajet' => $ladateTrajet
         ]);
     }
 

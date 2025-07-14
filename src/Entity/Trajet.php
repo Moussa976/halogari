@@ -22,6 +22,7 @@ class Trajet
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="trajets")
+     * @ORM\JoinColumn(nullable=false, onDelete="RESTRICT")
      */
     private $conducteur;
 

@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur serveur - HaloGari{% endblock %}
+
+{% block body %}
+<div class="container text-center py-5">
+  <img src="{{ asset('images/errors/500.png') }}" alt="Erreur 500" class="img-fluid mb-4" style="max-width: 300px;">
+  <h1 class="display-4 text-secondary">500</h1>
+  <p class="lead">Une erreur interne s’est produite sur le serveur. 😵‍💫</p>
+  <a href="{{ path('app_home') }}" class="btn btn-outline-secondary mt-3">Retour à l’accueil</a>
+</div>
+{% endblock %}

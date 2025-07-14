@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Conversation avec {{ otherUser.prenom }}{% endblock %}
+{% block title %}Conversation avec {{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}{% endblock %}
 
 {% block body %}
 <div class="container py-5">
-    <h3 class="mb-4">Conversation avec {{ otherUser.prenom }}</h3>
+    <h3 class="mb-4">Conversation avec {{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}</h3>
     <div class="mb-4 p-3 bg-light rounded border">
         <strong>Trajet :</strong> {{ trajet.depart }} → {{ trajet.arrivee }} <br>
-        <strong>Départ :</strong> {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}
+        <strong>Départ :</strong> {{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}
     </div>
     <div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto;" id="messages-container">
         {% for message in messages %}

@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement autorisé - HaloGari{% endblock %}
+
+{% block body %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="text-center">
+
+    <h2 class="text-success mb-4">
+      ✅ Paiement autorisé avec succès !
+    </h2>
+
+    <p class="lead">
+      Votre réservation a bien été enregistrée.<br>
+      Vous serez débité plus tard, une fois le trajet confirmé.
+    </p>
+
+    <a href="{{ path('app_mes_reservations') }}" class="btn btn-primary mt-4">
+      Voir mes réservations
+    </a>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accès interdit - HaloGari{% endblock %}
+
+{% block body %}
+<div class="container text-center py-5">
+  <img src="{{ asset('images/errors/403.png') }}" alt="Erreur 403" class="img-fluid mb-4" style="max-width: 300px;">
+  <h1 class="display-4 text-warning">403</h1>
+  <p class="lead">⛔ Vous n'avez pas la permission d’accéder à cette page.</p>
+  <a href="{{ path('app_home') }}" class="btn btn-outline-warning mt-3">Retour à l’accueil</a>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\Trajet;
 use App\Repository\TrajetRepository;
@@ -99,26 +100,42 @@ class ReservationController extends AbstractController
     /**
      * @Route("/reservation/{id}/accepter", name="reservation_accepter")
      */
-    public function accepter(int $id, ReservationRepository $reservationRepository, TrajetRepository $trajetRepository, EntityManagerInterface $em, NotificationService $notifier): Response
-    {
+    public function accepter(
+        int $id,
+        ReservationRepository $reservationRepository,
+        TrajetRepository $trajetRepository,
+        EntityManagerInterface $em,
+        NotificationService $notifier
+    ): Response {
         $reservation = $reservationRepository->find($id);
         $trajet = $trajetRepository->find($reservation->getTrajet()->getId());
 
+        // 🔒 Vérification que le conducteur est bien l'utilisateur connecté
         if ($trajet->getConducteur() !== $this->getUser()) {
             throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à effectuer cette action.");
         }
 
+        // ✅ Mise à jour du statut de la réservation
         $reservation->setStatut('acceptee');
 
-        // ✅ Aucune mise à jour des places ici : elles sont déjà bloquées à la création
+        // 💳 Création du paiement associé
+        $paiement = new Paiement();
+        $paiement->setMontant($reservation->getPrixTotal()); // total = prix * nb places
+        $paiement->setStatut('en_attente');
+        $paiement->setReservation($reservation);
 
+        $em->persist($paiement); // On persiste explicitement (pas en cascade)
+
+        // 💾 Enregistrement en base
         $em->flush();
 
+        // 📩 Notification au passager
         $this->addFlash('success', 'Réservation acceptée avec succès.');
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }
+
 
     /**
      * @Route("/reservation/{id}/refuser", name="reservation_refuser")

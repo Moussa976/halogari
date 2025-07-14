@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ReservationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -39,14 +41,6 @@ class Reservation
     private $places;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     *
-     * Ce champ permet de stocker l'identifiant du PaymentIntent Stripe.
-     * Il est utilisé pour autoriser, capturer ou annuler un paiement.
-     */
-    private $paymentIntentId = null;
-
-    /**
      * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
      */
     private $prix;
@@ -60,6 +54,21 @@ class Reservation
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Paiement::class, mappedBy="reservation", cascade={"persist", "remove"})
+     */
+    private $paiement;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Commission::class, mappedBy="reservation")
+     */
+    private $commissions;
+
+    public function __construct()
+    {
+        $this->commissions = new ArrayCollection();
+    }
 
     /**
      * @ORM\PrePersist
@@ -135,17 +144,6 @@ class Reservation
         return $this;
     }
 
-    public function getPaymentIntentId(): ?string
-    {
-        return $this->paymentIntentId;
-    }
-
-    public function setPaymentIntentId(?string $paymentIntentId): self
-    {
-        $this->paymentIntentId = $paymentIntentId;
-        return $this;
-    }
-
     public function getPrix(): ?string
     {
         return $this->prix;
@@ -178,6 +176,53 @@ class Reservation
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getPaiement(): ?Paiement
+    {
+        return $this->paiement;
+    }
+
+    public function setPaiement(Paiement $paiement): self
+    {
+        // set the owning side of the relation if necessary
+        if ($paiement->getReservation() !== $this) {
+            $paiement->setReservation($this);
+        }
+
+        $this->paiement = $paiement;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commission>
+     */
+    public function getCommissions(): Collection
+    {
+        return $this->commissions;
+    }
+
+    public function addCommission(Commission $commission): self
+    {
+        if (!$this->commissions->contains($commission)) {
+            $this->commissions[] = $commission;
+            $commission->setReservation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommission(Commission $commission): self
+    {
+        if ($this->commissions->removeElement($commission)) {
+            // set the owning side to null (unless already changed)
+            if ($commission->getReservation() === $this) {
+                $commission->setReservation(null);
+            }
+        }
+
         return $this;
     }
 

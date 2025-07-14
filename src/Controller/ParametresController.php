@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ParametresController extends AbstractController
@@ -187,13 +188,28 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres/delete", name="app_account_delete", methods={"POST"})
      */
-    public function deleteAccount(Request $request, EntityManagerInterface $em): Response
+    public function deleteAccount(Request $request, EntityManagerInterface $em, TokenStorageInterface $tokenStorage): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
         $user = $this->getUser();
-        $em->remove($user);
+
+        // Ajoute une vérification CSRF si tu veux renforcer la sécurité
+        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_account_settings');
+        }
+
+        // Anonymisation
+        $user->anonymiser(); // Méthode à ajouter dans User.php (voir plus bas)
+
+        // Déconnexion
+        $tokenStorage->setToken(null);
+        $request->getSession()->invalidate();
+
         $em->flush();
 
-        $this->addFlash('info', 'Votre compte a été supprimé.');
+        $this->addFlash('info', 'Votre compte a été supprimé (anonymisé).');
 
         return $this->redirectToRoute('app_home');
     }

@@ -1,0 +1,56 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Utilisateurs | Admin
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid px-4">
+		<h1 class="h3 mb-4">Utilisateurs enregistrés</h1>
+
+		<div class="card">
+			<div class="card-body table-responsive">
+				<table class="table table-hover align-middle">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Nom</th>
+							<th>Prénom</th>
+							<th>Email</th>
+							<th>Téléphone</th>
+							<th>Rôles</th>
+							<th>Date d’inscription</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for user in users %}
+							<tr>
+								<td>{{ user.id }}</td>
+								<td>{{ avatar.formatSimple(user, 40,0,1) }} {{ user.nom }}</td>
+								<td>{{ user.prenom }}</td>
+								<td>{{ user.email }}</td>
+								<td>{{ user.telephone }}</td>
+								<td>
+									{% for role in user.roles %}
+										<span class="badge bg-secondary">{{ role }}</span>
+									{% endfor %}
+								</td>
+								<td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '-' }}</td>
+								<td>
+									<a href="{{ path('admin_user_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary">
+										Voir
+									</a>
+								</td>
+							</tr>
+						{% else %}
+							<tr>
+								<td colspan="8" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 {# === 1. SCRIPTS EXTERNES === #}
 <!-- Librairies JavaScript principales -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"> </script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
@@ -14,114 +14,120 @@
 <script>
   "use strict";
 
-  $(document).ready(function () {
-    // Chargement dynamique des villages depuis cities.json pour autocomplete
-    $.getJSON('/cities.json')
-      .done(function (data) {
-        const options = data.map(v => ({ id: v.name, text: v.name }));
+  $(document).ready(function () { // Chargement dynamique des villages depuis cities.json pour autocomplete
+    $.getJSON('/cities.json').done(function (data) {
+      const options = data.map(v => ({ name: v.name, name_2: v.name_2 || v.name }));
 
-        // Transformation de tous les champs .villages en <select> enrichi avec Select2
-        $(".villages").each(function () {
-          const $el = $(this);
-          const tagName = $el.prop("tagName").toLowerCase();
-          const currentValue = $el.attr("data-current") || $el.val();
-          const name = $el.attr("name");
-          const id = $el.attr("id") || name;
-          const placeholder = $el.attr("placeholder") || "Choisissez un village";
-          let $select;
+      // Transformation de tous les champs .villages en <select> enrichi avec Select2
+      $(".villages").each(function () {
+        const $el = $(this);
+        const tagName = $el.prop("tagName").toLowerCase();
+        const currentValue = $el.attr("data-current") || $el.val();
+        const name = $el.attr("name");
+        const id = $el.attr("id") || name;
+        const placeholder = $el.attr("placeholder") || "Choisissez un village";
+        let $select;
 
-          // Si déjà un <select>, on le vide
-          if (tagName === "select") {
-            $select = $el;
-            $select.empty();
-          } else {
-            // Sinon, on crée un nouveau <select> à la place d’un <input>
-            $select = $('<select>', {
-              id: id,
-              name: name,
-              class: "form-select villages",
-              required: true
-            });
-            const $wrapper = $el.closest(".form-floating");
-            $el.remove();
-            $wrapper.prepend($select);
-            $wrapper.append(`<label for="${id}">${placeholder}</label>`);
-          }
-
-          // Placeholder vide
-          $select.append('<option></option>');
-
-          // Ajout des options en les comparant à la valeur actuelle
-          let foundInList = false;
-          options.forEach(opt => {
-            const isSelected = opt.text === currentValue;
-            if (isSelected) foundInList = true;
-            $select.append(new Option(opt.text, opt.text, false, isSelected));
+        // Remplacement ou réinitialisation du <select>
+        if (tagName === "select") {
+          $select = $el;
+          $select.empty();
+        } else {
+          $select = $('<select>', {
+            id: id,
+            name: name,
+            class: "form-select villages",
+            required: true
           });
+          const $wrapper = $el.closest(".form-floating");
+          $el.remove();
+          $wrapper.prepend($select);
+          $wrapper.append(`<label for="${id}">${placeholder}</label>`);
+        }
 
-          // Si valeur non trouvée : l’ajouter quand même (cas de valeur personnalisée)
-          if (!foundInList && currentValue) {
-            $select.append(new Option(currentValue, currentValue, true, true));
-          }
+        // Ajout de l'option vide
+        $select.append('<option></option>');
 
-          // Initialisation de Select2 avec configuration personnalisée
-          $select.select2({
-            placeholder: placeholder,
-            allowClear: true,
-            width: "100%",
-            language: "fr"
-          }).on('select2:open', function () {
-            const searchInput = document.querySelector('.select2-search__field');
-            if (searchInput) {
-              searchInput.setAttribute('placeholder', 'Recherchez le nom ...');
-              searchInput.classList.add('form-control');
-            }
-            $('.select2-results__options').addClass('bg-vert text-white');
-          });
+        let foundInList = false;
 
-          $select.val(currentValue).trigger("change");
+        // Ajout des villages : value = name, affiché = name_2
+        options.forEach(opt => {
+          const value = opt.name;
+          const label = opt.name_2 || value;
+          const isSelected = value === currentValue;
+
+          if (isSelected) foundInList = true;
+
+          $select.append(new Option(label, value, false, isSelected));
         });
 
-        // Validation du formulaire : cohérence entre champs + erreurs bloquantes
-        $("#form-recherche").on("submit", function (e) {
-          let erreur = false;
+        // Cas spécial : valeur personnalisée déjà présente
+        if (!foundInList && currentValue) {
+          $select.append(new Option(currentValue, currentValue, true, true));
+        }
 
-          // Validation des villages sélectionnés
-          $(".villages").each(function () {
-            const valeur = $(this).val();
-            const valide = valeur && options.some(opt => opt.text === valeur);
-            if (!valide) {
-              $(this).addClass("is-invalid");
-              erreur = true;
-            } else {
-              $(this).removeClass("is-invalid");
-            }
-          });
-
-          // Blocage si départ et arrivée sont identiques
-          const depart = $("select[name='select_departure']").val();
-          const arrivee = $("select[name='select_arrival']").val();
-          if (depart && arrivee && depart === arrivee) {
-            erreur = true;
-            Swal.fire({ icon: "warning", title: "Villages identiques", text: "Le village de départ et d'arrivée ne peuvent pas être identiques." });
-            e.preventDefault(); return;
+        // Init Select2
+        $select.select2({
+          placeholder: placeholder,
+          allowClear: true,
+          width: "100%",
+          language: "fr"
+        }).on('select2:open', function () {
+          const searchInput = document.querySelector('.select2-search__field');
+          if (searchInput) {
+            searchInput.setAttribute('placeholder', 'Recherchez le nom ...');
+            searchInput.classList.add('form-control');
           }
-
-          // Vérification de la date
-          const dateTrajet = $("input[name='date_trajet']").val();
-          if (!dateTrajet) {
-            e.preventDefault();
-            Swal.fire({ icon: "warning", title: "Date manquante", text: "Veuillez sélectionner une date de trajet." });
-            return;
-          }
-
-          // Erreur globale
-          if (erreur) {
-            e.preventDefault();
-            Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez sélectionner des villages valides." });
-          }
+          $('.select2-results__options').addClass('bg-vert text-white');
         });
+
+        // Rafraîchit la valeur
+        $select.val(currentValue).trigger("change");
       });
+
+
+
+      // Validation du formulaire : cohérence entre champs + erreurs bloquantes
+      $("#form-recherche").on("submit", function (e) {
+        let erreur = false;
+
+        // Validation des villages sélectionnés
+        $(".villages").each(function () {
+          const valeur = $(this).val();
+          const valide = valeur && options.some(opt => opt.text === valeur);
+          if (valide) {
+            $(this).addClass("is-invalid");
+            erreur = true;
+          } else {
+            $(this).removeClass("is-invalid");
+          }
+        });
+
+        // Blocage si départ et arrivée sont identiques
+        const depart = $("select[name='select_departure']").val();
+        const arrivee = $("select[name='select_arrival']").val();
+        if (depart && arrivee && depart === arrivee) {
+          erreur = true;
+          Swal.fire({ icon: "warning", title: "Villages identiques", text: "Le village de départ et d'arrivée ne peuvent pas être identiques." });
+          e.preventDefault();
+          return;
+        }
+
+        // Vérification de la date
+        const dateTrajet = $("input[name='date_trajet']").val();
+        if (!dateTrajet) {
+          e.preventDefault();
+          Swal.fire({ icon: "warning", title: "Date manquante", text: "Veuillez sélectionner une date de trajet." });
+          return;
+        }
+
+        // Erreur globale
+        if (erreur) {
+          e.preventDefault();
+          Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez sélectionner des villages valides." });
+        }
+      });
+    });
 
     // Initialisation du datepicker (flatpickr)
     flatpickr(".dateDepart", {
@@ -139,9 +145,7 @@
   // Enregistrement du service worker (PWA + notifications push)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/js/service-worker.js')
-        .then(() => console.log('✅ Service Worker enregistré'))
-        .catch(err => console.error('❌ Erreur SW', err));
+      navigator.serviceWorker.register('/js/service-worker.js').then(() => console.log('✅ Service Worker enregistré')).catch(err => console.error('❌ Erreur SW', err));
     });
   }
 </script>
@@ -164,9 +168,7 @@
           btn.disabled = true;
           deferredPrompt.prompt();
           deferredPrompt.userChoice.then((choiceResult) => {
-            console.log(choiceResult.outcome === 'accepted'
-              ? '✅ L’app HaloGari a été installée'
-              : '❌ Installation refusée');
+            console.log(choiceResult.outcome === 'accepted' ? '✅ L’app HaloGari a été installée' : '❌ Installation refusée');
             deferredPrompt = null;
           });
         });
@@ -179,21 +181,19 @@
 <script>
   // Vérifie les nouveaux messages toutes les 30 secondes
   function checkNewMessages() {
-    fetch('/user/messages/unread')
-      .then(response => response.json())
-      .then(data => {
-        const badges = document.querySelectorAll('.message-notif');
-        badges.forEach(badge => {
-          if (data.unreadCount > 0) {
-            badge.textContent = data.unreadCount;
-            badge.style.display = 'inline-block';
-            badge.dataset.notified = "1";
-          } else {
-            badge.style.display = 'none';
-            badge.dataset.notified = "";
-          }
-        });
+    fetch('/user/messages/unread').then(response => response.json()).then(data => {
+      const badges = document.querySelectorAll('.message-notif');
+      badges.forEach(badge => {
+        if (data.unreadCount > 0) {
+          badge.textContent = data.unreadCount;
+          badge.style.display = 'inline-block';
+          badge.dataset.notified = "1";
+        } else {
+          badge.style.display = 'none';
+          badge.dataset.notified = "";
+        }
       });
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -236,3 +236,16 @@
 
 {# === 6. NOTIFICATIONS PUSH (fichier compilé séparé) === #}
 <script src="{{ path('js_push_notif') }}"></script>
+
+
+{# === 7. Voir le mot passe === #}
+<script>
+  document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById(button.dataset.target);
+      const isPassword = input.getAttribute('type') === 'password';
+      input.setAttribute('type', isPassword ? 'text' : 'password');
+      button.innerHTML = isPassword ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+    });
+  });
+</script>

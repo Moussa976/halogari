@@ -1,0 +1,52 @@
+{% extends 'base_admin.html.twig' %}
+{% block title %}Paiements | Admin{% endblock %}
+
+{% block body %}
+<h1 class="mb-4">💸 Paiements</h1>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Montant</th>
+            <th>Réservation</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for paiement in paiements %}
+        <tr>
+            <td>{{ paiement.id }}</td>
+            <td>{{ paiement.montant }} €</td>
+            <td>ID {{ paiement.reservation.id }}</td>
+            <td>{{ paiement.statut }}</td>
+            <td>{{ paiement.createdAt|date('d/m/Y H:i') }}</td>
+            <td>
+                {% if paiement.statut == 'autorise' %}
+                    <form method="post" action="{{ path('admin_paiement_capture', {id: paiement.id}) }}">
+                        <button class="btn btn-sm btn-success" onclick="return confirm('Capturer le paiement ?')">
+                            💰 Capturer
+                        </button>
+                    </form>
+                    <form method="post" action="{{ path('admin_paiement_cancel', {id: paiement.id}) }}">
+                        <button class="btn btn-sm btn-warning mt-1" onclick="return confirm('Annuler ce paiement ?')">
+                            ❌ Annuler
+                        </button>
+                    </form>
+                {% elseif paiement.statut == 'capture' %}
+                    <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
+                        <button class="btn btn-sm btn-danger" onclick="return confirm('Rembourser ce paiement ?')">
+                            ↩️ Rembourser
+                        </button>
+                    </form>
+                {% else %}
+                    <span class="text-muted">Aucune action</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

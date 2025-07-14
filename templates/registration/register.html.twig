@@ -89,27 +89,38 @@
 
 <div class="mb-3">
     {{ form_label(registrationForm.plainPassword.first, 'Mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.plainPassword.first, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: '••••••••••••',
-            'aria-describedby': 'passwordFeedback'
-        }
-    }) }}
+    <div class="input-group">
+        {{ form_widget(registrationForm.plainPassword.first, {
+            attr: {
+                class: 'form-control ' ~ (registrationForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
+                placeholder: '••••••••••••',
+                'aria-describedby': 'passwordFeedback'
+            }
+        }) }}
+        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_first">
+            <i class="bi bi-eye-slash-fill"></i>
+        </button>
+    </div>
     <div id="passwordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.first) }}</div>
 </div>
 
 <div class="mb-3">
     {{ form_label(registrationForm.plainPassword.second, 'Confirmer le mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.plainPassword.second, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: '••••••••••••',
-            'aria-describedby': 'confirmPasswordFeedback'
-        }
-    }) }}
+    <div class="input-group">
+        {{ form_widget(registrationForm.plainPassword.second, {
+            attr: {
+                class: 'form-control ' ~ (registrationForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
+                placeholder: '••••••••••••',
+                'aria-describedby': 'confirmPasswordFeedback'
+            }
+        }) }}
+        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_second">
+            <i class="bi bi-eye-slash-fill"></i>
+        </button>
+    </div>
     <div id="confirmPasswordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.second) }}</div>
 </div>
+
 
 <div class="mb-3">
     {{ form_label(registrationForm.telephone, 'Téléphone :', {'label_attr': {'class': 'form-label'}}) }}

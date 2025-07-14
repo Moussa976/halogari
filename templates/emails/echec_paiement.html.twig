@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Paiement annulé ou expiré</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8f8f8; padding: 30px; color: #333;">
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="cid:logo_halogari" alt="HaloGari" style="width: 180px; height: auto;">
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td style="padding: 30px; text-align: center;">
+                <h1 style="color: #ff6f00;">Paiement non effectué</h1>
+                <p style="font-size: 16px; margin-bottom: 20px;">
+                    Bonjour {{ reservation.passager.prenom }},
+                </p>
+                <p style="font-size: 15px; color: #555;">
+                    Votre paiement pour le trajet entre <strong>{{ reservation.trajet.depart }}</strong> et <strong>{{ reservation.trajet.arrivee }}</strong>
+                    prévu le <strong>{{ reservation.trajet.dateTrajet|date('d/m/Y') }}</strong> à <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
+                    n’a pas été finalisé.
+                </p>
+
+                <p style="font-size: 15px; color: #555; margin-top: 15px;">
+                    Si vous souhaitez toujours effectuer ce trajet, vous pouvez relancer le paiement depuis votre espace utilisateur.
+                </p>
+
+                <div style="margin-top: 25px;">
+                    <a href="{{ url('app_mes_reservations') }}" style="display: inline-block; padding: 12px 24px; background-color: #ff6f00; color: white; border-radius: 5px; text-decoration: none;">
+                        🔁 Finaliser mon paiement
+                    </a>
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+                <p style="font-size: 14px; color: #888;">
+                    Si vous avez annulé ce paiement volontairement, vous n’avez rien à faire.<br>
+                    À très vite sur HaloGari !
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: 20px;">
+        © {{ "now"|date("Y") }} HaloGari — Ensemble, on roule à Mayotte.
+    </p>
+</body>
+</html>
