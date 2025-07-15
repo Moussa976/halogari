@@ -6,6 +6,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Component\HttpClient\HttpOptions;
 
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
+
 class SocialMediaPublisher
 {
     private HttpClientInterface $client;
@@ -23,7 +26,7 @@ class SocialMediaPublisher
     {
         $formData = new FormDataPart([
             'caption' => $caption,
-            'source' => fopen($localImagePath, 'r'),
+            'source' => new DataPart(fopen($localImagePath, 'r'), basename($localImagePath)),
         ]);
 
         $response = $this->client->request('POST', "https://graph.facebook.com/{$this->pageId}/photos", [
