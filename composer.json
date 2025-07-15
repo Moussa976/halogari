@@ -11,6 +11,7 @@
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^2.20",
+        "intervention/image": "^2.7",
         "minishlink/web-push": "^7.0",
         "nesbot/carbon": "^2.73",
         "phpdocumentor/reflection-docblock": "^5.6",

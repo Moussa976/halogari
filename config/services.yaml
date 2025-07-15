@@ -37,3 +37,13 @@ services:
             $vapidPublicKey: '%env(VAPID_PUBLIC_KEY)%'
             $vapidPrivateKey: '%env(VAPID_PRIVATE_KEY)%'
             $vapidEmail: '%env(VAPID_EMAIL)%'
+
+    App\Service\AfficheService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\SocialMediaPublisher:
+        arguments:
+            $pageId: '%env(FACEBOOK_PAGE_ID)%'
+            $pageAccessToken: '%env(FACEBOOK_ACCESS_TOKEN)%'
+
