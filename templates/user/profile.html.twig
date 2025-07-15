@@ -47,6 +47,13 @@
 									<span class="text-muted small d-block">Aucun avis pour le moment</span>
 								{% endif %}
 							</a>
+							<br>
+							{% set NombreTotalTrajetPublie = user.trajets|length %}
+							<span class="text-muted small-sm">
+								<strong>{{ NombreTotalTrajetPublie }}</strong>
+								{{ NombreTotalTrajetPublie <= 1 ? 'trajet publié' : 'trajets publiés' }}
+							</span>
+
 						</p>
 
 						{% set verifTotal = 3 %}
@@ -65,7 +72,7 @@
 
 							<!-- Badge visuel -->
 							<div class="mb-2">
-								<span class="badge																																																									">
+								<span class="badge {{ verifOk >= 2 ? 'bg-success' : 'bg-danger' }}">
 									{{ verifOk }}/{{ verifTotal }}
 									vérifications complétées
 								</span>
@@ -85,11 +92,15 @@
 									<i class="bi {{ verifications.identite ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.identite ? 'text-success' : 'text-danger' }}"></i>
 									Pièce d'identité
 									{{ verifications.identite ? 'vérifiée' : 'non vérifiée' }}
-									{% if not user.hasVerifiedIdentity() %}
-										<br><a href="{{ path('app_documents') }}" class="text-decoration-none small">
-											→ 🪪 Ajouter ma pièce d'identité 
+									{% if not user.getDocumentByType('identite') %}
+										<br>
+										<a href="{{ path('app_documents') }}" class="text-decoration-none small">
+											→ 🪪 Ajouter ma pièce d'identité
 										</a>
+									{% elseif user.getDocumentByType('identite') and user.getDocumentByType('identite').status == 'pending' %}
+										<div class="text-warning small">→ 🕒 En cours de validation</div>
 									{% endif %}
+
 								</li>
 								<li>
 									<i class="bi {{ verifications.email ? 'bi-patch-check-fill' : 'bi-patch-minus-fill' }} me-2 {{ verifications.email ? 'text-success' : 'text-danger' }}"></i>
@@ -98,7 +109,7 @@
 									{% if not user.isVerified() %}
 										<br>
 										<a href="{{ path('app_user_resend_confirmation') }}" class="text-decoration-none small">
-											→ 📩 Vérifier mon adresse e-mail 
+											→ 📩 Vérifier mon adresse e-mail
 										</a>
 									{% endif %}
 
