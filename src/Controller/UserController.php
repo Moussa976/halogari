@@ -10,17 +10,23 @@ use App\Repository\NotesRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
+use App\Security\EmailVerifier;
 use App\Service\PaiementService;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Utils\DateHelper;
+use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
 class UserController extends AbstractController
 {
@@ -495,12 +501,51 @@ class UserController extends AbstractController
         $reservation->setStatut('annulee');
 
         // 💸 Remboursement partiel ou total → à gérer dans l'étape B
-        $paiement->rembourserSelonPolitique($reservation,false);
+        $paiement->rembourserSelonPolitique($reservation, false);
 
         $em->flush();
 
         $this->addFlash('info', 'Réservation annulée.');
         return $this->redirectToRoute('app_mes_reservations');
+    }
+
+    /**
+     * @Route("/user/profil/email/renvoyer", name="app_user_resend_confirmation", methods={"GET"})
+     */
+    public function resendEmailConfirmation(
+        EmailVerifier $emailVerifier,
+        VerifyEmailHelperInterface $verifyEmailHelper,
+        MailerInterface $mailer
+    ): RedirectResponse {
+        $user = $this->getUser();
+
+        if (!$user) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($user->isVerified()) {
+            $this->addFlash('info', 'Votre adresse e-mail est déjà vérifiée.');
+            return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
+        }
+
+        try {
+            $emailVerifier->sendEmailConfirmation(
+                'app_verify_email',
+                $user,
+                (new TemplatedEmail())
+                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->to($user->getEmail())
+                    ->subject('Veuillez confirmer votre adresse e-mail')
+                    ->htmlTemplate('emails/confirmation_register.html.twig')
+                    ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
+            );
+
+            $this->addFlash('success', '📤 Un nouveau lien de confirmation vous a été envoyé à '.$user->getEmail().'.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_profile', ['id' => $user->getId()]);
     }
 
 }

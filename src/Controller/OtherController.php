@@ -58,7 +58,7 @@ class OtherController extends AbstractController
 
             // 1. Envoi à l'administrateur
             $adminEmail = (new TemplatedEmail())
-                ->from(new Address('noreply@halogari.yt', 'HaloGari'))
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->replyTo($email)
                 ->to('moussa@halogari.yt')
                 ->subject('[Contact] ' . $sujet)
@@ -74,7 +74,7 @@ class OtherController extends AbstractController
 
             // 2. Envoi de confirmation à l’utilisateur
             $userConfirmation = (new TemplatedEmail())
-                ->from(new Address('noreply@halogari.yt', 'HaloGari'))
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($email)
                 ->subject('Confirmation de votre message')
                 ->htmlTemplate('emails/confirmation_contact.html.twig')

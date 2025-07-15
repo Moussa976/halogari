@@ -138,7 +138,7 @@ class TrajetController extends AbstractController
             $em->flush();
 
             $email = (new TemplatedEmail())
-                ->from(new Address('noreply@halogari.yt', 'HaloGari'))
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($user->getEmail())
                 ->subject('Votre trajet a été publié')
                 ->htmlTemplate('emails/trajet_publie.html.twig')

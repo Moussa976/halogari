@@ -291,7 +291,7 @@ class AdminUserController extends AbstractController
             'app_verify_email',
             $user,
             (new TemplatedEmail())
-                ->from(new Address('no-reply@halogari.yt', 'HaloGari'))
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($user->getEmail())
                 ->subject('Veuillez confirmer votre adresse e-mail')
                 ->htmlTemplate('emails/confirmation_register.html.twig')

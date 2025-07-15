@@ -184,7 +184,7 @@ class MessageController extends AbstractController
             }
 
             $email = (new Email())
-                ->from('no-reply@halogari.yt')
+                ->from('moussa@halogari.yt')
                 ->to($destinataire->getEmail())
                 ->subject('Nouveau message de ' . $user->getPrenom())
                 ->html($this->renderView('emails/nouveau_message.html.twig', [

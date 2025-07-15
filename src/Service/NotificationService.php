@@ -42,7 +42,7 @@ class NotificationService
         ]);
 
         $email = (new Email())
-            ->from('no-reply@halogari.yt')
+            ->from('moussa@halogari.yt')
             ->to($passager->getEmail())
             ->subject($subject)
             ->html($html)
@@ -61,7 +61,7 @@ class NotificationService
         $conducteur = $reservation->getTrajet()->getConducteur();
 
         $email = (new Email())
-            ->from('no-reply@halogari.yt')
+            ->from('moussa@halogari.yt')
             ->to($conducteur->getEmail())
             ->subject('Nouvelle demande de réservation à valider')
             ->html($this->twig->render('emails/demande_validation_reservation.html.twig', [
@@ -83,7 +83,7 @@ class NotificationService
         $passager = $reservation->getPassager();
 
         $email = (new Email())
-            ->from('no-reply@halogari.yt')
+            ->from('moussa@halogari.yt')
             ->to($passager->getEmail())
             ->subject('Paiement autorisé - Réservation HaloGari')
             ->html($this->twig->render('emails/paiement_confirme.html.twig', [
@@ -106,7 +106,7 @@ class NotificationService
 
         // 📧 On construit l'e-mail avec expéditeur, destinataire, sujet et contenu HTML
         $email = (new Email())
-            ->from('no-reply@halogari.yt') // adresse expéditrice (non-répondre)
+            ->from('moussa@halogari.yt') // adresse expéditrice (non-répondre)
             ->to($passager->getEmail()) // adresse du passager
             ->subject('Votre réservation a été annulée par le conducteur') // objet de l'e-mail
             ->html(
@@ -135,7 +135,7 @@ class NotificationService
 
         // 📧 Création de l’e-mail de confirmation du remboursement
         $email = (new Email())
-            ->from('no-reply@halogari.yt') // Expéditeur
+            ->from('moussa@halogari.yt') // Expéditeur
             ->to($user->getEmail()) // Destinataire (le passager)
             ->subject('Votre remboursement a été effectué 💸') // Sujet du mail
             ->html(
@@ -156,7 +156,7 @@ class NotificationService
     public function envoyerEchecPaiement(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('no-reply@halogari.yt')
+            ->from('moussa@halogari.yt')
             ->to($reservation->getPassager()->getEmail())
             ->subject('Paiement annulé ou expiré')
             ->html($this->twig->render('emails/echec_paiement.html.twig', [
@@ -170,7 +170,7 @@ class NotificationService
     public function envoyerPaiementCapture(Reservation $reservation): void
 {
     $email = (new Email())
-        ->from('no-reply@halogari.yt')
+        ->from('moussa@halogari.yt')
         ->to($reservation->getPassager()->getEmail())
         ->subject('Votre paiement a été capturé ✅')
         ->html($this->twig->render('emails/paiement_capture.html.twig', [
