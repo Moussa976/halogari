@@ -7,7 +7,6 @@ use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Component\HttpClient\HttpOptions;
 
 use Symfony\Component\Mime\Part\DataPart;
-use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 
 class SocialMediaPublisher
 {
