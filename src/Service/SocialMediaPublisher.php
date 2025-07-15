@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
+use Symfony\Component\HttpClient\HttpOptions;
 
 class SocialMediaPublisher
 {
@@ -19,16 +21,16 @@ class SocialMediaPublisher
 
     public function publishImage(string $localImagePath, string $caption): void
     {
-        $url = "https://graph.facebook.com/{$this->pageId}/photos";
+        $formData = new FormDataPart([
+            'caption' => $caption,
+            'source' => fopen($localImagePath, 'r'),
+        ]);
 
-        $this->client->request('POST', $url, [
-            'headers' => [
+        $response = $this->client->request('POST', "https://graph.facebook.com/{$this->pageId}/photos", [
+            'headers' => $formData->getPreparedHeaders()->toArray() + [
                 'Authorization' => "Bearer {$this->pageAccessToken}",
             ],
-            'body' => [
-                'caption' => $caption,
-                'source' => fopen($localImagePath, 'r'),
-            ],
+            'body' => $formData->bodyToIterable(),
         ]);
     }
 }
