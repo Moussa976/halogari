@@ -197,7 +197,7 @@ class TrajetController extends AbstractController
                 $trajet->getArrivee(),
                 $trajet->getDateTrajet()->format('Y-m-d')
             );
-            $hashtags = "#CovoiturageMayotte #HaloGari";
+            $hashtags = "#CovoiturageMayotte #Mayotte #976 #HaloGari #$trajet->getDepart() #$trajet->getArrivee()";
 
             // Caption final
             $caption = sprintf(
