@@ -191,7 +191,12 @@ class TrajetController extends AbstractController
             }
 
             // Hashtags ou lien optionnel
-            $urlTrajet = 'https://halogari.yt/trajet/' . $trajet->getId();
+            $url = sprintf(
+                'https://halogari.yt/chercher/%s/%s/%s/any/1',
+                $trajet->getDepart(),
+                $trajet->getArrivee(),
+                $trajet->getDateTrajet()->format('Y-m-d')
+            );
             $hashtags = "#CovoiturageMayotte #HaloGari";
 
             // Caption final
@@ -205,7 +210,7 @@ class TrajetController extends AbstractController
                 $trajet->getPlacesDisponibles(),
                 $trajet->getPlacesDisponibles() > 1 ? 's' : '',
                 number_format($trajet->getPrix(), 2, ',', ' '),
-                $urlTrajet,
+                $url,
                 $hashtags
             );
 
