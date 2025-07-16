@@ -6,7 +6,9 @@ use App\Entity\Notes;
 use App\Entity\Reservation;
 use App\Form\NoteConducteurType;
 use App\Repository\UserRepository;
+use App\Service\AfficheService;
 use App\Service\NotificationService;
+use App\Service\SocialMediaPublisher;
 use App\Service\StripeConnectService;
 use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
@@ -96,7 +98,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect, AfficheService $afficheService, SocialMediaPublisher $publisher): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -111,8 +113,10 @@ class TrajetController extends AbstractController
             $identite = $user->getDocumentByType("identite");
 
             if (!$rib || !$identite) {
-                if (!$rib) $this->addFlash('error', 'Vous devez ajouter un RIB.');
-                if (!$identite) $this->addFlash('error', 'Vous devez ajouter une pièce d’identité.');
+                if (!$rib)
+                    $this->addFlash('error', 'Vous devez ajouter un RIB.');
+                if (!$identite)
+                    $this->addFlash('error', 'Vous devez ajouter une pièce d’identité.');
                 return $this->redirectToRoute('app_documents');
             }
 
@@ -151,6 +155,76 @@ class TrajetController extends AbstractController
             $mailer->send($email);
 
             $this->addFlash('success', 'Votre trajet a bien été publié !');
+
+            // GÉNÉRATION AFFICHE
+            $imagePath = $afficheService->generate($trajet);
+            $localPath = $this->getParameter('kernel.project_dir') . '/public' . $imagePath;
+
+            // TEXTE À PUBLIER
+            $conducteur = $trajet->getConducteur();
+            $prenom = ucfirst($conducteur->getPrenom());
+
+            // Gestion de l’âge (null safe)
+            $age = method_exists($conducteur, 'getAge') && $conducteur->getAge()
+                ? $conducteur->getAge() . ' ans'
+                : null;
+
+            // Gestion de la note moyenne (null safe)
+            $note = method_exists($conducteur, 'getNoteMoyenne') && $conducteur->getNoteMoyenne()
+                ? number_format($conducteur->getNoteMoyenne(), 1, ',', ' ') . ' ⭐'
+                : null;
+
+            // Construire la ligne "conducteur"
+            $infosConducteur = $prenom;
+            if ($age || $note) {
+                $infosConducteur .= ' (';
+                if ($age) {
+                    $infosConducteur .= $age;
+                }
+                if ($age && $note) {
+                    $infosConducteur .= ', ';
+                }
+                if ($note) {
+                    $infosConducteur .= $note;
+                }
+                $infosConducteur .= ')';
+            }
+
+            // Hashtags ou lien optionnel
+            $urlTrajet = 'https://halogari.yt/trajet/' . $trajet->getId();
+            $hashtags = "#CovoiturageMayotte #HaloGari";
+
+            // Caption final
+            $caption = sprintf(
+                "🚗 %s\n🟠 %s → 🟢 %s\n📅 %s à %s\n💺 %d place%s dispo • 💰 %s €/place\n\n%s\n%s",
+                $infosConducteur,
+                $trajet->getDepart(),
+                $trajet->getArrivee(),
+                $trajet->getDateTrajet()->format('d/m/Y'),
+                $trajet->getHeureTrajet()->format('H:i'),
+                $trajet->getPlacesDisponibles(),
+                $trajet->getPlacesDisponibles() > 1 ? 's' : '',
+                number_format($trajet->getPrix(), 2, ',', ' '),
+                $urlTrajet,
+                $hashtags
+            );
+
+
+            // PUBLICATION
+            try {
+                $publisher->publishImage($localPath, $caption);
+            } catch (\Exception $e) {
+                $this->addFlash('warning', 'La publication Facebook a échoué. L’image a été supprimée automatiquement.');
+                // Pour debug uniquement (désactiver en prod)
+                if ($this->getParameter('kernel.environment') === 'dev') {
+                    $this->addFlash('danger', 'Erreur Facebook : ' . $e->getMessage());
+                }
+            } finally {
+                if (file_exists($localPath)) {
+                    unlink($localPath);
+                }
+            }
+
             return $this->redirectToRoute('app_home');
         }
 

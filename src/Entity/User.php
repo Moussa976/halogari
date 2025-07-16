@@ -657,4 +657,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->stripeAccountId = $stripeAccountId;
         return $this;
     }
+
+    public function getAge(): ?int
+    {
+        if (!$this->dateNaissance) {
+            return null;
+        }
+
+        $today = new \DateTimeImmutable();
+        return $today->diff($this->dateNaissance)->y;
+    }
 }
