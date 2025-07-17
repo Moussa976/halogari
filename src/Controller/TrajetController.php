@@ -8,7 +8,7 @@ use App\Form\NoteConducteurType;
 use App\Repository\UserRepository;
 use App\Service\AfficheService;
 use App\Service\NotificationService;
-use App\Service\SocialMediaPublisher;
+use App\Service\MetaService;
 use App\Service\StripeConnectService;
 use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
@@ -98,7 +98,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect, AfficheService $afficheService, SocialMediaPublisher $publisher): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect, AfficheService $afficheService, MetaService $publisher): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -221,7 +221,7 @@ class TrajetController extends AbstractController
 
             // PUBLICATION
             try {
-                $publisher->publishImage($localPath, $caption);
+                $publisher->publierSurFacebook($localPath, $caption);
             } catch (\Exception $e) {
                 $this->addFlash('warning', 'La publication Facebook a échoué. L’image a été supprimée automatiquement.');
                 // Pour debug uniquement (désactiver en prod)

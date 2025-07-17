@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Trajet;
 use App\Service\AfficheService;
-use App\Service\SocialMediaPublisher;
+use App\Service\MetaService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,7 +14,7 @@ class AfficheTestController extends AbstractController
     /**
      * @Route("/affiche/test", name="affiche_test")
      */
-    public function testAffiche(AfficheService $afficheService, SocialMediaPublisher $publisher): Response
+    public function testAffiche(AfficheService $afficheService, MetaService $publisher): Response
     {
         $trajet = new Trajet();
         $trajet->setDepart('Mamoudzou');
@@ -37,7 +37,7 @@ class AfficheTestController extends AbstractController
             $trajet->getPrix()
         );
 
-        $publisher->publishImage($fullPath, $caption);
+        $publisher->publierSurFacebook($fullPath, $caption);
 
         return $this->render('affiche_test/result.html.twig', [
             'imagePath' => $imagePath,
