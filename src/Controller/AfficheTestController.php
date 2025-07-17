@@ -27,6 +27,10 @@ class AfficheTestController extends AbstractController
         $imagePath = $afficheService->generate($trajet); // ex: /uploads/affiches/trajet_xxx.png
         $fullPath = $this->getParameter('kernel.project_dir') . '/public' . $imagePath;
 
+        if (!file_exists($fullPath)) {
+            dd('Image introuvable : ' . $fullPath);
+        }
+
         $caption = sprintf(
             "🚗 Nouveau trajet disponible ! %s → %s le %s à %s\n💺 %d places disponibles – %.2f €/place",
             $trajet->getDepart(),
