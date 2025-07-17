@@ -45,7 +45,6 @@ services:
     App\Service\MetaService:
         arguments:
             $pageId: '%env(FACEBOOK_PAGE_ID)%'
-            $instagramId: '%env(INSTAGRAM_USER_ID)%'
             $accessToken: '%env(FACEBOOK_ACCESS_TOKEN)%'
 
 

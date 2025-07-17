@@ -10,14 +10,12 @@ class MetaService
 {
     private HttpClientInterface $client;
     private string $pageId;
-    private string $instagramId;
     private string $accessToken;
 
-    public function __construct(HttpClientInterface $client, string $pageId, string $instagramId, string $accessToken)
+    public function __construct(HttpClientInterface $client, string $pageId, string $accessToken)
     {
         $this->client = $client;
         $this->pageId = $pageId;
-        $this->instagramId = $instagramId;
         $this->accessToken = $accessToken;
     }
 
@@ -40,9 +38,9 @@ class MetaService
         ]);
     }
 
-    /**
+    /*
      * Publie une image sur Instagram via l'API Meta Graph (2 étapes)
-     */
+     
     public function publierSurInstagram(string $imageUrl, string $caption): void
     {
         // Étape 1 : créer le média
@@ -68,5 +66,5 @@ class MetaService
                 'access_token' => $this->accessToken,
             ],
         ]);
-    }
+    }*/
 }
