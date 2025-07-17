@@ -108,6 +108,7 @@ class AfficheService
 
         $fileName = 'trajet_' . uniqid() . '.png';
         $path = $this->outputDir . '/' . $fileName;
+        dd($path); 
         $image->save($path);
 
         return '/uploads/affiches/' . $fileName;
