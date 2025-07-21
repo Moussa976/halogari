@@ -102,11 +102,15 @@ class MessageController extends AbstractController
             throw $this->createNotFoundException("Utilisateur ou trajet introuvable.");
         }
 
+        // 🚧 Vérifie s'il y a une réservation valide entre les deux utilisateurs
         $reservation = null;
         foreach ($trajet->getReservations() as $r) {
+            $passager = $r->getPassager();
+            $conducteur = $r->getTrajet()->getConducteur();
+
             if (
-                ($r->getPassager() === $currentUser && $r->getTrajet()->getConducteur() === $otherUser) ||
-                ($r->getPassager() === $otherUser && $r->getTrajet()->getConducteur() === $currentUser)
+                ($passager === $currentUser && $conducteur === $otherUser) ||
+                ($passager === $otherUser && $conducteur === $currentUser)
             ) {
                 $reservation = $r;
                 break;
@@ -114,12 +118,11 @@ class MessageController extends AbstractController
         }
 
         if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
-            $this->addFlash('danger', 'La messagerie est désactivée tant que la réservation n\'est pas acceptée.');
+            $this->addFlash('danger', 'Vous ne pouvez pas discuter tant que la réservation n’a pas été acceptée.');
             return $this->redirectToRoute('app_trajet_show', ['id' => $trajet->getId()]);
         }
 
-
-        // Récupère tous les messages pour CE trajet entre ces 2 utilisateurs
+        // 📩 Récupère tous les messages liés à ce trajet et ces deux utilisateurs
         $messages = $repo->createQueryBuilder('m')
             ->where('m.trajet = :trajet')
             ->andWhere('
@@ -136,12 +139,13 @@ class MessageController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // Marquer les messages reçus comme lus
+        // ✅ Marque les messages reçus comme lus
         foreach ($messages as $message) {
             if ($message->getDestinataire() === $currentUser && !$message->isRead()) {
                 $message->setIsRead(true);
             }
         }
+
         $em->flush();
 
         $ladateTrajet = DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y');
@@ -153,6 +157,7 @@ class MessageController extends AbstractController
             'ladateTrajet' => $ladateTrajet
         ]);
     }
+
 
     /**
      * @Route("/user/messages/send", name="api_message_send", methods={"POST"})

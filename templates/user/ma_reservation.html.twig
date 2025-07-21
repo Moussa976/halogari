@@ -185,19 +185,23 @@
 						<div class="card mb-4">
 							<div class="card-body">
 								<h5 class="text-orange mb-3">📞 Contact du conducteur</h5>
-								{% if (reservation.statut == 'acceptee' or reservation.statut == 'payee') and trajet.conducteur.nom != 'Utilisateur supprimé' %}
+
+								{% if reservation.statut in ['acceptee', 'payee'] %}
 									<div class="mt-4 text-center">
 										<a href="tel:{{ trajet.conducteur.telephone }}" class="btn btn-orange btn-sm">
 											{{ trajet.conducteur.telephone }}
 										</a>
-										<a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}" class="btn btn-outline-primary btn-sm">💬 Contacter le conducteur</a>
+										<a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}" class="btn btn-outline-primary btn-sm">
+											💬 Contacter le conducteur
+										</a>
 									</div>
 								{% else %}
-									<p class="text-muted text-center">Les informations de contact du conducteur ne sont disponibles qu'une fois la réservation acceptée.</p>
+									<p class="text-muted text-center">Les informations de contact ne sont disponibles qu'une fois la réservation acceptée.</p>
 								{% endif %}
 							</div>
 						</div>
 					{% endif %}
+
 				{% endif %}
 
 				{% set trajetPasse = reservation.trajet.dateTrajet < date() %}

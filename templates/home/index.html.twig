@@ -95,6 +95,106 @@
   <div class="container text-center">
     <h2 class="h4 fw-bold mb-4">Trajets les plus réservés</h2>
     <div class="row">
+      {% if popularTrajets|length < 1 %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Koungou
+              →
+              Mamoudzou
+            </h5>
+            <p class="card-text text-muted">4
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Chirongui
+              →
+              Sada
+            </h5>
+            <p class="card-text text-muted">2
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Chirongui&select_arrival=Sada&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Sada
+              →
+              Mamoudzou
+            </h5>
+            <p class="card-text text-muted">1
+              réservation</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Sada&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      {% elseif popularTrajets|length < 2 %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Koungou
+              →
+              Mamoudzou
+            </h5>
+            <p class="card-text text-muted">4
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Chirongui
+              →
+              Sada
+            </h5>
+            <p class="card-text text-muted">2
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Chirongui&select_arrival=Sada&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      {% elseif popularTrajets|length < 3 %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title text-orange">
+              <i class="bi bi-geo-alt text-vert"></i>
+              Koungou
+              →
+              Mamoudzou
+            </h5>
+            <p class="card-text text-muted">4
+              réservations</p>
+            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
+              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
       {% for trajet in popularTrajets %}
       <div class="col-md-4 mb-4">
         <div class="card h-100 shadow-sm">
@@ -105,14 +205,16 @@
               →
               {{ trajet.arrivee }}
             </h5>
-            <p class="card-text text-muted">{{ trajet.total }}
-              réservations</p>
+            <p class="card-text text-muted">{{ trajet.total }} 
+              réservation{{ trajet.total > 1 ? 's':'' }} </p>
             <a href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart ~ '&select_arrival=' ~ trajet.arrivee ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}"
               class="btn btn-outline-orange btn-sm mt-2">Voir</a>
           </div>
         </div>
       </div>
       {% endfor %}
+      
+      
     </div>
   </div>
 </section>
