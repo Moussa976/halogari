@@ -139,6 +139,28 @@ h1 {
     border-color: #32623d;
 }
 
+.btn-vert:hover,
+.btn-vert:focus,
+.btn-vert:active {
+    color: #ffffff;
+    background-color: #486232e0;
+    border-color: #ffffff;
+}
+
+.btn-outline-vert {
+    color: #32623d;
+    background-color: #ffffff;
+    border-color: #32623d;
+}
+
+.btn-outline-vert:hover,
+.btn-outline-vert:focus,
+.btn-outline-vert:active {
+    color: #ffffff;
+    background-color: #32623d;
+    border-color: #32623d;
+}
+
 .prix-euro {
     font-size: 1.5rem;
     font-weight: bold;
