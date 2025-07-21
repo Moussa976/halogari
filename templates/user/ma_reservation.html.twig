@@ -99,7 +99,7 @@
 									{{ labelMap[statutPaiement] }}
 								</span>
 								{% if reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'autorise') %}
-									<div class="d-flex justify-content-center">
+									<div class="d-flex justify-content-center pt-2">
 										<a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success w-100">
 											💳 Payer maintenant
 										</a>

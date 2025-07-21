@@ -68,11 +68,11 @@ class TrajetRepository extends ServiceEntityRepository
             ->andWhere('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('t.placesDisponibles >= :places')
+            ->andWhere('t.annule != true') // ✅ Exclure les trajets annulés
             ->setParameter('depart', $depart)
             ->setParameter('arrivee', $arrivee)
             ->setParameter('places', $places);
 
-        // Gestion de la date
         $dateObj = new \DateTime($date);
         $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
         $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
@@ -88,14 +88,15 @@ class TrajetRepository extends ServiceEntityRepository
     }
 
 
+
     public function findByID(int $id): ?Trajet
-{
-    return $this->createQueryBuilder('t')
-        ->where('t.id = :id')
-        ->setParameter('id', $id)
-        ->getQuery()
-        ->getOneOrNullResult();
-}
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
 
 

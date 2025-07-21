@@ -143,6 +143,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $preferences = [];
 
+    /**
+     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $notifications;
+
     public function __construct()
     {
         $this->trajets = new ArrayCollection();
@@ -154,6 +159,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notesPour = new ArrayCollection();
         $this->documents = new ArrayCollection();
         $this->pushSubscriptions = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -666,5 +673,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         $today = new \DateTimeImmutable();
         return $today->diff($this->dateNaissance)->y;
+    }
+
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
     }
 }

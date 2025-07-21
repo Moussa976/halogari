@@ -124,13 +124,36 @@ class PaiementService
 
 
 
-    /**
-     * Annule un paiement avant qu’il soit capturé.
-     */
-    public function annulerPaiement(string $intentId): void
+    public function annulerPaiement(Reservation $reservation): void
     {
-        PaymentIntent::retrieve($intentId)->cancel();
+        $paiement = $reservation->getPaiement();
+
+        if (!$paiement || !$paiement->getPaymentIntentId()) {
+            return;
+        }
+
+        $intentId = $paiement->getPaymentIntentId();
+
+        try {
+            $paymentIntent = PaymentIntent::retrieve($intentId);
+
+            if ($paymentIntent->status === 'requires_capture') {
+                $paymentIntent->cancel();
+                $paiement->setStatut('annule'); // ou 'echoue'
+            } elseif ($paymentIntent->status === 'succeeded') {
+                \Stripe\Refund::create([
+                    'payment_intent' => $intentId,
+                ]);
+                $paiement->setStatut('rembourse');
+            }
+
+            $this->em->flush();
+
+        } catch (\Exception $e) {
+            // Log optionnel
+        }
     }
+
 
     /**
      * Rembourse un paiement déjà capturé.

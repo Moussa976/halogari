@@ -6,6 +6,7 @@ use App\Entity\Message;
 use App\Entity\Trajet;
 use App\Entity\User;
 use App\Repository\MessageRepository;
+use App\Service\NotificationMessageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -101,6 +102,23 @@ class MessageController extends AbstractController
             throw $this->createNotFoundException("Utilisateur ou trajet introuvable.");
         }
 
+        $reservation = null;
+        foreach ($trajet->getReservations() as $r) {
+            if (
+                ($r->getPassager() === $currentUser && $r->getTrajet()->getConducteur() === $otherUser) ||
+                ($r->getPassager() === $otherUser && $r->getTrajet()->getConducteur() === $currentUser)
+            ) {
+                $reservation = $r;
+                break;
+            }
+        }
+
+        if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
+            $this->addFlash('danger', 'La messagerie est désactivée tant que la réservation n\'est pas acceptée.');
+            return $this->redirectToRoute('app_trajet_show', ['id' => $trajet->getId()]);
+        }
+
+
         // Récupère tous les messages pour CE trajet entre ces 2 utilisateurs
         $messages = $repo->createQueryBuilder('m')
             ->where('m.trajet = :trajet')
@@ -139,8 +157,11 @@ class MessageController extends AbstractController
     /**
      * @Route("/user/messages/send", name="api_message_send", methods={"POST"})
      */
-    public function sendMessage(Request $request, EntityManagerInterface $em, MailerInterface $mailer): JsonResponse
-    {
+    public function sendMessage(
+        Request $request,
+        EntityManagerInterface $em,
+        NotificationMessageService $notificationMessageService
+    ): JsonResponse {
         try {
             $user = $this->getUser();
             $data = json_decode($request->getContent(), true);
@@ -164,6 +185,26 @@ class MessageController extends AbstractController
                 return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur ou trajet introuvable.'], 404);
             }
 
+            // 🔒 Vérification de réservation
+            $reservation = null;
+            foreach ($trajet->getReservations() as $r) {
+                if (
+                    ($r->getPassager() === $user && $r->getTrajet()->getConducteur() === $destinataire) ||
+                    ($r->getPassager() === $destinataire && $r->getTrajet()->getConducteur() === $user)
+                ) {
+                    $reservation = $r;
+                    break;
+                }
+            }
+
+            if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
+                return new JsonResponse([
+                    'status' => 'error',
+                    'message' => 'Vous ne pouvez pas envoyer de message tant que la réservation n’a pas été acceptée.'
+                ], 403);
+            }
+
+            // ✅ Création du message
             $message = new Message();
             $message->setExpediteur($user);
             $message->setDestinataire($destinataire);
@@ -174,33 +215,19 @@ class MessageController extends AbstractController
             $em->persist($message);
             $em->flush();
 
-            // Photo de profil
-            $cheminPhoto = $user->getPhoto()
-                ? $this->getParameter('kernel.project_dir') . '/public/uploads/photos/' . $user->getPhoto()
-                : $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
+            // ✅ Notification et e-mail
+            $notificationMessageService->traiterMessageRecu($message);
 
-            if (!file_exists($cheminPhoto)) {
-                $cheminPhoto = $this->getParameter('kernel.project_dir') . '/public/images/profil.png';
-            }
-
-            $email = (new Email())
-                ->from('moussa@halogari.yt')
-                ->to($destinataire->getEmail())
-                ->subject('Nouveau message de ' . $user->getPrenom())
-                ->html($this->renderView('emails/nouveau_message.html.twig', [
-                    'expediteur' => $user,
-                    'destinataire' => $destinataire,
-                    'message' => $message,
-                ]))
-                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
-                ->embedFromPath($cheminPhoto, 'profil');
-
-            $mailer->send($email);
+            $avatarHtml = $this->renderView('partials/avatar_response.html.twig', [
+                'user' => $user
+            ]);
 
             return new JsonResponse([
                 'status' => 'sent',
                 'contenu' => $message->getContenu(),
                 'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
+                'avatarHtml' => $avatarHtml
+
             ]);
 
         } catch (\Throwable $e) {
@@ -210,6 +237,7 @@ class MessageController extends AbstractController
             ], 500);
         }
     }
+
 
 
 }

@@ -72,6 +72,7 @@ class TrajetController extends AbstractController
             ->where('t.dateTrajet = :date')
             ->andWhere('t.arrivee = :arrivee')
             ->andWhere('t.depart != :depart')
+            ->andWhere('t.annule != true') // ✅ Exclure les trajets annulés
             ->setParameters([
                 'date' => $dateObj,
                 'arrivee' => $arrivee,
@@ -79,6 +80,7 @@ class TrajetController extends AbstractController
             ])
             ->getQuery()
             ->getResult();
+
 
         $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
 
@@ -252,6 +254,21 @@ class TrajetController extends AbstractController
 
         // affichage d'un trajet
         $trajet = $trajetRepository->findByID($id);
+
+        if ($trajet->isAnnule()) {
+            $this->addFlash('error', 'Ce trajet a été annulé et n\'est plus accessible.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        $now = new \DateTimeImmutable();
+        $trajetDateTime = new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i'));
+
+        if ($trajetDateTime < $now) {
+            $this->addFlash('warning', 'Ce trajet est déjà passé.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+
         $moyenne = $notesRepository->getMoyennePourUtilisateur($trajet->getConducteur());
         $nombreAvis = $notesRepository->countAvisPourUtilisateur($trajet->getConducteur());
 

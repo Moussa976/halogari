@@ -11,241 +11,34 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fr.js"></script>
 
 {# === 2. FORMULAIRES & UI === #}
-<script>
-  "use strict";
-
-  $(document).ready(function () { // Chargement dynamique des villages depuis cities.json pour autocomplete
-    $.getJSON('/cities.json').done(function (data) {
-      const options = data.map(v => ({ name: v.name, name_2: v.name_2 || v.name }));
-
-      // Transformation de tous les champs .villages en <select> enrichi avec Select2
-      $(".villages").each(function () {
-        const $el = $(this);
-        const tagName = $el.prop("tagName").toLowerCase();
-        const currentValue = $el.attr("data-current") || $el.val();
-        const name = $el.attr("name");
-        const id = $el.attr("id") || name;
-        const placeholder = $el.attr("placeholder") || "Choisissez un village";
-        let $select;
-
-        // Remplacement ou réinitialisation du <select>
-        if (tagName === "select") {
-          $select = $el;
-          $select.empty();
-        } else {
-          $select = $('<select>', {
-            id: id,
-            name: name,
-            class: "form-select villages",
-            required: true
-          });
-          const $wrapper = $el.closest(".form-floating");
-          $el.remove();
-          $wrapper.prepend($select);
-          $wrapper.append(`<label for="${id}">${placeholder}</label>`);
-        }
-
-        // Ajout de l'option vide
-        $select.append('<option></option>');
-
-        let foundInList = false;
-
-        // Ajout des villages : value = name, affiché = name_2
-        options.forEach(opt => {
-          const value = opt.name;
-          const label = opt.name_2 || value;
-          const isSelected = value === currentValue;
-
-          if (isSelected) foundInList = true;
-
-          $select.append(new Option(label, value, false, isSelected));
-        });
-
-        // Cas spécial : valeur personnalisée déjà présente
-        if (!foundInList && currentValue) {
-          $select.append(new Option(currentValue, currentValue, true, true));
-        }
-
-        // Init Select2
-        $select.select2({
-          placeholder: placeholder,
-          allowClear: true,
-          width: "100%",
-          language: "fr"
-        }).on('select2:open', function () {
-          const searchInput = document.querySelector('.select2-search__field');
-          if (searchInput) {
-            searchInput.setAttribute('placeholder', 'Recherchez le nom ...');
-            searchInput.classList.add('form-control');
-          }
-          $('.select2-results__options').addClass('bg-vert text-white');
-        });
-
-        // Rafraîchit la valeur
-        $select.val(currentValue).trigger("change");
-      });
-
-
-
-      // Validation du formulaire : cohérence entre champs + erreurs bloquantes
-      $("#form-recherche").on("submit", function (e) {
-        let erreur = false;
-
-        // Validation des villages sélectionnés
-        $(".villages").each(function () {
-          const valeur = $(this).val();
-          const valide = valeur && options.some(opt => opt.text === valeur);
-          if (valide) {
-            $(this).addClass("is-invalid");
-            erreur = true;
-          } else {
-            $(this).removeClass("is-invalid");
-          }
-        });
-
-        // Blocage si départ et arrivée sont identiques
-        const depart = $("select[name='select_departure']").val();
-        const arrivee = $("select[name='select_arrival']").val();
-        if (depart && arrivee && depart === arrivee) {
-          erreur = true;
-          Swal.fire({ icon: "warning", title: "Villages identiques", text: "Le village de départ et d'arrivée ne peuvent pas être identiques." });
-          e.preventDefault();
-          return;
-        }
-
-        // Vérification de la date
-        const dateTrajet = $("input[name='date_trajet']").val();
-        if (!dateTrajet) {
-          e.preventDefault();
-          Swal.fire({ icon: "warning", title: "Date manquante", text: "Veuillez sélectionner une date de trajet." });
-          return;
-        }
-
-        // Erreur globale
-        if (erreur) {
-          e.preventDefault();
-          Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez sélectionner des villages valides." });
-        }
-      });
-    });
-
-    // Initialisation du datepicker (flatpickr)
-    flatpickr(".dateDepart", {
-      locale: "fr",
-      altInput: true,
-      altFormat: "j F Y",
-      dateFormat: "Y-m-d",
-      minDate: "today"
-    });
-  });
-</script>
+<script src="{{ asset('js/form-villages.js') }}"></script>
+<script src="{{ asset('js/form-validation.js') }}"></script>
+<script src="{{ asset('js/datepicker-init.js') }}"></script>
 
 {# === 3. SERVICE WORKER REGISTRATION === #}
-<script>
-  // Enregistrement du service worker (PWA + notifications push)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/js/service-worker.js').then(() => console.log('✅ Service Worker enregistré')).catch(err => console.error('❌ Erreur SW', err));
-    });
-  }
-</script>
+<script src="{{ asset('js/sw-register.js') }}"></script>
 
 {# === 4. INSTALLATION PWA (Android uniquement via beforeinstallprompt) === #}
-<script>
-  // Gestion de l'installation sur Android avec beforeinstallprompt
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    // Si les notifications ont déjà été autorisées, afficher le bouton
-    if (localStorage.getItem('pushPermissionAsked')) {
-      const installButtons = document.querySelectorAll('.installAppBtn');
-      installButtons.forEach((btn) => {
-        btn.classList.remove('d-none');
-        btn.addEventListener('click', () => {
-          btn.disabled = true;
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choiceResult) => {
-            console.log(choiceResult.outcome === 'accepted' ? '✅ L’app HaloGari a été installée' : '❌ Installation refusée');
-            deferredPrompt = null;
-          });
-        });
-      });
-    }
-  });
-</script>
+<script src="{{ asset('js/push-permission.js') }}"></script>
+<script src="{{ asset('js/pwa-install.js') }}"></script>
 
 {# === 5. MESSAGERIE, SPLASH SCREEN & NOTIFICATION JS === #}
+<script src="{{ asset('js/message-check.js') }}"></script>
 <script>
-  // Vérifie les nouveaux messages toutes les 30 secondes
-  function checkNewMessages() {
-    fetch('/user/messages/unread').then(response => response.json()).then(data => {
-      const badges = document.querySelectorAll('.message-notif');
-      badges.forEach(badge => {
-        if (data.unreadCount > 0) {
-          badge.textContent = data.unreadCount;
-          badge.style.display = 'inline-block';
-          badge.dataset.notified = "1";
-        } else {
-          badge.style.display = 'none';
-          badge.dataset.notified = "";
-        }
-      });
-    });
-  }
-
+{% if app.user is not null %}
   document.addEventListener("DOMContentLoaded", () => {
-    if (document.querySelector('.message-notif')) {
-      checkNewMessages();
-      setInterval(checkNewMessages, 30000);
-    }
+    checkNewMessages();
+    checkNotifications();
+    setInterval(checkNewMessages, 3000);
+    setInterval(checkNotifications, 3000);
   });
+{% endif %}
 </script>
-
-<script>
-  // Affiche l'écran de démarrage avec animation (logo + texte)
-  document.addEventListener("DOMContentLoaded", () => {
-    const splash = document.getElementById('splash-screen');
-    const logo = document.getElementById('splash-logo');
-    const text = document.getElementById('splash-text');
-
-    if (!sessionStorage.getItem('splashShown')) {
-      sessionStorage.setItem('splashShown', 'true');
-      splash.style.display = 'flex';
-      splash.style.opacity = '1';
-
-      setTimeout(() => {
-        logo.style.opacity = '1';
-        logo.style.transform = 'scale(1)';
-        text.style.opacity = '1';
-        text.style.transform = 'translateY(0)';
-      }, 100);
-
-      setTimeout(() => {
-        splash.style.opacity = '0';
-        splash.style.transition = 'opacity 0.5s ease-out';
-        setTimeout(() => splash.remove(), 500);
-      }, 1800);
-    } else {
-      splash.remove();
-    }
-  });
-</script>
+<script src="{{ asset('js/splash-screen.js') }}"></script>
 
 {# === 6. NOTIFICATIONS PUSH (fichier compilé séparé) === #}
 <script src="{{ path('js_push_notif') }}"></script>
 
 
 {# === 7. Voir le mot passe === #}
-<script>
-  document.querySelectorAll('.toggle-password').forEach(button => {
-    button.addEventListener('click', () => {
-      const input = document.getElementById(button.dataset.target);
-      const isPassword = input.getAttribute('type') === 'password';
-      input.setAttribute('type', isPassword ? 'text' : 'password');
-      button.innerHTML = isPassword ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
-    });
-  });
-</script>
+<script src="{{ asset('js/toggle-password.js') }}"></script>

@@ -3,18 +3,22 @@
 	<div class="container">
 		<a class="navbar-brand" href="{{ path('app_home') }}">
 			<img src="{{ asset('images/logo.png') }}" alt="Logo HaloGari" class="img-fluid" style="max-width: 120px; height:auto;">
-
 		</a>
-
 
 		<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 			<li class="nav-item align-self-center d-none d-lg-block">
-
-				<button class="installAppBtn px-1 btn btn-orange d-none nav-link" title="Installer HaloGari">
-					<i class="bi bi-download"></i>
-					Installer HaloGari
-				</button>
+				<div class="d-flex gap-2 align-items-center">
+					<button class="installAppBtn px-1 btn btn-orange d-none nav-link" title="Installer HaloGari">
+						<i class="bi bi-download"></i>
+						Installer HaloGari
+					</button>
+					<button class="btnEnableNotifications btn btn-vert d-none nav-link px-1">
+						<i class="bi bi-bell-fill"></i>
+						Activer les notifications
+					</button>
+				</div>
 			</li>
+
 			<li class="nav-item align-self-center d-none d-lg-block">
 				<a class="btn nav-link" href="{{ path('app_chercher') }}" title="Chercher un trajet">
 					<i class="text-vert bi bi-search"></i>
@@ -27,16 +31,34 @@
 					Publier un trajet
 				</a>
 			</li>
+
 			{% if app.user %}
-				<li class="nav-item align-self-center d-none d-lg-block position-relative me-5">
-					<a class="nav-link" href="{{ path('app_message') }}" title="Messages">
+				<li class="nav-item align-self-center d-none d-lg-block position-relative mx-4">
+					<a class="nav-link position-relative" href="{{ path('app_message') }}" title="Messages">
 						<i class="bi bi-envelope-fill fs-5"></i>
-						<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+						<span class="message-notif position-absolute start-100 translate-middle badge rounded-circle bg-danger" style="display: none; top: 20%;">
 							0
 						</span>
 					</a>
 				</li>
+
+				<li class="nav-item dropdown align-self-center d-none d-lg-block position-relative me-3">
+					<a class="nav-link dropdown-toggle no-caret position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						<i class="bi bi-bell-fill fs-5"></i>
+						<span class="notification-badge position-absolute start-100 translate-middle badge rounded-circle bg-danger" style="display: none; top: 20%;">
+							0
+						</span>
+					</a>
+
+					<ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" id="notifDropdownMenu" aria-labelledby="notifDropdown" style="min-width: 300px;">
+						{% include 'partials/_notifications_list.html.twig' with {
+			notifications: app.user.notifications|filter(notif => not notif.lu)
+		} %}
+					</ul>
+				</li>
+
 			{% endif %}
+
 			<li class="nav-item d-none d-lg-block align-items-center">
 				{% if app.user is null %}
 					<a class="btn nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalConnexion" title="Se connecter">
@@ -44,28 +66,40 @@
 						Se connecter
 					</a>
 				{% else %}
-					<a class="btn dropdown-toggle text-vert py-0" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false" aria-label="offcanvas navigation">
+					<a class="btn dropdown-toggle text-vert py-0" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
 						{{ avatar.formatSimple(app.user, 40) }}
 					</a>
 				{% endif %}
 			</li>
 		</ul>
+
+		{# Mobile buttons #}
 		{% if app.user %}
-			<a class="nav-link d-lg-none me-5" href="{{ path('app_message') }}" title="Messages">
-				<i class="bi bi-envelope-fill fs-5"></i>
-				<span class="message-notif position-absolute translate-middle badge rounded-circle bg-danger" style="display: none;">
+			<div class="position-relative d-lg-none me-4 d-inline-block">
+				<a class="nav-link" href="{{ path('app_message') }}" title="Messages">
+					<i class="bi bi-envelope-fill fs-5"></i>
+				</a>
+				<span class="message-notif position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style="display: none;">
 					0
 				</span>
-			</a>
+			</div>
+			<div class="position-relative d-lg-none me-3 d-inline-block">
+				<a class="nav-link" href="{{ path('app_notifications') }}" title="Notifications">
+					<i class="bi bi-bell-fill fs-5"></i>
+				</a>
+				<span class="notification-badge position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style="display: none;">
+					0
+				</span>
+			</div>
 		{% endif %}
-		<a class="btn text-vert d-lg-none py-0 {% if app.user is not null %}dropdown-toggle{% endif %}" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-expanded="false" aria-label="Toggle navigation">
+
+		<a class="btn text-vert d-lg-none py-0 {% if app.user is not null %}dropdown-toggle{% endif %}" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
 			{% if app.user is null %}
 				<i class="bi bi-list fs-3"></i>
 			{% else %}
 				{{ avatar.formatSimple(app.user, 40) }}
 			{% endif %}
 		</a>
-
 	</div>
 </nav>
 
@@ -92,11 +126,17 @@
 					<i class="bi bi-box-arrow-in-right"></i>
 					Se connecter
 				</a>
-				<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
-					<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
-						<i class="bi bi-download"></i>
-						Installer HaloGari
-					</button>
+				<div class="list-group-item list-group-item-action bg-dark-subtle d-block d-lg-none">
+					<div class="d-flex justify-content-center gap-2 flex-wrap">
+						<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+							<i class="bi bi-download"></i>
+							Installer HaloGari
+						</button>
+						<button class="btnEnableNotifications btn btn-vert d-none">
+							<i class="bi bi-bell-fill"></i>
+							Activer les notifications
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -162,20 +202,28 @@
 				</a>
 
 				<div class="list-group-item list-group-item-action bg-dark-subtle text-center d-block d-lg-none">
-					<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
-						<i class="bi bi-download"></i>
-						Installer HaloGari
-					</button>
+
+					<div class="d-flex justify-content-center gap-2 flex-wrap">
+						<button class="installAppBtn px-1 btn btn-orange d-none" title="Installer HaloGari">
+							<i class="bi bi-download"></i>
+							Installer HaloGari
+						</button>
+						<button class="btnEnableNotifications btn btn-vert">
+							<i class="bi bi-bell-fill"></i>
+							Activer les notifications
+						</button>
+					</div>
 				</div>
+
 			</div>
 		</div>
 	{% endif %}
 </div>
 
 <main class="flex-grow-1
-						{% if app.request.attributes.get('_route') == 'app_home' %}
-						pt-0
-						{% else %}
-						pt-5
-						{% endif %}
-						  pt-md-5">
+																														{% if app.request.attributes.get('_route') == 'app_home' %}
+																														pt-0
+																														{% else %}
+																														pt-5
+																														{% endif %}
+																														  pt-md-5">

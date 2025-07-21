@@ -19,6 +19,8 @@ class Paiement
         'capture',        // argent capturé avec succès
         'rembourse',      // remboursement effectué
         'echoue',         // tentative échouée ou expirée
+        'annule', // ✅ nouveau statut clair pour une annulation volontaire
+
     ];
 
 
@@ -150,6 +152,8 @@ class Paiement
                 return 'Remboursé';
             case 'echoue':
                 return 'Échoué';
+            case 'annule':
+                return 'Annulé';
             default:
                 return ucfirst($this->statut);
         }

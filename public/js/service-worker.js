@@ -39,8 +39,3 @@ self.addEventListener('push', function(event) {
     self.registration.showNotification(data.title || 'HaloGari', options)
   );
 });
-
-self.registration.showNotification('Test HaloGari', {
-  body: 'Ceci est une notif test locale',
-  icon: '/images/logo.png'
-});

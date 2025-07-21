@@ -1,85 +1,119 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Conversation avec {{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}{% endblock %}
+{% block title %}Conversation avec
+	{{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <h3 class="mb-4">Conversation avec {{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}</h3>
-    <div class="mb-4 p-3 bg-light rounded border">
-        <strong>Trajet :</strong> {{ trajet.depart }} → {{ trajet.arrivee }} <br>
-        <strong>Départ :</strong> {{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}
-    </div>
-    <div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto;" id="messages-container">
-        {% for message in messages %}
-            <div class="mb-2 {% if message.expediteur.id == app.user.id %}text-end{% else %}text-start{% endif %}">
-                <div class="d-inline-block p-2 rounded {% if message.expediteur.id == app.user.id %}bg-primary text-white{% else %}bg-white border{% endif %}">
-                    {{ message.contenu }}
-                    <div class="small text-muted">
-                        {{ message.createdAt|date('d/m/Y H:i') }}
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <p class="text-center text-muted">Aucun message pour le moment.</p>
-        {% endfor %}
-    </div>
-    <form id="message-form" class="mt-3">
-    <div class="input-group">
-        <input type="text" id="message-input" class="form-control" placeholder="Votre message..." required>
-        <button class="btn btn-orange" type="submit">Envoyer</button>
-    </div>
-</form>
-</div>
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+				<h3 class="mb-4">Conversation avec
+					{{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}</h3>
+				<div class="mb-4 p-3 bg-light rounded border">
+					<strong>Trajet :</strong>
+					{{ trajet.depart }}
+					→
+					{{ trajet.arrivee }}
+					<br>
+					<strong>Départ :</strong>
+					{{ ladateTrajet }}
+					à
+					{{ trajet.heureTrajet|date('H:i') }}
+				</div>
+				<div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto; background: url('{{ asset('images/logo.png') }}') no-repeat center center; background-size: 200px; opacity: 0.95;" id="messages-container">
+
+					{% for message in messages %}
+						<div class="d-flex mb-3 {% if message.expediteur.id == app.user.id %}flex-row-reverse text-end{% endif %}">
+							{{ avatar.formatSimple(message.expediteur, 40) }}
+							<div>
+								<div class="p-2 rounded {% if message.expediteur.id == app.user.id %}bg-primary text-white{% else %}bg-white border{% endif %}">
+									{{ message.contenu }}
+								</div>
+								<div class="small text-muted mt-1">
+									{{ message.createdAt|date('d/m/Y H:i') }}
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<p class="text-center text-muted">Aucun message pour le moment.</p>
+					{% endfor %}
+
+				</div>
+				<form id="message-form" class="mt-3">
+					<div class="input-group">
+						<input type="text" id="message-input" class="form-control" placeholder="Votre message..." required>
+						<button class="btn btn-orange" type="submit">Envoyer</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 {% endblock %}
 {% block javascripts %}
-<script>
-document.getElementById('message-form').addEventListener('submit', function (e) {
-    e.preventDefault();
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const container = document.getElementById('messages-container');
+			if (container) {
+				container.scrollTop = container.scrollHeight;
+			}
+		});
+	</script>
+    <script>
+		document.getElementById('message-form').addEventListener('submit', function (e) {
+e.preventDefault();
 
-    const input = document.getElementById('message-input');
-    const contenu = input.value.trim();
+const input = document.getElementById('message-input');
+const contenu = input.value.trim();
 
-    const destinataireId = {{ otherUser.id|json_encode }};
-    const trajetId = {{ trajet.id|json_encode }};
+const destinataireId = {{ otherUser.id|json_encode }};
+const trajetId = {{ trajet.id|json_encode }};
 
-    if (contenu === '') return;
+if (contenu === '') 
+return;
 
-    fetch('/user/messages/send', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            contenu: contenu,
-            destinataire: destinataireId,
-            trajet: trajetId
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'sent') {
-            // Afficher dans la conversation
-            const container = document.getElementById('messages-container');
-            const div = document.createElement('div');
-            div.className = 'mb-2 text-end';
-            div.innerHTML = `
-                <div class="d-inline-block p-2 rounded bg-primary text-white">
-                    ${data.contenu}
-                    <div class="small text-muted">${data.createdAt}</div>
-                </div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
 
-            input.value = '';
-        } else {
-            alert('Erreur : ' + (data.message || 'Impossible d’envoyer le message.'));
-        }
-    })
-    .catch(err => {
-        console.error('Erreur réseau :', err);
-        alert('Erreur de connexion. Veuillez réessayer.');
-    });
+
+fetch('/user/messages/send', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{contenu: contenu, destinataire: destinataireId, trajet: trajetId}
+)
+}).then(res => res.json()).then(data => {
+if (data.status === 'sent') { // Afficher dans la conversation
+const container = document.getElementById('messages-container');
+const div = document.createElement('div');
+div.className = 'mb-2 text-end';
+div.innerHTML = `
+    <div class="d-flex flex-row-reverse mb-3">
+        ${data.avatarHtml}
+        <div>
+            <div class="p-2 rounded bg-primary text-white">
+                ${data.contenu}
+            </div>
+            <div class="small text-muted mt-1">
+                ${data.createdAt}
+            </div>
+        </div>
+    </div>`;
+container.appendChild(div);
+container.scrollTop = container.scrollHeight;
+
+input.value = '';
+} else {
+alert('Erreur : ' + (
+data.message || 'Impossible d’envoyer le message.'
+));
+}
+}).catch(err => {
+console.error('Erreur réseau :', err);
+alert('Erreur de connexion. Veuillez réessayer.');
 });
-</script>
+});
+	</script>
 
 {% endblock %}
