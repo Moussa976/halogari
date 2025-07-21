@@ -81,12 +81,6 @@ h1 {
     border-color: #ee7811de;
 }
 
-.btn-vert {
-    color: #ffffff;
-    background-color: #32623d;
-    border-color: #32623d;
-}
-
 .btn-outline-orange {
     color: #ee7911;
     background-color: #ffffff;
@@ -137,6 +131,12 @@ h1 {
 
 .nav-link {
     color: #32623d !important;
+}
+
+.btn-vert {
+    color: #ffffff !important;
+    background-color: #32623d;
+    border-color: #32623d;
 }
 
 .prix-euro {
