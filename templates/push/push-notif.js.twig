@@ -48,27 +48,24 @@ async function subscribeToPush() {
  * Gère l’affichage du popup de notifications + installation PWA sur iOS
  */
 document.addEventListener('DOMContentLoaded', () => {
-  // → Détection de l'environnement
   const ua = navigator.userAgent.toLowerCase();
   const isIos = /iphone|ipad|ipod/.test(ua);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
 
-  // 📱 iPhone + autre navigateur que Safari ➞ Message bloquant
-  if (isIos && !isSafari) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Installation non disponible',
-      html: `Pour installer <strong>HaloGari</strong> sur votre iPhone,<br>
-             veuillez ouvrir ce site (halogari.yt) dans <strong>Safari</strong> 📱`,
-      confirmButtonText: 'OK',
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    });
-    return;
+  // ✅ Guide d'installation iOS (Safari ou Chrome depuis iOS 16.4)
+  if (isIos && !isInStandaloneMode) {
+    setTimeout(() => {
+      Swal.fire({
+        icon: 'info',
+        title: '📲 Installer HaloGari',
+        html: `Dans Safari <strong>ou Chrome</strong>, appuyez sur <i class="bi bi-box-arrow-up"></i><br>
+               puis sur <strong>« Sur l’écran d’accueil »</strong> pour installer l’app.`,
+        confirmButtonText: 'OK'
+      });
+    }, 10000);
   }
 
-  // ✅ Si l'utilisateur n'a pas encore répondu au popup notifications
+  // ✅ Demande de permission push (si pas encore faite)
   if (!localStorage.getItem('pushPermissionAsked')) {
     setTimeout(() => {
       Swal.fire({
@@ -81,34 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
         allowOutsideClick: false,
         allowEscapeKey: false
       }).then((result) => {
-        // Marquer que l'utilisateur a déjà répondu
         localStorage.setItem('pushPermissionAsked', '1');
-
         if (result.isConfirmed) {
           subscribeToPush();
-
-          // Confirmer l'activation
-          // setTimeout(() => {
-          //   Swal.fire('✅ Notifications activées', '', 'success');
-          // }, 2000);
-
-          // 📱 Si Safari sur iOS, mais non installé ➞ instructions d'installation
-          if (isIos && isSafari && !isInStandaloneMode) {
-            setTimeout(() => {
-              Swal.fire({
-                icon: 'info',
-                title: '📲 Installer HaloGari',
-                html: `Appuie sur <strong><i class="bi bi-box-arrow-up"></i> Partager</strong>,<br>
-                       puis sur <strong>\"Sur l’écran d’accueil\"</strong> pour installer HaloGari.`,
-                confirmButtonText: 'OK'
-              });
-            }, 30000);
-          }
         } else {
-          // Refus d'autorisation
           Swal.fire('ℹ️ Notifications désactivées', '', 'info');
         }
       });
-    }, 5000); // Délai avant d'afficher la première popup
+    }, 2000);
   }
 });
