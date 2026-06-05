@@ -50,7 +50,13 @@
                   <small>{{ conv.lastMessage.createdAt|date_conversation }}</small>
                 </span>
                 <span class="hg-chat-item__route">{{ conv.trajet.depart }} → {{ conv.trajet.arrivee }}</span>
-                <span class="hg-chat-item__preview">{{ conv.lastMessage.contenu|slice(0, 58) }}{{ conv.lastMessage.contenu|length > 58 ? '…' : '' }}</span>
+                <span class="hg-chat-item__preview">
+                  {% if conv.lastMessage.contenu %}
+                    {{ conv.lastMessage.contenu|slice(0, 58) }}{{ conv.lastMessage.contenu|length > 58 ? '…' : '' }}
+                  {% else %}
+                    Photo envoyée
+                  {% endif %}
+                </span>
               </span>
               {% if conv.unreadCount > 0 %}
                 <span class="badge bg-danger rounded-pill">{{ conv.unreadCount }}</span>
@@ -68,22 +74,22 @@
           Conversations
         </a>
         <div class="d-flex align-items-center gap-3">
-          <span class="hg-avatar-wrap hg-chat-header__avatar-wrap{% if otherUser.isProfilVerifieComplet %} is-verified{% endif %}"
-                {% if otherUser.isProfilVerifieComplet %}
-                  tabindex="0"
-                  data-bs-toggle="tooltip"
-                  data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                  title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                {% endif %}>
+          <a href="{{ path('app_profile', { id: otherUser.id }) }}" class="hg-avatar-wrap hg-chat-header__avatar-wrap{% if otherUser.isProfilVerifieComplet %} is-verified{% endif %}"
+             {% if otherUser.isProfilVerifieComplet %}
+               tabindex="0"
+               data-bs-toggle="tooltip"
+               data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+               title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+             {% endif %}>
             <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
             {% if otherUser.isProfilVerifieComplet %}
               <span class="hg-verified-badge" aria-label="Profil vérifié">
                 <i class="bi bi-patch-check-fill"></i>
               </span>
             {% endif %}
-          </span>
+          </a>
           <div>
-            <h2>{{ otherName }}</h2>
+            <h2><a href="{{ path('app_profile', { id: otherUser.id }) }}" class="text-reset text-decoration-none">{{ otherName }}</a></h2>
             <p>{{ trajet.depart }} → {{ trajet.arrivee }} · {{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
           </div>
         </div>
@@ -94,22 +100,31 @@
           {% set isMine = message.expediteur.id == app.user.id %}
           {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
           <div class="hg-message {{ isMine ? 'is-mine' : '' }}">
-            <span class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
-                  {% if message.expediteur.isProfilVerifieComplet %}
-                    tabindex="0"
-                    data-bs-toggle="tooltip"
-                    data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                    title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                  {% endif %}>
+            <a href="{{ path('app_profile', { id: message.expediteur.id }) }}" class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
+               {% if message.expediteur.isProfilVerifieComplet %}
+                 tabindex="0"
+                 data-bs-toggle="tooltip"
+                 data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                 title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+               {% endif %}>
               <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
               {% if message.expediteur.isProfilVerifieComplet %}
                 <span class="hg-verified-badge" aria-label="Profil vérifié">
                   <i class="bi bi-patch-check-fill"></i>
                 </span>
               {% endif %}
-            </span>
+            </a>
             <div class="hg-message__content">
-              <div class="hg-message__bubble">{{ message.contenu }}</div>
+              <div class="hg-message__bubble">
+                {% if message.imageFilename %}
+                  <a href="{{ asset('uploads/messages/' ~ message.imageFilename) }}" target="_blank" rel="noopener" class="hg-message__image-link">
+                    <img src="{{ asset('uploads/messages/' ~ message.imageFilename) }}" alt="Photo envoyée par {{ senderName }}" class="hg-message__image">
+                  </a>
+                {% endif %}
+                {% if message.contenu %}
+                  <div class="hg-message__text">{{ message.contenu|nl2br }}</div>
+                {% endif %}
+              </div>
               <div class="hg-message__date">{{ message.createdAt|date_conversation }}</div>
             </div>
           </div>
@@ -118,12 +133,17 @@
         {% endfor %}
       </div>
 
-      <form id="message-form" class="hg-chat-form">
-        <input type="text" id="message-input" class="form-control" placeholder="Écrivez votre message..." maxlength="2000" autocomplete="off" required>
+      <form id="message-form" class="hg-chat-form" enctype="multipart/form-data">
+        <input type="file" id="message-image" name="image" accept="image/jpeg,image/png,image/webp" hidden>
+        <button class="btn btn-outline-secondary hg-chat-photo-btn" type="button" id="message-image-button" title="Ajouter une photo">
+          <i class="bi bi-image"></i>
+        </button>
+        <textarea id="message-input" name="contenu" class="form-control" placeholder="Écrivez votre message..." maxlength="2000" autocomplete="off" rows="2"></textarea>
         <button class="btn btn-orange" type="submit">
           <i class="bi bi-send-fill"></i>
           Envoyer
         </button>
+        <div class="hg-chat-image-preview" id="message-image-preview" hidden></div>
       </form>
     </article>
   </div>
@@ -140,18 +160,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const form = document.getElementById('message-form');
   const input = document.getElementById('message-input');
+  const imageInput = document.getElementById('message-image');
+  const imageButton = document.getElementById('message-image-button');
+  const imagePreview = document.getElementById('message-image-preview');
   const destinataireId = {{ otherUser.id|json_encode }};
   const trajetId = {{ trajet.id|json_encode }};
+
+  imageButton?.addEventListener('click', () => imageInput?.click());
+
+  imageInput?.addEventListener('change', function () {
+    const file = imageInput.files?.[0];
+    if (!file) {
+      imagePreview.hidden = true;
+      imagePreview.innerHTML = '';
+      return;
+    }
+
+    imagePreview.hidden = false;
+    imagePreview.innerHTML = '';
+    const previewLabel = document.createElement('span');
+    previewLabel.innerHTML = '<i class="bi bi-image"></i> ';
+    previewLabel.append(document.createTextNode(file.name));
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'btn btn-link btn-sm text-danger p-0';
+    removeButton.textContent = 'Retirer';
+
+    imagePreview.appendChild(previewLabel);
+    imagePreview.appendChild(removeButton);
+
+    removeButton.addEventListener('click', () => {
+      imageInput.value = '';
+      imagePreview.hidden = true;
+      imagePreview.innerHTML = '';
+    });
+  });
+
+  input?.addEventListener('keydown', function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      form?.requestSubmit();
+    }
+  });
 
   form?.addEventListener('submit', function (event) {
     event.preventDefault();
     const contenu = input.value.trim();
-    if (contenu === '') return;
+    const image = imageInput.files?.[0] || null;
+    if (contenu === '' && !image) return;
+
+    const formData = new FormData();
+    formData.append('contenu', contenu);
+    formData.append('destinataire', destinataireId);
+    formData.append('trajet', trajetId);
+    if (image) {
+      formData.append('image', image);
+    }
 
     fetch('{{ path('api_message_send') }}', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({contenu: contenu, destinataire: destinataireId, trajet: trajetId})
+      body: formData
     })
       .then(response => response.json())
       .then(data => {
@@ -167,8 +236,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const message = document.createElement('div');
         message.className = 'hg-message is-mine';
 
-        const avatarWrap = document.createElement('span');
+        const avatarWrap = document.createElement('a');
         avatarWrap.className = 'hg-avatar-wrap hg-message__avatar-wrap';
+        avatarWrap.href = data.profileUrl || '#';
         if (data.isVerifiedProfile) {
           avatarWrap.classList.add('is-verified');
           avatarWrap.tabIndex = 0;
@@ -197,7 +267,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const bubble = document.createElement('div');
         bubble.className = 'hg-message__bubble';
-        bubble.textContent = data.contenu;
+
+        if (data.imageUrl) {
+          const imageLink = document.createElement('a');
+          imageLink.href = data.imageUrl;
+          imageLink.target = '_blank';
+          imageLink.rel = 'noopener';
+          imageLink.className = 'hg-message__image-link';
+
+          const imageElement = document.createElement('img');
+          imageElement.src = data.imageUrl;
+          imageElement.alt = 'Photo envoyée';
+          imageElement.className = 'hg-message__image';
+
+          imageLink.appendChild(imageElement);
+          bubble.appendChild(imageLink);
+        }
+
+        if (data.contenu) {
+          const text = document.createElement('div');
+          text.className = 'hg-message__text';
+          text.textContent = data.contenu;
+          bubble.appendChild(text);
+        }
 
         const date = document.createElement('div');
         date.className = 'hg-message__date';
@@ -210,6 +302,9 @@ document.addEventListener('DOMContentLoaded', function () {
         container.appendChild(message);
         container.scrollTop = container.scrollHeight;
         input.value = '';
+        imageInput.value = '';
+        imagePreview.hidden = true;
+        imagePreview.innerHTML = '';
       })
       .catch(() => {
         Swal.fire({

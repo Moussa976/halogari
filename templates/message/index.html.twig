@@ -43,7 +43,13 @@
                 <small>{{ conv.lastMessage.createdAt|date_conversation }}</small>
               </span>
               <span class="hg-chat-item__route">{{ conv.trajet.depart }} → {{ conv.trajet.arrivee }}</span>
-              <span class="hg-chat-item__preview">{{ conv.lastMessage.contenu|slice(0, 80) }}{{ conv.lastMessage.contenu|length > 80 ? '…' : '' }}</span>
+              <span class="hg-chat-item__preview">
+                {% if conv.lastMessage.contenu %}
+                  {{ conv.lastMessage.contenu|slice(0, 80) }}{{ conv.lastMessage.contenu|length > 80 ? '…' : '' }}
+                {% else %}
+                  Photo envoyée
+                {% endif %}
+              </span>
             </span>
             {% if conv.unreadCount > 0 %}
               <span class="badge bg-danger rounded-pill">{{ conv.unreadCount }}</span>

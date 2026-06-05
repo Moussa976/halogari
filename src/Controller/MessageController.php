@@ -11,10 +11,12 @@ use App\Service\NotificationMessageService;
 use App\Utils\DateHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class MessageController extends AbstractController
 {
@@ -116,22 +118,33 @@ class MessageController extends AbstractController
     public function sendMessage(
         Request $request,
         EntityManagerInterface $em,
-        NotificationMessageService $notificationMessageService
+        NotificationMessageService $notificationMessageService,
+        SluggerInterface $slugger
     ): JsonResponse {
         try {
             $user = $this->getUser();
-            $data = json_decode($request->getContent(), true);
+            if (!$user instanceof User) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Vous devez être connecté.'], 401);
+            }
 
-            if (!$user instanceof User || !$data) {
+            $isJson = false !== strpos((string) $request->headers->get('Content-Type'), 'application/json');
+            $data = $isJson ? json_decode($request->getContent(), true) : $request->request->all();
+
+            if (!$data) {
                 return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
             }
 
             $destinataireId = $data['destinataire'] ?? null;
             $trajetId = $data['trajet'] ?? null;
             $contenu = isset($data['contenu']) ? trim((string) $data['contenu']) : '';
+            $imageFile = $request->files->get('image');
 
-            if (!$destinataireId || !$trajetId || $contenu === '') {
+            if (!$destinataireId || !$trajetId) {
                 return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
+            }
+
+            if ($contenu === '' && !$imageFile instanceof UploadedFile) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Écrivez un message ou ajoutez une photo.'], 400);
             }
 
             if (mb_strlen($contenu) > 2000) {
@@ -156,10 +169,22 @@ class MessageController extends AbstractController
                 ], 403);
             }
 
+            $imageFilename = null;
+            if ($imageFile instanceof UploadedFile) {
+                $imageFilename = $this->storeMessageImage($imageFile, $slugger);
+                if (!$imageFilename) {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'message' => 'Photo invalide. Formats acceptés : JPG, PNG ou WebP, 4 Mo maximum.',
+                    ], 400);
+                }
+            }
+
             $message = new Message();
             $message->setExpediteur($user);
             $message->setDestinataire($destinataire);
             $message->setContenu($contenu);
+            $message->setImageFilename($imageFilename);
             $message->setTrajet($trajet);
             $message->setCreatedAt(new \DateTime());
 
@@ -171,9 +196,11 @@ class MessageController extends AbstractController
             return new JsonResponse([
                 'status' => 'sent',
                 'contenu' => $message->getContenu(),
+                'imageUrl' => $message->getImageFilename() ? '/uploads/messages/' . $message->getImageFilename() : null,
                 'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
                 'avatarUrl' => $user->getPhoto() ? '/uploads/photos/' . $user->getPhoto() : '/images/profil.png',
                 'avatarAlt' => 'Photo de ' . ($user->getPrenom() ?: 'profil'),
+                'profileUrl' => $this->generateUrl('app_profile', ['id' => $user->getId()]),
                 'isVerifiedProfile' => $user->isProfilVerifieComplet(),
             ]);
         } catch (\Throwable $e) {
@@ -240,6 +267,28 @@ class MessageController extends AbstractController
         }
 
         return $grouped;
+    }
+
+    private function storeMessageImage(UploadedFile $file, SluggerInterface $slugger): ?string
+    {
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array((string) $file->getMimeType(), $allowedMimeTypes, true) || $file->getSize() > 4 * 1024 * 1024) {
+            return null;
+        }
+
+        $directory = $this->getParameter('messages_directory');
+        if (!is_dir($directory)) {
+            mkdir($directory, 0775, true);
+        }
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeName = $slugger->slug($originalName ?: 'message')->lower();
+        $extension = $file->guessExtension() ?: 'jpg';
+        $filename = $safeName . '-' . bin2hex(random_bytes(6)) . '.' . $extension;
+
+        $file->move($directory, $filename);
+
+        return $filename;
     }
 
     private function formatConversationDate(\DateTimeInterface $date): string

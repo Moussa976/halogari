@@ -34,6 +34,11 @@ class Message
     private $contenu;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $imageFilename;
+
+    /**
      * @ORM\ManyToOne(targetEntity=Trajet::class, inversedBy="messages")
      */
     private $trajet;
@@ -93,6 +98,18 @@ class Message
     public function setContenu(string $contenu): self
     {
         $this->contenu = $contenu;
+
+        return $this;
+    }
+
+    public function getImageFilename(): ?string
+    {
+        return $this->imageFilename;
+    }
+
+    public function setImageFilename(?string $imageFilename): self
+    {
+        $this->imageFilename = $imageFilename;
 
         return $this;
     }
