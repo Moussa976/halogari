@@ -43,8 +43,9 @@
 {% set trajetTimestamp = trajetDateTime|date('U') %}
 {% set nowTimestamp = 'now'|date('U') %}
 {% set trajetPasse = trajetTimestamp < nowTimestamp %}
-{% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut in ['en_attente', 'autorise']) %}
+{% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'en_attente') %}
 {% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
+{% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['autorise', 'capture'] %}
 
 {% set dejaNote = false %}
 {% set maNote = null %}
@@ -164,8 +165,8 @@
 
       {% if peutPayer %}
         <div class="reservation-note">
-          <i class="bi bi-lock-fill"></i>
-          <p>Le paiement est sécurisé via Stripe. Il n’est prélevé qu’une fois le trajet terminé et validé.</p>
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : payez rapidement pour confirmer votre place et éviter une annulation avant le départ.</p>
         </div>
       {% endif %}
 
@@ -249,9 +250,25 @@
       {% endif %}
 
       {% if peutAnnuler %}
+        <article class="app-panel reservation-cancel-policy">
+          <h2>Conditions d’annulation</h2>
+          {% if paiementEngage %}
+            <p>Votre paiement est déjà autorisé ou confirmé. En cas d’annulation, HaloGari applique la politique de remboursement selon le délai avant le départ.</p>
+            <ul>
+              <li>Plus de 24 h avant le départ : remboursement total.</li>
+              <li>Entre 24 h et 3 h avant le départ : remboursement partiel possible.</li>
+              <li>Moins de 3 h avant le départ : remboursement non garanti.</li>
+            </ul>
+          {% elseif reservation.statut == 'acceptee' %}
+            <p>Votre réservation est acceptée, mais le paiement n’est pas finalisé. Si vous annulez maintenant, les places seront remises à disposition du conducteur.</p>
+          {% else %}
+            <p>Votre demande est encore en attente. Vous pouvez l’annuler sans paiement ni remboursement à gérer.</p>
+          {% endif %}
+        </article>
+
         <article class="app-panel reservation-danger">
           <h2>Besoin d’annuler ?</h2>
-          <p>Annulez seulement si vous ne pouvez vraiment pas voyager. Les places seront remises à disposition.</p>
+          <p>Annulez seulement si vous ne pouvez vraiment pas voyager. Cette action change le statut de votre réservation.</p>
           <form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
             <input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
             <button type="submit" class="btn btn-outline-danger w-100">

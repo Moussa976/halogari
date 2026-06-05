@@ -196,7 +196,7 @@ class ReservationController extends AbstractController
         $em->flush();
 
         // 📩 Notification au passager
-        $this->addFlash('success', 'Réservation acceptée avec succès.');
+        $this->addFlash('success', 'Réservation acceptée. Le passager a été notifié et doit payer rapidement pour confirmer sa place.');
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);

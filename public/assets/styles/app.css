@@ -1203,6 +1203,29 @@ textarea.form-control.app-message-textarea {
     font-size: 1.25rem;
 }
 
+.reservation-cancel-policy {
+    border-color: rgba(255, 193, 7, .42);
+    background: rgba(255, 249, 232, .78);
+}
+
+.reservation-cancel-policy h2 {
+    font-size: 1.25rem;
+}
+
+.reservation-cancel-policy p,
+.reservation-cancel-policy ul {
+    color: var(--hg-ink);
+}
+
+.reservation-cancel-policy ul {
+    margin: .75rem 0 0;
+    padding-left: 1.1rem;
+}
+
+.reservation-cancel-policy li + li {
+    margin-top: .35rem;
+}
+
 .reservation-confirmation {
     max-width: 940px;
 }

@@ -44,6 +44,10 @@
                 </div>
 
                 {% if etat == 'acceptee' %}
+                    <div style="background-color: #fff3cd; border: 1px solid #ffe08a; color: #5f4600; padding: 14px; border-radius: 6px; margin: 20px 0; font-size: 15px;">
+                        <strong>Paiement attendu :</strong> votre place est acceptée par le conducteur, mais elle doit être payée rapidement pour éviter tout blocage avant le départ.
+                    </div>
+
                     <!-- Bouton de paiement -->
                     <div style="text-align: center; margin: 25px 0;">
                         <a href="{{ url('paiement_form', { id: reservation.id }) }}"

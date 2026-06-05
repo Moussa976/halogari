@@ -58,13 +58,18 @@ class NotificationService
         $this->createNotification(
             $passager,
             'reservation',
-            $etat === 'acceptee' ? 'Reservation acceptee' : 'Reservation refusee',
-            sprintf(
-                'Votre demande pour %s -> %s a ete %s.',
-                $trajet->getDepart(),
-                $trajet->getArrivee(),
-                $etat === 'acceptee' ? 'acceptee' : 'refusee'
-            ),
+            $etat === 'acceptee' ? 'Réservation acceptée : paiement attendu' : 'Réservation refusée',
+            $etat === 'acceptee'
+                ? sprintf(
+                    'Votre demande pour %s -> %s est acceptée. Payez rapidement pour confirmer votre place.',
+                    $trajet->getDepart(),
+                    $trajet->getArrivee()
+                )
+                : sprintf(
+                    'Votre demande pour %s -> %s a été refusée.',
+                    $trajet->getDepart(),
+                    $trajet->getArrivee()
+                ),
             '/user/reservation/' . $reservation->getId()
         );
     }
