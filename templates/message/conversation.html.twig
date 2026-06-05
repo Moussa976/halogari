@@ -135,14 +135,15 @@
 
       <form id="message-form" class="hg-chat-form" enctype="multipart/form-data">
         <input type="file" id="message-image" name="image" accept="image/jpeg,image/png,image/webp" hidden>
-        <button class="btn btn-outline-secondary hg-chat-photo-btn" type="button" id="message-image-button" title="Ajouter une photo">
-          <i class="bi bi-image"></i>
-        </button>
-        <textarea id="message-input" name="contenu" class="form-control" placeholder="Écrivez votre message..." maxlength="2000" autocomplete="off" rows="2"></textarea>
-        <button class="btn btn-orange" type="submit">
-          <i class="bi bi-send-fill"></i>
-          Envoyer
-        </button>
+        <div class="hg-chat-composer">
+          <button class="btn hg-chat-photo-btn" type="button" id="message-image-button" title="Ajouter une photo" aria-label="Ajouter une photo">
+            <i class="bi bi-image"></i>
+          </button>
+          <textarea id="message-input" name="contenu" class="form-control" placeholder="Message..." maxlength="2000" autocomplete="off" rows="1"></textarea>
+          <button class="btn btn-orange hg-chat-send-btn" type="submit" aria-label="Envoyer">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
         <div class="hg-chat-image-preview" id="message-image-preview" hidden></div>
       </form>
     </article>
@@ -165,36 +166,74 @@ document.addEventListener('DOMContentLoaded', function () {
   const imagePreview = document.getElementById('message-image-preview');
   const destinataireId = {{ otherUser.id|json_encode }};
   const trajetId = {{ trajet.id|json_encode }};
+  let previewUrl = null;
+
+  const clearImagePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+    if (imageInput) {
+      imageInput.value = '';
+    }
+    imagePreview.hidden = true;
+    imagePreview.innerHTML = '';
+  };
 
   imageButton?.addEventListener('click', () => imageInput?.click());
 
   imageInput?.addEventListener('change', function () {
     const file = imageInput.files?.[0];
     if (!file) {
-      imagePreview.hidden = true;
-      imagePreview.innerHTML = '';
+      clearImagePreview();
       return;
     }
 
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Photo invalide',
+        text: 'Ajoutez une image JPG, PNG ou WebP.'
+      });
+      clearImagePreview();
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Photo trop lourde',
+        text: 'La photo doit faire 4 Mo maximum.'
+      });
+      clearImagePreview();
+      return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    previewUrl = URL.createObjectURL(file);
     imagePreview.hidden = false;
     imagePreview.innerHTML = '';
-    const previewLabel = document.createElement('span');
-    previewLabel.innerHTML = '<i class="bi bi-image"></i> ';
-    previewLabel.append(document.createTextNode(file.name));
+
+    const figure = document.createElement('figure');
+    figure.className = 'hg-chat-preview-card';
+
+    const image = document.createElement('img');
+    image.src = previewUrl;
+    image.alt = 'Aperçu de la photo à envoyer';
 
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
-    removeButton.className = 'btn btn-link btn-sm text-danger p-0';
-    removeButton.textContent = 'Retirer';
+    removeButton.className = 'hg-chat-preview-remove';
+    removeButton.setAttribute('aria-label', 'Retirer la photo');
+    removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
 
-    imagePreview.appendChild(previewLabel);
-    imagePreview.appendChild(removeButton);
+    figure.appendChild(image);
+    figure.appendChild(removeButton);
+    imagePreview.appendChild(figure);
 
-    removeButton.addEventListener('click', () => {
-      imageInput.value = '';
-      imagePreview.hidden = true;
-      imagePreview.innerHTML = '';
-    });
+    removeButton.addEventListener('click', clearImagePreview);
   });
 
   input?.addEventListener('keydown', function (event) {
@@ -302,9 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.appendChild(message);
         container.scrollTop = container.scrollHeight;
         input.value = '';
-        imageInput.value = '';
-        imagePreview.hidden = true;
-        imagePreview.innerHTML = '';
+        clearImagePreview();
       })
       .catch(() => {
         Swal.fire({
