@@ -63,6 +63,10 @@
 
     <article class="app-panel hg-chat-panel">
       <header class="hg-chat-header">
+        <a href="{{ path('app_message') }}" class="btn btn-outline-secondary btn-sm hg-chat-back">
+          <i class="bi bi-arrow-left"></i>
+          Conversations
+        </a>
         <div class="d-flex align-items-center gap-3">
           <span class="hg-avatar-wrap hg-chat-header__avatar-wrap{% if otherUser.isProfilVerifieComplet %} is-verified{% endif %}"
                 {% if otherUser.isProfilVerifieComplet %}
