@@ -1,5 +1,4 @@
 {% extends 'base.html.twig' %}
-{% import 'partials/avatar.html.twig' as avatar %}
 
 {% set displayName = user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom %}
 {% set isOwner = app.user and app.user.id == user.id %}
@@ -15,10 +14,17 @@
   </div>
 </section>
 
-<section class="container app-page-grid">
-  <article class="app-panel">
-    <div class="d-flex flex-column flex-md-row align-items-center gap-4">
-      {{ avatar.formatModifiable(user, 120, isOwner) }}
+<section class="container app-page-grid hg-profile-grid">
+  <article class="app-panel hg-profile-main">
+    <div class="hg-profile-summary">
+      <div class="hg-profile-photo-wrap">
+        <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}" alt="Photo de {{ displayName }}" class="hg-profile-photo">
+        {% if isOwner %}
+          <a href="{{ path('app_parametres') }}" class="btn btn-light border rounded-circle hg-profile-photo-edit" title="Modifier la photo">
+            <i class="bi bi-pencil-fill"></i>
+          </a>
+        {% endif %}
+      </div>
       <div class="text-center text-md-start flex-grow-1">
         <h2 class="mb-1">{{ displayName }}</h2>
         <p class="text-muted mb-2">

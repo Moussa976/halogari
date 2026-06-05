@@ -1,5 +1,4 @@
 {% extends 'base.html.twig' %}
-{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}HaloGari | Paramètres du compte{% endblock %}
 
@@ -20,11 +19,17 @@
           <h2>Photo de profil</h2>
           <p>Une photo claire aide les conducteurs et les passagers à se reconnaître plus facilement.</p>
         </div>
-        {{ avatar.formatSimple(app.user, 96, "photoProfil") }}
       </div>
 
       <form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}" class="hg-form-grid">
         <input type="hidden" name="_token" value="{{ csrf_token('parametres_photo') }}">
+        <div class="hg-form-full hg-photo-preview-row">
+          <img id="settingsPhotoPreview" src="{{ app.user.photo ? asset('uploads/photos/' ~ app.user.photo) : asset('images/profil.png') }}" alt="Photo de profil actuelle" class="hg-photo-preview">
+          <div>
+            <strong>Aperçu de votre photo</strong>
+            <p class="mb-0 text-muted">Choisissez une image pour prévisualiser le résultat avant d'enregistrer.</p>
+          </div>
+        </div>
         <div class="hg-form-full">
           <label for="photoProfil" class="form-label">Nouvelle photo</label>
           <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" id="photoProfil" required>
@@ -201,6 +206,14 @@ document.addEventListener('DOMContentLoaded', function () {
   const autreContainer = document.getElementById('autre_doc_container');
   const autreInput = document.getElementById('autre_doc');
   const form = document.getElementById('documentForm');
+  const photoInput = document.getElementById('photoProfil');
+  const photoPreview = document.getElementById('settingsPhotoPreview');
+
+  photoInput?.addEventListener('change', function () {
+    const file = this.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    photoPreview.src = URL.createObjectURL(file);
+  });
 
   select?.addEventListener('change', function () {
     const isOther = this.value === 'autre';
