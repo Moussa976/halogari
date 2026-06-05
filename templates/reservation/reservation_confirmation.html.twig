@@ -1,40 +1,95 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Confirmation de réservation{% endblock %}
+{% block title %}HaloGari | Réservation enregistrée{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="text-center mb-4">
-        <h2 class="text-success">🎉 Réservation enregistrée</h2>
-        <p>
-            Merci <strong>{{ app.user.prenom }}</strong>, votre demande de réservation a bien été enregistrée.<br>
-            <span class="text-primary fw-bold">Elle est maintenant en attente de validation par le conducteur.</span>
-        </p>
-        <p class="text-muted mt-2">
-            Vous recevrez une notification dès que le conducteur aura confirmé ou refusé votre demande.
-        </p>
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Demande envoyée</p>
+    <h1>Réservation enregistrée</h1>
+    <p>Votre demande est partie chez le conducteur. Vous serez prévenu dès qu’il aura répondu.</p>
+  </div>
+</section>
+
+<section class="container hg-account-section reservation-confirmation">
+  <article class="app-panel reservation-confirmation__card">
+    <div class="reservation-success-icon">
+      <i class="bi bi-send-check-fill"></i>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-vert text-white fw-bold">
-            Détails du trajet réservé
-        </div>
-        <div class="card-body">
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item"><i class="bi bi-geo-fill text-vert"></i> <strong>Départ :</strong> {{ reservation.trajet.depart }}</li>
-                <li class="list-group-item"><i class="bi bi-flag-fill text-vert"></i> <strong>Arrivée :</strong> {{ reservation.trajet.arrivee }}</li>
-                <li class="list-group-item"><i class="bi bi-calendar-event-fill text-vert"></i> <strong>Date :</strong> {{ reservation.trajet.dateTrajet|date('d/m/Y') }}</li>
-                <li class="list-group-item"><i class="bi bi-clock-fill text-vert"></i> <strong>Heure :</strong> {{ reservation.trajet.heureTrajet|date('H:i') }}</li>
-                <li class="list-group-item"><i class="bi bi-person-fill text-vert"></i> <strong>Places réservées :</strong> {{ reservation.places }}</li>
-                <li class="list-group-item"><i class="bi bi-cash-coin text-vert"></i> <strong>Montant total :</strong> {{ reservation.prixTotal }} €</li>
-            </ul>
-        </div>
+    <div class="reservation-confirmation__intro">
+      <h2>Merci {{ app.user.prenom }}, c’est bien enregistré.</h2>
+      <p>
+        Votre réservation est en attente de validation. Si le conducteur accepte,
+        vous pourrez ensuite finaliser le paiement sécurisé depuis votre espace.
+      </p>
     </div>
 
-    <div class="mt-4 text-center">
-        <a href="{{ path('app_mes_reservations') }}" class="btn btn-orange btn-lg">
-            <i class="bi bi-list-check"></i> Voir mes réservations
-        </a>
+    <div class="reservation-route-card">
+      <div>
+        <span>Départ</span>
+        <strong>{{ reservation.trajet.depart }}</strong>
+      </div>
+      <i class="bi bi-arrow-right-short"></i>
+      <div>
+        <span>Arrivée</span>
+        <strong>{{ reservation.trajet.arrivee }}</strong>
+      </div>
     </div>
-</div>
+
+    <div class="reservation-stats">
+      <div class="reservation-stat">
+        <span>Date</span>
+        <strong>{{ reservation.trajet.dateTrajet|date_fr('d F Y') }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Heure</span>
+        <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Places</span>
+        <strong>{{ reservation.places }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Total</span>
+        <strong>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</strong>
+      </div>
+    </div>
+
+    <div class="reservation-confirmation__driver">
+      {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
+      <div>
+        <span>Conducteur</span>
+        <strong>{{ reservation.trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.trajet.conducteur.prenom }}</strong>
+      </div>
+    </div>
+
+    <div class="reservation-next-steps">
+      <div class="reservation-next-step is-active">
+        <span><i class="bi bi-1-circle-fill"></i></span>
+        <p>Le conducteur reçoit votre demande.</p>
+      </div>
+      <div class="reservation-next-step">
+        <span><i class="bi bi-2-circle"></i></span>
+        <p>Vous recevez une notification quand il répond.</p>
+      </div>
+      <div class="reservation-next-step">
+        <span><i class="bi bi-3-circle"></i></span>
+        <p>Vous payez seulement si la réservation est acceptée.</p>
+      </div>
+    </div>
+
+    <div class="reservation-actions reservation-actions--center">
+      <a href="{{ path('app_user_reservation', { id: reservation.id }) }}" class="btn btn-primary">
+        <i class="bi bi-eye"></i>
+        Suivre ma réservation
+      </a>
+      <a href="{{ path('app_mes_reservations') }}" class="btn btn-outline-primary">
+        <i class="bi bi-list-check"></i>
+        Mes réservations
+      </a>
+    </div>
+  </article>
+</section>
 {% endblock %}

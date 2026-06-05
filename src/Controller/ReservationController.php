@@ -29,6 +29,33 @@ class ReservationController extends AbstractController
     }
 
     /**
+     * @Route("/reservation/{id}", name="app_reservation_direct", methods={"GET"})
+     */
+    public function showDirect(int $id, ReservationRepository $reservationRepository): Response
+    {
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour consulter une réservation.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            $this->addFlash('error', 'Réservation introuvable.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        if ($reservation->getPassager() === $this->getUser()) {
+            return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
+        }
+
+        if ($reservation->getTrajet()->getConducteur() === $this->getUser()) {
+            return $this->redirectToRoute('app_user_trajet', ['id' => $reservation->getTrajet()->getId()]);
+        }
+
+        throw $this->createAccessDeniedException("Vous n'avez pas accès à cette réservation.");
+    }
+
+    /**
      * @Route("/reservation/{id}", name="app_reservation", methods={"POST"})
      */
     public function create(Request $request, int $id, EntityManagerInterface $em, NotificationService $notifier): Response
