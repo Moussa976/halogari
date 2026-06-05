@@ -992,10 +992,17 @@ textarea.form-control.app-message-textarea {
     object-fit: cover;
 }
 
+.hg-avatar-wrap.is-verified .profile-avatar,
+.hg-avatar-wrap.is-verified img,
+.hg-profile-photo-wrap.is-verified .hg-profile-photo {
+    border-color: #22c55e;
+}
+
 .hg-verified-badge {
     position: absolute;
-    right: -4px;
-    bottom: -4px;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, 42%);
     z-index: 2;
     width: clamp(16px, 38%, 24px);
     height: clamp(16px, 38%, 24px);
@@ -1003,7 +1010,7 @@ textarea.form-control.app-message-textarea {
     align-items: center;
     justify-content: center;
     color: #fff;
-    border: 2px solid #fff;
+    border: 2px solid #22c55e;
     border-radius: 999px;
     background: linear-gradient(135deg, #166534, #22c55e);
     box-shadow: 0 6px 14px rgba(22, 101, 52, .28);
@@ -1013,8 +1020,8 @@ textarea.form-control.app-message-textarea {
 .hg-profile-photo-wrap .hg-verified-badge {
     width: 34px;
     height: 34px;
-    right: 8px;
-    bottom: 6px;
+    left: 50%;
+    bottom: 0;
     font-size: 1rem;
 }
 
