@@ -117,8 +117,11 @@
             <div class="hg-message__content">
               <div class="hg-message__bubble">
                 {% if message.imageFilename %}
-                  <a href="{{ asset('uploads/messages/' ~ message.imageFilename) }}" target="_blank" rel="noopener" class="hg-message__image-link">
-                    <img src="{{ asset('uploads/messages/' ~ message.imageFilename) }}" alt="Photo envoyée par {{ senderName }}" class="hg-message__image">
+                  <a href="{{ asset('uploads/messages/' ~ message.imageFilename) }}" class="hg-message__image-link js-chat-image is-loading" aria-label="Agrandir la photo envoyée par {{ senderName }}">
+                    <span class="hg-message__image-loader" aria-hidden="true">
+                      <span class="spinner-border spinner-border-sm"></span>
+                    </span>
+                    <img src="{{ asset('uploads/messages/' ~ message.imageFilename) }}" alt="Photo envoyée par {{ senderName }}" class="hg-message__image" loading="lazy" decoding="async">
                   </a>
                 {% endif %}
                 {% if message.contenu %}
@@ -149,6 +152,15 @@
     </article>
   </div>
 </section>
+
+<div class="modal fade hg-chat-image-modal" id="chatImageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <button type="button" class="btn-close hg-chat-image-modal__close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      <img src="" alt="" class="hg-chat-image-modal__image" id="chatImageModalImg">
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -164,9 +176,59 @@ document.addEventListener('DOMContentLoaded', function () {
   const imageInput = document.getElementById('message-image');
   const imageButton = document.getElementById('message-image-button');
   const imagePreview = document.getElementById('message-image-preview');
+  const chatImageModal = document.getElementById('chatImageModal');
+  const chatImageModalImg = document.getElementById('chatImageModalImg');
   const destinataireId = {{ otherUser.id|json_encode }};
   const trajetId = {{ trajet.id|json_encode }};
   let previewUrl = null;
+
+  const openChatImageModal = (src, alt) => {
+    if (!chatImageModal || !chatImageModalImg || !window.bootstrap) {
+      window.open(src, '_blank', 'noopener');
+      return;
+    }
+
+    chatImageModalImg.src = src;
+    chatImageModalImg.alt = alt || 'Photo de conversation';
+    bootstrap.Modal.getOrCreateInstance(chatImageModal).show();
+  };
+
+  const prepareChatImage = (link) => {
+    const image = link.querySelector('img');
+    if (!image) return;
+
+    const markLoaded = () => {
+      link.classList.remove('is-loading', 'is-error');
+      link.classList.add('is-loaded');
+    };
+
+    const markError = () => {
+      link.classList.remove('is-loading');
+      link.classList.add('is-error');
+    };
+
+    if (image.complete && image.naturalWidth > 0) {
+      markLoaded();
+    } else {
+      link.classList.add('is-loading');
+      image.addEventListener('load', markLoaded, { once: true });
+      image.addEventListener('error', markError, { once: true });
+    }
+
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      openChatImageModal(link.href || image.currentSrc || image.src, image.alt);
+    });
+  };
+
+  document.querySelectorAll('.js-chat-image').forEach(prepareChatImage);
+
+  chatImageModal?.addEventListener('hidden.bs.modal', () => {
+    if (chatImageModalImg) {
+      chatImageModalImg.src = '';
+      chatImageModalImg.alt = '';
+    }
+  });
 
   const clearImagePreview = () => {
     if (previewUrl) {
@@ -313,17 +375,25 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.imageUrl) {
           const imageLink = document.createElement('a');
           imageLink.href = data.imageUrl;
-          imageLink.target = '_blank';
-          imageLink.rel = 'noopener';
-          imageLink.className = 'hg-message__image-link';
+          imageLink.className = 'hg-message__image-link js-chat-image is-loading';
+          imageLink.setAttribute('aria-label', 'Agrandir la photo envoyée');
+
+          const loader = document.createElement('span');
+          loader.className = 'hg-message__image-loader';
+          loader.setAttribute('aria-hidden', 'true');
+          loader.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
           const imageElement = document.createElement('img');
           imageElement.src = data.imageUrl;
           imageElement.alt = 'Photo envoyée';
           imageElement.className = 'hg-message__image';
+          imageElement.loading = 'lazy';
+          imageElement.decoding = 'async';
 
+          imageLink.appendChild(loader);
           imageLink.appendChild(imageElement);
           bubble.appendChild(imageLink);
+          prepareChatImage(imageLink);
         }
 
         if (data.contenu) {
