@@ -1,11 +1,23 @@
 {% macro formatModifiable(user, size, withEditButton) %}
-    {% set isVerified = user.isProfilVerifieComplet() %}
-    <div class="profile-avatar-container{% if isVerified %} verified{% endif %}" {% if isVerified %} tabindex="0" data-bs-toggle="tooltip" data-bs-title="Profil vérifié à 100%" title="Profil vérifié à 100%" {% endif %} style="width: {{ size }}px; height: {{ size }}px;">
+    {% set isVerified = user and user.isProfilVerifieComplet() %}
+    <div class="hg-avatar-wrap profile-avatar-container{% if isVerified %} is-verified{% endif %}"
+         {% if isVerified %}
+             tabindex="0"
+             data-bs-toggle="tooltip"
+             data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+             title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+         {% endif %}
+         style="width: {{ size }}px; height: {{ size }}px;">
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
-             alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}
-"
+             alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}"
              class="profile-avatar"
              id="previewPhoto">
+
+        {% if isVerified %}
+            <span class="hg-verified-badge" aria-label="Profil vérifié">
+                <i class="bi bi-patch-check-fill"></i>
+            </span>
+        {% endif %}
 
         {% if withEditButton %}
             <button class="btn btn-sm btn-light border rounded-circle edit-avatar-button"
@@ -16,41 +28,30 @@
             </button>
         {% endif %}
     </div>
-    <script>
-        const tooltip = new bootstrap.Tooltip(element, {
-  popperConfig(defaultBsPopperConfig) {
-    // const newPopperConfig = {...}
-    // use defaultBsPopperConfig if needed...
-    // return newPopperConfig
-  }
-})
-    </script>
 {% endmacro %}
 
 {% macro formatSimple(user, size, forElement, afficheBadge) %}
-    {% set isVerified = user.isProfilVerifieComplet() %}
+    {% set isVerified = user and user.isProfilVerifieComplet() %}
+    {% set showBadge = isVerified and afficheBadge is not same as(false) %}
     <div
         {% if forElement %} onclick="document.getElementById('{{ forElement }}').click()" {% endif %}
-        class="position-relative d-inline-block img-note {% if isVerified and afficheBadge %} verified{% endif %}"
-        {% if isVerified %}
+        class="hg-avatar-wrap position-relative d-inline-block img-note {% if showBadge %}is-verified{% endif %}"
+        {% if showBadge %}
             tabindex="0"
             data-bs-toggle="tooltip"
-            data-bs-title="Profil vérifié à 100%"
+            data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+            title="Profil vérifié : pièce d'identité et adresse e-mail validées"
         {% endif %}
         style="width: {{ size }}px; height: {{ size }}px;"
     >
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
             alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}"
             class="rounded-circle img-fluid profile-avatar">
+
+        {% if showBadge %}
+            <span class="hg-verified-badge" aria-label="Profil vérifié">
+                <i class="bi bi-patch-check-fill"></i>
+            </span>
+        {% endif %}
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-                new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-    </script>
-
 {% endmacro %}

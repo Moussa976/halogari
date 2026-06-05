@@ -2,6 +2,7 @@
 
 {% set displayName = user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom %}
 {% set isOwner = app.user and app.user.id == user.id %}
+{% set isProfileVerified = user.isProfilVerifieComplet %}
 
 {% block title %}HaloGari | Profil de {{ displayName }}{% endblock %}
 
@@ -17,8 +18,19 @@
 <section class="container app-page-grid hg-profile-grid">
   <article class="app-panel hg-profile-main">
     <div class="hg-profile-summary">
-      <div class="hg-profile-photo-wrap">
+      <div class="hg-profile-photo-wrap{% if isProfileVerified %} is-verified{% endif %}"
+           {% if isProfileVerified %}
+             tabindex="0"
+             data-bs-toggle="tooltip"
+             data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+             title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+           {% endif %}>
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}" alt="Photo de {{ displayName }}" class="hg-profile-photo">
+        {% if isProfileVerified %}
+          <span class="hg-verified-badge" aria-label="Profil vérifié">
+            <i class="bi bi-patch-check-fill"></i>
+          </span>
+        {% endif %}
         {% if isOwner %}
           <a href="{{ path('app_parametres') }}" class="btn btn-light border rounded-circle hg-profile-photo-edit" title="Modifier la photo">
             <i class="bi bi-pencil-fill"></i>

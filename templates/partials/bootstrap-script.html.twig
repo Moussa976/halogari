@@ -31,6 +31,12 @@
     setInterval(checkNotifications, 3000);
   });
 {% endif %}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((element) => {
+    bootstrap.Tooltip.getOrCreateInstance(element);
+  });
+});
 </script>
 <script src="{{ asset('js/splash-screen.js') }}"></script>
 

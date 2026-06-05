@@ -30,7 +30,20 @@
           {% for conv in conversations %}
             {% set convName = conv.user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : conv.user.prenom %}
             <a href="{{ path('app_conversation', { userId: conv.user.id, trajetId: conv.trajet.id }) }}" class="hg-chat-item {{ conv.key == activeConversationKey ? 'is-active' : '' }}">
-              <img src="{{ conv.user.photo ? asset('uploads/photos/' ~ conv.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ convName }}" class="hg-chat-item__avatar">
+              <span class="hg-avatar-wrap hg-chat-item__avatar-wrap{% if conv.user.isProfilVerifieComplet %} is-verified{% endif %}"
+                    {% if conv.user.isProfilVerifieComplet %}
+                      tabindex="0"
+                      data-bs-toggle="tooltip"
+                      data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                      title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                    {% endif %}>
+                <img src="{{ conv.user.photo ? asset('uploads/photos/' ~ conv.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ convName }}" class="hg-chat-item__avatar">
+                {% if conv.user.isProfilVerifieComplet %}
+                  <span class="hg-verified-badge" aria-label="Profil vérifié">
+                    <i class="bi bi-patch-check-fill"></i>
+                  </span>
+                {% endif %}
+              </span>
               <span class="hg-chat-item__body">
                 <span class="hg-chat-item__top">
                   <strong>{{ convName }}</strong>
@@ -51,7 +64,20 @@
     <article class="app-panel hg-chat-panel">
       <header class="hg-chat-header">
         <div class="d-flex align-items-center gap-3">
-          <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
+          <span class="hg-avatar-wrap hg-chat-header__avatar-wrap{% if otherUser.isProfilVerifieComplet %} is-verified{% endif %}"
+                {% if otherUser.isProfilVerifieComplet %}
+                  tabindex="0"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                  title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                {% endif %}>
+            <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
+            {% if otherUser.isProfilVerifieComplet %}
+              <span class="hg-verified-badge" aria-label="Profil vérifié">
+                <i class="bi bi-patch-check-fill"></i>
+              </span>
+            {% endif %}
+          </span>
           <div>
             <h2>{{ otherName }}</h2>
             <p>{{ trajet.depart }} → {{ trajet.arrivee }} · {{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
@@ -64,7 +90,20 @@
           {% set isMine = message.expediteur.id == app.user.id %}
           {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
           <div class="hg-message {{ isMine ? 'is-mine' : '' }}">
-            <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
+            <span class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
+                  {% if message.expediteur.isProfilVerifieComplet %}
+                    tabindex="0"
+                    data-bs-toggle="tooltip"
+                    data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                    title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                  {% endif %}>
+              <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
+              {% if message.expediteur.isProfilVerifieComplet %}
+                <span class="hg-verified-badge" aria-label="Profil vérifié">
+                  <i class="bi bi-patch-check-fill"></i>
+                </span>
+              {% endif %}
+            </span>
             <div class="hg-message__content">
               <div class="hg-message__bubble">{{ message.contenu }}</div>
               <div class="hg-message__date">{{ message.createdAt|date_conversation }}</div>
@@ -124,10 +163,30 @@ document.addEventListener('DOMContentLoaded', function () {
         const message = document.createElement('div');
         message.className = 'hg-message is-mine';
 
+        const avatarWrap = document.createElement('span');
+        avatarWrap.className = 'hg-avatar-wrap hg-message__avatar-wrap';
+        if (data.isVerifiedProfile) {
+          avatarWrap.classList.add('is-verified');
+          avatarWrap.tabIndex = 0;
+          avatarWrap.setAttribute('data-bs-toggle', 'tooltip');
+          avatarWrap.setAttribute('data-bs-title', "Profil vérifié : pièce d'identité et adresse e-mail validées");
+          avatarWrap.setAttribute('title', "Profil vérifié : pièce d'identité et adresse e-mail validées");
+        }
+
         const avatar = document.createElement('img');
         avatar.className = 'hg-message__avatar';
         avatar.src = data.avatarUrl || '{{ asset('images/profil.png') }}';
         avatar.alt = data.avatarAlt || 'Photo de profil';
+
+        avatarWrap.appendChild(avatar);
+        if (data.isVerifiedProfile) {
+          const badge = document.createElement('span');
+          badge.className = 'hg-verified-badge';
+          badge.setAttribute('aria-label', 'Profil vérifié');
+          badge.innerHTML = '<i class="bi bi-patch-check-fill"></i>';
+          avatarWrap.appendChild(badge);
+          bootstrap.Tooltip.getOrCreateInstance(avatarWrap);
+        }
 
         const content = document.createElement('div');
         content.className = 'hg-message__content';
@@ -142,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         content.appendChild(bubble);
         content.appendChild(date);
-        message.appendChild(avatar);
+        message.appendChild(avatarWrap);
         message.appendChild(content);
         container.appendChild(message);
         container.scrollTop = container.scrollHeight;

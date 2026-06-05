@@ -174,6 +174,7 @@ class MessageController extends AbstractController
                 'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
                 'avatarUrl' => $user->getPhoto() ? '/uploads/photos/' . $user->getPhoto() : '/images/profil.png',
                 'avatarAlt' => 'Photo de ' . ($user->getPrenom() ?: 'profil'),
+                'isVerifiedProfile' => $user->isProfilVerifieComplet(),
             ]);
         } catch (\Throwable $e) {
             return new JsonResponse([
