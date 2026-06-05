@@ -3,31 +3,39 @@
 {% block title %}HaloGari | E-mail envoyé{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-md-8 col-lg-6">
-				<div class="bg-light p-4 rounded shadow-sm border mt-5">
-					<h1 class="mb-4 text-center text-success">📩 E-mail envoyé</h1>
-
-					<p class="mb-3">
-						Si un compte correspondant à cette adresse existe, un e-mail vous a été envoyé avec un lien pour réinitialiser votre mot de passe.
-					</p>
-
-					<p class="mb-3">
-						Ce lien expirera dans :
-						<strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
-					</p>
-
-					<p class="mb-4">
-						📥 Si vous ne recevez rien dans les prochaines minutes, vérifiez votre dossier <strong>courrier indésirable</strong> (spam) ou
-						<a class="text-orange" href="{{ path('app_forgot_password_request') }}">réessayez</a>.
-					</p>
-
-					<div class="text-center">
-						<a href="{{ path('app_home') }}" class="btn btn-orange">Retour à l'accueil</a>
-					</div>
-				</div>
-			</div>
-		</div>
+<section class="app-page-header app-page-header--compact">
+	<div class="container">
+		<p class="app-kicker">Vérification</p>
+		<h1>E-mail envoyé</h1>
+		<p>Consultez votre boîte de réception pour continuer.</p>
 	</div>
+</section>
+
+<section class="container auth-layout">
+	<div class="auth-card app-panel">
+		<span class="app-panel__icon"><i class="bi bi-envelope-check"></i></span>
+		<h2>Regardez vos e-mails</h2>
+		<p>
+			Si un compte correspondant à cette adresse existe, un e-mail vous a été envoyé avec un lien pour réinitialiser votre mot de passe.
+		</p>
+		<p>
+			Ce lien expirera dans :
+			<strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+		</p>
+		<p>
+			Si vous ne recevez rien dans les prochaines minutes, vérifiez votre dossier <strong>courrier indésirable</strong> ou
+			<a class="text-orange" href="{{ path('app_forgot_password_request') }}">réessayez</a>.
+		</p>
+		<a href="{{ path('app_home') }}" class="btn btn-orange">
+			<i class="bi bi-house-door"></i>
+			Retour à l'accueil
+		</a>
+	</div>
+
+	<aside class="app-panel auth-aside">
+		<span class="app-panel__icon"><i class="bi bi-clock-history"></i></span>
+		<h2>Lien temporaire</h2>
+		<p>Pour votre sécurité, le lien n'est valable que pendant une durée limitée.</p>
+	</aside>
+</section>
 {% endblock %}

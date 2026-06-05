@@ -1,0 +1,29 @@
+<nav class="mobile-tabbar d-lg-none" aria-label="Navigation mobile">
+  <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
+    <i class="bi bi-house-door-fill"></i>
+    <span>Accueil</span>
+  </a>
+  <a href="{{ path('app_chercher') }}" class="{{ app.request.attributes.get('_route') starts with 'app_chercher' ? 'active' : '' }}">
+    <i class="bi bi-search"></i>
+    <span>Chercher</span>
+  </a>
+  <a href="{{ path('app_publier') }}" class="{{ app.request.attributes.get('_route') == 'app_publier' ? 'active' : '' }}">
+    <i class="bi bi-plus-lg"></i>
+    <span>Publier</span>
+  </a>
+  {% if app.user %}
+    <a href="{{ path('app_mes_reservations') }}" class="{{ app.request.attributes.get('_route') == 'app_mes_reservations' ? 'active' : '' }}">
+      <i class="bi bi-calendar-check-fill"></i>
+      <span>Réservations</span>
+    </a>
+    <a href="{{ path('app_message') }}" class="{{ app.request.attributes.get('_route') == 'app_message' ? 'active' : '' }}">
+      <i class="bi bi-chat-dots-fill"></i>
+      <span>Messages</span>
+    </a>
+  {% else %}
+    <a href="{{ path('app_login') }}" class="{{ app.request.attributes.get('_route') == 'app_login' ? 'active' : '' }}">
+      <i class="bi bi-person-fill"></i>
+      <span>Connexion</span>
+    </a>
+  {% endif %}
+</nav>

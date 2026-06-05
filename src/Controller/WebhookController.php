@@ -5,19 +5,24 @@ namespace App\Controller;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Stripe\Webhook;
 
 class WebhookController extends AbstractController
 {
     private NotificationService $notifier;
+    private LoggerInterface $logger;
+    private string $webhookSecret;
 
-    public function __construct(NotificationService $notifier)
+    public function __construct(NotificationService $notifier, LoggerInterface $logger, string $stripeWebhookSecret)
     {
         $this->notifier = $notifier;
+        $this->logger = $logger;
+        $this->webhookSecret = $stripeWebhookSecret;
     }
 
     /**
@@ -28,79 +33,105 @@ class WebhookController extends AbstractController
         ReservationRepository $reservationRepository,
         EntityManagerInterface $em
     ): Response {
-        $log = fn(string $message) => file_put_contents(__DIR__ . '/../../var/log/webhook.log', $message . "\n", FILE_APPEND);
-
-        $log("[1] Webhook Stripe reçu");
-
         $payload = $request->getContent();
         $sigHeader = $request->headers->get('stripe-signature');
-        $secret = $_ENV['STRIPE_WEBHOOK_SECRET'];
 
-        try {
-            $event = Webhook::constructEvent($payload, $sigHeader, $secret);
-            $log("[2] Événement validé : {$event->type}");
-        } catch (\Throwable $e) {
-            $log("[!] Erreur de signature : " . $e->getMessage());
-            return new Response('Signature invalide', 400);
+        if (!$sigHeader || !$this->webhookSecret) {
+            $this->logger->warning('Webhook Stripe rejeté : signature ou secret manquant.');
+            return new Response('Signature manquante', Response::HTTP_BAD_REQUEST);
         }
 
-        $intent = $event->data->object;
-        $intentId = $intent->id;
-        $log("[3] PaymentIntent ID : $intentId");
+        try {
+            $event = Webhook::constructEvent($payload, $sigHeader, $this->webhookSecret);
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Webhook Stripe rejeté : signature invalide.', [
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return new Response('Signature invalide', Response::HTTP_BAD_REQUEST);
+        }
+
+        $stripeObject = $event->data->object ?? null;
+        $intentId = $stripeObject->id ?? null;
+
+        if ($event->type === 'charge.refunded') {
+            $intentId = $stripeObject->payment_intent ?? null;
+        }
+
+        if (!$intentId) {
+            $this->logger->warning('Webhook Stripe sans PaymentIntent.', [
+                'type' => $event->type,
+            ]);
+
+            return new Response('PaymentIntent manquant', Response::HTTP_BAD_REQUEST);
+        }
 
         $reservation = $reservationRepository->findOneByStripeIntentId($intentId);
 
         if (!$reservation) {
-            $log("[!] Aucune réservation trouvée pour cet intent");
-            return new Response('Reservation non trouvée', 404);
+            $this->logger->info('Webhook Stripe ignoré : réservation introuvable.', [
+                'type' => $event->type,
+                'paymentIntentId' => $intentId,
+            ]);
+
+            return new Response('OK', Response::HTTP_OK);
         }
 
         $paiement = $reservation->getPaiement();
 
         switch ($event->type) {
+            case 'payment_intent.amount_capturable_updated':
+                if ($paiement && $paiement->getStatut() !== 'autorise') {
+                    $paiement->setStatut('autorise');
+                    $em->flush();
+                }
+                break;
+
             case 'payment_intent.succeeded':
                 if ($paiement && $paiement->getStatut() !== 'capture') {
                     $paiement->setStatut('capture');
-                    $this->notifier->envoyerPaiementCapture($reservation);
                     $paiement->setCapturedAt(new \DateTimeImmutable());
+                    $this->notifier->envoyerPaiementCapture($reservation);
                 }
 
                 if ($reservation->getStatut() !== 'payee') {
                     $reservation->setStatut('payee');
-                    $this->notifier->envoyerConfirmationPaiement($reservation); // ✅ Mail ici
+                    $this->notifier->envoyerConfirmationPaiement($reservation);
                 }
 
                 $em->flush();
-                $log("[✔] Paiement capturé, réservation payée, mail envoyé");
-                break;
-
-            case 'payment_intent.refunded':
-                if ($paiement && $paiement->getStatut() !== 'rembourse') {
-                    $paiement->setStatut('rembourse');
-                    $paiement->setCapturedAt(new \DateTimeImmutable());
-                    $reservation->setStatut('rembourse');
-                    $em->flush();
-
-                    $this->notifier->envoyerRemboursementEffectue($reservation);
-                    $log("[↩] Paiement remboursé + mail envoyé");
-                }
                 break;
 
             case 'payment_intent.canceled':
-                if ($paiement && $paiement->getStatut() !== 'echoue') {
-                    $paiement->setStatut('echoue');
-                    $reservation->setStatut('refusee');
+                if ($paiement && !in_array($paiement->getStatut(), ['annule', 'echoue'], true)) {
+                    $paiement->setStatut('annule');
+                    if (in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+                        $reservation->getTrajet()->setPlacesDisponibles(
+                            $reservation->getTrajet()->getPlacesDisponibles() + $reservation->getPlaces()
+                        );
+                    }
+                    $reservation->setStatut('annulee');
                     $em->flush();
-
                     $this->notifier->envoyerEchecPaiement($reservation);
-                    $log("[✘] Paiement annulé + mail envoyé");
+                }
+                break;
+
+            case 'charge.refunded':
+                if ($paiement && $paiement->getStatut() !== 'rembourse') {
+                    $paiement->setStatut('rembourse');
+                    $reservation->setStatut('annulee');
+                    $em->flush();
+                    $this->notifier->envoyerRemboursementEffectue($reservation);
                 }
                 break;
 
             default:
-                $log("[…] Événement non traité : {$event->type}");
+                $this->logger->info('Webhook Stripe reçu sans action côté HaloGari.', [
+                    'type' => $event->type,
+                    'paymentIntentId' => $intentId,
+                ]);
         }
 
-        return new Response('OK', 200);
+        return new Response('OK', Response::HTTP_OK);
     }
 }

@@ -1,95 +1,79 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Politique de confidentialité{% endblock %}
+{% block title %}HaloGari | Confidentialité{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-	<div class="row justify-content-center">
-		<div class="col-lg-8">
-			<h1 class="mb-4 text-center">Politique de confidentialité</h1>
-			<div class="p-4 border rounded shadow-sm bg-light">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Données personnelles</p>
+    <h1>Confidentialité</h1>
+    <p>Nous collectons uniquement les informations nécessaires au fonctionnement du service et à la sécurité des trajets.</p>
+  </div>
+</section>
 
-				<p>
-					Cette politique vise à vous informer sur la manière dont
-					<strong>HaloGari</strong>, plateforme de l'<strong>ASSOCIATION SPORTIVE ET CULTURELLE DE MTSAHARA (ASCM)</strong>, collecte, utilise et protège vos données personnelles.
-				</p>
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <h2>Responsable du projet</h2>
+    <p>
+      HaloGari est créé par l'association <strong>WEB976</strong>. Le développement technique est assuré par
+      <strong>Moussa INSSA</strong>.
+    </p>
 
-				<hr>
+    <h2>Données collectées</h2>
+    <ul>
+      <li>Identité : nom, prénom, date de naissance.</li>
+      <li>Coordonnées : adresse e-mail et numéro de téléphone.</li>
+      <li>Compte : mot de passe chiffré, photo, préférences et description.</li>
+      <li>Trajets : trajets publiés, réservations, avis et messages.</li>
+      <li>Documents : justificatif d'identité, RIB ou documents nécessaires à la vérification.</li>
+      <li>Paiements : informations techniques liées aux opérations Stripe.</li>
+    </ul>
 
-				<h5 class="text-orange">1. Données collectées</h5>
-				<p>
-					Lors de votre inscription ou de l’utilisation du service, nous collectons uniquement les données strictement nécessaires :
-				</p>
-				<ul>
-					<li>Nom et prénom</li>
-					<li>Adresse e-mail</li>
-					<li>Numéro de téléphone</li>
-					<li>Mot de passe (chiffré)</li>
-					<li>Historique de trajets publiés, réservés et messages échangés</li>
-					<li><strong>Pièce d’identité (pour les conducteurs)</strong></li>
-					<li><strong>Relevé d’Identité Bancaire (RIB)</strong> (pour recevoir les paiements)</li>
-				</ul>
+    <h2>Utilisation des données</h2>
+    <ul>
+      <li>Créer et gérer votre compte HaloGari.</li>
+      <li>Permettre la publication, la recherche et la réservation de trajets.</li>
+      <li>Sécuriser les échanges entre conducteurs et passagers.</li>
+      <li>Gérer les paiements, remboursements, notifications et messages utiles.</li>
+      <li>Prévenir les abus et améliorer la fiabilité du service.</li>
+    </ul>
 
-				<hr>
+    <h2>Sécurité</h2>
+    <p>
+      Les mots de passe sont hachés. Les documents sont utilisés pour la vérification du profil.
+      HaloGari ne vend pas les données personnelles et ne stocke pas les numéros complets de carte bancaire.
+    </p>
 
-				<h5 class="text-orange">2. Finalités du traitement</h5>
-				<p>
-					Les données sont utilisées uniquement pour :
-				</p>
-				<ul>
-					<li>Permettre la création et la gestion de votre compte utilisateur</li>
-					<li>Faciliter les réservations de trajets et la communication entre membres</li>
-					<li>Assurer la sécurité, la vérification d’identité (KYC) et la modération du service</li>
-					<li>Effectuer les transferts de paiement sécurisés via Stripe</li>
-				</ul>
+    <h2>Cookies</h2>
+    <p>
+      HaloGari utilise principalement des cookies techniques nécessaires : session, connexion,
+      sécurité, préférences et fonctionnement de l'application. Aucun cookie publicitaire n'est prévu.
+    </p>
 
-				<hr>
+    <h2>Vos droits</h2>
+    <p>
+      Vous pouvez demander l'accès, la rectification, la suppression ou la limitation de vos données personnelles.
+      Pour exercer ces droits, contactez-nous à
+      <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>.
+    </p>
 
-				<h5 class="text-orange">3. Sécurité et confidentialité</h5>
-				<ul>
-					<li>Vos données sont hébergées chez Infomaniak, un prestataire européen conforme au RGPD.</li>
-					<li>Les mots de passe sont stockés de manière chiffrée et ne sont jamais accessibles en clair.</li>
-					<li>Les documents justificatifs (RIB, carte d’identité) sont traités uniquement à des fins de vérification via Stripe Connect.</li>
-					<li>Aucune donnée n’est vendue ou utilisée à des fins commerciales par des tiers.</li>
-				</ul>
+    <h2>Suppression du compte</h2>
+    <p>
+      La suppression du compte nécessite la confirmation par mot de passe. Un e-mail de confirmation est envoyé.
+      Les informations personnelles directes sont supprimées ou anonymisées. Certains éléments liés aux trajets,
+      réservations, paiements, messages ou avis peuvent être conservés anonymement pour préserver la cohérence du service.
+    </p>
+  </article>
 
-				<hr>
-
-				<h5 class="text-orange">4. Vos droits</h5>
-				<p>
-					Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :
-				</p>
-				<ul>
-					<li>Droit d’accès à vos données</li>
-					<li>Droit de rectification</li>
-					<li>Droit à l’effacement (droit à l’oubli)</li>
-					<li>Droit d’opposition au traitement</li>
-					<li>Droit à la portabilité de vos données</li>
-				</ul>
-				<p>
-					En cas de demande de suppression du compte, les données personnelles sont effacées (nom, prénom, email, téléphone, mot de passe, photo), mais les éléments liés aux trajets, avis, réservations ou messages sont conservés sous une forme anonymisée afin de respecter la cohérence du service.
-				</p>
-				<p>
-					Pour exercer vos droits, contactez-nous à :
-					<a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">5. Cookies</h5>
-				<p>
-					HaloGari utilise uniquement des cookies techniques strictement nécessaires au bon fonctionnement du site. Aucun cookie publicitaire ou de suivi externe n’est installé.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">6. Modifications de la politique</h5>
-				<p>
-					Cette politique peut être mise à jour à tout moment. La version la plus récente est toujours consultable sur cette page.
-				</p>
-
-			</div>
-		</div>
-	</div>
-</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-shield-lock"></i></span>
+    <h2>En clair</h2>
+    <div class="tip-list">
+      <span><i class="bi bi-check-circle-fill"></i> Pas de revente de données</span>
+      <span><i class="bi bi-check-circle-fill"></i> Mots de passe hachés</span>
+      <span><i class="bi bi-check-circle-fill"></i> Suppression protégée</span>
+      <span><i class="bi bi-check-circle-fill"></i> Contact disponible pour vos droits</span>
+    </div>
+  </aside>
+</section>
 {% endblock %}

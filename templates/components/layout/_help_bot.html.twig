@@ -1,0 +1,87 @@
+<div class="hg-helpbot" data-helpbot>
+  <button class="hg-helpbot__trigger" type="button" aria-label="Ouvrir l'assistant HaloGari" aria-expanded="false" aria-controls="hg-helpbot-panel" data-helpbot-toggle>
+    <span class="hg-helpbot__trigger-icon" aria-hidden="true">
+      <i class="bi bi-robot"></i>
+    </span>
+    <span class="hg-helpbot__trigger-tip" aria-hidden="true">Besoin d'aide ?</span>
+  </button>
+
+  <section class="hg-helpbot__panel" id="hg-helpbot-panel" aria-label="Assistant d'aide HaloGari" hidden>
+    <header class="hg-helpbot__header">
+      <div>
+        <span class="hg-helpbot__eyebrow">Assistant HaloGari</span>
+        <h2>Besoin d'aide ?</h2>
+      </div>
+      <button class="hg-helpbot__close" type="button" aria-label="Fermer l'assistant" data-helpbot-close>
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="hg-helpbot__intro">
+      <span class="hg-helpbot__avatar" aria-hidden="true">
+        <i class="bi bi-robot"></i>
+      </span>
+      <p>Bonjour, je peux vous guider comme passager ou conducteur. Choisissez un sujet, je vous réponds tout de suite.</p>
+    </div>
+
+    <div class="hg-helpbot__search">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input type="search" placeholder="Rechercher une question..." autocomplete="off" data-helpbot-search>
+    </div>
+
+    <div class="hg-helpbot__tabs" role="tablist" aria-label="Type d'utilisateur">
+      <button class="active" type="button" data-helpbot-tab="passager">Passager</button>
+      <button type="button" data-helpbot-tab="conducteur">Conducteur</button>
+    </div>
+
+    <div class="hg-helpbot__answer" data-helpbot-answer-box>
+      <span>Sélectionnez une question pour afficher la réponse.</span>
+    </div>
+
+    <div class="hg-helpbot__content" data-helpbot-content>
+      <div class="hg-helpbot__group active" data-helpbot-group="passager">
+        <button type="button" data-helpbot-question="Comment s'inscrire ?" data-helpbot-answer="Cliquez sur Inscription ou S'inscrire, remplissez vos informations, acceptez les conditions d'utilisation, puis validez votre compte depuis l'e-mail reçu. Une fois connecté, vous pourrez réserver ou publier un trajet.">
+          Comment s'inscrire ?
+        </button>
+        <button type="button" data-helpbot-question="Comment réserver un trajet ?" data-helpbot-answer="Recherchez votre départ, votre arrivée et la date. Ouvrez le trajet qui vous convient, choisissez le nombre de places, puis envoyez votre demande de réservation.">
+          Comment réserver un trajet ?
+        </button>
+        <button type="button" data-helpbot-question="Quand dois-je payer ?" data-helpbot-answer="Le paiement se fait en ligne lorsque la réservation est validée. HaloGari sécurise le paiement pour éviter les échanges compliqués sur place.">
+          Quand dois-je payer ?
+        </button>
+        <button type="button" data-helpbot-question="Comment contacter le conducteur ?" data-helpbot-answer="Après une demande ou une réservation acceptée, utilisez la messagerie HaloGari. Si le trajet est accepté, le numéro du conducteur peut aussi être affiché selon le cas.">
+          Comment contacter le conducteur ?
+        </button>
+        <button type="button" data-helpbot-question="Que faire si le conducteur annule ?" data-helpbot-answer="Si le conducteur annule, votre réservation est annulée et la politique de remboursement s'applique. Vous pouvez aussi rechercher un autre trajet disponible.">
+          Que faire si le conducteur annule ?
+        </button>
+      </div>
+
+      <div class="hg-helpbot__group" data-helpbot-group="conducteur">
+        <button type="button" data-helpbot-question="Comment s'inscrire comme conducteur ?" data-helpbot-answer="Créez d'abord votre compte HaloGari. Ensuite, complétez votre profil, ajoutez les documents demandés si nécessaire, puis publiez votre premier trajet depuis le bouton Publier.">
+          Comment s'inscrire comme conducteur ?
+        </button>
+        <button type="button" data-helpbot-question="Comment publier un trajet ?" data-helpbot-answer="Cliquez sur Publier, indiquez le départ, l'arrivée, la date, l'heure, le nombre de places et le prix. Ajoutez une description claire pour rassurer les passagers.">
+          Comment publier un trajet ?
+        </button>
+        <button type="button" data-helpbot-question="Mon trajet est-il publié sur Facebook ?" data-helpbot-answer="Oui. Après la publication d'un trajet, HaloGari déclenche une tâche automatique qui peut publier le trajet sur la page Facebook configurée. Si la publication n'apparaît pas tout de suite, elle peut encore être en attente de traitement.">
+          Mon trajet est-il publié sur Facebook ?
+        </button>
+        <button type="button" data-helpbot-question="Puis-je accepter ou refuser une réservation ?" data-helpbot-answer="Oui. Vous gardez le contrôle : vous pouvez accepter ou refuser les demandes selon vos disponibilités et le sérieux de la demande.">
+          Puis-je accepter ou refuser une réservation ?
+        </button>
+        <button type="button" data-helpbot-question="Comment recevoir mes paiements ?" data-helpbot-answer="Les paiements sont gérés via Stripe. Votre compte conducteur doit être configuré et les documents demandés doivent être validés si nécessaire.">
+          Comment recevoir mes paiements ?
+        </button>
+        <button type="button" data-helpbot-question="Quels conseils pour être bien noté ?" data-helpbot-answer="Soyez ponctuel, confirmez les détails avant le départ, gardez une conduite prudente et prévenez rapidement en cas de changement.">
+          Quels conseils pour être bien noté ?
+        </button>
+      </div>
+    </div>
+
+    <a class="hg-helpbot__contact" href="{{ path('app_contact') }}">
+      <i class="bi bi-headset" aria-hidden="true"></i>
+      Contacter le support
+    </a>
+  </section>
+</div>

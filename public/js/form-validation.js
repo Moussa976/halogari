@@ -1,41 +1,107 @@
-// ✅ Validation formulaire de recherche
-$(document).ready(function () {
-  $("#form-recherche").on("submit", function (e) {
-    let erreur = false;
-    const options = $("select.villages option").map(function () {
-      return this.text;
-    }).get();
-
-    $(".villages").each(function () {
-      const valeur = $(this).val();
-      const valide = valeur && options.includes(valeur);
-      if (valide) {
-        $(this).removeClass("is-invalid");
-      } else {
-        $(this).addClass("is-invalid");
-        erreur = true;
+// Validation des formulaires de recherche et de publication.
+(function () {
+  function getVillageValues(form) {
+    if (window.HaloGariVillages && typeof window.HaloGariVillages.values === "function") {
+      const globalValues = window.HaloGariVillages.values();
+      if (globalValues.length > 0) {
+        return new Set(globalValues);
       }
+    }
+
+    return new Set(
+      Array.from(form.querySelectorAll("option"))
+        .map((option) => option.value)
+        .filter(Boolean)
+    );
+  }
+
+  function isValidVillage(value, allowedValues) {
+    const normalized = String(value || "").trim();
+
+    if (window.HaloGariVillages && typeof window.HaloGariVillages.isValid === "function") {
+      const values = typeof window.HaloGariVillages.values === "function" ? window.HaloGariVillages.values() : [];
+      if (values.length > 0) {
+        return window.HaloGariVillages.isValid(normalized);
+      }
+    }
+
+    return allowedValues.size === 0 ? normalized !== "" : allowedValues.has(normalized);
+  }
+
+  function setInvalid(field, invalid) {
+    field.classList.toggle("is-invalid", invalid);
+  }
+
+  function showAlert(options) {
+    if (window.Swal) {
+      window.Swal.fire(options);
+      return;
+    }
+
+    alert(options.text || options.title || "Veuillez verifier le formulaire.");
+  }
+
+  function firstValue(form, selectors) {
+    const field = form.querySelector(selectors);
+    return String(field?.value || "").trim();
+  }
+
+  function validateVillageForm(event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    const villages = Array.from(form.querySelectorAll(".villages"));
+    if (!villages.length) {
+      return;
+    }
+
+    const allowedValues = getVillageValues(form);
+    let hasError = false;
+
+    villages.forEach((field) => {
+      const valid = isValidVillage(field.value, allowedValues);
+      setInvalid(field, !valid);
+      hasError = hasError || !valid;
     });
 
-    const depart = $("select[name='select_departure']").val();
-    const arrivee = $("select[name='select_arrival']").val();
+    const depart = firstValue(form, "[name='select_departure'], [name='departure']");
+    const arrivee = firstValue(form, "[name='select_arrival'], [name='arrival']");
+
     if (depart && arrivee && depart === arrivee) {
-      erreur = true;
-      Swal.fire({ icon: "warning", title: "Villages identiques", text: "Le village de départ et d'arrivée ne peuvent pas être identiques." });
-      e.preventDefault();
+      event.preventDefault();
+      showAlert({
+        icon: "warning",
+        title: "Villages identiques",
+        text: "Le village de depart et le village d'arrivee doivent etre differents."
+      });
       return;
     }
 
-    const dateTrajet = $("input[name='date_trajet']").val();
-    if (!dateTrajet) {
-      e.preventDefault();
-      Swal.fire({ icon: "warning", title: "Date manquante", text: "Veuillez sélectionner une date de trajet." });
+    const dateField = form.querySelector("[name='date_trajet'], [name='date']");
+    const dateTrajet = String(dateField?.value || "").trim();
+    if (dateField && !dateTrajet) {
+      event.preventDefault();
+      showAlert({
+        icon: "warning",
+        title: "Date manquante",
+        text: "Veuillez selectionner une date de trajet."
+      });
       return;
     }
 
-    if (erreur) {
-      e.preventDefault();
-      Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez sélectionner des villages valides." });
+    if (hasError) {
+      event.preventDefault();
+      showAlert({
+        icon: "error",
+        title: "Village a verifier",
+        text: "Choisissez un village dans la liste proposee pour que la recherche fonctionne correctement."
+      });
     }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("submit", validateVillageForm);
   });
-});
+})();

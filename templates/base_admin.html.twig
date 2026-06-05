@@ -38,6 +38,25 @@
 				padding: 0;
 				z-index: 100;
 			}
+			.table-responsive,
+			.table-responsive-sm,
+			.table-responsive-md,
+			.table-responsive-lg,
+			.table-responsive-xl,
+			.table-responsive-xxl {
+				overflow-x: auto;
+				overflow-y: hidden;
+				-webkit-overflow-scrolling: touch;
+			}
+			.table-responsive > .table,
+			.table-responsive-sm > .table,
+			.table-responsive-md > .table,
+			.table-responsive-lg > .table,
+			.table-responsive-xl > .table,
+			.table-responsive-xxl > .table {
+				min-width: 720px;
+				margin-bottom: 0;
+			}
 		</style>
 
 		{% block stylesheets %}{% endblock %}

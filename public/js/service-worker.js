@@ -1,8 +1,9 @@
-// 📦 Mise en cache pour fonctionnement hors-ligne
-const CACHE_NAME = 'halogari-cache-v1';
+// Cache app-shell for better offline resilience.
+const CACHE_NAME = 'halogari-cache-v3';
 const urlsToCache = [
   '/',
   '/css/style.css',
+  '/assets/styles/app.css',
   '/manifest.json',
   '/images/logo.png',
   '/images/icons/icon-192x192.png',
@@ -15,9 +16,40 @@ self.addEventListener('install', function(event) {
       return cache.addAll(urlsToCache);
     })
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames
+          .filter(function(cacheName) {
+            return cacheName !== CACHE_NAME;
+          })
+          .map(function(cacheName) {
+            return caches.delete(cacheName);
+          })
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', function(event) {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(function(response) {
       return response || fetch(event.request);

@@ -17,7 +17,12 @@ class PaiementService
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        $secretKey = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+        if (!$secretKey) {
+            throw new \RuntimeException('STRIPE_SECRET_KEY est manquante.');
+        }
+
+        Stripe::setApiKey($secretKey);
     }
 
     /**
@@ -166,6 +171,10 @@ class PaiementService
     public function rembourserSelonPolitique(Reservation $reservation, bool $conducteurAnnule = false): void
     {
         $paiement = $reservation->getPaiement();
+        if (!$paiement) {
+            return;
+        }
+
         $intentId = $paiement->getPaymentIntentId();
 
         if (!$intentId || $paiement->getStatut() !== 'capture') {

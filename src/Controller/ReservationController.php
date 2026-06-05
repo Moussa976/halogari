@@ -7,6 +7,7 @@ use App\Entity\Reservation;
 use App\Entity\Trajet;
 use App\Repository\TrajetRepository;
 use App\Service\NotificationService;
+use App\Service\PaiementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,7 @@ use App\Repository\ReservationRepository;
 class ReservationController extends AbstractController
 {
     /**
-     * @Route("/mes-reservation", name="app_mesreservation")
+     * @Route("/mes-reservation", name="app_mesreservation", methods={"GET"})
      */
     public function index(): Response
     {
@@ -28,7 +29,7 @@ class ReservationController extends AbstractController
     }
 
     /**
-     * @Route("/reservation/{id}", name="app_reservation", methods={"GET", "POST"})
+     * @Route("/reservation/{id}", name="app_reservation", methods={"POST"})
      */
     public function create(Request $request, int $id, EntityManagerInterface $em, NotificationService $notifier): Response
     {
@@ -38,6 +39,31 @@ class ReservationController extends AbstractController
         }
 
         $trajet = $em->getRepository(Trajet::class)->find($id);
+        if (!$trajet) {
+            throw $this->createNotFoundException('Trajet introuvable.');
+        }
+
+        if ($trajet->isAnnule()) {
+            $this->addFlash('error', 'Ce trajet est annule et ne peut plus etre reserve.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        if (!$this->isCsrfTokenValid('reserver_trajet_' . $trajet->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        if ($trajet->getConducteur() === $this->getUser()) {
+            $this->addFlash('error', 'Vous ne pouvez pas reserver votre propre trajet.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+        }
+
+        $now = new \DateTimeImmutable();
+        $trajetDateTime = new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i'));
+        if ($trajetDateTime < $now) {
+            $this->addFlash('error', 'Ce trajet est deja passe.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
         $places = (int) $request->request->get('placesReservees');
 
         // Vérification : null ou inférieur à 1
@@ -51,16 +77,16 @@ class ReservationController extends AbstractController
             ]);
         }
 
-        // Calcul du nombre de places déjà prises
-        $placesDejaPrises = 0;
-        foreach ($trajet->getReservations() as $res) {
-            if (in_array($res->getStatut(), ['en_attente', 'acceptee', 'payee'])) {
-                $placesDejaPrises += $res->getPlaces();
-            }
+        $existingReservation = $em->getRepository(Reservation::class)->findOneBy([
+            'trajet' => $trajet,
+            'passager' => $this->getUser(),
+        ]);
+        if ($existingReservation && in_array($existingReservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+            $this->addFlash('info', 'Vous avez deja une reservation active pour ce trajet.');
+            return $this->redirectToRoute('app_user_reservation', ['id' => $existingReservation->getId()]);
         }
 
-
-        $placesRestantes = $trajet->getPlacesDisponibles() - $placesDejaPrises;
+        $placesRestantes = $trajet->getPlacesDisponibles();
 
         if ($places > $placesRestantes) {
             $this->addFlash('error', "Il ne reste que $placesRestantes place(s) disponibles pour ce trajet.");
@@ -98,16 +124,23 @@ class ReservationController extends AbstractController
     }
 
     /**
-     * @Route("/reservation/{id}/accepter", name="reservation_accepter")
+     * @Route("/reservation/{id}/accepter", name="reservation_accepter", methods={"POST"})
      */
     public function accepter(
         int $id,
+        Request $request,
         ReservationRepository $reservationRepository,
         TrajetRepository $trajetRepository,
         EntityManagerInterface $em,
         NotificationService $notifier
     ): Response {
         $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Reservation introuvable.');
+        }
+        if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
         $trajet = $trajetRepository->find($reservation->getTrajet()->getId());
 
         // 🔒 Vérification que le conducteur est bien l'utilisateur connecté
@@ -115,16 +148,22 @@ class ReservationController extends AbstractController
             throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à effectuer cette action.");
         }
 
+        if ($reservation->getStatut() !== 'en_attente') {
+            $this->addFlash('info', 'Cette reservation a deja ete traitee.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+        }
+
         // ✅ Mise à jour du statut de la réservation
         $reservation->setStatut('acceptee');
 
         // 💳 Création du paiement associé
-        $paiement = new Paiement();
-        $paiement->setMontant($reservation->getPrixTotal()); // total = prix * nb places
-        $paiement->setStatut('en_attente');
-        $paiement->setReservation($reservation);
-
-        $em->persist($paiement); // On persiste explicitement (pas en cascade)
+        if (!$reservation->getPaiement()) {
+            $paiement = new Paiement();
+            $paiement->setMontant($reservation->getPrixTotal());
+            $paiement->setStatut('en_attente');
+            $paiement->setReservation($reservation);
+            $em->persist($paiement);
+        }
 
         // 💾 Enregistrement en base
         $em->flush();
@@ -138,15 +177,26 @@ class ReservationController extends AbstractController
 
 
     /**
-     * @Route("/reservation/{id}/refuser", name="reservation_refuser")
+     * @Route("/reservation/{id}/refuser", name="reservation_refuser", methods={"POST"})
      */
-    public function refuser(int $id, ReservationRepository $reservationRepository, TrajetRepository $trajetRepository, EntityManagerInterface $em, NotificationService $notifier): Response
+    public function refuser(int $id, Request $request, ReservationRepository $reservationRepository, TrajetRepository $trajetRepository, EntityManagerInterface $em, NotificationService $notifier): Response
     {
         $reservation = $reservationRepository->find($id);
+        if (!$reservation) {
+            throw $this->createNotFoundException('Reservation introuvable.');
+        }
+        if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
         $trajet = $trajetRepository->find($reservation->getTrajet()->getId());
 
         if ($trajet->getConducteur() !== $this->getUser()) {
             throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à effectuer cette action.");
+        }
+
+        if ($reservation->getStatut() !== 'en_attente') {
+            $this->addFlash('info', 'Cette reservation a deja ete traitee.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
         // ✅ Remet les places à disposition
@@ -162,9 +212,15 @@ class ReservationController extends AbstractController
     }
 
     /**
-     * @Route("/reservation/{id}/annuler", name="reservation_annuler", methods={"POST"})
+     * @Route("/reservation/{id}/annuler", name="reservation_annuler_legacy", methods={"POST"})
      */
-    public function annuler(int $id, Request $request, ReservationRepository $reservationRepository, EntityManagerInterface $em): Response
+    public function annuler(
+        int $id,
+        Request $request,
+        ReservationRepository $reservationRepository,
+        PaiementService $paiementService,
+        EntityManagerInterface $em
+    ): Response
     {
         $reservation = $reservationRepository->find($id);
 
@@ -178,7 +234,22 @@ class ReservationController extends AbstractController
         }
 
         // 💡 On rend les places dans tous les cas sauf si déjà annulée ou refusée
-        if (!in_array($reservation->getStatut(), ['refusee', 'annulee'])) {
+        if (!in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+            $this->addFlash('info', 'Cette réservation ne peut plus être annulée.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        $trajet = $reservation->getTrajet();
+        $trajetDateTime = new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i'));
+        if ($trajetDateTime < new \DateTimeImmutable()) {
+            $this->addFlash('error', 'Ce trajet est déjà passé, la réservation ne peut plus être annulée.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        $paiement = $reservation->getPaiement();
+        if ($paiement && $paiement->getStatut() === 'capture') {
+            $paiementService->rembourserSelonPolitique($reservation, false);
+        } else {
             $reservation->getTrajet()->setPlacesDisponibles(
                 $reservation->getTrajet()->getPlacesDisponibles() + $reservation->getPlaces()
             );

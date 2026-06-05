@@ -32,7 +32,7 @@ class RegistrationController extends AbstractController
     }
 
     /**
-     * @Route("/creer-un-compte", name="app_register")
+     * @Route("/creer-un-compte", name="app_register", methods={"GET", "POST"})
      */
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, MailerInterface $mailer): Response {
         // Si l'utilisateur est déjà connecté, le rediriger vers l'accueil
@@ -102,7 +102,7 @@ class RegistrationController extends AbstractController
 
 
     /**
-     * @Route("/verify/email", name="app_verify_email")
+     * @Route("/verify/email", name="app_verify_email", methods={"GET"})
      */
     public function verifyUserEmail(Request $request, TranslatorInterface $translator, UserRepository $userRepository): Response
     {
@@ -135,7 +135,7 @@ class RegistrationController extends AbstractController
 
 
     /**
-     * @Route("/creer-un-compte/confirmation", name="registration_confirmation")
+     * @Route("/creer-un-compte/confirmation", name="registration_confirmation", methods={"GET"})
      */
     public function confirmation(): Response
     {

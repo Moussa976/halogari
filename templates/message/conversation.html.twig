@@ -32,7 +32,7 @@
 									{{ message.contenu }}
 								</div>
 								<div class="small text-muted mt-1">
-									{{ message.createdAt|date('d/m/Y H:i') }}
+									{{ message.createdAt|date_conversation }}
 								</div>
 							</div>
 						</div>
@@ -86,21 +86,30 @@ body: JSON.stringify(
 }).then(res => res.json()).then(data => {
 if (data.status === 'sent') { // Afficher dans la conversation
 const container = document.getElementById('messages-container');
-const div = document.createElement('div');
-div.className = 'mb-2 text-end';
-div.innerHTML = `
-    <div class="d-flex flex-row-reverse mb-3">
-        ${data.avatarHtml}
-        <div>
-            <div class="p-2 rounded bg-primary text-white">
-                ${data.contenu}
-            </div>
-            <div class="small text-muted mt-1">
-                ${data.createdAt}
-            </div>
-        </div>
-    </div>`;
-container.appendChild(div);
+const wrapper = document.createElement('div');
+wrapper.className = 'mb-2 text-end';
+
+const row = document.createElement('div');
+row.className = 'd-flex flex-row-reverse mb-3';
+
+const avatarSlot = document.createElement('div');
+avatarSlot.innerHTML = data.avatarHtml || '';
+
+const bubbleWrapper = document.createElement('div');
+const bubble = document.createElement('div');
+bubble.className = 'p-2 rounded bg-primary text-white';
+bubble.textContent = data.contenu;
+
+const date = document.createElement('div');
+date.className = 'small text-muted mt-1';
+date.textContent = data.createdAt;
+
+bubbleWrapper.appendChild(bubble);
+bubbleWrapper.appendChild(date);
+row.appendChild(avatarSlot);
+row.appendChild(bubbleWrapper);
+wrapper.appendChild(row);
+container.appendChild(wrapper);
 container.scrollTop = container.scrollHeight;
 
 input.value = '';

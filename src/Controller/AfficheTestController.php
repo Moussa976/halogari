@@ -12,10 +12,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class AfficheTestController extends AbstractController
 {
     /**
-     * @Route("/affiche/test", name="affiche_test")
+     * @Route("/affiche/test", name="affiche_test", methods={"GET"})
      */
     public function testAffiche(AfficheService $afficheService, MetaService $publisher): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $trajet = new Trajet();
         $trajet->setDepart('Mamoudzou');
         $trajet->setArrivee('Dembéni');
@@ -28,7 +30,7 @@ class AfficheTestController extends AbstractController
         $fullPath = $this->getParameter('kernel.project_dir') . '/public' . $imagePath;
 
         if (!file_exists($fullPath)) {
-            dd('Image introuvable : ' . $fullPath);
+            throw $this->createNotFoundException('Image introuvable.');
         }
 
         $caption = sprintf(

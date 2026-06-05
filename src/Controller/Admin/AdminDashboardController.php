@@ -15,7 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class AdminDashboardController extends AbstractController
 {
     /**
-     * @Route("/admin", name="admin_dashboard")
+     * @Route("/admin", name="admin_dashboard", methods={"GET"})
      */
     public function dashboard(
         TrajetRepository $trajetRepo,

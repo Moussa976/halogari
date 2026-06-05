@@ -1,262 +1,145 @@
 {% extends 'base.html.twig' %}
-{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Résultats de recherche
-{% endblock %}
-
-{% block stylesheets %}{% endblock %}
+{% block title %}HaloGari | Résultats{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-	<div class="row">
-		{# Bouton pour mobile #}
-		<div class="d-lg-none text-center shadow-sm rounded py-1 mb-3">
-			<button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas"
-				data-bs-target="#offcanvasRecherche">
-				<strong>{{ depart }}
-					→
-					{{ arrivee }}
-					|
-					{{ dateTrajetFr }}</strong>
-				<span class="text-end">
-					<i class="bi bi-pencil"></i>
-				</span>
-			</button>
-		</div>
+{% set hasResults = trajets|length > 0 or autresTrajets|length > 0 %}
 
-		{# === FORMULAIRE INLINE POUR DESKTOP === #}
-		<form method="GET" id="form-recherche" action="{{ path('app_chercher') }}"
-			class="d-none d-lg-flex gap-2 align-items-center bg-white p-3 shadow-sm rounded mb-4">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Résultats</p>
+    <h1>{{ depart }} vers {{ arrivee }}</h1>
+    <p>{{ dateTrajetFr }} · {{ places }} passager{{ places > 1 ? 's' : '' }}</p>
 
-			<div class="input-group">
-				<span class="input-group-text text-vert">
-					<i class="bi bi-geo-fill"></i>
-				</span>
-				<div class="form-floating">
-					<select id="select_departureD" name="select_departure" class="form-select villages"
-						data-current="{{ depart }}" required>
-						<option value="{{ depart }}" selected>{{ depart }}</option>
-					</select>
-					<label for="select_departureD">Village de départ</label>
-				</div>
-			</div>
+    <button class="btn btn-light d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRecherche">
+      <i class="bi bi-sliders"></i>
+      Modifier la recherche
+    </button>
+  </div>
+</section>
 
-			<div class="input-group">
-				<span class="input-group-text text-vert">
-					<i class="bi bi-flag-fill"></i>
-				</span>
-				<div class="form-floating">
-					<select id="select_arrivalD" name="select_arrival" class="form-select villages"
-						data-current="{{ arrivee }}" required>
-						<option value="{{ arrivee }}" selected>{{ arrivee }}</option>
-					</select>
-					<label for="select_arrivalD">Village d'arrivée</label>
-				</div>
-			</div>
+<div class="container app-results-layout">
+  <aside class="app-panel app-results-search d-none d-lg-block">
+    <div class="app-panel__header">
+      <span class="app-panel__icon"><i class="bi bi-sliders"></i></span>
+      <div>
+        <h2>Recherche</h2>
+        <p>Ajustez votre trajet.</p>
+      </div>
+    </div>
 
-			<div class="input-group">
-				<span class="input-group-text text-vert">
-					<i class="bi bi-calendar2-event-fill"></i>
-				</span>
-				<div class="form-floating">
-					<input type="text" id="date_trajetD" class="form-control dateDepart" name="date_trajet"
-						value="{{ dateTrajet }}" placeholder="Date du trajet" required>
-					<label for="date_trajetD">Date du trajet</label>
-				</div>
-			</div>
+    <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="app-stack">
+      <div class="form-floating">
+        <select id="select_departureD" name="select_departure" class="form-select villages" data-current="{{ depart }}" required>
+          <option value="{{ depart }}" selected>{{ depart }}</option>
+        </select>
+        <label for="select_departureD">Départ</label>
+      </div>
+      <div class="form-floating">
+        <select id="select_arrivalD" name="select_arrival" class="form-select villages" data-current="{{ arrivee }}" required>
+          <option value="{{ arrivee }}" selected>{{ arrivee }}</option>
+        </select>
+        <label for="select_arrivalD">Arrivée</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="date_trajetD" class="form-control dateDepart" name="date_trajet" value="{{ dateTrajetInput|default(dateTrajet) }}" placeholder="jj/mm/aaaa" required>
+        <label for="date_trajetD">Date</label>
+      </div>
+      <div class="form-floating">
+        <select class="form-select" id="floatingSelectGridD" name="places_min">
+          {% for i in 1..8 %}
+            <option value="{{ i }}" {% if i == places %}selected{% endif %}>{{ i }}</option>
+          {% endfor %}
+        </select>
+        <label for="floatingSelectGridD">Passagers</label>
+      </div>
+      <button type="submit" class="btn btn-orange btn-lg w-100">Relancer</button>
+    </form>
+  </aside>
 
-			<div class="input-group">
-				<span class="input-group-text text-vert">
-					<i class="bi bi-person-fill"></i>
-				</span>
-				<div class="form-floating">
-					<select class="form-select" id="floatingSelectGridD" name="places_min">
-						{% for i in 1..8 %}
-						<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
-						{% endfor %}
-					</select>
-					<label for="floatingSelectGridD">Passager(s)</label>
-				</div>
-			</div>
+  <section class="app-results-main">
+    {% if hasResults %}
+      <ul class="nav nav-pills app-tabs mb-4" id="resultTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="trajets-exacts-tab" data-bs-toggle="tab" data-bs-target="#trajets-exacts" type="button" role="tab">
+            <i class="bi bi-car-front"></i> Exact · {{ trajets|length }}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="trajets-autres-tab" data-bs-toggle="tab" data-bs-target="#trajets-autres" type="button" role="tab">
+            <i class="bi bi-signpost"></i> Autres départs · {{ autresTrajets|length }}
+          </button>
+        </li>
+      </ul>
 
-			<button type="submit" class="btn btn-orange btn-lg">Rechercher</button>
-		</form>
-
-		{# === OFFCANVAS POUR MOBILE === #}
-		<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasRecherche" style="height: 60vh;">
-			<div class="offcanvas-header">
-				<h5 class="offcanvas-title">Modifier la recherche</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-			</div>
-			<div class="offcanvas-body">
-				<form method="GET" action="{{ path('app_chercher') }}" class="d-flex flex-column gap-3">
-
-					<div class="input-group">
-						<span class="input-group-text text-vert">
-							<i class="bi bi-geo-fill"></i>
-						</span>
-						<div class="form-floating">
-							<select id="select_departure" name="select_departure" class="form-select villages"
-								data-current="{{ depart }}" required>
-								<option value="{{ depart }}" selected>{{ depart }}</option>
-							</select>
-							<label for="select_departure">Village de départ</label>
-						</div>
-					</div>
-
-					<div class="input-group">
-						<span class="input-group-text text-vert">
-							<i class="bi bi-flag-fill"></i>
-						</span>
-						<div class="form-floating">
-							<select id="select_arrival" name="select_arrival" class="form-select villages"
-								data-current="{{ arrivee }}" required>
-								<option value="{{ arrivee }}" selected>{{ arrivee }}</option>
-							</select>
-							<label for="select_arrival">Village d'arrivée</label>
-						</div>
-					</div>
-
-					<div class="input-group">
-						<span class="input-group-text text-vert">
-							<i class="bi bi-calendar2-event-fill"></i>
-						</span>
-						<div class="form-floating">
-							<input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet"
-								value="{{ dateTrajet }}" placeholder="Date du trajet" required>
-							<label for="date_trajet">Date du trajet</label>
-						</div>
-					</div>
-
-					<div class="input-group">
-						<span class="input-group-text text-vert">
-							<i class="bi bi-person-fill"></i>
-						</span>
-						<div class="form-floating">
-							<select class="form-select" id="floatingSelectGrid" name="places_min">
-								{% for i in 1..8 %}
-								<option value="{{ i }}" {% if i==places %} selected {% endif %}>{{ i }}</option>
-								{% endfor %}
-							</select>
-							<label for="floatingSelectGrid">Passager(s)</label>
-						</div>
-					</div>
-
-					<button type="submit" class="btn btn-orange w-100">Rechercher</button>
-				</form>
-			</div>
-		</div>
-
-
-	</div>
-	<div class="row">
-		{# Colonne gauche : Filtres (visible seulement en desktop) #}
-		<div class="col-md-3 d-none d-md-block bg-light border-end" style="min-height: 70vh; position: sticky; top: 0;">
-			<div class="p-3">
-				<h5 class="fw-bold">Filtres</h5>
-				<p class="text-muted">Aucun filtre disponible</p>
-			</div>
-		</div>
-
-		{# Colonne droite : Résultats #}
-		<div class="col-md-9 col-12">
-			<div class="d-md-none p-3 text-end">
-				<button id="filter-btn" class="btn btn-outline-secondary btn-sm">
-					<i class="bi bi-funnel"></i>
-					Filtrer
-				</button>
-			</div>
-
-			<div class="p-3">
-				{# Les onglets #}
-				<ul class="nav nav-tabs mb-4" id="resultTabs" role="tablist">
-					<li class="nav-item" role="presentation">
-						<button class="nav-link active fw-bold" id="trajets-exacts-tab" data-bs-toggle="tab"
-							data-bs-target="#trajets-exacts" type="button" role="tab">
-							<i class="bi bi-car-front"></i> Résultats • {{ trajets|length }}
-						</button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link fw-bold" id="trajets-autres-tab" data-bs-toggle="tab"
-							data-bs-target="#trajets-autres" type="button" role="tab">
-							<i class="bi bi-car-front"></i> Autres départs • {{ autresTrajets|length }}
-						</button>
-					</li>
-				</ul>
-
-
-
-				<div class="tab-content">
-					<div class="tab-pane fade show active" id="trajets-exacts" role="tabpanel"
-						aria-labelledby="trajets-exacts-tab">
-						<p>
-							<small>Résultat(s) pour
-								<b>{{ depart }}
-									→
-									{{ arrivee }}</b>
-							</small>
-							<small class="small-sm">
-								| le
-								{{ dateTrajetFr }}</small>
-						</p>
-						{# Bloc déjà existant : résultats exacts #}
-						{% include 'partials/_resultats_trajets.html.twig' with { trajets: trajets, depart: depart,
-						arrivee: arrivee, places: places } %}
-					</div>
-
-					<div class="tab-pane fade" id="trajets-autres" role="tabpanel" aria-labelledby="trajets-autres-tab">
-						<p>
-							<small>Résultat(s) pour
-								<b> Autres départs
-									→
-									{{ arrivee }}</b>
-							</small>
-							<small class="small-sm">
-								| le
-								{{ dateTrajetFr }}</small>
-						</p>
-						{# On réutilise temporairement les mêmes trajets pour tester visuellement #}
-						{% include 'partials/_resultats_trajets.html.twig' with { trajets: autresTrajets, depart:
-						depart, arrivee: arrivee, places: places } %}
-					</div>
-				</div>
-
-
-			</div>
-		</div>
-	</div>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="trajets-exacts" role="tabpanel" aria-labelledby="trajets-exacts-tab">
+          {% include 'components/ride/_ride_results.html.twig' with { trajets: trajets, depart: depart, arrivee: arrivee, places: places } %}
+        </div>
+        <div class="tab-pane fade" id="trajets-autres" role="tabpanel" aria-labelledby="trajets-autres-tab">
+          {% include 'components/ride/_ride_results.html.twig' with { trajets: autresTrajets, depart: depart, arrivee: arrivee, places: places } %}
+        </div>
+      </div>
+    {% else %}
+      {% include 'components/ride/_ride_results.html.twig' with { trajets: [], depart: depart, arrivee: arrivee, places: places } %}
+    {% endif %}
+  </section>
 </div>
 
+<div class="offcanvas offcanvas-bottom app-search-sheet" tabindex="-1" id="offcanvasRecherche">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Modifier la recherche</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form method="GET" action="{{ path('app_chercher') }}" class="app-stack">
+        <div class="form-floating">
+          <select id="select_departure" name="select_departure" class="form-select villages" data-current="{{ depart }}" required>
+            <option value="{{ depart }}" selected>{{ depart }}</option>
+          </select>
+          <label for="select_departure">Départ</label>
+        </div>
+        <div class="form-floating">
+          <select id="select_arrival" name="select_arrival" class="form-select villages" data-current="{{ arrivee }}" required>
+            <option value="{{ arrivee }}" selected>{{ arrivee }}</option>
+          </select>
+          <label for="select_arrival">Arrivée</label>
+        </div>
+        <div class="app-form-row">
+          <div class="form-floating">
+            <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" value="{{ dateTrajetInput|default(dateTrajet) }}" placeholder="jj/mm/aaaa" required>
+            <label for="date_trajet">Date</label>
+          </div>
+          <div class="form-floating">
+            <select class="form-select" id="floatingSelectGrid" name="places_min">
+              {% for i in 1..8 %}
+                <option value="{{ i }}" {% if i == places %}selected{% endif %}>{{ i }}</option>
+              {% endfor %}
+            </select>
+            <label for="floatingSelectGrid">Places</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-orange btn-lg w-100">Rechercher</button>
+    </form>
+  </div>
+</div>
 {% endblock %}
+
 {% block javascripts %}
 <script>
-	document.addEventListener('DOMContentLoaded', function () {
-		document.querySelectorAll('.trajet-passe').forEach(function (el) {
-			el.addEventListener('click', function (e) {
-				e.preventDefault();
-				Swal.fire({
-					icon: 'info',
-					title: 'Trajet déjà commencé',
-					text: 'Ce trajet a déjà débuté aujourd\'hui et ne peut plus être réservé.',
-					confirmButtonText: 'Ok',
-					confirmButtonColor: '#ff6f00'
-				});
-			});
-		});
-	});
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.trajet-passe').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'info',
+          title: 'Trajet déjà commencé',
+          text: "Ce trajet a déjà débuté aujourd'hui et ne peut plus être réservé.",
+          confirmButtonText: 'Ok',
+          confirmButtonColor: '#ee7911'
+        });
+      });
+    });
+  });
 </script>
-
-<script>
-	document.getElementById('filter-btn').addEventListener('click', function () {
-		Swal.fire({
-			icon: 'info',
-			title: 'Aucun filtre disponible',
-			text: 'Les filtres seront bientôt disponibles.',
-			confirmButtonText: 'Ok',
-			confirmButtonColor: '#ff6f00'
-		});
-	});
-</script>
-
-
 {% endblock %}

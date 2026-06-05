@@ -15,11 +15,14 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class NotificationController extends AbstractController
 {
     /**
-     * @Route("/user/mes-notifications", name="app_notifications")
+     * @Route("/user/mes-notifications", name="app_notifications", methods={"GET"})
      */
     public function index(NotificationRepository $repo, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException();
+        }
         $notifications = $repo->findBy(['user' => $user], ['createdAt' => 'DESC']);
 
         return $this->render('notifications/index.html.twig', [
@@ -28,10 +31,14 @@ class NotificationController extends AbstractController
     }
 
     /**
-     * @Route("/user/notification/voir/{id}", name="notification_voir")
+     * @Route("/user/notification/voir/{id}", name="notification_voir", methods={"GET"})
      */
     public function voir(Notification $notification, EntityManagerInterface $em): Response
     {
+        if ($notification->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
         // Marquer comme lue
         if (!$notification->isLu()) {
             $notification->setLu(true);

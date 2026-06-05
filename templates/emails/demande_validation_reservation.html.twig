@@ -23,16 +23,12 @@
                     💰 Prix par place : {{ reservation.prix|number_format(2, ',', '.') }} €
                 </div>
 
-                <p style="margin-top: 20px;">Tu peux :</p>
+                <p style="margin-top: 20px;">Tu peux gerer cette demande depuis ton espace conducteur :</p>
 
                 <div style="text-align: center; margin: 20px 0;">
-                    <a href="{{ url('reservation_accepter', { id: reservation.id }) }}"
-                       style="background-color: #28a745; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">
-                        ✅ Accepter
-                    </a>
-                    <a href="{{ url('reservation_refuser', { id: reservation.id }) }}"
-                       style="background-color: #dc3545; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                        ❌ Refuser
+                    <a href="{{ url('app_user_trajet', { id: reservation.trajet.id }) }}"
+                       style="background-color: #ff6f00; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Ouvrir mon trajet
                     </a>
                 </div>
 

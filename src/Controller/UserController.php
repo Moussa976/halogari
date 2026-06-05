@@ -7,11 +7,13 @@ use App\Entity\Trajet;
 use App\Entity\User;
 use App\Form\DocumentFormType;
 use App\Repository\NotesRepository;
+use App\Repository\PaiementRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Service\PaiementService;
+use App\Service\DocumentVerificationService;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -31,7 +33,7 @@ use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/user", name="app_user")
+     * @Route("/user", name="app_user", methods={"GET"})
      */
     public function index(): Response
     {
@@ -41,11 +43,14 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/u/{id}", name="app_profilePublic")
+     * @Route("/u/{id}", name="app_profilePublic", methods={"GET"})
      */
     public function profilePublic(int $id, UserRepository $userRepository, NotesRepository $notesRepo): Response
     {
         $user = $userRepository->find($id);
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
 
         // Date en français
         Carbon::setLocale('fr');
@@ -92,11 +97,14 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/profil/{id}", name="app_profile")
+     * @Route("/user/profil/{id}", name="app_profile", methods={"GET"})
      */
     public function profile(int $id, UserRepository $userRepository, NotesRepository $notesRepo): Response
     {
         $user = $userRepository->find($id);
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
 
         // Date en français
         Carbon::setLocale('fr');
@@ -148,6 +156,11 @@ class UserController extends AbstractController
     public function updatePreferences(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('profile_preferences_' . $user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
         $preferences = $request->request->all('preferences');
         $user->setPreferences($preferences);
         $em->flush();
@@ -166,6 +179,10 @@ class UserController extends AbstractController
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('profile_photo_' . $user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
 
         if ($request->get('remove_photo') && $user->getPhoto()) {
             $oldPath = $this->getParameter('photos_directory') . '/' . $user->getPhoto();
@@ -227,6 +244,11 @@ class UserController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('profile_description_' . $user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
         $description = trim($request->request->get('description'));
 
         $user->setDescription($description);
@@ -237,7 +259,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/compte/", name="app_compte")
+     * @Route("/user/compte/", name="app_compte", methods={"GET"})
      */
     public function compte(): Response
     {
@@ -252,13 +274,19 @@ class UserController extends AbstractController
     public function mesDocuments(
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        DocumentVerificationService $documentVerificationService
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
 
         // Soumission du formulaire manuel
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('documents_add', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token CSRF invalide.');
+                return $this->redirectToRoute('app_documents');
+            }
+
             $type = $request->request->get('type_doc');
             $autreType = $request->request->get('autre_doc');
             $file = $request->files->get('document');
@@ -284,6 +312,12 @@ class UserController extends AbstractController
                 return $this->redirectToRoute('app_documents');
             }
 
+            $verification = $documentVerificationService->verify($file, $finalType);
+            if (!$verification['valid']) {
+                $this->addFlash('error', 'Document refusé par la pré-vérification automatique : ' . $verification['reason']);
+                return $this->redirectToRoute('app_documents');
+            }
+
             // Générer un nom de fichier unique
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $safeName = $slugger->slug($originalName);
@@ -297,12 +331,12 @@ class UserController extends AbstractController
                 $document->setFilenameDocument($filename);
                 $document->setDateDocument(new \DateTime());
                 $document->setUser($user);
-                $document->setStatus(Document::STATUS_PENDING);
+                $document->setStatus(Document::STATUS_APPROVED);
 
                 $em->persist($document);
                 $em->flush();
 
-                $this->addFlash('success', 'Document ajouté avec succès.');
+                $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
             }
@@ -322,7 +356,7 @@ class UserController extends AbstractController
     /**
      * Affiche les trajets publiés par l'utilisateur connecté (conducteur)
      * 
-     * @Route("/user/mes-trajets", name="app_mes_trajets")
+     * @Route("/user/mes-trajets", name="app_mes_trajets", methods={"GET"})
      */
     public function mesTrajets(TrajetRepository $trajetRepository): Response
     {
@@ -342,7 +376,7 @@ class UserController extends AbstractController
     /**
      * Affiche les réservations faites par l'utilisateur connecté (passager)
      * 
-     * @Route("/user/mes-reservations", name="app_mes_reservations")
+     * @Route("/user/mes-reservations", name="app_mes_reservations", methods={"GET"})
      */
     public function mesReservations(ReservationRepository $reservationRepository): Response
     {
@@ -366,19 +400,34 @@ class UserController extends AbstractController
 
 
     /**
-     * @Route("/user/mes-paiements", name="app_mes_paiements")
+     * @Route("/user/mes-paiements", name="app_mes_paiements", methods={"GET"})
      */
-    public function mesPaiements(): Response
+    public function mesPaiements(PaiementRepository $paiementRepository): Response
     {
         // ⚠️ À compléter plus tard avec les données Stripe ou ton entité Paiement
-        return $this->render('user/mes_paiements.html.twig');
+        $user = $this->getUser();
+
+        $paiements = $paiementRepository->createQueryBuilder('p')
+            ->innerJoin('p.reservation', 'r')
+            ->addSelect('r')
+            ->innerJoin('r.trajet', 't')
+            ->addSelect('t')
+            ->where('r.passager = :user OR t.conducteur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('user/mes_paiements.html.twig', [
+            'paiements' => $paiements,
+        ]);
     }
 
 
     /**
      * Affiche le détail d’un trajet pour le conducteur connecté
      *
-     * @Route("/user/trajet/{id}", name="app_user_trajet")
+     * @Route("/user/trajet/{id}", name="app_user_trajet", methods={"GET"})
      */
     public function showTrajet(
         int $id,
@@ -447,7 +496,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/reservation/{id}", name="app_user_reservation")
+     * @Route("/user/reservation/{id}", name="app_user_reservation", methods={"GET"})
      */
     public function showReservation(
         int $id,
@@ -488,7 +537,7 @@ class UserController extends AbstractController
         $reservation = $repo->find($id);
 
         // 🛑 Vérifie que c’est bien le passager qui annule
-        if ($reservation->getPassager() !== $this->getUser()) {
+        if (!$reservation || $reservation->getPassager() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
 
@@ -498,11 +547,28 @@ class UserController extends AbstractController
         }
 
         // ➕ On ne supprime pas la réservation : on la marque comme annulée
+        if (!in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+            $this->addFlash('info', 'Cette réservation ne peut plus être annulée.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        $trajet = $reservation->getTrajet();
+        $trajetDateTime = new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i'));
+        if ($trajetDateTime < new \DateTimeImmutable()) {
+            $this->addFlash('error', 'Ce trajet est déjà passé, la réservation ne peut plus être annulée.');
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        $paiementReservation = $reservation->getPaiement();
+        if ($paiementReservation && $paiementReservation->getStatut() === 'capture') {
+            $paiement->rembourserSelonPolitique($reservation, false);
+        } else {
+            $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+        }
+
         $reservation->setStatut('annulee');
 
         // 💸 Remboursement partiel ou total → à gérer dans l'étape B
-        $paiement->rembourserSelonPolitique($reservation, false);
-
         $em->flush();
 
         $this->addFlash('info', 'Réservation annulée.');
@@ -510,9 +576,10 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/profil/email/renvoyer", name="app_user_resend_confirmation", methods={"GET"})
+     * @Route("/user/profil/email/renvoyer", name="app_user_resend_confirmation", methods={"POST"})
      */
     public function resendEmailConfirmation(
+        Request $request,
         EmailVerifier $emailVerifier,
         VerifyEmailHelperInterface $verifyEmailHelper,
         MailerInterface $mailer
@@ -521,6 +588,10 @@ class UserController extends AbstractController
 
         if (!$user) {
             throw $this->createAccessDeniedException();
+        }
+
+        if (!$this->isCsrfTokenValid('resend_confirmation_' . $user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
         }
 
         if ($user->isVerified()) {

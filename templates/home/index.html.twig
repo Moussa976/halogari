@@ -1,238 +1,139 @@
 {% extends 'base.html.twig' %}
 
+{% set trajetsFallback = [
+  { depart: 'Koungou', arrivee: 'Mamoudzou', total: 4 },
+  { depart: 'Chirongui', arrivee: 'Sada', total: 2 },
+  { depart: 'Sada', arrivee: 'Mamoudzou', total: 1 }
+] %}
+{% set trajetsAffiches = popularTrajets|length > 0 ? popularTrajets : trajetsFallback %}
+
 {% block body %}
-<header class="bg-header text-white d-flex align-items-center">
-  <div class="container">
-    <div class="card bg-white bg-opacity-50 text-dark py-2 px-1 p-md-4">
-      <div class="text-center fade-in">
-        <h1 class="display-5 fw-bold">Bienvenue sur
-          <span class="text-orange">Halo</span><span class="text-vert">Gari</span> !
-        </h1>
-        <h3 class="lead fw-semibold text-muted">Trouvez ou proposez un trajet entre les villages de Mayotte.</h3>
-      </div>
+<header class="app-hero">
+  <div class="container app-hero__inner">
+    <div class="app-hero__content">
+      <p class="app-kicker">Mayotte bouge ensemble</p>
+      <h1>Un trajet simple, une place partagée.</h1>
+      <p class="app-hero__lead">Trouvez un conducteur proche de vous ou proposez vos places libres en quelques secondes.</p>
+
     </div>
 
-    <form method="GET" action="{{ path('app_chercher') }}" id="form-recherche" class="row g-3 mt-5">
-
-      <div class="col-md-6 col-lg-3">
-        <div class="input-group">
-          <span class="input-group-text text-vert"><i class="bi bi-geo-fill"></i></span>
-          <div class="form-floating">
-            <input id="select_departure" class="form-control villages" name="select_departure"
-              placeholder="Village de départ" required>
-            <label for="select_departure">Village de départ</label>
+    <form method="GET" action="{{ path('app_chercher') }}" id="form-recherche" class="quick-search" aria-label="Recherche rapide">
+      <div class="ride-scene" aria-hidden="true">
+        <div class="ride-scene__sign ride-scene__sign--start">Départ</div>
+        <div class="ride-scene__road"></div>
+        <div class="ride-scene__group ride-scene__group--start">
+          <span></span><span></span>
+        </div>
+        <div class="ride-scene__van">
+          <i class="bi bi-car-front-fill"></i>
+          <div class="ride-scene__passengers">
+            <span></span><span></span>
           </div>
+        </div>
+        <div class="ride-scene__group ride-scene__group--arrival">
+          <span></span><span></span>
+        </div>
+        <div class="ride-scene__sign ride-scene__sign--end">Arrivée</div>
+      </div>
+      <div class="quick-search__title">
+        <strong>Où allez-vous ?</strong>
+        <span>Recherche rapide</span>
+      </div>
+
+      <div class="form-floating">
+        <input id="select_departure" class="form-control villages" name="select_departure" placeholder="Village de départ" required>
+        <label for="select_departure">Départ</label>
+      </div>
+
+      <div class="form-floating">
+        <input id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Village d'arrivée" required>
+        <label for="select_arrival">Arrivée</label>
+      </div>
+
+      <div class="quick-search__row">
+        <div class="form-floating">
+          <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" placeholder="jj/mm/aaaa" required>
+          <label for="date_trajet">Date</label>
+        </div>
+
+        <div class="form-floating">
+          <select class="form-select" id="places_min" name="places_min">
+            {% for i in 1..8 %}
+              <option value="{{ i }}" {{ i == 1 ? 'selected' : '' }}>{{ i }}</option>
+            {% endfor %}
+          </select>
+          <label for="places_min">Places</label>
         </div>
       </div>
 
-      <div class="col-md-6 col-lg-3">
-        <div class="input-group">
-          <span class="input-group-text text-vert"><i class="bi bi-flag-fill"></i></span>
-          <div class="form-floating">
-            <input id="select_arrival" name="select_arrival" class="form-control villages"
-              placeholder="Village d'arrivée" required>
-            <label for="select_arrival">Village d'arrivée</label>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="col-md-12 col-lg-3">
-        <div class="input-group">
-          <span class="input-group-text text-vert"><i class="bi bi-calendar2-event-fill"></i></span>
-          <div class="form-floating">
-            <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet"
-              placeholder="Date du trajet" required>
-            <label for="date_trajet">Date du trajet</label>
-          </div>
-          <span class="input-group-text text-vert"><i class="bi bi-person-fill"></i></span>
-          <div class="form-floating">
-            <select class="form-select" id="floatingSelectGrid" name="places_min">
-              <option selected value="1">1</option>
-              {% for i in 2..8 %}
-              <option value="{{ i }}">{{ i }}</option>
-              {% endfor %}
-            </select>
-            <label for="floatingSelectGrid">Passager(s)</label>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-12 col-lg-3 d-grid align-content-end align-self-center">
-        <button type="submit" class="btn btn-orange btn-lg w-100 mt-md-0 mt-2">Rechercher</button>
-      </div>
+      <button type="submit" class="btn btn-orange btn-lg w-100">
+        <i class="bi bi-arrow-right-circle"></i>
+        Voir les trajets
+      </button>
     </form>
-
   </div>
 </header>
 
-<section class="py-5 bg-light text-center">
+<section class="app-band">
   <div class="container">
-    <div class="row">
-      <div class="col-md-4">
-        <img src="/images/petit-prix.png" class="mb-3" height="40" alt="Taxi Van Mayotte">
-        <h5 class="fw-bold">Des trajets locaux à petits prix</h5>
-        <p>Voyagez entre les villages de Mayotte (Mamoudzou, Chirongui, Bandrélé…) en toute simplicité grâce au
-          covoiturage local à prix accessible.</p>
-      </div>
-      <div class="col-md-4">
-        <img src="/images/confiance.png" class="mb-3" height="40" alt="Confiance et communauté">
-        <h5 class="fw-bold">Confiance & proximité</h5>
-        <p>Notre communauté de conducteurs est vérifiée. Profitez d’un service entre Mahorais où la confiance et le
-          respect sont au cœur de chaque trajet.</p>
-      </div>
-      <div class="col-md-4">
-        <img src="/images/rapide.png" class="mb-3" height="40" alt="Facile et rapide">
-        <h5 class="fw-bold">Réservez en quelques clics</h5>
-        <p>Gagnez du temps avec notre plateforme simple et rapide. Réservez votre place en ligne et retrouvez votre
-          conducteur à proximité.</p>
-      </div>
+    <div class="app-section-heading">
+      <p class="app-kicker">Simple pour tous</p>
+      <h2>Les actions importantes restent visibles.</h2>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <img src="{{ asset('images/petit-prix.png') }}" alt="" width="44" height="44">
+        <h3>Prix clair</h3>
+        <p>Le passager voit le prix par place avant de réserver.</p>
+      </article>
+      <article class="feature-card">
+        <img src="{{ asset('images/confiance.png') }}" alt="" width="44" height="44">
+        <h3>Profils vérifiés</h3>
+        <p>Documents, messages et confirmations aident à voyager sereinement.</p>
+      </article>
+      <article class="feature-card">
+        <img src="{{ asset('images/rapide.png') }}" alt="" width="44" height="44">
+        <h3>Réponse rapide</h3>
+        <p>Les notifications préviennent conducteur et passager au bon moment.</p>
+      </article>
     </div>
   </div>
 </section>
 
-<section class="py-5 bg-white">
-  <div class="container text-center">
-    <h2 class="h4 fw-bold mb-4">Trajets les plus réservés</h2>
-    <div class="row">
-      {% if popularTrajets|length < 1 %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Koungou
-              →
-              Mamoudzou
-            </h5>
-            <p class="card-text text-muted">4
-              réservations</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Chirongui
-              →
-              Sada
-            </h5>
-            <p class="card-text text-muted">2
-              réservations</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Chirongui&select_arrival=Sada&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Sada
-              →
-              Mamoudzou
-            </h5>
-            <p class="card-text text-muted">1
-              réservation</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Sada&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      {% elseif popularTrajets|length < 2 %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Koungou
-              →
-              Mamoudzou
-            </h5>
-            <p class="card-text text-muted">4
-              réservations</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Chirongui
-              →
-              Sada
-            </h5>
-            <p class="card-text text-muted">2
-              réservations</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Chirongui&select_arrival=Sada&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      {% elseif popularTrajets|length < 3 %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              Koungou
-              →
-              Mamoudzou
-            </h5>
-            <p class="card-text text-muted">4
-              réservations</p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=Koungou&select_arrival=Mamoudzou&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {% for trajet in popularTrajets %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title text-orange">
-              <i class="bi bi-geo-alt text-vert"></i>
-              {{ trajet.depart }}
-              →
-              {{ trajet.arrivee }}
-            </h5>
-            <p class="card-text text-muted">{{ trajet.total }} 
-              réservation{{ trajet.total > 1 ? 's':'' }} </p>
-            <a href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart ~ '&select_arrival=' ~ trajet.arrivee ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}"
-              class="btn btn-outline-orange btn-sm mt-2">Voir</a>
-          </div>
-        </div>
-      </div>
+<section class="app-band app-band--light">
+  <div class="container">
+    <div class="app-section-heading">
+      <p class="app-kicker">Trajets populaires</p>
+      <h2>Les lignes les plus demandées.</h2>
+    </div>
+
+    <div class="route-list">
+      {% for trajet in trajetsAffiches|slice(0, 3) %}
+        <a class="route-item" href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart|url_encode ~ '&select_arrival=' ~ trajet.arrivee|url_encode ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}">
+          <span class="route-item__icon"><i class="bi bi-signpost-2"></i></span>
+          <span>
+            <strong>{{ trajet.depart }} vers {{ trajet.arrivee }}</strong>
+            <small>{{ trajet.total }} réservation{{ trajet.total > 1 ? 's' : '' }}</small>
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
       {% endfor %}
-      
-      
     </div>
   </div>
 </section>
 
-<section class="py-5 bg-orange-opacity text-white">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-6 order-md-2 text-center">
-        <img src="/images/securite.png" class="img-fluid" alt="Sécurité Covoiturage" style="max-height: 250px;">
-      </div>
-      <div class="col-md-6 order-md-1 mb-4 mb-md-0">
-        <h2 class="h4 fw-bold">Votre sécurité est notre priorité</h2>
-        <p class="mb-2">Chez HaloGari, nous nous engageons à créer une communauté de covoiturage fiable et digne de
-          confiance à Mayotte.</p>
-        <p class="mb-4">Découvrez nos engagements et fonctionnalités pour voyager sereinement entre Mahorais.</p>
-        <a href="{{ path('app_securite') }}" class="btn bg-vert text-white fw-bold">En savoir plus</a>
-      </div>
+<section class="trust-strip">
+  <div class="container trust-strip__inner">
+    <div>
+      <p class="app-kicker">Sécurité</p>
+      <h2>Une communauté locale, avec des règles claires.</h2>
+      <p>HaloGari accompagne les profils vérifiés, les paiements sécurisés, les avis et les notifications importantes.</p>
     </div>
+    <a href="{{ path('app_securite') }}" class="btn btn-light btn-lg">
+      <i class="bi bi-shield-check"></i>
+      Voir la sécurité
+    </a>
   </div>
 </section>
 {% endblock %}

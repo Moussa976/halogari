@@ -1,199 +1,212 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Créer un compte
-{% endblock %}
-
-{% block stylesheets %}
-	<style>
-		ul li {
-			color: #dc3545 !important;
-		}
-	</style>
-{% endblock %}
+{% block title %}HaloGari | Créer un compte{% endblock %}
 
 {% block body %}
-	<div class="container pt-3 pb-5">
-		<div class="row justify-content-center">
-			<div class="col-md-8 col-lg-6">
-				<h1 class="mb-4 text-center">Créer un compte</h1>
-				{% for flash_error in app.flashes('verify_email_error') %}
-					<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-				{% endfor %}
+<section class="app-page-header app-page-header--compact auth-page-header">
+	<div class="container">
+		<p class="app-kicker">Nouveau compte</p>
+		<h1>Créer un compte</h1>
+		<p>Quelques informations suffisent pour réserver, publier et voyager avec confiance.</p>
+	</div>
+</section>
 
-				{{ form_start(registrationForm, {
-    attr: {
-        class: 'bg-light p-4 rounded shadow-sm border needs-validation',
-        novalidate: 'novalidate'
-    }
-}) }}
+<section class="container auth-layout">
+	<div class="auth-card">
+		{% for flash_error in app.flashes('verify_email_error') %}
+			<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+		{% endfor %}
 
-{% if not registrationForm.vars.valid %}
-    <div class="alert alert-danger text-center">
-        <strong>Le formulaire contient des erreurs.</strong>
-        <ul class="mb-0">
-            {# {% for field in registrationForm %}
-                {% for error in field.vars.errors %}
-                    <li>{{ error.message }}</li>
-                {% endfor %}
-            {% endfor %} #}
-        </ul>
-    </div>
-{% endif %}
+		{{ form_start(registrationForm, {
+			attr: {
+				class: 'app-panel app-panel--form auth-form needs-validation',
+				novalidate: 'novalidate'
+			}
+		}) }}
 
-<div class="mb-3">
-    {{ form_label(registrationForm.nom, 'Nom :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.nom, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.nom.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: 'Votre nom',
-            'aria-describedby': 'nomFeedback'
-        }
-    }) }}
-    <div id="nomFeedback" class="invalid-feedback">{{ form_errors(registrationForm.nom) }}</div>
-</div>
-
-<div class="mb-3">
-    {{ form_label(registrationForm.prenom, 'Prénom :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.prenom, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.prenom.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: 'Votre prénom',
-            'aria-describedby': 'prenomFeedback'
-        }
-    }) }}
-    <div id="prenomFeedback" class="invalid-feedback">{{ form_errors(registrationForm.prenom) }}</div>
-</div>
-
-<div class="mb-3">
-    {{ form_label(registrationForm.dateNaissance, 'Date de naissance :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.dateNaissance, {
-        attr: {
-            class: 'form-control' ~ (registrationForm.dateNaissance.vars.valid == false ? 'is-invalid' : ''),
-            'aria-describedby': 'dateNaissanceFeedback'
-        }
-    }) }}
-    <div id="dateNaissanceFeedback" class="invalid-feedback">{{ form_errors(registrationForm.dateNaissance) }}</div>
-</div>
-
-<div class="mb-3">
-    {{ form_label(registrationForm.email, 'Adresse e-mail :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.email, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.email.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: 'exemple@halogari.yt',
-            'aria-describedby': 'emailFeedback'
-        }
-    }) }}
-    <div id="emailFeedback" class="invalid-feedback">{{ form_errors(registrationForm.email) }}</div>
-</div>
-
-<div class="mb-3">
-    {{ form_label(registrationForm.plainPassword.first, 'Mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-    <div class="input-group">
-        {{ form_widget(registrationForm.plainPassword.first, {
-            attr: {
-                class: 'form-control ' ~ (registrationForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
-                placeholder: '••••••••••••',
-                'aria-describedby': 'passwordFeedback'
-            }
-        }) }}
-        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_first">
-            <i class="bi bi-eye-slash-fill"></i>
-        </button>
-    </div>
-    <div id="passwordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.first) }}</div>
-</div>
-
-<div class="mb-3">
-    {{ form_label(registrationForm.plainPassword.second, 'Confirmer le mot de passe :', {'label_attr': {'class': 'form-label'}}) }}
-    <div class="input-group">
-        {{ form_widget(registrationForm.plainPassword.second, {
-            attr: {
-                class: 'form-control ' ~ (registrationForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
-                placeholder: '••••••••••••',
-                'aria-describedby': 'confirmPasswordFeedback'
-            }
-        }) }}
-        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_second">
-            <i class="bi bi-eye-slash-fill"></i>
-        </button>
-    </div>
-    <div id="confirmPasswordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.second) }}</div>
-</div>
-
-
-<div class="mb-3">
-    {{ form_label(registrationForm.telephone, 'Téléphone :', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(registrationForm.telephone, {
-        attr: {
-            class: 'form-control ' ~ (registrationForm.telephone.vars.valid == false ? 'is-invalid' : ''),
-            placeholder: '0639******',
-            'aria-describedby': 'telephoneFeedback'
-        }
-    }) }}
-    <div id="telephoneFeedback" class="invalid-feedback">{{ form_errors(registrationForm.telephone) }}</div>
-</div>
-
-<div class="form-check mb-3">
-    {{ form_widget(registrationForm.agreeTerms, {
-        attr: {
-            class: 'form-check-input ' ~ (registrationForm.agreeTerms.vars.valid == false ? 'is-invalid' : ''),
-            'aria-describedby': 'termsFeedback'
-        }
-    }) }}
-    <label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
-        J'accepte les <a href="{{ path('app_conditionsutisation') }}" target="_blank">conditions d'utilisation</a>.
-    </label>
-    <div id="termsFeedback" class="invalid-feedback">{{ form_errors(registrationForm.agreeTerms) }}</div>
-</div>
-
-
-
-<div class="d-grid mb-4">
-        <button type="submit" class="btn btn-orange fw-bold">
-            <i class="bi bi-box-arrow-in-right"></i> S'inscrire
-        </button>
-    </div>
-
-<hr>
-<p class="text-center">
-    <small>Déjà inscrit ?</small>
-</p>
-<div class="text-center">
-    <a class="btn btn-success" href="{{ path('app_login') }}" role="button">
-        <i class="bi bi-box-arrow-in-right"></i>
-        Se connecter
-    </a>
-</div>
-
-{{ form_end(registrationForm) }}
-
-
+		<div class="auth-form__heading">
+			<span><i class="bi bi-person-plus-fill"></i></span>
+			<div>
+				<h2>Bienvenue</h2>
+				<p>Votre profil HaloGari se prépare ici.</p>
 			</div>
 		</div>
+
+		{% if not registrationForm.vars.valid %}
+			<div class="alert alert-danger">
+				<strong>Certains champs sont à corriger.</strong>
+				<span class="d-block mt-1">Lisez les messages affichés sous les champs concernés.</span>
+			</div>
+		{% endif %}
+
+		<div class="hg-form-grid">
+			<div class="form-floating">
+				{{ form_widget(registrationForm.nom, {
+					attr: {
+						class: 'form-control ' ~ (registrationForm.nom.vars.valid == false ? 'is-invalid' : ''),
+						placeholder: 'Votre nom',
+						autocomplete: 'family-name',
+						'aria-describedby': 'nomFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="nomFeedback" class="invalid-feedback">{{ form_errors(registrationForm.nom) }}</div>
+			</div>
+
+			<div class="form-floating">
+				{{ form_widget(registrationForm.prenom, {
+					attr: {
+						class: 'form-control ' ~ (registrationForm.prenom.vars.valid == false ? 'is-invalid' : ''),
+						placeholder: 'Votre prénom',
+						autocomplete: 'given-name',
+						'aria-describedby': 'prenomFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.prenom, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="prenomFeedback" class="invalid-feedback">{{ form_errors(registrationForm.prenom) }}</div>
+			</div>
+
+			<div class="form-floating">
+				{{ form_widget(registrationForm.dateNaissance, {
+					attr: {
+						class: 'form-control dateFr ' ~ (registrationForm.dateNaissance.vars.valid == false ? 'is-invalid' : ''),
+						placeholder: 'jj/mm/aaaa',
+						'aria-describedby': 'dateNaissanceFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.dateNaissance, 'Date de naissance', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="dateNaissanceFeedback" class="invalid-feedback">{{ form_errors(registrationForm.dateNaissance) }}</div>
+			</div>
+
+			<div class="form-floating">
+				{{ form_widget(registrationForm.telephone, {
+					attr: {
+						class: 'form-control ' ~ (registrationForm.telephone.vars.valid == false ? 'is-invalid' : ''),
+						placeholder: '0639******',
+						autocomplete: 'tel',
+						inputmode: 'tel',
+						'aria-describedby': 'telephoneFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.telephone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="telephoneFeedback" class="invalid-feedback">{{ form_errors(registrationForm.telephone) }}</div>
+			</div>
+
+			<div class="form-floating hg-form-full">
+				{{ form_widget(registrationForm.email, {
+					attr: {
+						class: 'form-control ' ~ (registrationForm.email.vars.valid == false ? 'is-invalid' : ''),
+						placeholder: 'exemple@halogari.yt',
+						autocomplete: 'email',
+						inputmode: 'email',
+						'aria-describedby': 'emailFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.email, 'Adresse e-mail', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="emailFeedback" class="invalid-feedback">{{ form_errors(registrationForm.email) }}</div>
+			</div>
+
+			<div class="hg-form-full">
+				<div class="input-group auth-input-group password-input-group">
+					<div class="form-floating">
+						{{ form_widget(registrationForm.plainPassword.first, {
+							attr: {
+								class: 'form-control ' ~ (registrationForm.plainPassword.first.vars.valid == false ? 'is-invalid' : ''),
+								placeholder: 'Votre mot de passe',
+								autocomplete: 'new-password',
+								'aria-describedby': 'passwordFeedback'
+							}
+						}) }}
+						{{ form_label(registrationForm.plainPassword.first, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+					</div>
+					<button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_first" aria-label="Afficher ou masquer le mot de passe">
+						<i class="bi bi-eye-slash-fill"></i>
+					</button>
+				</div>
+				<div id="passwordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.first) }}</div>
+				<div class="password-rules" data-password-rules data-for="registration_form_plainPassword_first">
+					<span data-rule="length">8 caractères minimum</span>
+					<span data-rule="lower">Une minuscule</span>
+					<span data-rule="upper">Une majuscule</span>
+					<span data-rule="number">Un chiffre</span>
+					<span data-rule="special">Un caractère spécial</span>
+				</div>
+			</div>
+
+			<div class="hg-form-full">
+				<div class="input-group auth-input-group password-input-group">
+					<div class="form-floating">
+						{{ form_widget(registrationForm.plainPassword.second, {
+							attr: {
+								class: 'form-control ' ~ (registrationForm.plainPassword.second.vars.valid == false ? 'is-invalid' : ''),
+								placeholder: 'Confirmez votre mot de passe',
+								autocomplete: 'new-password',
+								'aria-describedby': 'confirmPasswordFeedback'
+							}
+						}) }}
+						{{ form_label(registrationForm.plainPassword.second, 'Confirmer le mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+					</div>
+					<button class="btn btn-outline-secondary toggle-password" type="button" data-target="registration_form_plainPassword_second" aria-label="Afficher ou masquer le mot de passe">
+						<i class="bi bi-eye-slash-fill"></i>
+					</button>
+				</div>
+				<div id="confirmPasswordFeedback" class="invalid-feedback">{{ form_errors(registrationForm.plainPassword.second) }}</div>
+			</div>
+		</div>
+
+		<div class="form-check">
+			{{ form_widget(registrationForm.agreeTerms, {
+				attr: {
+					class: 'form-check-input ' ~ (registrationForm.agreeTerms.vars.valid == false ? 'is-invalid' : ''),
+					'aria-describedby': 'termsFeedback'
+				}
+			}) }}
+			<label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
+				J'accepte les <a href="{{ path('app_conditionsutisation') }}" target="_blank">conditions d'utilisation</a>.
+			</label>
+			<div id="termsFeedback" class="invalid-feedback">{{ form_errors(registrationForm.agreeTerms) }}</div>
+		</div>
+
+		<div class="hg-form-actions">
+			<button type="submit" class="btn btn-orange">
+				<i class="bi bi-person-plus-fill"></i>
+				S'inscrire
+			</button>
+			<a class="btn btn-success" href="{{ path('app_login') }}">
+				<i class="bi bi-box-arrow-in-right"></i>
+				Déjà inscrit ? Se connecter
+			</a>
+		</div>
+
+		{{ form_end(registrationForm) }}
 	</div>
 
+	<aside class="app-panel auth-aside">
+		<span class="app-panel__icon"><i class="bi bi-shield-check"></i></span>
+		<h2>Un compte plus sûr</h2>
+		<p>Les profils vérifiés, les documents et les avis aident chaque passager et conducteur à voyager plus sereinement.</p>
+		<div class="tip-list">
+			<span><i class="bi bi-check-circle-fill"></i> Informations lisibles</span>
+			<span><i class="bi bi-check-circle-fill"></i> Paiements sécurisés</span>
+			<span><i class="bi bi-check-circle-fill"></i> Notifications utiles</span>
+		</div>
+	</aside>
+</section>
 {% endblock %}
-   {% block javascripts %}
-   
+
+{% block javascripts %}
 <script>
-// Example starter JavaScript for disabling form submissions if there are invalid fields
 (() => {
-  'use strict'
-
-  // Fetch all the forms we want to apply custom Bootstrap validation styles to
-  const forms = document.querySelectorAll('.needs-validation')
-
-  // Loop over them and prevent submission
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
+  'use strict';
+  document.querySelectorAll('.needs-validation').forEach((form) => {
+    form.addEventListener('submit', (event) => {
       if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
+        event.preventDefault();
+        event.stopPropagation();
       }
-
-      form.classList.add('was-validated')
-    }, false)
-  })
-})()
-</script>{% endblock %}
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+{% endblock %}

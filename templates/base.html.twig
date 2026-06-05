@@ -10,11 +10,13 @@
   </title>
 
   {% include 'partials/bootstrap-link.html.twig' %}
-  <link rel="stylesheet" href="{{ asset('css/style.css') }}"> {% block stylesheets %}{% endblock %}
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets/styles/app.css') }}">
+  {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="d-flex flex-column min-vh-100">
-  <div id="splash-screen" style=" position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; ">
+<body class="d-flex flex-column min-vh-100 app-shell route-{{ app.request.attributes.get('_route')|default('page') }}">
+  <div id="splash-screen" style=" position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: var(--hg-z-splash); ">
     <img id="splash-logo" src="{{ asset('images/logo.png') }}" alt="HaloGari" style="max-width: 180px; opacity: 0; transform: scale(0.8); transition: all 0.8s ease-in-out;">
     <p id="splash-text" style=" margin-top: 20px; font-size: 1.1rem; color: #f27c1e; opacity: 0; transform: translateY(10px); transition: all 0.8s ease-in-out; ">
       Covoiturage à Mayotte
@@ -23,11 +25,13 @@
 
 
 
-  {% include 'partials/navbar.html.twig' %}
+  {% include 'components/layout/_navbar.html.twig' %}
 
   {% block body %}{% endblock %}
 
   {% include 'partials/footer.html.twig' %}
+  {% include 'components/layout/_mobile_tabbar.html.twig' %}
+  {% include 'components/layout/_help_bot.html.twig' %}
   {% include 'partials/bootstrap-script.html.twig' %}
 
   {% for type, messages in app.flashes %}
@@ -37,7 +41,7 @@
         const icons = ['success', 'error', 'warning', 'info', 'question'];
 
         Swal.fire({
-          icon: icons.includes(type) ? type : 'info', // par défaut : info si type inconnu
+          icon: icons.includes(type) ? type : 'info',
           title: {
             success: "Réussite",
             error: "Échec",
@@ -52,6 +56,7 @@
       </script>
     {% endfor %}
   {% endfor %}
+  <script src="{{ asset('assets/scripts/app-ui.js') }}"></script>
   {% block javascripts %}{% endblock %}
 </body>
 

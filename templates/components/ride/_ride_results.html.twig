@@ -1,0 +1,60 @@
+{% import 'partials/avatar.html.twig' as avatar %}
+{% set nowDate = "now"|date("Y-m-d") %}
+{% set nowTime = "now"|date("H:i") %}
+
+{% if trajets is empty %}
+  <div class="empty-state">
+    <i class="bi bi-signpost-split"></i>
+    <h3>Aucun trajet trouvé pour l'instant</h3>
+    <p>Aucun conducteur n'a encore publié ce trajet. Vous pouvez publier un trajet pour créer une nouvelle possibilité.</p>
+    <div class="empty-state__actions">
+      <a class="btn btn-success btn-sm" href="{{ path('app_publier') }}">
+        <i class="bi bi-plus-circle"></i>
+        Publier un trajet
+      </a>
+    </div>
+  </div>
+{% else %}
+  <div class="ride-list">
+    {% for trajet in trajets %}
+      {% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
+      {% set trajetHeure = trajet.heureTrajet|date("H:i") %}
+      {% set estPasse = (trajetDate == nowDate and trajetHeure < nowTime) %}
+      {% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
+      {% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
+
+      <a href="{% if not estPasse %}{{ path('app_trajet_show', { id: trajet.id, ledepart: depart, larrive: arrivee, nbPlaceReservee: places }) }}{% else %}#{% endif %}"
+         class="ride-card listtrajet {% if estPasse %}trajet-passe is-disabled{% endif %}"
+         data-trajet-id="{{ trajet.id }}">
+        <div class="ride-card__time">
+          <strong>{{ trajet.heureTrajet|date('H:i') }}</strong>
+          <span>{{ trajet.dateTrajet|date('d/m') }}</span>
+        </div>
+
+        <div class="ride-card__route">
+          <span>{{ trajet.depart }}</span>
+          <i class="bi bi-arrow-right"></i>
+          <span>{{ trajet.arrivee }}</span>
+          <small>
+            {{ trajet.placesDisponibles }}
+            {{ trajet.placesDisponibles < 2 ? 'place disponible' : 'places disponibles' }}
+          </small>
+        </div>
+
+        <div class="ride-card__driver">
+          {{ avatar.formatSimple(trajet.conducteur, 34, 0, 1) }}
+          <span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
+        </div>
+
+        <div class="ride-card__price">
+          <strong>{{ prixEntier }}<sup>,{{ prixDecimal }}</sup></strong>
+          <span>EUR</span>
+        </div>
+
+        {% if estPasse %}
+          <span class="ride-card__badge">Déjà passé</span>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}

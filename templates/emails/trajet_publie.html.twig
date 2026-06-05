@@ -2,6 +2,38 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title>Trajet publie - HaloGari</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
+    <table width="100%" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 6px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <tr>
+            <td style="text-align: center;">
+                <img src="cid:logo_halogari" alt="HaloGari" style="height: 60px; margin-bottom: 10px;">
+                <h2 style="color: #ff6f00; margin: 0;">Votre trajet est en ligne</h2>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-top: 15px; color: #333333;">
+                <p>Bonjour {{ user.prenom|default('') }},</p>
+                <p>Votre trajet a bien ete publie sur HaloGari.</p>
+                <p style="margin: 16px 0; padding: 12px; background: #fff5eb; border-radius: 6px;">
+                    <strong>{{ trajet.depart }} -> {{ trajet.arrivee }}</strong><br>
+                    Le {{ trajet.dateTrajet|date('d/m/Y') }} a {{ trajet.heureTrajet|date('H:i') }}<br>
+                    {{ trajet.placesDisponibles }} place(s) disponible(s) - {{ trajet.prix|number_format(2, ',', ' ') }} EUR/place
+                </p>
+                <p>Merci pour votre confiance.</p>
+                <p style="margin-top: 24px; font-size: 13px; color: #777777;">
+                    Message automatique - merci de ne pas y repondre.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
     <title>Confirmation de publication de trajet</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px; color: #333;">

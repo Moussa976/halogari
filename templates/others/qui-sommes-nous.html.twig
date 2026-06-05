@@ -3,53 +3,66 @@
 {% block title %}HaloGari | Qui sommes-nous ?{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-	<div class="row justify-content-center">
-		<div class="col-lg-8">
-			<h1 class="mb-4 text-center">Qui sommes-nous ?</h1>
-			<div class="p-4 border rounded shadow-sm bg-light">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">WEB976 x HaloGari</p>
+    <h1>Qui sommes-nous ?</h1>
+    <p>HaloGari est une application locale créée par l'association WEB976 pour faciliter les déplacements à Mayotte.</p>
+  </div>
+</section>
 
-				<h5 class="text-orange fw-bold">Une initiative locale</h5>
-				<p>
-					HaloGari est une plateforme de covoiturage créée à Mayotte pour répondre aux besoins concrets de mobilité sur l'île.
-					Nous facilitons les déplacements entre villages pour tous : étudiants, travailleurs, familles...
-				</p>
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <span class="app-panel__icon"><i class="bi bi-heart-fill"></i></span>
+    <h2>Une solution pensée pour Mayotte</h2>
+    <p>
+      À Mayotte, se déplacer peut être compliqué : transports coûteux, trajets difficiles à organiser,
+      voitures avec des places libres et peu d'outils numériques vraiment adaptés au territoire.
+    </p>
+    <p>
+      HaloGari répond à ce besoin avec une plateforme de covoiturage simple, mobile et rassurante :
+      les conducteurs proposent leurs trajets, les passagers réservent, et chacun peut échanger dans un cadre sécurisé.
+    </p>
 
-				<h5 class="text-orange fw-bold mt-4">Notre mission</h5>
-				<ul>
-					<li>Rendre les trajets plus accessibles</li>
-					<li>Encourager la solidarité locale entre Mahorais</li>
-					<li>Proposer un transport alternatif pratique et humain</li>
-				</ul>
+    <h2>Le rôle de WEB976</h2>
+    <p>
+      L'association <strong>WEB976</strong> porte la création de solutions numériques utiles pour Mayotte.
+      Avec HaloGari, son objectif est de proposer un service concret, accessible et pensé pour les habitants :
+      familles, étudiants, travailleurs, conducteurs réguliers et personnes moins à l'aise avec le numérique.
+    </p>
 
-				<h5 class="text-orange fw-bold mt-4">Nos valeurs</h5>
-				<p>
-					<strong>🔒 Confiance :</strong>
-					Chaque conducteur est vérifié manuellement. Les utilisateurs peuvent s’évaluer et se laisser des messages, pour garantir une atmosphère respectueuse.
-				</p>
-				<p>
-					<strong>💡 Simplicité :</strong>
-					HaloGari est conçu pour être simple d’utilisation, même pour les personnes peu à l’aise avec le numérique.
-				</p>
-				<p>
-					<strong>🤝 Proximité :</strong>
-					Nous privilégions les trajets courts et fréquents entre les villages mahorais, pour répondre aux besoins du quotidien : aller au travail, au marché, chez le médecin, ou simplement rendre visite à sa famille.
-				</p>
-				<p>
-					<strong>✅ Sécurité :</strong>
-					Engagement sur la confidentialité et la protection des utilisateurs.
-				</p>
+    <h2>Développement</h2>
+    <p>
+      L'application est développée par <strong>Moussa INSSA</strong>, développeur web et technicien informatique,
+      dans le cadre du projet porté par WEB976.
+    </p>
 
-				<h5 class="text-orange fw-bold mt-4">Une communauté qui grandit avec vous</h5>
-				<p>
-					En rejoignant HaloGari, vous participez à un projet collectif : chaque réservation, chaque trajet partagé est une étape vers un transport plus solidaire à Mayotte.
-				</p>
-				<p>
-					Nous garantissons également des <strong>conditions claires d'annulation et de remboursement</strong>, afin de protéger aussi bien les conducteurs que les passagers.
-				</p>
+    <h2>Nos priorités</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Accessibilité</h3>
+        <p>Une interface claire, lisible et utilisable sur téléphone, y compris pour les personnes peu habituées au numérique.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Confiance</h3>
+        <p>Profils, documents, messages, avis et notifications pour mieux organiser les trajets.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Utilité locale</h3>
+        <p>Une application tournée vers les trajets du quotidien : travail, école, marché, santé et famille.</p>
+      </article>
+    </div>
+  </article>
 
-			</div>
-		</div>
-	</div>
-</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
+    <h2>En résumé</h2>
+    <div class="tip-list">
+      <span><i class="bi bi-check-circle-fill"></i> Projet créé par WEB976</span>
+      <span><i class="bi bi-check-circle-fill"></i> Développé par Moussa INSSA</span>
+      <span><i class="bi bi-check-circle-fill"></i> Pensé pour Mayotte</span>
+      <span><i class="bi bi-check-circle-fill"></i> Mobile, PWA et responsive</span>
+    </div>
+  </aside>
+</section>
 {% endblock %}

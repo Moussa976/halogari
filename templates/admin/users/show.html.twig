@@ -17,6 +17,7 @@
 					{{ avatar.formatSimple(user, 80, 0, 1) }}
 				</div>
 				<form method="post" enctype="multipart/form-data" action="{{ path('admin_user_update', {id: user.id}) }}">
+					<input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_' ~ user.id) }}">
 					<div class="row g-3">
 						<div class="col-md-6">
 							<label class="form-label fw-bold">Nom :</label>
@@ -54,7 +55,7 @@
 		</div>
 
 		{# --- VALIDATION EMAIL --- #}
-		<h4 class="mt-5 mb-3">📧 Adresse email</h4>
+		<h4 class="mt-5 mb-3">📧 Adresse e-mail</h4>
 
 		{% if not user.isVerified %}
 			<div class="alert alert-warning d-flex justify-content-between align-items-center">
@@ -62,6 +63,7 @@
 					<strong>{{ user.email }}</strong>
 				</div>
 				<form method="post" action="{{ path('admin_user_resend_confirmation', { id: user.id }) }}">
+					<input type="hidden" name="_token" value="{{ csrf_token('admin_user_resend_confirmation_' ~ user.id) }}">
 					<button class="btn btn-sm btn-primary" onclick="return confirm('Renvoyer l’e-mail de confirmation ?');">
 						📤 Renvoyer
 					</button>
@@ -163,11 +165,13 @@
 												{% if doc.status == 'pending' %}
 													<div class="d-flex gap-2">
 														<form method="post" action="{{ path('admin_document_validate', {id: doc.id}) }}">
+															<input type="hidden" name="_token" value="{{ csrf_token('admin_document_validate_' ~ doc.id) }}">
 															<button class="btn btn-success btn-sm" onclick="return confirm('Confirmer la validation de ce document ?')">
 																✅ Valider
 															</button>
 														</form>
 														<form method="post" action="{{ path('admin_document_reject', {id: doc.id}) }}">
+															<input type="hidden" name="_token" value="{{ csrf_token('admin_document_reject_' ~ doc.id) }}">
 															<button class="btn btn-danger btn-sm" onclick="return confirm('Refuser ce document ?')">
 																❌ Refuser
 															</button>
@@ -175,6 +179,7 @@
 													</div>
 												{% elseif doc.status != 'pending' %}
 													<form method="post" action="{{ path('admin_document_pending', {id: doc.id}) }}">
+														<input type="hidden" name="_token" value="{{ csrf_token('admin_document_pending_' ~ doc.id) }}">
 														<button class="btn btn-outline-secondary btn-sm" onclick="return confirm('Remettre ce document en attente ?')">
 															🔄 Remettre en attente
 														</button>
@@ -205,6 +210,7 @@
 
 				<div class="text-center mt-2">
 					<form method="post" action="{{ path('admin_user_delete_stripe', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression du compte Stripe ?');">
+						<input type="hidden" name="_token" value="{{ csrf_token('admin_user_stripe_delete_' ~ user.id) }}">
 						<button class="btn btn-danger btn-sm">🗑️ Supprimer le compte Stripe</button>
 					</form>
 				</div>
@@ -241,6 +247,7 @@
 								<hr>
 								⚠️ Pièce d'identité requise par Stripe.
 								<form method="post" action="{{ path('admin_user_stripe_upload_identity', {id: user.id}) }}">
+									<input type="hidden" name="_token" value="{{ csrf_token('admin_user_stripe_identity_' ~ user.id) }}">
 									<button class="btn btn-sm btn-outline-primary mt-2">📤 Envoyer la pièce d'identité à Stripe</button>
 								</form>
 							{% endif %}
@@ -264,6 +271,7 @@
 					<div class="modal-dialog modal-lg modal-dialog-centered">
 						<div class="modal-content">
 							<form method="post" action="{{ path('admin_user_create_stripe_custom', {id: user.id}) }}">
+								<input type="hidden" name="_token" value="{{ csrf_token('admin_user_stripe_create_' ~ user.id) }}">
 								<div class="modal-header">
 									<h5 class="modal-title">Création compte Stripe Connect</h5>
 									<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -590,9 +598,11 @@
 		{# --- ACTIONS --- #}
 		<div class="mt-4 d-flex gap-2">
 			<form method="post" action="{{ path('admin_user_promote', {id: user.id}) }}" onsubmit="return confirm('Promouvoir cet utilisateur au rôle ADMIN ?');">
+				<input type="hidden" name="_token" value="{{ csrf_token('admin_user_promote_' ~ user.id) }}">
 				<button type="submit" class="btn btn-outline-success btn-sm" disabled>👑 Promouvoir en admin</button>
 			</form>
 			<form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression (anonymisation) de ce compte ?');">
+				<input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_' ~ user.id) }}">
 				<button type="submit" class="btn btn-outline-danger btn-sm">🗑️ Supprimer ce compte</button>
 			</form>
 		</div>

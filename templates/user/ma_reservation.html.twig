@@ -208,7 +208,7 @@
 
 				{% if reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
 					<div class="text-center my-4">
-						<form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Etes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
+						<form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
 							<input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
 							<button type="submit" class="btn btn-outline-danger">❌ Annuler ma réservation</button>
 						</form>

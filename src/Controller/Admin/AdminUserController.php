@@ -23,7 +23,7 @@ class AdminUserController extends AbstractController
 {
     /**
      * Affiche la liste des utilisateurs
-     * @Route("/admin/utilisateurs", name="admin_users")
+     * @Route("/admin/utilisateurs", name="admin_users", methods={"GET"})
      */
     public function index(UserRepository $userRepository): Response
     {
@@ -36,7 +36,7 @@ class AdminUserController extends AbstractController
 
     /**
      * Affiche le profil complet d'un utilisateur
-     * @Route("/admin/utilisateurs/{id}", name="admin_user_show", requirements={"id"="\d+"})
+     * @Route("/admin/utilisateurs/{id}", name="admin_user_show", requirements={"id"="\d+"}, methods={"GET"})
      */
     public function show(User $user, StripeConnectService $stripeConnectService): Response
     {
@@ -53,6 +53,7 @@ class AdminUserController extends AbstractController
      */
     public function update(User $user, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): RedirectResponse
     {
+        $this->assertValidUserToken($user, $request, 'update');
 
         $errors = [];
 
@@ -156,8 +157,10 @@ class AdminUserController extends AbstractController
      * Anonymise (supprime) le compte utilisateur
      * @Route("/admin/utilisateurs/{id}/supprimer", name="admin_user_delete", methods={"POST"})
      */
-    public function delete(User $user, EntityManagerInterface $em): RedirectResponse
+    public function delete(User $user, Request $request, EntityManagerInterface $em): RedirectResponse
     {
+        $this->assertValidUserToken($user, $request, 'delete');
+
         // Protection contre suppression accidentelle de soi-même
         if ($this->getUser() === $user) {
             $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte depuis l’admin.');
@@ -179,8 +182,10 @@ class AdminUserController extends AbstractController
      * Donne le rôle ADMIN à l'utilisateur
      * @Route("/admin/utilisateurs/{id}/promouvoir", name="admin_user_promote", methods={"POST"})
      */
-    public function promote(User $user, EntityManagerInterface $em): RedirectResponse
+    public function promote(User $user, Request $request, EntityManagerInterface $em): RedirectResponse
     {
+        $this->assertValidUserToken($user, $request, 'promote');
+
         $user->setRoles(['ROLE_ADMIN']);
         $em->flush();
 
@@ -200,6 +205,8 @@ class AdminUserController extends AbstractController
         StripeConnectService $stripeService,
         EntityManagerInterface $em
     ): RedirectResponse {
+        $this->assertValidUserToken($user, $request, 'stripe_create');
+
         // Récupération des données POST
         $nomComplet = $request->request->get('nom_complet');
         $iban = $request->request->get('iban');
@@ -232,8 +239,10 @@ class AdminUserController extends AbstractController
      * Supprime (ferme) le compte Stripe d’un utilisateur
      * @Route("/admin/utilisateurs/{id}/stripe-supprimer", name="admin_user_delete_stripe", methods={"POST"})
      */
-    public function deleteStripe(User $user, StripeConnectService $stripeConnectService): RedirectResponse
+    public function deleteStripe(User $user, Request $request, StripeConnectService $stripeConnectService): RedirectResponse
     {
+        $this->assertValidUserToken($user, $request, 'stripe_delete');
+
         try {
             $stripeConnectService->supprimerCompteStripe($user);
             $this->addFlash('success', '🚫 Compte Stripe supprimé avec succès.');
@@ -248,8 +257,10 @@ class AdminUserController extends AbstractController
      * Envoie la pièce d'identité à Stripe
      * @Route("/admin/utilisateurs/{id}/envoyer-identite-stripe", name="admin_user_stripe_upload_identity", methods={"POST"})
      */
-    public function envoyerIdentiteStripe(User $user, StripeConnectService $stripeService): RedirectResponse
+    public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService): RedirectResponse
     {
+        $this->assertValidUserToken($user, $request, 'stripe_identity');
+
         // Récupération du document de type "identite"
         $doc = $user->getDocumentByType('identite');
 
@@ -276,10 +287,13 @@ class AdminUserController extends AbstractController
      */
     public function resendConfirmation(
     User $user,
+    Request $request,
     EmailVerifier $emailVerifier, // service déjà utilisé dans Register
     VerifyEmailHelperInterface $verifyEmailHelper,
     MailerInterface $mailer
 ): RedirectResponse {
+    $this->assertValidUserToken($user, $request, 'resend_confirmation');
+
     if ($user->isVerified()) {
         $this->addFlash('info', 'Ce compte est déjà vérifié.');
         return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
@@ -304,6 +318,13 @@ class AdminUserController extends AbstractController
     }
 
     return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+}
+
+private function assertValidUserToken(User $user, Request $request, string $action): void
+{
+    if (!$this->isCsrfTokenValid('admin_user_' . $action . '_' . $user->getId(), (string) $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    }
 }
 
 }

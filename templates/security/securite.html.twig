@@ -1,76 +1,86 @@
-{# templates/securite.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}HaloGari | Sécurité et confiance{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <h1 class="mb-4 text-center">🔒 Votre sécurité est notre priorité</h1>
-            <div class="p-4 border rounded shadow-sm bg-light">
-
-                <p class="lead">
-                    Chez <strong>HaloGari</strong>, nous faisons tout pour que votre expérience de covoiturage soit <strong>fiable, humaine et rassurante</strong>.
-                </p>
-
-                <hr>
-
-                <h4 class="text-orange">🔍 Vérification des profils</h4>
-                <ul>
-                    <li>Les conducteurs doivent fournir un <strong>justificatif d’identité</strong> et un <strong>RIB vérifié</strong>.</li>
-                    <li>Les documents sont validés manuellement par notre équipe.</li>
-                    <li>Un profil non vérifié ne peut pas publier de trajet.</li>
-                </ul>
-
-                <hr>
-
-                <h4 class="text-orange">💬 Notation et avis</h4>
-                <ul>
-                    <li>Après chaque trajet, passagers et conducteurs peuvent se laisser une <strong>note</strong> et un <strong>commentaire</strong>.</li>
-                    <li>Un mauvais comportement peut être signalé à tout moment.</li>
-                    <li>Les évaluations contribuent à la fiabilité de la communauté.</li>
-                </ul>
-
-                <hr>
-
-                <h4 class="text-orange">💳 Paiement sécurisé</h4>
-                <p>
-                    Nous utilisons <strong>Stripe</strong>, une solution certifiée PCI-DSS, pour tous les paiements sur la plateforme.
-                </p>
-                <ul>
-                    <li>Le paiement est bloqué jusqu’à la fin du trajet.</li>
-                    <li>Le conducteur est payé uniquement si le trajet est confirmé.</li>
-                    <li>En cas d'annulation, les règles de <a href="{{ path('app_conditionsutisation') }}#remboursement">remboursement</a> s’appliquent.</li>
-                </ul>
-
-                <hr>
-
-                <h4 class="text-orange">👮‍♂️ Modération active</h4>
-                <ul>
-                    <li>Chaque message ou trajet peut être signalé s’il ne respecte pas nos règles.</li>
-                    <li>Nous analysons les signalements sous 24h.</li>
-                    <li>Les comptes abusifs sont suspendus ou bannis.</li>
-                </ul>
-
-                <hr>
-
-                <h4 class="text-orange">📞 Assistance humaine</h4>
-                <p>
-                    Un problème ? Notre équipe locale à Mayotte est là pour vous aider :
-                </p>
-                <ul>
-                    <li>Email : <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a></li>
-                    <li>Téléphone : 0639274954</li>
-                    <li>Ou via notre formulaire de <a href="{{ path('app_contact') }}">contact</a></li>
-                </ul>
-
-                <hr>
-
-                <h5 class="text-center text-success">✔ Ensemble, construisons une plateforme de confiance pour tous les Mahorais !</h5>
-
-            </div>
-        </div>
+<section class="app-page-header app-page-header--compact">
+    <div class="container">
+        <p class="app-kicker">Confiance</p>
+        <h1>Sécurité et confiance</h1>
+        <p>HaloGari met la vérification, les paiements sécurisés et l’assistance humaine au cœur du covoiturage local.</p>
     </div>
-</div>
+</section>
+
+<section class="container app-page-grid">
+    <article class="app-panel">
+        <span class="app-panel__icon"><i class="bi bi-shield-lock-fill"></i></span>
+        <h2>Voyager avec plus de sérénité</h2>
+        <p>
+            Le covoiturage fonctionne quand chacun se sent respecté, informé et protégé.
+            HaloGari combine plusieurs niveaux de sécurité pour rassurer les passagers comme les conducteurs.
+        </p>
+
+        <div class="feature-grid">
+            <article class="feature-card">
+                <h3>Profils vérifiés</h3>
+                <p>Les informations importantes et les documents nécessaires peuvent être contrôlés avant certaines actions.</p>
+            </article>
+            <article class="feature-card">
+                <h3>Paiements sécurisés</h3>
+                <p>Les paiements sont gérés via Stripe, sans stockage complet des cartes bancaires par HaloGari.</p>
+            </article>
+            <article class="feature-card">
+                <h3>Communauté suivie</h3>
+                <p>Les avis, messages et signalements aident à garder une plateforme respectueuse.</p>
+            </article>
+        </div>
+
+        <h2>Pour les conducteurs</h2>
+        <ul>
+            <li>Un conducteur peut devoir fournir un justificatif d’identité et un RIB validé.</li>
+            <li>Les trajets publiés doivent être réels, lisibles et conformes aux règles du service.</li>
+            <li>Les paiements sont reversés selon le fonctionnement prévu par la plateforme.</li>
+            <li>Un comportement dangereux ou abusif peut entraîner une suspension du compte.</li>
+        </ul>
+
+        <h2>Pour les passagers</h2>
+        <ul>
+            <li>Les informations du trajet sont affichées avant la réservation : départ, arrivée, date, heure, prix et places.</li>
+            <li>La messagerie permet d’échanger avec le conducteur sans sortir du cadre HaloGari.</li>
+            <li>Les règles d’annulation et de remboursement sont consultables avant le paiement.</li>
+            <li>Après un trajet, les avis contribuent à la confiance de la communauté.</li>
+        </ul>
+
+        <h2>Paiement et remboursement</h2>
+        <p>
+            HaloGari s’appuie sur Stripe pour sécuriser les paiements. En cas d’annulation, la politique de remboursement
+            dépend du moment de l’annulation et de la personne qui annule.
+        </p>
+        <a href="{{ path('app_conditionsutisation') }}#remboursement" class="btn btn-orange">
+            <i class="bi bi-receipt"></i>
+            Voir la politique de remboursement
+        </a>
+        <br><br>
+        <h2>Signalement et modération</h2>
+        <p>
+            Si un trajet, un message ou un comportement vous semble problématique, contactez le support avec le plus
+            de détails possible. HaloGari peut analyser la situation et prendre les mesures nécessaires.
+        </p>
+    </article>
+
+    <aside class="app-panel app-tips-panel">
+        <span class="app-panel__icon"><i class="bi bi-headset"></i></span>
+        <h2>Assistance humaine</h2>
+        <p>Un problème sur un trajet, un paiement ou un document ? L’équipe HaloGari peut vous aider.</p>
+        <div class="tip-list">
+            <span><i class="bi bi-check-circle-fill"></i> Email : <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a></span>
+            <span><i class="bi bi-check-circle-fill"></i> Contact depuis le site</span>
+            <span><i class="bi bi-check-circle-fill"></i> Réponse humaine et locale</span>
+        </div>
+        <a href="{{ path('app_contact') }}" class="btn btn-success w-100 mt-3">
+            <i class="bi bi-send-fill"></i>
+            Contacter HaloGari
+        </a>
+    </aside>
+</section>
 {% endblock %}

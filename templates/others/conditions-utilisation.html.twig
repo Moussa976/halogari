@@ -3,129 +3,108 @@
 {% block title %}HaloGari | Conditions d'utilisation{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-	<div class="row justify-content-center">
-		<div class="col-lg-8">
-			<h1 class="mb-4 text-center">Conditions d'utilisation</h1>
-			<div class="p-4 border rounded shadow-sm bg-light">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Règles du service</p>
+    <h1>Conditions d'utilisation</h1>
+    <p>Les règles qui permettent à HaloGari de rester simple, fiable et respectueux pour tous les utilisateurs.</p>
+  </div>
+</section>
 
-				<p>
-					Les présentes conditions d'utilisation régissent l’accès et l’usage de la plateforme
-					<strong>HaloGari</strong>, mise en ligne par l’<strong>ASSOCIATION SPORTIVE ET CULTURELLE DE MTSAHARA (ASCM)</strong>, accessible à l’adresse
-					<em>www.halogari.yt</em>.
-				</p>
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <p>
+      Les présentes conditions encadrent l'accès et l'utilisation de <strong>HaloGari</strong>,
+      application de covoiturage locale créée par l'association <strong>WEB976</strong> pour Mayotte.
+    </p>
 
-				<hr>
+    <h2>1. Objet du service</h2>
+    <ul>
+      <li>Publier un trajet en tant que conducteur.</li>
+      <li>Rechercher et réserver une place en tant que passager.</li>
+      <li>Échanger des messages liés à l'organisation du trajet.</li>
+      <li>Gérer les notifications, paiements et remboursements associés.</li>
+    </ul>
 
-				<h5 class="text-orange">1. Objet du service</h5>
-				<p>HaloGari est une plateforme en ligne de covoiturage local à Mayotte permettant aux utilisateurs de :</p>
-				<ul>
-					<li>Publier des trajets en tant que conducteurs</li>
-					<li>Rechercher et réserver des trajets en tant que passagers</li>
-					<li>Échanger des messages pour organiser les trajets</li>
-				</ul>
+    <h2>2. Compte utilisateur</h2>
+    <ul>
+      <li>L'inscription est gratuite.</li>
+      <li>Les informations fournies doivent être exactes, à jour et vérifiables.</li>
+      <li>L'utilisateur doit protéger son mot de passe et prévenir HaloGari en cas de suspicion d'accès frauduleux.</li>
+      <li>Certains documents peuvent être demandés pour renforcer la confiance ou activer les paiements conducteur.</li>
+    </ul>
 
-				<hr>
+    <h2>3. Publication et réservation</h2>
+    <p>
+      Les trajets publiés doivent être réels, cohérents et conformes à la réglementation applicable.
+      Le conducteur reste responsable du trajet proposé et le passager de sa présence au point de rendez-vous.
+    </p>
 
-				<h5 class="text-orange">2. Inscription et obligations des utilisateurs</h5>
-				<ul>
-					<li>L'inscription est gratuite et réservée aux personnes majeures disposant d’un permis de conduire valide (pour les conducteurs).</li>
-					<li>Les informations fournies doivent être exactes, à jour et vérifiables.</li>
-					<li>Le respect, la ponctualité et la courtoisie sont attendus de tous les utilisateurs.</li>
-					<li>Les trajets proposés doivent être réels, sécurisés, et conformes à la législation.</li>
-				</ul>
+    <h2>4. Paiements</h2>
+    <p>
+      Les paiements sont gérés via Stripe. HaloGari ne stocke pas les données complètes de carte bancaire.
+      Une commission de service peut être appliquée afin de financer la maintenance, la sécurité et le support.
+    </p>
 
-				<hr>
+    <h2 id="remboursement">5. Annulation et remboursement</h2>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle responsive-card-table">
+        <thead>
+          <tr>
+            <th>Situation</th>
+            <th>Remboursement passager</th>
+            <th>Remarque</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Situation">Annulation par le conducteur</td>
+            <td data-label="Remboursement">100 %</td>
+            <td data-label="Remarque">Le passager ne doit pas être pénalisé.</td>
+          </tr>
+          <tr>
+            <td data-label="Situation">Passager annule plus de 24 h avant</td>
+            <td data-label="Remboursement">100 %</td>
+            <td data-label="Remarque">Les places sont remises à disposition.</td>
+          </tr>
+          <tr>
+            <td data-label="Situation">Passager annule entre 24 h et 3 h avant</td>
+            <td data-label="Remboursement">50 %</td>
+            <td data-label="Remarque">Remboursement partiel selon la politique HaloGari.</td>
+          </tr>
+          <tr>
+            <td data-label="Situation">Passager annule moins de 3 h avant ou ne se présente pas</td>
+            <td data-label="Remboursement">0 %</td>
+            <td data-label="Remarque">Le conducteur a peu de temps pour remplacer la place.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-				<h5 class="text-orange">3. Réservations et commission</h5>
-				<p>
-					Lorsqu’un passager réserve une place, un montant est défini par le conducteur. La réservation implique l’accord entre les deux parties.
-				</p>
-				<p>
-					<strong>HaloGari perçoit une commission de 12 % sur chaque réservation, avec un minimum de 0,50 €.</strong>
-					Ces frais permettent de couvrir le développement, la maintenance et la modération de la plateforme.
-				</p>
-				<p>
-					Les frais de traitement Stripe (1,4 % + 0,25 €) sont également appliqués par transaction. Ils sont déduits du montant reversé au conducteur.
-				</p>
+    <h2>6. Comportement et sécurité</h2>
+    <ul>
+      <li>Les échanges doivent rester respectueux, utiles et liés au trajet.</li>
+      <li>Les comportements dangereux, frauduleux ou abusifs peuvent entraîner une suspension.</li>
+      <li>Les profils, documents, avis et messages servent à renforcer la confiance.</li>
+    </ul>
 
-				<hr>
+    <h2>7. Suppression de compte</h2>
+    <p>
+      La suppression volontaire du compte nécessite la confirmation par mot de passe. Les informations personnelles
+      directes sont supprimées ou anonymisées. Certains éléments liés aux trajets, réservations, paiements ou messages
+      peuvent être conservés sous forme anonymisée pour préserver la cohérence et la sécurité du service.
+    </p>
+  </article>
 
-				<h5 id="remboursement" class="text-orange">4. Politique de remboursement</h5>
-				<p>
-					En cas d’annulation d’un trajet ou d’une réservation, la politique suivante s’applique :
-				</p>
-				<div class="table-responsive">
-				<table class="table table-bordered">
-					<thead>
-						<tr>
-							<th>Situation</th>
-							<th>Remboursement au passager</th>
-							<th>Commission HaloGari</th>
-							<th>Frais Stripe</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Annulation par le conducteur</td>
-							<td>100%</td>
-							<td>Non prélevée</td>
-							<td>Remboursés si non encore transférés</td>
-						</tr>
-						<tr>
-							<td>Passager annule > 24h avant</td>
-							<td>100%</td>
-							<td>Non prélevée</td>
-							<td>Remboursés si possible</td>
-						</tr>
-						<tr>
-							<td>Passager annule entre 24h et 3h</td>
-							<td>50%</td>
-							<td>Partiellement conservée</td>
-							<td>Non remboursables</td>
-						</tr>
-						<tr>
-							<td>Passager annule < 3h avant ou ne se présente pas</td>
-							<td>0%</td>
-							<td>Oui</td>
-							<td>Non remboursables</td>
-						</tr>
-					</tbody>
-				</table>
-				</div>
-
-				<p>
-					Les remboursements sont effectués via Stripe. HaloGari se réserve le droit d’adapter ces règles en cas de circonstances exceptionnelles.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">5. Responsabilités</h5>
-				<ul>
-					<li>HaloGari agit comme intermédiaire technique entre les utilisateurs.</li>
-					<li>Les conducteurs et passagers sont seuls responsables du bon déroulement des trajets.</li>
-					<li>En cas d'annulation de dernière minute, HaloGari s'efforcera d’appliquer une solution équitable selon la politique affichée.</li>
-				</ul>
-
-				<hr>
-
-				<h5 class="text-orange">6. Suspension de compte</h5>
-				<p>
-					L’association se réserve le droit de suspendre ou supprimer un compte utilisateur en cas de comportement inapproprié, d'abus ou de non-respect des présentes conditions.
-				</p>
-				<p>
-					En cas de suppression volontaire par l'utilisateur, ses données personnelles sont effacées (nom, email, mot de passe, etc.) mais ses trajets, messages, avis et réservations sont conservés de manière anonymisée pour garantir la cohérence des échanges passés.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">7. Modifications</h5>
-				<p>
-					Les présentes conditions peuvent être mises à jour à tout moment. L’utilisateur sera informé lors de sa prochaine connexion, ou via notification.
-				</p>
-
-			</div>
-		</div>
-	</div>
-</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-file-earmark-check"></i></span>
+    <h2>À retenir</h2>
+    <div class="tip-list">
+      <span><i class="bi bi-check-circle-fill"></i> Respect entre utilisateurs</span>
+      <span><i class="bi bi-check-circle-fill"></i> Paiements sécurisés</span>
+      <span><i class="bi bi-check-circle-fill"></i> Règles d'annulation claires</span>
+      <span><i class="bi bi-check-circle-fill"></i> Suppression protégée par mot de passe</span>
+    </div>
+  </aside>
+</section>
 {% endblock %}

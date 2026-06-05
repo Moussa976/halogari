@@ -1,113 +1,85 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | FAQ - Questions fréquentes
-{% endblock %}
+{% block title %}HaloGari | FAQ{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<h1 class="mb-4 text-center">Foire aux questions</h1>
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Aide rapide</p>
+    <h1>Foire aux questions</h1>
+    <p>Les réponses essentielles pour utiliser HaloGari comme passager ou conducteur.</p>
+  </div>
+</section>
 
-		<div class="accordion" id="faqAccordion">
-
-			{% set faq = [
+<section class="container app-page-grid">
+  <div class="app-panel">
+    {% set faq = [
       {
-        question: "Comment publier un trajet sur HaloGari ?",
-        reponse: "Connectez-vous à votre compte, puis rendez-vous dans le menu “Publier un trajet”. Remplissez les 3 étapes (informations, prix, description) et validez. Le trajet sera publié immédiatement après vérification."
+        question: "Qui crée HaloGari ?",
+        reponse: "HaloGari est une application créée par l'association WEB976 pour Mayotte. Le développement est assuré par Moussa INSSA."
       },
       {
-        question: "Est-ce que je peux réserver plusieurs places ?",
-        reponse: "Oui, vous pouvez choisir jusqu’à 8 passagers lors de la recherche avant de cliquer sur “Rechercher”."
+        question: "Comment chercher un trajet ?",
+        reponse: "Indiquez le village de départ, le village d'arrivée, la date et le nombre de places. Les champs de villages proposent des résultats après quelques caractères pour éviter les longues listes."
       },
       {
-        question: "Dois-je avoir un compte pour utiliser HaloGari ?",
-        reponse: "Oui. Un compte est nécessaire pour réserver, publier un trajet ou échanger des messages. L’inscription est gratuite."
+        question: "Comment réserver une place ?",
+        reponse: "Ouvrez un trajet, choisissez le nombre de places, puis envoyez votre demande. Le conducteur peut accepter ou refuser selon les disponibilités."
       },
       {
-        question: "Comment vérifier mon profil HaloGari ?",
-        reponse: "Votre profil est vérifié lorsque votre adresse e-mail est confirmée et que votre pièce d'identité est validée. Un numéro de téléphone pourra être requis prochainement. Cela permet d’afficher un badge vert et rassure les autres utilisateurs."
+        question: "Comment publier un trajet ?",
+        reponse: "Connectez-vous, ouvrez Publier, indiquez le départ, l'arrivée, la date, l'heure, les places, le prix et les informations utiles pour les passagers."
       },
       {
-        question: "Comment changer ma photo de profil ?",
-        reponse: "Allez sur votre profil, cliquez sur le crayon en bas à droite de votre photo. Vous pourrez ensuite importer une nouvelle image ou supprimer l’ancienne."
+        question: "Pourquoi dois-je vérifier mon profil ?",
+        reponse: "La vérification aide à rassurer les autres utilisateurs. Elle permet aussi d'activer certaines fonctionnalités comme les paiements conducteur."
       },
       {
-        question: "Que signifie le badge bouclier vert sur une photo ?",
-        reponse: "Le bouclier indique que le profil est vérifié (e-mail + pièce d'identité). C’est un gage de confiance visible sur toute la plateforme."
+        question: "Quels documents peuvent être demandés ?",
+        reponse: "Un justificatif d'identité et un RIB peuvent être demandés selon votre usage. Les documents sont pré-vérifiés automatiquement quand le fichier est lisible, au bon format et inférieur à 2 Mo."
       },
       {
-        question: "Comment voir mon profil comme les autres le voient ?",
-        reponse: "Chaque profil possède une URL publique du type <code>/u/123</code>. Vous pouvez la copier depuis votre profil et la partager à d'autres personnes."
+        question: "Les paiements sont-ils sécurisés ?",
+        reponse: "Oui. Les paiements sont gérés via Stripe. HaloGari ne stocke pas les numéros complets de carte bancaire."
       },
       {
-        question: "Comment modifier ou annuler un trajet ?",
-        reponse: "Allez dans “Mes trajets”, sélectionnez le trajet concerné, puis cliquez sur “Modifier” ou “Annuler”."
+        question: "Quelle est la politique de remboursement ?",
+        reponse: 'Elle dépend du moment de l\'annulation et de la personne qui annule. Consultez la <a href="' ~ path('app_conditionsutisation') ~ '#remboursement">politique de remboursement</a>.'
       },
       {
-        question: "Quelles sont les conditions pour publier un trajet ?",
-        reponse: "Vous devez avoir un justificatif d'identité et un RIB validés par l'équipe HaloGari. Ces documents sont requis pour activer votre profil conducteur."
+        question: "Comment supprimer mon compte ?",
+        reponse: "Depuis Paramètres, ouvrez la zone sensible et confirmez avec votre mot de passe actuel. Un e-mail de confirmation est envoyé après suppression."
       },
       {
-        question: "Comment contacter le support HaloGari ?",
-        reponse: 'Vous pouvez nous écrire via la page <a href="{{ path("app_contact") }}">Contact</a> ou par email à <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>.'
-      },
-      {
-        question: "Est-ce que les paiements sont sécurisés ?",
-        reponse: "Oui, nous utilisons Stripe, une solution certifiée PCI-DSS, pour garantir la sécurité de tous les paiements sur la plateforme."
-      },
-      {
-        question: "Que faire si un conducteur est en retard ou ne se présente pas ?",
-        reponse: "Contactez-le via la messagerie HaloGari. S’il ne répond pas, signalez-le au support : nous appliquerons notre politique de remboursement."
-      },
-      {
-        question: "Puis-je laisser un avis sur un trajet ?",
-        reponse: "Oui, une fois le trajet effectué, vous pourrez noter le conducteur et laisser un commentaire visible des autres utilisateurs."
-      },
-      {
-        question: "Quand suis-je débité(e) lors d'une réservation ?",
-        reponse: "Vous n’êtes débité que lorsque le conducteur accepte votre demande. Le paiement est alors autorisé mais capturé uniquement après confirmation du trajet."
-      },
-      {
-        question: "À quoi sert le code de validation du trajet ?",
-        reponse: "Ce code garantit que le passager est bien monté à bord. Il permet de déclencher le paiement au conducteur une fois le trajet effectué."
-      },
-      {
-        question: "Quelle est la politique d’annulation ?",
-        reponse: 'Elle dépend du moment où vous annulez. Consultez notre <a href="{{ path("app_conditionsutisation") }}#remboursement">politique de remboursement</a> pour tous les détails.'
-      },
-      {
-        question: "Puis-je modifier mes informations personnelles ?",
-        reponse: "Oui, dans la page <strong>Paramètres</strong>, vous pouvez changer votre prénom, nom, date de naissance, numéro de téléphone, ainsi que votre photo de profil."
-      },
-      {
-        question: "Que deviennent mes avis si je supprime mon compte ?",
-        reponse: "Les avis que vous avez laissés seront toujours visibles pour les autres utilisateurs, mais votre nom et votre profil ne seront plus associés à ces commentaires."
-      },
-      {
-        question: "Comment ajouter un document 'autre' que l'identité ou le RIB ?",
-        reponse: "Dans la section <strong>Mes documents</strong> de votre compte, sélectionnez 'Autre' dans le menu déroulant. Un champ s'affichera pour préciser le type de document (ex. justificatif de domicile)."
-      },
-      {
-        question: "Que se passe-t-il si je supprime mon compte HaloGari ?",
-        reponse: "Vos données personnelles (nom, prénom, email, téléphone, photo, mot de passe) sont supprimées de manière sécurisée. Cependant, vos trajets, avis, messages et réservations sont conservés de façon anonymisée pour garantir la cohérence des échanges passés. Vous apparaîtrez sous le nom « Utilisateur supprimé »."
+        question: "Comment contacter le support ?",
+        reponse: 'Utilisez la page <a href="' ~ path('app_contact') ~ '">Contact</a> ou écrivez à <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a>.'
       }
-
     ] %}
 
-			{% for item in faq %}
-				<div class="accordion-item">
-					<h2 class="accordion-header" id="heading{{ loop.index }}">
-						<button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse{{ loop.index }}">
-							{{ item.question }}
-						</button>
-					</h2>
-					<div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#faqAccordion">
-						<div class="accordion-body">
-							{{ item.reponse|raw }}
-						</div>
-					</div>
-				</div>
-			{% endfor %}
+    <div class="accordion" id="faqAccordion">
+      {% for item in faq %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading{{ loop.index }}">
+            <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ loop.first ? 'true' : 'false' }}" aria-controls="collapse{{ loop.index }}">
+              {{ item.question }}
+            </button>
+          </h2>
+          <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">{{ item.reponse|raw }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 
-		</div>
-	</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-question-circle"></i></span>
+    <h2>Pas trouvé ?</h2>
+    <p>Envoyez-nous un message avec les détails du trajet, du compte, du paiement ou du document concerné.</p>
+    <a href="{{ path('app_contact') }}" class="btn btn-orange w-100">
+      <i class="bi bi-send-fill"></i>
+      Contacter le support
+    </a>
+  </aside>
+</section>
 {% endblock %}

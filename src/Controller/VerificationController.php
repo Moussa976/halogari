@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Security;
 class VerificationController extends AbstractController
 {
     /**
-     * @Route("/verification", name="app_verification")
+     * @Route("/verification", name="app_verification", methods={"GET", "POST"})
      */
     public function verification(Request $request, EntityManagerInterface $em, Security $security): Response
     {

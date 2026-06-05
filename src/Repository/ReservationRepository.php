@@ -39,6 +39,16 @@ class ReservationRepository extends ServiceEntityRepository
         }
     }
 
+    public function findOneByStripeIntentId(string $paymentIntentId): ?Reservation
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('r.paiement', 'p')
+            ->andWhere('p.paymentIntentId = :paymentIntentId')
+            ->setParameter('paymentIntentId', $paymentIntentId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 //    /**
 //     * @return Reservation[] Returns an array of Reservation objects
 //     */

@@ -5,10 +5,8 @@ namespace App\Controller;
 use App\Entity\Notes;
 use App\Entity\Reservation;
 use App\Form\NoteConducteurType;
+use App\Message\TrajetPublieMessage;
 use App\Repository\UserRepository;
-use App\Service\AfficheService;
-use App\Service\NotificationService;
-use App\Service\MetaService;
 use App\Service\StripeConnectService;
 use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
@@ -16,13 +14,11 @@ use App\Entity\Trajet;
 use App\Repository\NotesRepository;
 use App\Repository\TrajetRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 use Stripe\Stripe;
@@ -34,7 +30,7 @@ use Stripe\Token;
 class TrajetController extends AbstractController
 {
     /**
-     * @Route("/chercher", name="app_chercher")
+     * @Route("/chercher", name="app_chercher", methods={"GET"})
      */
     public function chercher(Request $request): Response
     {
@@ -44,11 +40,21 @@ class TrajetController extends AbstractController
         $heure = $request->query->get('heure_trajet') ?? 'any';
         $places = $request->query->get('places_min') ?? 1;
 
-        if ($depart && $arrivee && $date && \DateTime::createFromFormat('Y-m-d', $date)) {
+        if ($request->query->count() > 0 && (!$depart || !$arrivee || !$date)) {
+            $this->addFlash('error', 'Complétez le village de départ, le village d’arrivée et la date pour lancer la recherche.');
+        }
+
+        $dateRecherche = $this->normalizeSearchDate($date);
+
+        if ($depart && $arrivee && $date && !$dateRecherche) {
+            $this->addFlash('error', 'La date doit être au format jj/mm/aaaa, par exemple 05/06/2026.');
+        }
+
+        if ($depart && $arrivee && $dateRecherche) {
             return $this->redirectToRoute('app_chercherResultats', [
                 'depart' => $depart,
                 'arrivee' => $arrivee,
-                'date' => $date,
+                'date' => $dateRecherche,
                 'heure' => 'any',
                 'places' => $places,
             ]);
@@ -58,13 +64,23 @@ class TrajetController extends AbstractController
     }
 
     /**
-     * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats")
+     * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats", methods={"GET"})
      */
     public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository): Response
     {
         Carbon::setLocale('fr');
+        if (!\DateTimeImmutable::createFromFormat('Y-m-d', $date)) {
+            $this->addFlash('error', 'La date de recherche est invalide. Choisissez une date avec le calendrier.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        if (!ctype_digit($places) || (int) $places < 1) {
+            $this->addFlash('error', 'Indiquez au moins 1 passager pour rechercher un trajet.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
         $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
-        $dateFr = Carbon::parse($date);
+        $dateFr = Carbon::createFromFormat('Y-m-d', $date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
         $dateObj = new \DateTimeImmutable($date);
 
@@ -72,7 +88,7 @@ class TrajetController extends AbstractController
             ->where('t.dateTrajet = :date')
             ->andWhere('t.arrivee = :arrivee')
             ->andWhere('t.depart != :depart')
-            ->andWhere('t.annule != true') // ✅ Exclure les trajets annulés
+            ->andWhere('t.annule != true') // Exclure les trajets annulés
             ->setParameters([
                 'date' => $dateObj,
                 'arrivee' => $arrivee,
@@ -82,13 +98,19 @@ class TrajetController extends AbstractController
             ->getResult();
 
 
-        $villes = json_decode(file_get_contents(__DIR__ . '/../../public/cities.json'), true);
+        $citiesFile = __DIR__ . '/../../public/cities.json';
+        $villes = [];
+        if (is_file($citiesFile) && is_readable($citiesFile)) {
+            $decoded = json_decode((string) file_get_contents($citiesFile), true);
+            $villes = is_array($decoded) ? $decoded : [];
+        }
 
         return $this->render('trajet/chercherResultats.html.twig', [
             'depart' => $depart,
             'arrivee' => $arrivee,
             'dateTrajetFr' => $dateTrajet,
             'dateTrajet' => $date,
+            'dateTrajetInput' => $dateObj->format('d/m/Y'),
             'heure' => $heure,
             'places' => $places,
             'trajets' => $trajets,
@@ -100,7 +122,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MailerInterface $mailer, StripeConnectService $stripeConnect, AfficheService $afficheService, MetaService $publisher): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, StripeConnectService $stripeConnect, MessageBusInterface $bus): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -108,11 +130,12 @@ class TrajetController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        if ($request->isMethod('POST')) {
-            $user = $this->getUser();
+        $user = $this->getUser();
+        $rib = $this->findDocumentByTypes($user, ['rib']);
+        $identite = $this->findDocumentByTypes($user, ['identite', 'piece_identite', 'piece-identite']);
+        $documentsReady = $rib && $identite && $rib->getStatus() === 'approved' && $identite->getStatus() === 'approved';
 
-            $rib = $user->getDocumentByType('RIB');
-            $identite = $user->getDocumentByType("identite");
+        if ($request->isMethod('POST')) {
 
             if (!$rib || !$identite) {
                 if (!$rib)
@@ -122,130 +145,82 @@ class TrajetController extends AbstractController
                 return $this->redirectToRoute('app_documents');
             }
 
-            if ($rib->getStatus() !== 'approved' || $identite->getStatus() !== 'approved') {
+            if (!$documentsReady) {
                 $this->addFlash('error', 'Vos documents doivent être validés par un administrateur.');
                 return $this->redirectToRoute('app_documents');
             }
 
             $stripeConnect->creerCompteSiBesoin($user);
 
+            $dateInput = $this->normalizeSearchDate((string) $request->request->get('date'));
+            $heureInput = (string) $request->request->get('heure');
+            $departure = trim((string) $request->request->get('departure'));
+            $arrival = trim((string) $request->request->get('arrival'));
+            $places = (int) $request->request->get('places');
+            $price = (float) $request->request->get('price');
+            $description = trim((string) $request->request->get('description'));
+            $dateTrajet = $dateInput ? \DateTime::createFromFormat('Y-m-d', $dateInput) : false;
+            $heureTrajet = \DateTime::createFromFormat('H:i', $heureInput);
+
+            if ($departure === '' || $arrival === '') {
+                $this->addFlash('error', 'Choisissez un village de départ et un village d’arrivée.');
+                return $this->redirectToRoute('app_publier');
+            }
+
+            if ($departure === $arrival) {
+                $this->addFlash('error', 'Le village de départ et le village d’arrivée doivent être différents.');
+                return $this->redirectToRoute('app_publier');
+            }
+
+            if (!$dateTrajet || !$heureTrajet) {
+                $this->addFlash('error', 'Choisissez une date au format jj/mm/aaaa et une heure valides pour le trajet.');
+                return $this->redirectToRoute('app_publier');
+            }
+
+            if ($places < 1 || $places > 8) {
+                $this->addFlash('error', 'Indiquez un nombre de places entre 1 et 8.');
+                return $this->redirectToRoute('app_publier');
+            }
+
+            if ($price < 1) {
+                $this->addFlash('error', 'Indiquez un prix par passager d’au moins 1 €.');
+                return $this->redirectToRoute('app_publier');
+            }
+
+            if (mb_strlen($description) < 30) {
+                $this->addFlash('error', 'Ajoutez une description d’au moins 30 caractères : lieu de rendez-vous, ponctualité, bagages ou arrêt possible.');
+                return $this->redirectToRoute('app_publier');
+            }
+
             $trajet = new Trajet();
             $trajet->setConducteur($user);
-            $trajet->setDepart($request->request->get('departure'));
-            $trajet->setArrivee($request->request->get('arrival'));
-            $trajet->setDateTrajet(new \DateTime($request->request->get('date')));
-            $trajet->setHeureTrajet(new \DateTime($request->request->get('heure')));
-            $trajet->setPlacesDisponibles((int) $request->request->get('places'));
-            $trajet->setPlaces((int) $request->request->get('places'));
-            $trajet->setPrix((float) $request->request->get('price'));
-            $trajet->setDescription($request->request->get('description'));
+            $trajet->setDepart($departure);
+            $trajet->setArrivee($arrival);
+            $trajet->setDateTrajet($dateTrajet);
+            $trajet->setHeureTrajet($heureTrajet);
+            $trajet->setPlacesDisponibles($places);
+            $trajet->setPlaces($places);
+            $trajet->setPrix($price);
+            $trajet->setDescription($description);
 
             $em->persist($trajet);
             $em->flush();
 
-            $email = (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
-                ->to($user->getEmail())
-                ->subject('Votre trajet a été publié')
-                ->htmlTemplate('emails/trajet_publie.html.twig')
-                ->context([
-                    'user' => $user,
-                    'trajet' => $trajet,
-                ])
-                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
-
-            $mailer->send($email);
-
+            $bus->dispatch(new TrajetPublieMessage($trajet->getId()));
             $this->addFlash('success', 'Votre trajet a bien été publié !');
-
-            // GÉNÉRATION AFFICHE
-            $imagePath = $afficheService->generate($trajet);
-            $localPath = $this->getParameter('kernel.project_dir') . '/public' . $imagePath;
-
-            // TEXTE À PUBLIER
-            $conducteur = $trajet->getConducteur();
-            $prenom = ucfirst($conducteur->getPrenom());
-
-            // Gestion de l’âge (null safe)
-            $age = method_exists($conducteur, 'getAge') && $conducteur->getAge()
-                ? $conducteur->getAge() . ' ans'
-                : null;
-
-            // Gestion de la note moyenne (null safe)
-            $note = method_exists($conducteur, 'getNoteMoyenne') && $conducteur->getNoteMoyenne()
-                ? number_format($conducteur->getNoteMoyenne(), 1, ',', ' ') . ' ⭐'
-                : null;
-
-            // Construire la ligne "conducteur"
-            $infosConducteur = $prenom;
-            if ($age || $note) {
-                $infosConducteur .= ' (';
-                if ($age) {
-                    $infosConducteur .= $age;
-                }
-                if ($age && $note) {
-                    $infosConducteur .= ', ';
-                }
-                if ($note) {
-                    $infosConducteur .= $note;
-                }
-                $infosConducteur .= ')';
-            }
-
-            // Hashtags ou lien optionnel
-            $url = sprintf(
-                'https://halogari.yt/chercher/%s/%s/%s/any/1',
-                $trajet->getDepart(),
-                $trajet->getArrivee(),
-                $trajet->getDateTrajet()->format('Y-m-d')
-            );
-            $hashtags = sprintf(
-                "#CovoiturageMayotte #Mayotte #976 #HaloGari #%s #%s",
-                $trajet->getDepart(),
-                $trajet->getArrivee(),
-            );
-
-            // Caption final
-            $caption = sprintf(
-                "🚗 %s\n🟠 %s → 🟢 %s\n📅 %s à %s\n💺 %d place%s dispo • 💰 %s €/place\n\n%s\n%s",
-                $infosConducteur,
-                $trajet->getDepart(),
-                $trajet->getArrivee(),
-                $trajet->getDateTrajet()->format('d/m/Y'),
-                $trajet->getHeureTrajet()->format('H:i'),
-                $trajet->getPlacesDisponibles(),
-                $trajet->getPlacesDisponibles() > 1 ? 's' : '',
-                number_format($trajet->getPrix(), 2, ',', ' '),
-                $url,
-                $hashtags
-            );
-
-
-            // PUBLICATION
-            try {
-                $publisher->publierSurFacebook($localPath, $caption);
-            } catch (\Exception $e) {
-                $this->addFlash('warning', 'La publication Facebook a échoué. L’image a été supprimée automatiquement.');
-                // Pour debug uniquement (désactiver en prod)
-                if ($this->getParameter('kernel.environment') === 'dev') {
-                    $this->addFlash('danger', 'Erreur Facebook : ' . $e->getMessage());
-                }
-            } finally {
-                if (file_exists($localPath)) {
-                    unlink($localPath);
-                }
-            }
 
             return $this->redirectToRoute('app_home');
         }
 
-        return $this->render('trajet/publier.html.twig');
+        return $this->render('trajet/publier.html.twig', [
+            'documentsReady' => (bool) $documentsReady,
+        ]);
     }
 
 
 
     /**
-     * @Route("/trajet/{id}/{ledepart}/{larrive}/{nbPlaceReservee}", name="app_trajet_show")
+     * @Route("/trajet/{id}/{ledepart}/{larrive}/{nbPlaceReservee}", name="app_trajet_show", methods={"GET"})
      */
     public function show(int $id, string $ledepart, string $larrive, string $nbPlaceReservee, TrajetRepository $trajetRepository, NotesRepository $notesRepository): Response
     {
@@ -254,6 +229,9 @@ class TrajetController extends AbstractController
 
         // affichage d'un trajet
         $trajet = $trajetRepository->findByID($id);
+        if (!$trajet) {
+            throw $this->createNotFoundException('Trajet introuvable.');
+        }
 
         if ($trajet->isAnnule()) {
             $this->addFlash('error', 'Ce trajet a été annulé et n\'est plus accessible.');
@@ -285,7 +263,7 @@ class TrajetController extends AbstractController
     }
 
     /**
-     * @Route("/user/trajet/{trajetId}/noter-passager/{passagerId}", name="app_noter_passager")
+     * @Route("/user/trajet/{trajetId}/noter-passager/{passagerId}", name="app_noter_passager", methods={"GET", "POST"})
      */
     public function noterPassager(
         int $trajetId,
@@ -304,7 +282,7 @@ class TrajetController extends AbstractController
         }
 
         if ($trajet->getConducteur() !== $conducteur) {
-            throw $this->createAccessDeniedException();
+            throw $this->createAccessDeniedException("Accès non autorisé.");
         }
 
         // Vérifier que ce passager a réservé ce trajet
@@ -353,7 +331,7 @@ class TrajetController extends AbstractController
     }
 
     /**
-     * @Route("/user/trajet/{id}/noter-conducteur", name="app_noter_conducteur")
+     * @Route("/user/trajet/{id}/noter-conducteur", name="app_noter_conducteur", methods={"GET", "POST"})
      */
     public function noterConducteur(
         int $id,
@@ -410,10 +388,11 @@ class TrajetController extends AbstractController
 
     /**
      * Permet au conducteur d’annuler son trajet.
-     * @Route("/user/trajet/{id}/annuler", name="trajet_annuler", methods={"GET", "POST"})
+     * @Route("/user/trajet/{id}/annuler", name="trajet_annuler", methods={"POST"})
      */
     public function annulerTrajet(
         int $id,
+        Request $request,
         TrajetRepository $trajetRepository,
         TrajetAnnulationService $annulationService
     ): Response {
@@ -423,13 +402,46 @@ class TrajetController extends AbstractController
             throw $this->createAccessDeniedException("Accès non autorisé.");
         }
 
+        if (!$this->isCsrfTokenValid('annuler_trajet_' . $trajet->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
         $annulationService->annulerTrajet($trajet);
 
         $this->addFlash('success', 'Le trajet a été annulé et les passagers ont été informés.');
         return $this->redirectToRoute('app_mes_trajets');
     }
+    private function findDocumentByTypes($user, array $allowedTypes)
+    {
+        if (!$user || !method_exists($user, 'getDocuments')) {
+            return null;
+        }
 
+        $allowed = array_map(static fn(string $type): string => strtolower(trim($type)), $allowedTypes);
+        foreach ($user->getDocuments() as $document) {
+            $docType = strtolower(trim((string) $document->getTypeDocument()));
+            if (in_array($docType, $allowed, true)) {
+                return $document;
+            }
+        }
 
+        return null;
+    }
 
+    private function normalizeSearchDate(?string $date): ?string
+    {
+        $date = trim((string) $date);
+        if ($date === '') {
+            return null;
+        }
 
+        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y'] as $format) {
+            $parsed = \DateTimeImmutable::createFromFormat('!' . $format, $date);
+            if ($parsed && $parsed->format($format) === $date) {
+                return $parsed->format('Y-m-d');
+            }
+        }
+
+        return null;
+    }
 }

@@ -29,11 +29,14 @@ class RegistrationFormType extends AbstractType
             ->add('prenom', TextType::class)
             ->add('dateNaissance', DateType::class, [
                 'widget' => 'single_text',
+                'html5' => false,
+                'format' => 'dd/MM/yyyy',
                 'label' => 'Date de naissance :',
                 'required' => true,
                 'attr' => [
-                    'class' => 'form-control',
-                    'max' => (new \DateTime('-18 years'))->format('Y-m-d')
+                    'class' => 'form-control dateFr',
+                    'placeholder' => 'jj/mm/aaaa',
+                    'data-max-date' => (new \DateTime('-18 years'))->format('Y-m-d'),
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez renseigner votre date de naissance.']),
@@ -82,22 +85,22 @@ class RegistrationFormType extends AbstractType
                 'first_options' => [
                     'label' => 'Mot de passe',
                     'attr' => ['class' => 'form-control', 'placeholder' => '••••••••••••'],
+                    'constraints' => [
+                        new NotBlank(['message' => 'Veuillez entrer un mot de passe.']),
+                        new Length([
+                            'min' => 8,
+                            'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères.',
+                            'max' => 4096,
+                        ]),
+                        new Regex([
+                            'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/',
+                            'message' => 'Votre mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial, par exemple : Mayotte@2026.',
+                        ]),
+                    ],
                 ],
                 'second_options' => [
                     'label' => 'Confirmer le mot de passe',
                     'attr' => ['class' => 'form-control', 'placeholder' => '••••••••••••'],
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'Veuillez entrer un mot de passe.']),
-                    new Length([
-                        'min' => 8,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
-                        'max' => 4096,
-                    ]),
-                    new Regex([
-                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/',
-                        'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.',
-                    ]),
                 ],
             ]);
         ;

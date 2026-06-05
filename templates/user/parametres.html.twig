@@ -1,274 +1,256 @@
 {% extends 'base.html.twig' %}
 {% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}HaloGari | Paramètres du compte
-{% endblock %}
+{% block title %}HaloGari | Paramètres du compte{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<h1 class="text-center mb-5">
-			<i class="bi bi-gear-fill"></i>
-			Paramètres du compte
-		</h1>
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Espace personnel</p>
+    <h1>Paramètres du compte</h1>
+    <p>Gérez vos informations, votre sécurité, vos documents et vos préférences de confiance.</p>
+  </div>
+</section>
 
-		<div class="row align-items-center justify-content-center g-4">
+<section class="container app-page-grid">
+  <div class="d-grid gap-4">
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
+          <h2>Photo de profil</h2>
+          <p>Une photo claire aide les conducteurs et les passagers à se reconnaître plus facilement.</p>
+        </div>
+        {{ avatar.formatSimple(app.user, 96, "photoProfil") }}
+      </div>
 
-			{# ✅ Photo de profil #}
-			<div class="col-lg-8">
-				<div class="card text-bg-secondary shadow-sm">
-					<div class="card-header">
-						<h5 class="mb-0">
-							<i class="bi bi-person-circle me-2"></i>
-							Photo de profil
-						</h5>
-					</div>
-					<div class="card-body text-center">
-						{{ avatar.formatSimple(app.user, 120, "photoProfil") }}
-						{% if app.user.photo %}
-							<div class="d-flex justify-content-center mb-3">
-								<form method="POST" action="{{ path('app_photo_update') }}" class="mt-2">
-									<input type="hidden" name="remove_photo" value="1">
-									<button type="submit" class="btn btn-danger  btn-sm w-100 delete-confirm" data-message="Êtes-vous sûr de vouloir supprimer votre photo de profil ?">
-										<i class="bi bi-trash3 me-1"></i>
-										Supprimer ma photo
-									</button>
-								</form>
-							</div>
-						{% endif %}
-						<form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}" class="mt-3">
-							<input type="file" name="photo" class="form-control mb-3" accept="image/*" id="photoProfil" required>
-							<button type="submit" class="btn btn-primary w-100">Mettre à jour la photo</button>
-						</form>
+      <form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}" class="hg-form-grid">
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_photo') }}">
+        <div class="hg-form-full">
+          <label for="photoProfil" class="form-label">Nouvelle photo</label>
+          <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" id="photoProfil" required>
+          <div class="form-text">Formats acceptés : JPG, PNG ou WebP. Taille maximale : 2 Mo.</div>
+        </div>
+        <div class="hg-form-actions">
+          {% if app.user.photo %}
+            <button type="submit" name="remove_photo" value="1" class="btn btn-outline-danger delete-confirm" data-message="Supprimer votre photo de profil actuelle ?">
+              <i class="bi bi-trash3"></i>
+              Supprimer
+            </button>
+          {% endif %}
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            Mettre à jour
+          </button>
+        </div>
+      </form>
+    </article>
 
-					</div>
-				</div>
-			</div>
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
+          <h2>Informations personnelles</h2>
+          <p>Ces informations servent à sécuriser les réservations et à améliorer la confiance entre utilisateurs.</p>
+        </div>
+      </div>
 
-			{# ✅ Infos personnelles #}
-			<div class="col-lg-8">
-				<div class="card border-primary shadow-sm">
-					<div class="card-header bg-light">
-						<h5 class="mb-0">
-							<i class="bi bi-person-lines-fill me-2"></i>
-							Informations personnelles
-						</h5>
-					</div>
-					<div class="card-body">
-						<form method="POST" action="{{ path('app_infos_update') }}">
-							<div class="row g-3">
-								<div class="col-md-6">
-									<label class="form-label">Prénom</label>
-									<input type="text" name="prenom" class="form-control" value="{{ app.user.prenom }}" required>
-								</div>
-								<div class="col-md-6">
-									<label class="form-label">Nom</label>
-									<input type="text" name="nom" class="form-control" value="{{ app.user.nom }}" required>
-								</div>
-								<div class="col-md-6">
-									<label class="form-label">Date de naissance</label>
-									<input type="date" name="dateNaissance" class="form-control" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('Y-m-d') : '' }}" max="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" required>
-								</div>
-								<div class="col-md-6">
-									<label class="form-label">Téléphone</label>
-									<input type="text" name="telephone" class="form-control" value="{{ app.user.telephone }}" autocomplete="off" required>
-								</div>
-								<div class="col-md-12">
-									<label class="form-label">Email (non modifiable)</label>
-									<input type="email" class="form-control" value="{{ app.user.email }}" disabled>
-								</div>
-							</div>
-							<div class="text-center mt-4">
-								<button type="submit" class="btn btn-primary w-100">Enregistrer les modifications</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
+      <form method="POST" action="{{ path('app_infos_update') }}" class="hg-form-grid">
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_infos') }}">
+        <div class="form-floating">
+          <input type="text" name="prenom" id="prenom" class="form-control" value="{{ app.user.prenom }}" placeholder="Prénom" autocomplete="given-name" required>
+          <label for="prenom">Prénom</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="nom" id="nom" class="form-control" value="{{ app.user.nom }}" placeholder="Nom" autocomplete="family-name" required>
+          <label for="nom">Nom</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="dateNaissance" id="dateNaissance" class="form-control dateFr" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('d/m/Y') : '' }}" placeholder="jj/mm/aaaa" data-max-date="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" required>
+          <label for="dateNaissance">Date de naissance</label>
+        </div>
+        <div class="form-floating">
+          <input type="tel" name="telephone" id="telephone" class="form-control" value="{{ app.user.telephone }}" placeholder="Téléphone" autocomplete="tel" required>
+          <label for="telephone">Téléphone</label>
+        </div>
+        <div class="form-floating hg-form-full">
+          <input type="email" id="email" class="form-control" value="{{ app.user.email }}" placeholder="E-mail" disabled>
+          <label for="email">E-mail non modifiable</label>
+        </div>
+        <div class="hg-form-actions">
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-check-circle-fill"></i>
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </article>
 
-			{# ✅ Mot de passe #}
-			<div class="col-lg-8">
-				<div class="card border-warning shadow-sm">
-					<div class="card-header bg-light">
-						<h5 class="mb-0">
-							<i class="bi bi-shield-lock-fill me-2"></i>
-							Modifier mon mot de passe
-						</h5>
-					</div>
-					<div class="card-body">
-						<form method="POST" action="{{ path('app_password_update') }}">
-							<div class="mb-3">
-								<label class="form-label" for="oldPassword">Mot de passe actuel</label>
-								<div class="input-group">
-									<input type="password" name="oldPassword" id="oldPassword" class="form-control" placeholder="••••••••••••" autocomplete="off" required>
-									<button class="btn btn-outline-secondary toggle-password" type="button" data-target="oldPassword">
-										<i class="bi bi-eye-slash-fill"></i>
-									</button>
-								</div>
-							</div>
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
+          <h2>Sécurité du compte</h2>
+          <p>Utilisez un mot de passe unique, difficile à deviner, avec lettres, chiffres et caractère spécial.</p>
+        </div>
+        <span class="app-panel__icon"><i class="bi bi-shield-lock-fill"></i></span>
+      </div>
 
-							<div class="mb-3">
-								<label class="form-label" for="newPassword">Nouveau mot de passe</label>
-								<div class="input-group">
-									<input type="password" name="newPassword" id="newPassword" class="form-control" placeholder="••••••••••••" autocomplete="off" required>
-									<button class="btn btn-outline-secondary toggle-password" type="button" data-target="newPassword">
-										<i class="bi bi-eye-slash-fill"></i>
-									</button>
-								</div>
-							</div>
+      <form method="POST" action="{{ path('app_password_update') }}" class="hg-form-grid">
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_password') }}">
+        <div class="form-floating hg-form-full">
+          <input type="password" name="oldPassword" id="oldPassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
+          <label for="oldPassword">Mot de passe actuel</label>
+        </div>
+        <div class="form-floating">
+          <input type="password" name="newPassword" id="newPassword" class="form-control" placeholder="Nouveau mot de passe" autocomplete="new-password" required>
+          <label for="newPassword">Nouveau mot de passe</label>
+        </div>
+        <div class="form-floating">
+          <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="Confirmer le mot de passe" autocomplete="new-password" required>
+          <label for="confirmPassword">Confirmer le mot de passe</label>
+        </div>
+        <div class="password-rules hg-form-full" data-password-rules data-for="newPassword">
+          <span data-rule="length">8 caractères minimum</span>
+          <span data-rule="lower">Une minuscule</span>
+          <span data-rule="upper">Une majuscule</span>
+          <span data-rule="number">Un chiffre</span>
+          <span data-rule="special">Un caractère spécial</span>
+        </div>
+        <div class="hg-form-actions">
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-key-fill"></i>
+            Changer le mot de passe
+          </button>
+        </div>
+      </form>
+    </article>
 
-							<div class="mb-3">
-								<label class="form-label" for="confirmPassword">Confirmer le mot de passe</label>
-								<div class="input-group">
-									<input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="••••••••••••" autocomplete="off" required>
-									<button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirmPassword">
-										<i class="bi bi-eye-slash-fill"></i>
-									</button>
-								</div>
-							</div>
-							<div class="text-center mt-3">
-								<button type="submit" class="btn btn-warning w-100">Changer le mot de passe</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
+          <h2>Documents</h2>
+          <p>Ajoutez les documents utiles à la vérification de votre profil et à l'activation des paiements.</p>
+        </div>
+        <a class="btn btn-outline-primary btn-sm" href="{{ path('app_documents') }}">
+          <i class="bi bi-folder2-open"></i>
+          Voir mes documents
+        </a>
+      </div>
 
-			{# ✅ Documents #}
-			<div class="col-lg-8">
-				<div class="card border-success shadow-sm">
-					<div class="card-header bg-light">
-						<h5 class="mb-0">
-							<i class="bi bi-file-earmark-arrow-up-fill me-2"></i>
-							Mes documents
-						</h5>
-					</div>
-					<div class="card-body">
-						<div class="bg-light p-2 d-flex justify-content-center align-items-center mb-3" style="height: 80px;">
-							<a class="btn btn-info btn-sm" href="{{ path('app_documents') }}" role="button">Voir mes
-															documents
-								<i class="bi bi-box-arrow-up-right"></i>
-							</a>
+      <form id="documentForm" method="POST" enctype="multipart/form-data" action="{{ path('app_document_add') }}" class="hg-form-grid" novalidate>
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_document') }}">
+        <div class="form-floating">
+          <select class="form-select" name="type_doc" id="type_doc" required>
+            <option value="">Sélectionner</option>
+            <option value="identite">Justificatif d'identité</option>
+            <option value="rib">RIB</option>
+            <option value="autre">Autre</option>
+          </select>
+          <label for="type_doc">Type de document</label>
+        </div>
+        <div class="form-floating d-none" id="autre_doc_container">
+          <input type="text" name="autre_doc" id="autre_doc" class="form-control" placeholder="Nom du document">
+          <label for="autre_doc">Précisez le document</label>
+        </div>
+        <div class="hg-form-full">
+          <label for="document" class="form-label">Fichier</label>
+          <input type="file" class="form-control" id="document" name="document" accept="application/pdf,image/jpeg,image/png" required>
+          <div class="form-text">PDF, JPG ou PNG uniquement. Taille maximale : 2 Mo.</div>
+        </div>
+        <div class="hg-form-actions">
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-file-earmark-arrow-up-fill"></i>
+            Ajouter le document
+          </button>
+        </div>
+      </form>
+    </article>
+  </div>
 
-						</div>
-						<form id="documentForm" method="POST" enctype="multipart/form-data" action="{{ path('app_document_add') }}" novalidate>
-							<div class="row g-3">
-								<div class="col-md-12" id="selectDoc">
-									<label for="type_doc" class="form-label">Type de document :</label>
-									<select class="form-select" name="type_doc" id="type_doc" required>
-										<option value="">-- Sélectionner --</option>
-										<option value="identite">Justificatif d'identité</option>
-										<option value="rib">RIB</option>
-										<option value="autre">Autre</option>
-									</select>
-								</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-person-check-fill"></i></span>
+    <h2>Compte de confiance</h2>
+    <div class="tip-list">
+      <span><i class="bi bi-check-circle-fill"></i> E-mail vérifié</span>
+      <span><i class="bi bi-check-circle-fill"></i> Photo lisible</span>
+      <span><i class="bi bi-check-circle-fill"></i> Documents à jour</span>
+      <span><i class="bi bi-check-circle-fill"></i> Mot de passe solide</span>
+    </div>
 
-								<div class="col-md-7 d-none" id="autre_doc_container">
-									<label for="autre_doc" class="form-label">Précisez le nom du document :</label>
-									<input type="text" name="autre_doc" id="autre_doc" class="form-control" placeholder="Ex : Justificatif de domicile">
+    <hr>
 
-								</div>
-
-								<div class="col-md-12">
-									<label for="document" class="form-label">Fichier :</label>
-									<input type="file" class="form-control" id="document" name="document" required>
-									<div class="form-text">Formats autorisés : PDF, JPG, PNG – 2 Mo max.</div>
-								</div>
-							</div>
-
-							<div class="text-center mt-4">
-								<button type="submit" class="btn btn-success w-100">Ajouter le document</button>
-							</div>
-						</form>
-
-					</div>
-				</div>
-			</div>
-
-			{# ✅ Suppression du compte #}
-			<div class="col-lg-8">
-				<div class="card border-danger shadow-sm">
-					<div class="card-header">
-						<h5 class="mb-0">
-							<i class="bi bi-trash3-fill me-2"></i>
-							Supprimer mon compte
-						</h5>
-					</div>
-					<div class="card-body">
-						<p class="text-danger text-center">⚠️ Cette action est définitive. Toutes vos données seront
-													supprimées sans possibilité de récupération.</p>
-						<form method="POST" action="{{ path('app_account_delete') }}">
-							<input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
-							<div class="text-center">
-								<button type="submit" class="btn btn-danger w-100 delete-confirm" data-message="Êtes-vous sûr de vouloir supprimer définitivement votre compte ?">Supprimer définitivement mon compte</button>
-							</div>
-						</form>
-
-					</div>
-				</div>
-			</div>
-
-		</div>
-	</div>
+    <h2>Zone sensible</h2>
+    <p>La suppression du compte anonymise vos données personnelles directes. Un e-mail de confirmation est envoyé après validation.</p>
+    <form method="POST" action="{{ path('app_account_delete') }}">
+      <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+      <div class="form-floating mb-3">
+        <input type="password" name="deletePassword" id="deletePassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
+        <label for="deletePassword">Mot de passe actuel</label>
+      </div>
+      <button type="submit" class="btn btn-outline-danger w-100 delete-confirm" data-message="Supprimer définitivement votre compte HaloGari ? Cette action anonymise vos informations personnelles.">
+        <i class="bi bi-trash3-fill"></i>
+        Supprimer mon compte
+      </button>
+    </form>
+  </aside>
+</section>
 {% endblock %}
 
 {% block javascripts %}
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-const select = document.getElementById('type_doc');
-const autreContainer = document.getElementById('autre_doc_container');
-const autreInput = document.getElementById('autre_doc');
-const selectDoc = document.getElementById('selectDoc');
-const form = document.getElementById('documentForm');
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const select = document.getElementById('type_doc');
+  const autreContainer = document.getElementById('autre_doc_container');
+  const autreInput = document.getElementById('autre_doc');
+  const form = document.getElementById('documentForm');
 
-if (select && autreContainer && autreInput && form) {
-select.addEventListener('change', function () {
-if (this.value === 'autre') {
-selectDoc.classList.remove('col-md-12');
-selectDoc.classList.add('col-md-5');
-autreContainer.classList.remove('d-none');
-autreInput.setAttribute('required', 'required');
-} else {
-selectDoc.classList.remove('col-md-5');
-selectDoc.classList.add('col-md-12');
-autreContainer.classList.add('d-none');
-autreInput.removeAttribute('required');
-}
-});
+  select?.addEventListener('change', function () {
+    const isOther = this.value === 'autre';
+    autreContainer?.classList.toggle('d-none', !isOther);
+    if (isOther) {
+      autreInput?.setAttribute('required', 'required');
+    } else {
+      autreInput?.removeAttribute('required');
+      if (autreInput) autreInput.value = '';
+    }
+  });
 
-form.addEventListener('submit', function (e) {
-if (select.value === 'autre' && autreInput.value.trim() === '') {
-e.preventDefault();
-autreInput.focus();
-Swal.fire({icon: 'warning', title: 'Champ requis', text: 'Merci de préciser le nom du document si vous choisissez "Autre".', confirmButtonText: 'OK'});
-}
-});
-}
-});
-	</script>
+  form?.addEventListener('submit', function (event) {
+    if (select?.value === 'autre' && autreInput?.value.trim() === '') {
+      event.preventDefault();
+      autreInput.focus();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Champ requis',
+        text: 'Merci de préciser le nom du document si vous choisissez Autre.',
+        confirmButtonText: 'OK'
+      });
+    }
+  });
 
-	<script>
-		document.querySelectorAll('.delete-confirm').forEach(button => {
-button.addEventListener('click', function (e) {
-e.preventDefault();
-const form = this.closest('form');
-const message = this.dataset.message || 'Confirmez-vous cette action ?';
-Swal.fire({
-title: 'Confirmation',
-text: message,
-icon: 'warning',
-showCancelButton: true,
-confirmButtonColor: '#d33',
-cancelButtonColor: '#3085d6',
-confirmButtonText: 'Oui, continuer',
-cancelButtonText: 'Annuler'
-}).then(result => {
-if (result.isConfirmed) {
-form.submit();
-}
-});
-});
-});
-	</script>
+  document.querySelectorAll('.delete-confirm').forEach(button => {
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      const form = this.closest('form');
+      const message = this.dataset.message || 'Confirmez-vous cette action ?';
 
-
+      Swal.fire({
+        title: 'Confirmation',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, continuer',
+        cancelButtonText: 'Annuler'
+      }).then(result => {
+        if (!result.isConfirmed) return;
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
 {% endblock %}

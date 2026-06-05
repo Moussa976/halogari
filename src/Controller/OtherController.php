@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class OtherController extends AbstractController
 {
     /**
-     * @Route("/qui-sommes-nous", name="app_quisommesnous")
+     * @Route("/qui-sommes-nous", name="app_quisommesnous", methods={"GET"})
      */
     public function quisommesnous(): Response
     {
@@ -21,7 +21,7 @@ class OtherController extends AbstractController
     }
 
     /**
-     * @Route("/conditions-utilisation", name="app_conditionsutisation")
+     * @Route("/conditions-utilisation", name="app_conditionsutisation", methods={"GET"})
      */
     public function conditionsutisation(): Response
     {
@@ -29,7 +29,7 @@ class OtherController extends AbstractController
     }
 
     /**
-     * @Route("/mentions-legales", name="app_mentionslegales")
+     * @Route("/mentions-legales", name="app_mentionslegales", methods={"GET"})
      */
     public function mentionslegales(): Response
     {
@@ -37,7 +37,7 @@ class OtherController extends AbstractController
     }
 
     /**
-     * @Route("/confidentialite", name="app_confidentialite")
+     * @Route("/confidentialite", name="app_confidentialite", methods={"GET"})
      */
     public function confidentialite(): Response
     {

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\PushSubscriptionRepository;
 use App\Service\PushNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,13 +14,26 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PushController extends AbstractController
 {
+    private ParameterBagInterface $params;
+
+    public function __construct(ParameterBagInterface $params)
+    {
+        $this->params = $params;
+    }
+
     /**
      * @Route("/js/push-notif.js", name="js_push_notif", methods={"GET"})
      */
     public function pushNotifJs(): Response
     {
+        $vapidPublicKey = (string) $this->params->get('env(VAPID_PUBLIC_KEY)');
+
+        if ($vapidPublicKey === '') {
+            return new Response('// VAPID key not configured', 200, ['Content-Type' => 'application/javascript']);
+        }
+
         return $this->render('push/push-notif.js.twig', [
-            'vapidPublicKey' => $_ENV['VAPID_PUBLIC_KEY'], // ou via parameter bag
+            'vapidPublicKey' => $vapidPublicKey,
         ], new Response('', 200, ['Content-Type' => 'application/javascript']));
     }
 
@@ -67,6 +81,8 @@ class PushController extends AbstractController
         PushNotificationService $pushNotificationService,
         PushSubscriptionRepository $repo
     ): JsonResponse {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         // Si l'utilisateur est connecté, on essaie d'utiliser son abonnement
         if ($this->getUser()) {
             $subscription = $repo->findOneBy(['user' => $this->getUser()], ['id' => 'DESC']);
@@ -100,11 +116,13 @@ class PushController extends AbstractController
 
 
     /**
-     * @Route("/push/test-user", name="push_test_user")
+     * @Route("/push/test-user", name="push_test_user", methods={"GET"})
      */
     public function testUserPush(
         PushNotificationService $pushService
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $user = $this->getUser();
 
         if (!$user) {

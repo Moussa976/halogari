@@ -75,9 +75,12 @@
 									<strong>en cours</strong>.
 								</div>
 							{% else %}
-								<a href="{{ path('trajet_annuler', { id: trajet.id }) }}" class="btn btn-danger mb-3" onclick="return confirm('⚠️ Attention : êtes-vous sûr de vouloir annuler ce trajet ? Cette action est irréversible.');">
-									Annuler ce trajet
-								</a>
+								<form method="post" action="{{ path('trajet_annuler', { id: trajet.id }) }}" class="d-inline">
+									<input type="hidden" name="_token" value="{{ csrf_token('annuler_trajet_' ~ trajet.id) }}">
+									<button type="submit" class="btn btn-danger mb-3" data-confirm="Attention : êtes-vous sûr de vouloir annuler ce trajet ? Cette action est irréversible.">
+										Annuler ce trajet
+									</button>
+								</form>
 							{% endif %}
 						{% else %}
 							<div class="alert alert-warning">Ce trajet a été
@@ -90,7 +93,7 @@
 				{% if app.user == trajet.conducteur and reservations|length > 0 %}
 					<h4>🧾 Réservations reçues</h4>
 					<div class="table-responsive-md">
-						<table class="table table-striped">
+						<table class="table table-striped responsive-card-table">
 							<thead>
 								<tr class="text-center">
 									<th>Passager</th>
@@ -111,13 +114,13 @@
 										{% set totalAutorise = totalAutorise + reservation.prixTotal %}
 									{% endif %}
 									<tr class="text-center">
-										<td>{{ avatar.formatSimple(reservation.passager, 35, 0, 1) }}
+										<td data-label="Passager">{{ avatar.formatSimple(reservation.passager, 35, 0, 1) }}
 											{{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' :
 								reservation.passager.prenom }}</td>
-										<td>{{ reservation.places }}</td>
-										<td>{{ reservation.prixTotal|number_format(2, ',', '.') }}
+										<td data-label="Place(s)">{{ reservation.places }}</td>
+										<td data-label="Montant">{{ reservation.prixTotal|number_format(2, ',', '.') }}
 											€</td>
-										<td>
+										<td data-label="Statut">
 											{% set statutResa = reservation.statut %}
 											{% set colorMap = {
 								'en_attente': 'warning',
@@ -137,7 +140,7 @@
 												{{ labelMap[statutResa]|default(statutResa|capitalize) }}
 											</span>
 										</td>
-										<td>
+										<td data-label="Paiement">
 											{% if reservation.paiement %}
 												{% set statutPaiement = reservation.paiement.statut %}
 												{% set colorPaiement = {
@@ -162,11 +165,17 @@
 												<span class="badge bg-light text-muted">Aucun paiement</span>
 											{% endif %}
 										</td>
-										<td>
+										<td data-label="Action">
 											{% if reservation.statut == 'en_attente' %}
 												{% if not datePasse and not enCours %}
-													<a href="{{ path('reservation_accepter', { id: reservation.id }) }}" class="btn btn-success btn-sm">✅ Accepter</a>
-													<a href="{{ path('reservation_refuser', { id: reservation.id }) }}" class="btn btn-outline-danger btn-sm">❌ Refuser</a>
+													<form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+														<button type="submit" class="btn btn-success btn-sm">✅ Accepter</button>
+													</form>
+													<form method="post" action="{{ path('reservation_refuser', { id: reservation.id }) }}" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+														<button type="submit" class="btn btn-outline-danger btn-sm">❌ Refuser</button>
+													</form>
 												{% elseif enCours %}
 													<small class="text-muted small-sm">Trajet en cours</small>
 												{% else %}
@@ -189,7 +198,7 @@
 													{{ reservation.statut }}</small>
 											{% endif %}
 										</td>
-										<td>
+										<td data-label="Contact">
 											<a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">💬 Écrire</a>
 											{% if reservation.statut in ['acceptee', 'payee'] %}
 												<a href="tel:{{ reservation.passager.telephone }}" class="btn btn-orange btn-sm">

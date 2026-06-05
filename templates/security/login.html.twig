@@ -1,17 +1,30 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}HaloGari | Se connecter
-{% endblock %}
-
+{% block title %}HaloGari | Se connecter{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-md-8 col-lg-6">
-				<h1 class="mb-4 text-center">Se connecter</h1>
-				{% include 'partials/form-connexion.html.twig' %}
-			</div>
-		</div>
+<section class="app-page-header app-page-header--compact auth-page-header">
+	<div class="container">
+		<p class="app-kicker">Compte HaloGari</p>
+		<h1>Se connecter</h1>
+		<p>Retrouvez vos trajets, vos réservations et vos messages en toute sécurité.</p>
+	</div>
+</section>
+
+<section class="container auth-layout">
+	<div class="auth-card">
+		{% include 'components/auth/_login_form.html.twig' %}
 	</div>
 
+	<aside class="app-panel auth-aside">
+		<span class="app-panel__icon"><i class="bi bi-shield-lock"></i></span>
+		<h2>Votre espace personnel</h2>
+		<p>Connectez-vous pour réserver, publier, discuter avec les conducteurs et suivre vos paiements.</p>
+		<div class="tip-list">
+			<span><i class="bi bi-check-circle-fill"></i> Notifications utiles</span>
+			<span><i class="bi bi-check-circle-fill"></i> Messages centralisés</span>
+			<span><i class="bi bi-check-circle-fill"></i> Paiements sécurisés</span>
+		</div>
+	</aside>
+</section>
 {% endblock %}

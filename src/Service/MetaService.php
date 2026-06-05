@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Mime\Part\DataPart;
 use Symfony\Component\Mime\Part\Multipart\FormDataPart;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MetaService
 {
@@ -19,52 +19,41 @@ class MetaService
         $this->accessToken = $accessToken;
     }
 
-    /**
-     * Publie une image avec légende sur la page Facebook
-     */
     public function publierSurFacebook(string $localImagePath, string $caption): void
     {
+        if (!$this->pageId || !$this->accessToken) {
+            throw new \RuntimeException('La configuration Facebook est incomplète.');
+        }
+
+        if (!is_file($localImagePath) || !is_readable($localImagePath)) {
+            throw new \RuntimeException(sprintf('Image Facebook introuvable ou illisible : %s', $localImagePath));
+        }
+
+        $file = fopen($localImagePath, 'r');
+        if (!$file) {
+            throw new \RuntimeException(sprintf('Impossible d’ouvrir l’image Facebook : %s', $localImagePath));
+        }
+
         $formData = new FormDataPart([
             'caption' => $caption,
-            'source' => new DataPart(fopen($localImagePath, 'r'), basename($localImagePath)),
+            'source' => new DataPart($file, basename($localImagePath)),
         ]);
 
-        $this->client->request('POST', "https://graph.facebook.com/{$this->pageId}/photos", [
+        $response = $this->client->request('POST', "https://graph.facebook.com/v19.0/{$this->pageId}/photos", [
             'headers' => $formData->getPreparedHeaders()->toArray(),
             'body' => $formData->bodyToIterable(),
             'query' => [
                 'access_token' => $this->accessToken,
             ],
         ]);
-    }
 
-    /*
-     * Publie une image sur Instagram via l'API Meta Graph (2 étapes)
-     
-    public function publierSurInstagram(string $imageUrl, string $caption): void
-    {
-        // Étape 1 : créer le média
-        $mediaResponse = $this->client->request('POST', "https://graph.facebook.com/v19.0/{$this->instagramId}/media", [
-            'query' => [
-                'image_url' => $imageUrl,
-                'caption' => $caption,
-                'access_token' => $this->accessToken,
-            ],
-        ]);
-
-        $data = $mediaResponse->toArray();
-        $creationId = $data['id'] ?? null;
-
-        if (!$creationId) {
-            throw new \Exception('Erreur lors de la création du média Instagram.');
+        $statusCode = $response->getStatusCode();
+        if ($statusCode >= 400) {
+            throw new \RuntimeException(sprintf(
+                'Facebook a refusé la publication (%d) : %s',
+                $statusCode,
+                $response->getContent(false)
+            ));
         }
-
-        // Étape 2 : publier le média
-        $this->client->request('POST', "https://graph.facebook.com/v19.0/{$this->instagramId}/media_publish", [
-            'query' => [
-                'creation_id' => $creationId,
-                'access_token' => $this->accessToken,
-            ],
-        ]);
-    }*/
+    }
 }

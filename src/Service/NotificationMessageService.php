@@ -6,6 +6,7 @@ namespace App\Service;
 use App\Entity\Message;
 use App\Entity\Notification;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
@@ -13,11 +14,13 @@ class NotificationMessageService
 {
     private $em;
     private $mailer;
+    private ParameterBagInterface $params;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, ParameterBagInterface $params)
     {
         $this->em = $em;
         $this->mailer = $mailer;
+        $this->params = $params;
     }
 
     public function traiterMessageRecu(Message $message): void
@@ -36,12 +39,13 @@ class NotificationMessageService
         $this->em->persist($notif);
 
         // 📸 Déterminer la photo de l'expéditeur
+        $projectDir = (string) $this->params->get('kernel.project_dir');
         $cheminPhoto = $expediteur->getPhoto()
-            ? $_SERVER['DOCUMENT_ROOT'] . '/uploads/photos/' . $expediteur->getPhoto()
-            : $_SERVER['DOCUMENT_ROOT'] . '/images/profil.png';
+            ? $projectDir . '/public/uploads/photos/' . $expediteur->getPhoto()
+            : $projectDir . '/public/images/profil.png';
 
         if (!file_exists($cheminPhoto)) {
-            $cheminPhoto = $_SERVER['DOCUMENT_ROOT'] . '/images/profil.png';
+            $cheminPhoto = $projectDir . '/public/images/profil.png';
         }
 
         // 📧 Email au destinataire
@@ -55,7 +59,7 @@ class NotificationMessageService
                 'expediteur' => $expediteur,
                 'destinataire' => $destinataire,
             ])
-            ->embedFromPath($_SERVER['DOCUMENT_ROOT'] . '/images/logo.png', 'logo_halogari')
+            ->embedFromPath($projectDir . '/public/images/logo.png', 'logo_halogari')
             ->embedFromPath($cheminPhoto, 'profil');
 
         $this->mailer->send($email);

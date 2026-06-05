@@ -47,4 +47,8 @@ services:
             $pageId: '%env(FACEBOOK_PAGE_ID)%'
             $accessToken: '%env(FACEBOOK_ACCESS_TOKEN)%'
 
+    App\Controller\WebhookController:
+        arguments:
+            $stripeWebhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'
+
 

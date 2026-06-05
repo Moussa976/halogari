@@ -112,8 +112,8 @@
 								{% endif %}
 							{% endfor %}
 
-							<td>
-								{% if reservation.statut in ['acceptee', 'payee'] %}
+							<div class="d-flex flex-wrap gap-2 align-items-center">
+								{% if reservation is defined and reservation.statut in ['acceptee', 'payee'] %}
 									<a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">
 										💬 Écrire
 									</a>
@@ -123,7 +123,7 @@
 								{% else %}
 									<span class="text-muted small">Réservation en attente</span>
 								{% endif %}
-							</td>
+							</div>
 
 
 						{% else %}
@@ -184,6 +184,7 @@
 						{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
 						{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %}
 						<form id="formDesk" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+							<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
 							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 							{% if app.user %}
@@ -223,6 +224,7 @@
 
 					<div id="reservation-sticky" class="d-lg-none bg-white p-3 shadow-sm text-center d-none">
 						<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+							<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
 							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 							{% if app.user %}

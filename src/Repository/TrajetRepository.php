@@ -39,55 +39,48 @@ class TrajetRepository extends ServiceEntityRepository
         }
     }
 
-
     public function findPopularTrajets(): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
-        SELECT t.depart, t.arrivee, COUNT(r.id) AS total
-        FROM reservation r
-        JOIN trajet t ON r.trajet_id = t.id
-        GROUP BY t.depart, t.arrivee
-        ORDER BY total DESC
-        LIMIT 3
-    ';
+            SELECT t.depart, t.arrivee, COUNT(r.id) AS total
+            FROM reservation r
+            JOIN trajet t ON r.trajet_id = t.id
+            GROUP BY t.depart, t.arrivee
+            ORDER BY total DESC
+            LIMIT 3
+        ';
 
-        $stmt = $conn->prepare($sql);
-        $resultSet = $stmt->executeQuery();
-
-        return $resultSet->fetchAllAssociative();
+        return $conn->prepare($sql)->executeQuery()->fetchAllAssociative();
     }
 
-
+    /**
+     * @return Trajet[]
+     */
     public function findByRecherche(string $depart, string $arrivee, string $date, int $places): array
     {
-        $qb = $this->createQueryBuilder('t')
+        $dateObj = new \DateTime($date);
+        $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+        $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('t')
             ->where('LOWER(t.depart) = LOWER(:depart)')
             ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
             ->andWhere('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('t.placesDisponibles >= :places')
-            ->andWhere('t.annule != true') // ✅ Exclure les trajets annulés
+            ->andWhere('t.annule IS NULL OR t.annule = false')
             ->setParameter('depart', $depart)
             ->setParameter('arrivee', $arrivee)
-            ->setParameter('places', $places);
-
-        $dateObj = new \DateTime($date);
-        $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
-        $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
-
-        $qb->setParameter('startOfDay', $startOfDay);
-        $qb->setParameter('endOfDay', $endOfDay);
-
-        return $qb
+            ->setParameter('places', $places)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
             ->orderBy('t.dateTrajet', 'ASC')
             ->addOrderBy('t.heureTrajet', 'ASC')
             ->getQuery()
             ->getResult();
     }
-
-
 
     public function findByID(int $id): ?Trajet
     {
@@ -97,32 +90,4 @@ class TrajetRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
-
-
-
-    //    /**
-//     * @return Trajet[] Returns an array of Trajet objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('t')
-//            ->andWhere('t.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('t.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-    //    public function findOneBySomeField($value): ?Trajet
-//    {
-//        return $this->createQueryBuilder('t')
-//            ->andWhere('t.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

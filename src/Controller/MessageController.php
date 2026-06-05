@@ -20,7 +20,7 @@ use App\Utils\DateHelper;
 class MessageController extends AbstractController
 {
     /**
-     * @Route("/user/messages", name="app_message")
+     * @Route("/user/messages", name="app_message", methods={"GET"})
      */
     public function index(MessageRepository $repo, EntityManagerInterface $em): Response
     {
@@ -65,7 +65,7 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/user/messages/unread", name="api_messages_unread")
+     * @Route("/user/messages/unread", name="api_messages_unread", methods={"GET"})
      */
     public function unreadMessages(MessageRepository $repo): JsonResponse
     {
@@ -86,7 +86,7 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/user/messages/{userId<\d+>}/{trajetId<\d+>}", name="app_conversation")
+     * @Route("/user/messages/{userId<\d+>}/{trajetId<\d+>}", name="app_conversation", methods={"GET"})
      */
     public function conversation(
         int $userId,
@@ -95,6 +95,9 @@ class MessageController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
         $otherUser = $em->getRepository(User::class)->find($userId);
         $trajet = $em->getRepository(Trajet::class)->find($trajetId);
 
@@ -119,7 +122,7 @@ class MessageController extends AbstractController
 
         if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
             $this->addFlash('danger', 'Vous ne pouvez pas discuter tant que la réservation n’a pas été acceptée.');
-            return $this->redirectToRoute('app_trajet_show', ['id' => $trajet->getId()]);
+            return $this->redirectToRoute('app_mes_reservations');
         }
 
         // 📩 Récupère tous les messages liés à ce trajet et ces deux utilisateurs
@@ -177,10 +180,14 @@ class MessageController extends AbstractController
 
             $destinataireId = $data['destinataire'] ?? null;
             $trajetId = $data['trajet'] ?? null;
-            $contenu = $data['contenu'] ?? null;
+            $contenu = isset($data['contenu']) ? trim((string) $data['contenu']) : null;
 
             if (!$user || !$destinataireId || !$contenu || !$trajetId) {
                 return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
+            }
+
+            if (mb_strlen($contenu) > 2000) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Message trop long (2000 caracteres max).'], 400);
             }
 
             $destinataire = $em->getRepository(User::class)->find($destinataireId);
@@ -188,6 +195,10 @@ class MessageController extends AbstractController
 
             if (!$destinataire || !$trajet) {
                 return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur ou trajet introuvable.'], 404);
+            }
+
+            if ((int) $destinataire->getId() === (int) $user->getId()) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Envoi vers soi-meme impossible.'], 400);
             }
 
             // 🔒 Vérification de réservation
@@ -230,7 +241,7 @@ class MessageController extends AbstractController
             return new JsonResponse([
                 'status' => 'sent',
                 'contenu' => $message->getContenu(),
-                'createdAt' => $message->getCreatedAt()->format('d/m/Y H:i'),
+                'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
                 'avatarHtml' => $avatarHtml
 
             ]);
@@ -238,11 +249,29 @@ class MessageController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Erreur interne lors de l\'envoi du message.'
             ], 500);
         }
     }
 
+    private function formatConversationDate(\DateTimeInterface $date): string
+    {
+        $now = new \DateTimeImmutable();
+        $today = $now->format('Y-m-d');
+        $yesterday = $now->modify('-1 day')->format('Y-m-d');
+        $messageDate = $date->format('Y-m-d');
+        $time = $date->format('H:i');
+
+        if ($messageDate === $today) {
+            return "Aujourd'hui à " . $time;
+        }
+
+        if ($messageDate === $yesterday) {
+            return 'Hier à ' . $time;
+        }
+
+        return $date->format('d/m/Y à H:i');
+    }
 
 
 }

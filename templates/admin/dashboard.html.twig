@@ -105,7 +105,7 @@
 							<td>{{ resa.trajet.dateTrajet|date('d/m/Y') }} à {{ resa.trajet.heureTrajet|date('H:i') }}</td>
 							<td>{{ resa.places }}</td>
 							<td>
-								<span class="badge bg-{{ resa.statut == 'acceptée' ? 'success' : (resa.statut == 'en_attente' ? 'warning text-dark' : 'danger') }}">
+								<span class="badge bg-{{ resa.statut == 'acceptee' ? 'success' : (resa.statut == 'en_attente' ? 'warning text-dark' : 'danger') }}">
 									{{ resa.statut|capitalize }}
 								</span>
 							</td>

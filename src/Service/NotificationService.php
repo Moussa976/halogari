@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
+use App\Entity\Notification;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
 use App\Entity\Reservation;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Service chargé d’envoyer tous les e-mails liés aux réservations.
@@ -15,11 +17,13 @@ class NotificationService
 {
     private MailerInterface $mailer;
     private Environment $twig;
+    private EntityManagerInterface $em;
 
-    public function __construct(MailerInterface $mailer, Environment $twig)
+    public function __construct(MailerInterface $mailer, Environment $twig, EntityManagerInterface $em)
     {
         $this->mailer = $mailer;
         $this->twig = $twig;
+        $this->em = $em;
     }
 
     /**
@@ -31,6 +35,7 @@ class NotificationService
     public function envoyerConfirmationReservation(Reservation $reservation, string $etat): void
     {
         $passager = $reservation->getPassager();
+        $trajet = $reservation->getTrajet();
 
         $subject = $etat === 'acceptee'
             ? 'Votre réservation a été acceptée !'
@@ -49,6 +54,19 @@ class NotificationService
             ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
 
         $this->mailer->send($email);
+
+        $this->createNotification(
+            $passager,
+            'reservation',
+            $etat === 'acceptee' ? 'Reservation acceptee' : 'Reservation refusee',
+            sprintf(
+                'Votre demande pour %s -> %s a ete %s.',
+                $trajet->getDepart(),
+                $trajet->getArrivee(),
+                $etat === 'acceptee' ? 'acceptee' : 'refusee'
+            ),
+            '/user/reservation/' . $reservation->getId()
+        );
     }
 
     /**
@@ -70,6 +88,20 @@ class NotificationService
             ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
 
         $this->mailer->send($email);
+
+        $this->createNotification(
+            $conducteur,
+            'reservation',
+            'Nouvelle demande de reservation',
+            sprintf(
+                '%s demande %d place(s) pour le trajet %s -> %s.',
+                $reservation->getPassager()->getPrenom(),
+                $reservation->getPlaces(),
+                $reservation->getTrajet()->getDepart(),
+                $reservation->getTrajet()->getArrivee()
+            ),
+            '/user/trajet/' . $reservation->getTrajet()->getId()
+        );
     }
 
     /**
@@ -165,6 +197,13 @@ class NotificationService
             ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
 
         $this->mailer->send($email);
+        $this->createNotification(
+            $reservation->getPassager(),
+            'paiement',
+            'Paiement annule ou expire',
+            'Votre paiement n\'a pas abouti. Verifiez votre reservation.',
+            '/user/reservation/' . $reservation->getId()
+        );
     }
 
     public function envoyerPaiementCapture(Reservation $reservation): void
@@ -179,7 +218,26 @@ class NotificationService
         ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
 
     $this->mailer->send($email);
+    $this->createNotification(
+        $reservation->getPassager(),
+        'paiement',
+        'Paiement capture',
+        'Votre paiement est confirme pour cette reservation.',
+        '/user/reservation/' . $reservation->getId()
+    );
 }
+
+    private function createNotification($user, string $type, string $title, string $content, ?string $link = null): void
+    {
+        $notif = new Notification();
+        $notif->setUser($user);
+        $notif->setType($type);
+        $notif->setTitre($title);
+        $notif->setContenu($content);
+        $notif->setLien($link);
+        $this->em->persist($notif);
+        $this->em->flush();
+    }
 
 
 }

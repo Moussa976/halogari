@@ -41,7 +41,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Display & process form to request a password reset.
      *
-     * @Route("", name="app_forgot_password_request")
+     * @Route("", name="app_forgot_password_request", methods={"GET", "POST"})
      */
     public function request(AuthenticationUtils $authenticationUtils, Request $request, MailerInterface $mailer, TranslatorInterface $translator): Response
     {
@@ -67,7 +67,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Confirmation page after a user has requested a password reset.
      *
-     * @Route("/check-email", name="app_check_email")
+     * @Route("/check-email", name="app_check_email", methods={"GET"})
      */
     public function checkEmail(): Response
     {
@@ -85,7 +85,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Validates and processes the reset URL that the user clicked in their email.
      *
-     * @Route("/reset/{token}", name="app_reset_password_token")
+     * @Route("/reset/{token}", name="app_reset_password_token", methods={"GET"})
      */
     public function resetWithToken(Request $request, string $token): RedirectResponse
     {
@@ -99,7 +99,7 @@ class ResetPasswordController extends AbstractController
     /**
      * Displays and processes the password reset form when no token is in the URL.
      *
-     * @Route("/reset", name="app_reset_password")
+     * @Route("/reset", name="app_reset_password", methods={"GET", "POST"})
      */
     public function reset(Request $request, UserPasswordHasherInterface $userPasswordHasher, TranslatorInterface $translator, MailerInterface $mailer): Response
     {

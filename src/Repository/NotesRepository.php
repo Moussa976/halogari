@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Entity\Notes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Proxies\__CG__\App\Entity\User;
+use App\Entity\User;
 
 /**
  * @extends ServiceEntityRepository<Notes>

@@ -68,7 +68,7 @@ class PaiementController extends AbstractController
      * @Route("user/paiement/confirmation/{id}", name="paiement_confirmation", methods={"GET"})
      * @IsGranted("ROLE_USER")
      */
-    public function confirmation(int $id, ReservationRepository $repo, EntityManagerInterface $em): Response
+    public function confirmation(int $id, ReservationRepository $repo): Response
     {
         $reservation = $repo->find($id);
 
@@ -78,9 +78,10 @@ class PaiementController extends AbstractController
         }
 
         // ✅ Met à jour le statut si pas encore marqué comme payé
-        if ($reservation->getStatut() !== 'payee') {
-            $reservation->setStatut('payee');
-            $em->flush();
+        $paiement = $reservation->getPaiement();
+        if (!$paiement || !in_array($paiement->getStatut(), ['autorise', 'capture'], true)) {
+            $this->addFlash('warning', 'Le paiement n’est pas encore confirmé. Si vous venez de payer, patientez quelques secondes puis actualisez vos réservations.');
+            return $this->redirectToRoute('app_mes_reservations');
         }
 
         return $this->render('paiement/confirmation.html.twig', [

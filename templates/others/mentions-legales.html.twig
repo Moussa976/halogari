@@ -3,85 +3,65 @@
 {% block title %}HaloGari | Mentions légales{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-	<div class="row justify-content-center">
-		<div class="col-lg-8">
-			<h1 class="mb-4 text-center">Mentions légales</h1>
-			<div class="p-4 border rounded shadow-sm bg-light">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Informations légales</p>
+    <h1>Mentions légales</h1>
+    <p>Les informations essentielles sur l'éditeur, l'hébergement et le cadre d'utilisation de HaloGari.</p>
+  </div>
+</section>
 
-				<p>
-					Conformément aux dispositions des articles 6-III et 19 de la Loi n°2004-575 du 21 juin 2004 pour la Confiance dans l'Économie Numérique (LCEN), nous informons les utilisateurs du site
-					<strong>HaloGari</strong>
-					des informations suivantes :
-				</p>
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <h2>Éditeur du service</h2>
+    <p>
+      Le service <strong>HaloGari</strong> est créé et porté par l'association <strong>WEB976</strong>,
+      structure engagée dans la création de solutions numériques pour Mayotte.
+    </p>
+    <ul>
+      <li>Structure : association WEB976</li>
+      <li>Territoire d'activité : Mayotte, France</li>
+      <li>Contact : <a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a></li>
+    </ul>
 
-				<hr>
+    <h2>Responsable technique</h2>
+    <p>
+      La conception technique, le développement et la maintenance applicative sont assurés par
+      <strong>Moussa INSSA</strong>, développeur web et technicien informatique.
+    </p>
 
-				<h5 class="text-orange">1. Éditeur du site</h5>
-				<p>
-					Le site <strong>www.halogari.yt</strong> est édité par :<br>
-					<strong>Moussa INSSA</strong>, développeur web indépendant, technicien informatique et responsable technique du projet HaloGari.<br>
-					Agissant pour le compte de l’<strong>ASSOCIATION SPORTIVE ET CULTURELLE DE MTSAHARA (ASCM)</strong>.<br>
-					Association régie par la loi de 1901, déclarée sous le SIREN : <strong>822 041 034</strong><br>
-					Adresse : Mtsahara, 97600 Mayotte, France<br>
-					Email de contact :
-					<a href="mailto:moussa@halogari.yt">moussa@halogari.yt</a><br>
-					Téléphone : 0639274954
-				</p>
+    <h2>Hébergement</h2>
+    <p>
+      Le site est hébergé par <strong>Infomaniak Network SA</strong>,
+      Rue Eugène-Marziano 25, 1227 Genève, Suisse.
+      Site : <a href="https://www.infomaniak.com" target="_blank" rel="noopener">www.infomaniak.com</a>.
+    </p>
 
-				<hr>
+    <h2>Propriété intellectuelle</h2>
+    <p>
+      Les textes, interfaces, visuels, logos, éléments graphiques et développements du site HaloGari sont protégés.
+      Toute reproduction ou réutilisation à des fins commerciales nécessite une autorisation écrite préalable.
+    </p>
 
-				<h5 class="text-orange">2. Directeur de publication</h5>
-				<p>
-					<strong>Moussa INSSA</strong>, en qualité de développeur principal et gestionnaire du site.
-				</p>
+    <h2>Responsabilité</h2>
+    <p>
+      HaloGari agit comme plateforme de mise en relation. Les conducteurs et passagers restent responsables
+      des informations qu'ils publient, de leur comportement et du bon déroulement des trajets.
+    </p>
 
-				<hr>
+    <h2>Données personnelles</h2>
+    <p>
+      Les informations relatives aux données personnelles sont détaillées dans notre page
+      <a href="{{ path('app_confidentialite') }}">Confidentialité</a>.
+    </p>
+  </article>
 
-				<h5 class="text-orange">3. Hébergement</h5>
-				<p>
-					Le site est hébergé par :<br>
-					<strong>Infomaniak Network SA</strong><br>
-					Rue Eugène-Marziano 25, 1227 Genève, Suisse<br>
-					Site :
-					<a href="https://www.infomaniak.com" target="_blank">www.infomaniak.com</a>
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">4. Propriété intellectuelle</h5>
-				<p>
-					L'ensemble des contenus (textes, images, logos, design, code source) du site HaloGari sont la propriété exclusive de l'association ASCM ou de ses contributeurs (dont Moussa INSSA), sauf mentions contraires.<br>
-					Toute reproduction, distribution, modification ou utilisation à des fins commerciales sans autorisation écrite préalable est strictement interdite.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">5. Responsabilité</h5>
-				<p>
-					L'association ASCM et l’éditeur ne peuvent être tenus responsables en cas de dysfonctionnement du site, d'interruptions, ou d'inexactitudes dans les informations fournies par les utilisateurs eux-mêmes (trajets, profils, messages).
-				</p>
-				<p>
-					En cas d'annulation de dernière minute d'un trajet, HaloGari applique une politique de remboursement consultable sur la page des <a href="/conditions-utilisation#remboursement">conditions d'utilisation</a>.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">6. Données personnelles</h5>
-				<p>
-					Le site respecte les lois françaises et européennes en matière de protection des données (RGPD). Pour plus d’informations, consultez notre page
-					<a href="/confidentialite">Confidentialité</a>.
-				</p>
-
-				<hr>
-
-				<h5 class="text-orange">7. Loi applicable</h5>
-				<p>
-					Le présent site est régi par la législation française. Tout litige relatif à son usage sera soumis aux juridictions compétentes de Mayotte.
-				</p>
-
-			</div>
-		</div>
-	</div>
-</div>
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-info-circle"></i></span>
+    <h2>Note</h2>
+    <p>
+      Les informations administratives de l'association pourront être complétées avant la mise en production publique.
+    </p>
+  </aside>
+</section>
 {% endblock %}

@@ -3,11 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\Document;
+use App\Entity\User;
+use App\Service\DocumentVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -16,7 +21,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ParametresController extends AbstractController
 {
     /**
-     * @Route("/user/parametres", name="app_parametres")
+     * @Route("/user/parametres", name="app_parametres", methods={"GET"})
      */
     public function parametres(): Response
     {
@@ -30,6 +35,11 @@ class ParametresController extends AbstractController
     {
         $user = $this->getUser();
 
+        if (!$this->isCsrfTokenValid('parametres_photo', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
         if ($request->get('remove_photo') && $user->getPhoto()) {
             $oldPath = $this->getParameter('photos_directory') . '/' . $user->getPhoto();
             if (file_exists($oldPath)) {
@@ -37,7 +47,7 @@ class ParametresController extends AbstractController
             }
             $user->setPhoto(null);
             $em->flush();
-            $this->addFlash('success', 'Votre photo de profil a été supprimée.');
+            $this->addFlash('success', 'Votre photo de profil a ÃƒÂ©tÃƒÂ© supprimÃƒÂ©e.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -71,9 +81,9 @@ class ParametresController extends AbstractController
                 $user->setPhoto($newFilename);
                 $em->flush();
 
-                $this->addFlash('success', 'Photo mise à jour avec succès.');
+                $this->addFlash('success', 'Photo mise ÃƒÂ  jour avec succÃƒÂ¨s.');
             } catch (FileException $e) {
-                $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
+                $this->addFlash('error', 'Erreur lors de lÃ¢â‚¬â„¢envoi du fichier.');
             }
         }
 
@@ -87,13 +97,24 @@ class ParametresController extends AbstractController
     {
         $user = $this->getUser();
 
+        if (!$this->isCsrfTokenValid('parametres_infos', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
         $user->setPrenom($request->request->get('prenom'));
         $user->setNom($request->request->get('nom'));
-        $user->setDateNaissance(new \DateTime($request->request->get('dateNaissance')));
+        $dateNaissance = $this->parseFrenchDate((string) $request->request->get('dateNaissance'));
+        if (!$dateNaissance) {
+            $this->addFlash('error', 'La date de naissance doit ÃƒÂªtre au format jj/mm/aaaa.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $user->setDateNaissance($dateNaissance);
         $user->setTelephone($request->request->get('telephone'));
 
         $em->flush();
-        $this->addFlash('success', 'Informations mises à jour avec succès.');
+        $this->addFlash('success', 'Informations mises ÃƒÂ  jour avec succÃƒÂ¨s.');
 
         return $this->redirectToRoute('app_parametres');
     }
@@ -105,6 +126,11 @@ class ParametresController extends AbstractController
     {
         $user = $this->getUser();
 
+        if (!$this->isCsrfTokenValid('parametres_password', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
         $oldPassword = $request->request->get('oldPassword');
         $newPassword = $request->request->get('newPassword');
         $confirmPassword = $request->request->get('confirmPassword');
@@ -113,10 +139,12 @@ class ParametresController extends AbstractController
             $this->addFlash('error', 'Mot de passe actuel incorrect.');
         } elseif ($newPassword !== $confirmPassword) {
             $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+        } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', (string) $newPassword)) {
+            $this->addFlash('error', 'Votre nouveau mot de passe doit contenir au moins 8 caractÃƒÂ¨res, une minuscule, une majuscule, un chiffre et un caractÃƒÂ¨re spÃƒÂ©cial, par exemple : Mayotte@2026.');
         } else {
             $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
             $em->flush();
-            $this->addFlash('success', 'Mot de passe modifié avec succès.');
+            $this->addFlash('success', 'Mot de passe modifiÃƒÂ© avec succÃƒÂ¨s.');
         }
 
         return $this->redirectToRoute('app_parametres');
@@ -125,7 +153,7 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres/document", name="app_document_add", methods={"POST"})
      */
-    public function addDocument(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function addDocument(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, DocumentVerificationService $documentVerificationService): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -135,25 +163,32 @@ class ParametresController extends AbstractController
         $fichier = $request->files->get('document');
 
         if (!$type || ($type === 'autre' && !$autre)) {
-            $this->addFlash('error', 'Veuillez spécifier le type de document.');
+            $this->addFlash('error', 'Veuillez spÃƒÂ©cifier le type de document.');
             return $this->redirectToRoute('app_parametres');
         }
 
         if (!$fichier) {
-            $this->addFlash('error', 'Veuillez sélectionner un fichier à envoyer.');
+            $this->addFlash('error', 'Veuillez sÃƒÂ©lectionner un fichier ÃƒÂ  envoyer.');
             return $this->redirectToRoute('app_parametres');
         }
 
-        // Sécurité du type MIME
+        // SÃƒÂ©curitÃƒÂ© du type MIME
         $allowedMime = ['application/pdf', 'image/jpeg', 'image/png'];
         if (!in_array($fichier->getMimeType(), $allowedMime)) {
-            $this->addFlash('error', 'Format de document invalide. Autorisés : PDF, JPG, PNG.');
+            $this->addFlash('error', 'Format de document invalide. AutorisÃƒÂ©s : PDF, JPG, PNG.');
             return $this->redirectToRoute('app_parametres');
         }
 
         // Taille max 2 Mo
         if ($fichier->getSize() > 2 * 1024 * 1024) {
             $this->addFlash('error', 'Fichier trop volumineux. 2 Mo max.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $finalType = $type === 'autre' && $autre ? $autre : $type;
+        $verification = $documentVerificationService->verify($fichier, $finalType);
+        if (!$verification['valid']) {
+            $this->addFlash('error', 'Document refusÃƒÂ© par la prÃƒÂ©-vÃƒÂ©rification automatique : ' . $verification['reason']);
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -169,18 +204,18 @@ class ParametresController extends AbstractController
             return $this->redirectToRoute('app_parametres');
         }
 
-        // Création de l'entité Document
+        // CrÃƒÂ©ation de l'entitÃƒÂ© Document
         $document = new Document();
         $document->setUser($user);
-        $document->setTypeDocument($type === 'autre' && $autre ? $autre : $type);
+        $document->setTypeDocument($finalType);
         $document->setFilenameDocument($newFilename);
         $document->setDateDocument(new \DateTime()); // date automatique
-        $document->setStatus(Document::STATUS_PENDING); // défaut
+        $document->setStatus(Document::STATUS_APPROVED);
 
         $em->persist($document);
         $em->flush();
 
-        $this->addFlash('success', 'Document ajouté avec succès.');
+        $this->addFlash('success', 'Document ajoutÃƒÂ© et validÃƒÂ© automatiquement. ' . $verification['reason']);
         return $this->redirectToRoute('app_parametres');
     }
 
@@ -188,29 +223,75 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres/delete", name="app_account_delete", methods={"POST"})
      */
-    public function deleteAccount(Request $request, EntityManagerInterface $em, TokenStorageInterface $tokenStorage): Response
-    {
+    public function deleteAccount(
+        Request $request,
+        EntityManagerInterface $em,
+        TokenStorageInterface $tokenStorage,
+        UserPasswordHasherInterface $passwordHasher,
+        MailerInterface $mailer
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
+        /** @var User $user */
         $user = $this->getUser();
 
-        // Ajoute une vérification CSRF si tu veux renforcer la sécurité
-        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('parametres_document', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_account_settings');
+            return $this->redirectToRoute('app_parametres');
         }
 
-        // Anonymisation
-        $user->anonymiser(); // Méthode à ajouter dans User.php (voir plus bas)
+        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
 
-        // Déconnexion
-        $tokenStorage->setToken(null);
-        $request->getSession()->invalidate();
+        $deletePassword = (string) $request->request->get('deletePassword', '');
+        if (!$passwordHasher->isPasswordValid($user, $deletePassword)) {
+            $this->addFlash('error', 'Mot de passe incorrect. La suppression du compte a Ã©tÃ© annulÃ©e.');
+            return $this->redirectToRoute('app_parametres');
+        }
 
+        $email = $user->getEmail();
+        $prenom = $user->getPrenom();
+        $deletedAt = new \DateTimeImmutable();
+
+        $user->anonymiser();
         $em->flush();
 
-        $this->addFlash('info', 'Votre compte a été supprimé (anonymisé).');
+        try {
+            $message = (new TemplatedEmail())
+                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->to($email)
+                ->subject('Confirmation de suppression de votre compte HaloGari')
+                ->htmlTemplate('emails/account_deleted.html.twig')
+                ->context([
+                    'prenom' => $prenom,
+                    'deletedAt' => $deletedAt,
+                ])
+                ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
+
+            $mailer->send($message);
+        } catch (\Throwable $exception) {
+            // Le compte est dÃ©jÃ  anonymisÃ© : on Ã©vite de bloquer la suppression si l'e-mail Ã©choue.
+        }
+
+        $tokenStorage->setToken(null);
+        $request->getSession()->invalidate();
+        $this->addFlash('info', 'Votre compte a Ã©tÃ© supprimÃ©. Un e-mail de confirmation vous a Ã©tÃ© envoyÃ©.');
 
         return $this->redirectToRoute('app_home');
+    }
+
+    private function parseFrenchDate(string $date): ?\DateTime
+    {
+        $date = trim($date);
+        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d'] as $format) {
+            $parsed = \DateTime::createFromFormat('!' . $format, $date);
+            if ($parsed && $parsed->format($format) === $date) {
+                return $parsed;
+            }
+        }
+
+        return null;
     }
 }

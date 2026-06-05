@@ -9,10 +9,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class TestController extends AbstractController
 {
     /**
-     * @Route("/test-carte", name="app_test_carte")
+     * @Route("/test-carte", name="app_test_carte", methods={"GET"})
      */
     public function carte(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         return $this->render('test/carte.html.twig');
     }
 }
