@@ -51,6 +51,63 @@
 	.leaflet-routing-alt {
 		display: none !important;
 	}
+
+	.publish-suggestion {
+		overflow: hidden;
+	}
+
+	.publish-suggestion__header {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		min-width: 0;
+	}
+
+	.publish-suggestion__text {
+		display: block;
+		max-width: 100%;
+		margin: 0.75rem 0 1rem;
+		padding: 0.875rem 1rem;
+		border-radius: 1rem;
+		background: rgba(31, 92, 58, 0.06);
+		color: #1f2d26;
+		font-family: inherit;
+		font-size: 0.95rem;
+		line-height: 1.55;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		word-break: break-word;
+	}
+
+	.publish-description-field textarea {
+		min-height: 150px;
+		resize: vertical;
+	}
+
+	@media (max-width: 575.98px) {
+		.publish-suggestion {
+			padding: 1rem !important;
+		}
+
+		.publish-suggestion__header {
+			align-items: flex-start;
+		}
+
+		.publish-suggestion__icon {
+			margin-top: 0.15rem;
+		}
+
+		.publish-suggestion .btn,
+		.publish-step-actions .btn {
+			width: 100%;
+		}
+
+		.publish-step-actions {
+			display: grid !important;
+			grid-template-columns: 1fr;
+			gap: 0.75rem;
+		}
+	}
 </style>
 {% endblock %}
 
@@ -68,7 +125,7 @@
 		<div class="col-lg-8">
 			{% if documentsReady is defined and not documentsReady %}
 				<div class="alert alert-warning">
-					<strong>Avant de publier :</strong> vous devez ajouter et faire valider votre RIB et votre piece d'identite.
+					<strong>Avant de publier :</strong> vous devez ajouter et faire valider votre RIB et votre pièce d'identité.
 					<a href="{{ path('app_documents') }}" class="alert-link">Ajouter mes documents</a>.
 				</div>
 			{% else %}
@@ -182,12 +239,17 @@
 					<h4 class="mb-2">3/4 Description</h4>
 					<p class="field-hint">Ajoutez les détails qui rassurent : lieu exact, ponctualité, bagages, arrêt possible ou ambiance du trajet.</p>
 
-					<div class="alert alert-light border mb-3">
-						<i class="bi bi-chat-left-dots text-vert me-1"></i>
-						<strong>Suggestion :</strong>
+					<div class="alert alert-light border mb-3 publish-suggestion">
+						<div class="publish-suggestion__header">
+							<i class="bi bi-chat-left-dots text-vert publish-suggestion__icon"></i>
+							<div>
+								<strong>Suggestion intelligente</strong>
+								<div class="field-hint mb-0">Une phrase prête à utiliser pour rassurer les passagers.</div>
+							</div>
+						</div>
 						<pre id="suggestionText"
-							class="mt-2 mb-1">Bonjour !\nDépart à l’heure, trajet direct. Possibilité de déposer à Combani si besoin.</pre>
-						<div class="text-end">
+							class="publish-suggestion__text">Bonjour !\nDépart à l’heure, trajet direct. Possibilité de déposer à Combani si besoin.</pre>
+						<div class="text-end publish-suggestion__actions">
 							<button type="button" class="btn btn-outline-success btn-sm"
 								onclick="useSuggestion()">Utiliser cette suggestion</button>
 						</div>
@@ -196,9 +258,9 @@
 					<div class="mb-3">
 						<div class="input-group">
 							<span class="input-group-text text-vert"><i class="bi bi-chat-left-text-fill"></i></span>
-							<div class="form-floating">
+							<div class="form-floating publish-description-field">
 								<textarea class="form-control" id="description" name="description"
-									placeholder="Description du trajet" style="height: 100px" minlength="30"
+									placeholder="Description du trajet" minlength="30"
 									maxlength="300" required oninput="updateDescriptionCounter()"></textarea>
 								<label for="description">Description du trajet</label>
 							</div>
@@ -209,7 +271,7 @@
 						</small>
 					</div>
 
-					<div class="d-flex justify-content-between">
+					<div class="d-flex justify-content-between publish-step-actions">
 						<button type="button" class="btn btn-secondary" onclick="prevStep()">Précédent</button>
 						<button type="button" class="btn btn-primary" onclick="nextStep(3)">Suivant</button>
 					</div>
