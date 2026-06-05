@@ -1,128 +1,161 @@
 {% extends 'base.html.twig' %}
-{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Conversation avec
-	{{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}
-{% endblock %}
+{% set otherName = otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom %}
+
+{% block title %}HaloGari | Conversation avec {{ otherName }}{% endblock %}
 
 {% block body %}
-	<div class="container py-5">
-		<div class="row justify-content-center">
-			<div class="col-lg-8">
-				<h3 class="mb-4">Conversation avec
-					{{ otherUser.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : otherUser.prenom }}</h3>
-				<div class="mb-4 p-3 bg-light rounded border">
-					<strong>Trajet :</strong>
-					{{ trajet.depart }}
-					→
-					{{ trajet.arrivee }}
-					<br>
-					<strong>Départ :</strong>
-					{{ ladateTrajet }}
-					à
-					{{ trajet.heureTrajet|date('H:i') }}
-				</div>
-				<div class="border p-3 bg-light rounded" style="height: 400px; overflow-y: auto; background: url('{{ asset('images/logo.png') }}') no-repeat center center; background-size: 200px; opacity: 0.95;" id="messages-container">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Messagerie</p>
+    <h1>Conversation</h1>
+    <p>Organisez les détails du trajet dans un espace clair, lié à votre réservation.</p>
+  </div>
+</section>
 
-					{% for message in messages %}
-						<div class="d-flex mb-3 {% if message.expediteur.id == app.user.id %}flex-row-reverse text-end{% endif %}">
-							{{ avatar.formatSimple(message.expediteur, 40) }}
-							<div>
-								<div class="p-2 rounded {% if message.expediteur.id == app.user.id %}bg-primary text-white{% else %}bg-white border{% endif %}">
-									{{ message.contenu }}
-								</div>
-								<div class="small text-muted mt-1">
-									{{ message.createdAt|date_conversation }}
-								</div>
-							</div>
-						</div>
-					{% else %}
-						<p class="text-center text-muted">Aucun message pour le moment.</p>
-					{% endfor %}
+<section class="container hg-chat-section">
+  <div class="hg-chat-shell">
+    <aside class="app-panel hg-chat-sidebar">
+      <div class="app-panel__header">
+        <div>
+          <h2>Conversations</h2>
+          <p>{{ conversations|length }} échange{{ conversations|length > 1 ? 's' : '' }}</p>
+        </div>
+      </div>
 
-				</div>
-				<form id="message-form" class="mt-3">
-					<div class="input-group">
-						<input type="text" id="message-input" class="form-control" placeholder="Votre message..." required>
-						<button class="btn btn-orange" type="submit">Envoyer</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+      {% if conversations is empty %}
+        <div class="alert alert-light border mb-0">Aucune conversation.</div>
+      {% else %}
+        <div class="hg-chat-list">
+          {% for conv in conversations %}
+            {% set convName = conv.user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : conv.user.prenom %}
+            <a href="{{ path('app_conversation', { userId: conv.user.id, trajetId: conv.trajet.id }) }}" class="hg-chat-item {{ conv.key == activeConversationKey ? 'is-active' : '' }}">
+              <img src="{{ conv.user.photo ? asset('uploads/photos/' ~ conv.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ convName }}" class="hg-chat-item__avatar">
+              <span class="hg-chat-item__body">
+                <span class="hg-chat-item__top">
+                  <strong>{{ convName }}</strong>
+                  <small>{{ conv.lastMessage.createdAt|date_conversation }}</small>
+                </span>
+                <span class="hg-chat-item__route">{{ conv.trajet.depart }} → {{ conv.trajet.arrivee }}</span>
+                <span class="hg-chat-item__preview">{{ conv.lastMessage.contenu|slice(0, 58) }}{{ conv.lastMessage.contenu|length > 58 ? '…' : '' }}</span>
+              </span>
+              {% if conv.unreadCount > 0 %}
+                <span class="badge bg-danger rounded-pill">{{ conv.unreadCount }}</span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </aside>
+
+    <article class="app-panel hg-chat-panel">
+      <header class="hg-chat-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
+          <div>
+            <h2>{{ otherName }}</h2>
+            <p>{{ trajet.depart }} → {{ trajet.arrivee }} · {{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="hg-chat-messages" id="messages-container">
+        {% for message in messages %}
+          {% set isMine = message.expediteur.id == app.user.id %}
+          {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
+          <div class="hg-message {{ isMine ? 'is-mine' : '' }}">
+            <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
+            <div class="hg-message__content">
+              <div class="hg-message__bubble">{{ message.contenu }}</div>
+              <div class="hg-message__date">{{ message.createdAt|date_conversation }}</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-light border text-center mb-0">Aucun message pour le moment.</div>
+        {% endfor %}
+      </div>
+
+      <form id="message-form" class="hg-chat-form">
+        <input type="text" id="message-input" class="form-control" placeholder="Écrivez votre message..." maxlength="2000" autocomplete="off" required>
+        <button class="btn btn-orange" type="submit">
+          <i class="bi bi-send-fill"></i>
+          Envoyer
+        </button>
+      </form>
+    </article>
+  </div>
+</section>
 {% endblock %}
+
 {% block javascripts %}
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const container = document.getElementById('messages-container');
-			if (container) {
-				container.scrollTop = container.scrollHeight;
-			}
-		});
-	</script>
-    <script>
-		document.getElementById('message-form').addEventListener('submit', function (e) {
-e.preventDefault();
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const container = document.getElementById('messages-container');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
 
-const input = document.getElementById('message-input');
-const contenu = input.value.trim();
+  const form = document.getElementById('message-form');
+  const input = document.getElementById('message-input');
+  const destinataireId = {{ otherUser.id|json_encode }};
+  const trajetId = {{ trajet.id|json_encode }};
 
-const destinataireId = {{ otherUser.id|json_encode }};
-const trajetId = {{ trajet.id|json_encode }};
+  form?.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const contenu = input.value.trim();
+    if (contenu === '') return;
 
-if (contenu === '') 
-return;
+    fetch('{{ path('api_message_send') }}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({contenu: contenu, destinataire: destinataireId, trajet: trajetId})
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status !== 'sent') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Message non envoyé',
+            text: data.message || 'Impossible d’envoyer le message.'
+          });
+          return;
+        }
 
+        const message = document.createElement('div');
+        message.className = 'hg-message is-mine';
 
+        const avatar = document.createElement('img');
+        avatar.className = 'hg-message__avatar';
+        avatar.src = data.avatarUrl || '{{ asset('images/profil.png') }}';
+        avatar.alt = data.avatarAlt || 'Photo de profil';
 
-fetch('/user/messages/send', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(
-{contenu: contenu, destinataire: destinataireId, trajet: trajetId}
-)
-}).then(res => res.json()).then(data => {
-if (data.status === 'sent') { // Afficher dans la conversation
-const container = document.getElementById('messages-container');
-const wrapper = document.createElement('div');
-wrapper.className = 'mb-2 text-end';
+        const content = document.createElement('div');
+        content.className = 'hg-message__content';
 
-const row = document.createElement('div');
-row.className = 'd-flex flex-row-reverse mb-3';
+        const bubble = document.createElement('div');
+        bubble.className = 'hg-message__bubble';
+        bubble.textContent = data.contenu;
 
-const avatarSlot = document.createElement('div');
-avatarSlot.innerHTML = data.avatarHtml || '';
+        const date = document.createElement('div');
+        date.className = 'hg-message__date';
+        date.textContent = data.createdAt;
 
-const bubbleWrapper = document.createElement('div');
-const bubble = document.createElement('div');
-bubble.className = 'p-2 rounded bg-primary text-white';
-bubble.textContent = data.contenu;
-
-const date = document.createElement('div');
-date.className = 'small text-muted mt-1';
-date.textContent = data.createdAt;
-
-bubbleWrapper.appendChild(bubble);
-bubbleWrapper.appendChild(date);
-row.appendChild(avatarSlot);
-row.appendChild(bubbleWrapper);
-wrapper.appendChild(row);
-container.appendChild(wrapper);
-container.scrollTop = container.scrollHeight;
-
-input.value = '';
-} else {
-alert('Erreur : ' + (
-data.message || 'Impossible d’envoyer le message.'
-));
-}
-}).catch(err => {
-console.error('Erreur réseau :', err);
-alert('Erreur de connexion. Veuillez réessayer.');
+        content.appendChild(bubble);
+        content.appendChild(date);
+        message.appendChild(avatar);
+        message.appendChild(content);
+        container.appendChild(message);
+        container.scrollTop = container.scrollHeight;
+        input.value = '';
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Connexion impossible',
+          text: 'Veuillez réessayer dans quelques instants.'
+        });
+      });
+  });
 });
-});
-	</script>
-
+</script>
 {% endblock %}

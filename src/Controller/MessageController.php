@@ -3,64 +3,33 @@
 namespace App\Controller;
 
 use App\Entity\Message;
+use App\Entity\Reservation;
 use App\Entity\Trajet;
 use App\Entity\User;
 use App\Repository\MessageRepository;
 use App\Service\NotificationMessageService;
+use App\Utils\DateHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Utils\DateHelper;
 
 class MessageController extends AbstractController
 {
     /**
      * @Route("/user/messages", name="app_message", methods={"GET"})
      */
-    public function index(MessageRepository $repo, EntityManagerInterface $em): Response
+    public function index(MessageRepository $repo): Response
     {
         $user = $this->getUser();
-
-        $messages = $repo->createQueryBuilder('m')
-            ->where('m.expediteur = :user OR m.destinataire = :user')
-            ->setParameter('user', $user)
-            ->orderBy('m.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        $grouped = [];
-
-        foreach ($messages as $message) {
-            $trajet = $message->getTrajet();
-            if (!$trajet) {
-                continue; // sécurité si message sans trajet
-            }
-
-            $other = $message->getExpediteur() === $user ? $message->getDestinataire() : $message->getExpediteur();
-            $key = $other->getId() . '_' . $trajet->getId();
-
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = [
-                    'user' => $other,
-                    'trajet' => $trajet,
-                    'lastMessage' => $message,
-                    'unreadCount' => 0,
-                ];
-            }
-
-            // Incrémente si message non lu par l'utilisateur
-            if ($message->getDestinataire() === $user && !$message->isRead()) {
-                $grouped[$key]['unreadCount']++;
-            }
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('message/index.html.twig', [
-            'conversations' => $grouped,
+            'conversations' => $this->buildConversationList($repo, $user),
         ]);
     }
 
@@ -95,54 +64,34 @@ class MessageController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $currentUser = $this->getUser();
-        if (!$currentUser) {
+        if (!$currentUser instanceof User) {
             return $this->redirectToRoute('app_login');
         }
+
         $otherUser = $em->getRepository(User::class)->find($userId);
         $trajet = $em->getRepository(Trajet::class)->find($trajetId);
 
         if (!$otherUser || !$trajet) {
-            throw $this->createNotFoundException("Utilisateur ou trajet introuvable.");
+            throw $this->createNotFoundException('Utilisateur ou trajet introuvable.');
         }
 
-        // 🚧 Vérifie s'il y a une réservation valide entre les deux utilisateurs
-        $reservation = null;
-        foreach ($trajet->getReservations() as $r) {
-            $passager = $r->getPassager();
-            $conducteur = $r->getTrajet()->getConducteur();
-
-            if (
-                ($passager === $currentUser && $conducteur === $otherUser) ||
-                ($passager === $otherUser && $conducteur === $currentUser)
-            ) {
-                $reservation = $r;
-                break;
-            }
-        }
-
-        if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
-            $this->addFlash('danger', 'Vous ne pouvez pas discuter tant que la réservation n’a pas été acceptée.');
+        if (!$this->findValidReservation($trajet, $currentUser, $otherUser)) {
+            $this->addFlash('danger', "Vous ne pouvez pas discuter tant que la réservation n'a pas été acceptée.");
             return $this->redirectToRoute('app_mes_reservations');
         }
 
-        // 📩 Récupère tous les messages liés à ce trajet et ces deux utilisateurs
         $messages = $repo->createQueryBuilder('m')
             ->where('m.trajet = :trajet')
-            ->andWhere('
-            (m.expediteur = :me AND m.destinataire = :them)
-            OR
-            (m.expediteur = :them AND m.destinataire = :me)
-        ')
+            ->andWhere('(m.expediteur = :me AND m.destinataire = :them) OR (m.expediteur = :them AND m.destinataire = :me)')
             ->setParameters([
                 'me' => $currentUser,
                 'them' => $otherUser,
-                'trajet' => $trajet
+                'trajet' => $trajet,
             ])
             ->orderBy('m.createdAt', 'ASC')
             ->getQuery()
             ->getResult();
 
-        // ✅ Marque les messages reçus comme lus
         foreach ($messages as $message) {
             if ($message->getDestinataire() === $currentUser && !$message->isRead()) {
                 $message->setIsRead(true);
@@ -151,16 +100,15 @@ class MessageController extends AbstractController
 
         $em->flush();
 
-        $ladateTrajet = DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y');
-
         return $this->render('message/conversation.html.twig', [
             'messages' => $messages,
             'otherUser' => $otherUser,
             'trajet' => $trajet,
-            'ladateTrajet' => $ladateTrajet
+            'ladateTrajet' => DateHelper::formatDateFr($trajet->getDateTrajet(), 'l d F Y'),
+            'conversations' => $this->buildConversationList($repo, $currentUser),
+            'activeConversationKey' => $otherUser->getId() . '_' . $trajet->getId(),
         ]);
     }
-
 
     /**
      * @Route("/user/messages/send", name="api_message_send", methods={"POST"})
@@ -174,20 +122,20 @@ class MessageController extends AbstractController
             $user = $this->getUser();
             $data = json_decode($request->getContent(), true);
 
-            if (!$data) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Mauvais JSON'], 400);
+            if (!$user instanceof User || !$data) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
             }
 
             $destinataireId = $data['destinataire'] ?? null;
             $trajetId = $data['trajet'] ?? null;
-            $contenu = isset($data['contenu']) ? trim((string) $data['contenu']) : null;
+            $contenu = isset($data['contenu']) ? trim((string) $data['contenu']) : '';
 
-            if (!$user || !$destinataireId || !$contenu || !$trajetId) {
+            if (!$destinataireId || !$trajetId || $contenu === '') {
                 return new JsonResponse(['status' => 'error', 'message' => 'Données incomplètes.'], 400);
             }
 
             if (mb_strlen($contenu) > 2000) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Message trop long (2000 caracteres max).'], 400);
+                return new JsonResponse(['status' => 'error', 'message' => 'Message trop long (2000 caractères max).'], 400);
             }
 
             $destinataire = $em->getRepository(User::class)->find($destinataireId);
@@ -198,29 +146,16 @@ class MessageController extends AbstractController
             }
 
             if ((int) $destinataire->getId() === (int) $user->getId()) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Envoi vers soi-meme impossible.'], 400);
+                return new JsonResponse(['status' => 'error', 'message' => 'Envoi vers soi-même impossible.'], 400);
             }
 
-            // 🔒 Vérification de réservation
-            $reservation = null;
-            foreach ($trajet->getReservations() as $r) {
-                if (
-                    ($r->getPassager() === $user && $r->getTrajet()->getConducteur() === $destinataire) ||
-                    ($r->getPassager() === $destinataire && $r->getTrajet()->getConducteur() === $user)
-                ) {
-                    $reservation = $r;
-                    break;
-                }
-            }
-
-            if (!$reservation || !in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
+            if (!$this->findValidReservation($trajet, $user, $destinataire)) {
                 return new JsonResponse([
                     'status' => 'error',
-                    'message' => 'Vous ne pouvez pas envoyer de message tant que la réservation n’a pas été acceptée.'
+                    'message' => "Vous ne pouvez pas envoyer de message tant que la réservation n'a pas été acceptée.",
                 ], 403);
             }
 
-            // ✅ Création du message
             $message = new Message();
             $message->setExpediteur($user);
             $message->setDestinataire($destinataire);
@@ -231,27 +166,79 @@ class MessageController extends AbstractController
             $em->persist($message);
             $em->flush();
 
-            // ✅ Notification et e-mail
             $notificationMessageService->traiterMessageRecu($message);
-
-            $avatarHtml = $this->renderView('partials/avatar_response.html.twig', [
-                'user' => $user
-            ]);
 
             return new JsonResponse([
                 'status' => 'sent',
                 'contenu' => $message->getContenu(),
                 'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
-                'avatarHtml' => $avatarHtml
-
+                'avatarUrl' => $user->getPhoto() ? '/uploads/photos/' . $user->getPhoto() : '/images/profil.png',
+                'avatarAlt' => 'Photo de ' . ($user->getPrenom() ?: 'profil'),
             ]);
-
         } catch (\Throwable $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'Erreur interne lors de l\'envoi du message.'
+                'message' => "Erreur interne lors de l'envoi du message.",
             ], 500);
         }
+    }
+
+    private function findValidReservation(Trajet $trajet, User $userA, User $userB): ?Reservation
+    {
+        foreach ($trajet->getReservations() as $reservation) {
+            $passager = $reservation->getPassager();
+            $conducteur = $reservation->getTrajet()->getConducteur();
+
+            if (
+                (($passager === $userA && $conducteur === $userB) || ($passager === $userB && $conducteur === $userA))
+                && in_array($reservation->getStatut(), ['acceptee', 'payee'], true)
+            ) {
+                return $reservation;
+            }
+        }
+
+        return null;
+    }
+
+    private function buildConversationList(MessageRepository $repo, User $user): array
+    {
+        $messages = $repo->createQueryBuilder('m')
+            ->where('m.expediteur = :user OR m.destinataire = :user')
+            ->setParameter('user', $user)
+            ->orderBy('m.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $grouped = [];
+
+        foreach ($messages as $message) {
+            $trajet = $message->getTrajet();
+            if (!$trajet) {
+                continue;
+            }
+
+            $other = $message->getExpediteur() === $user ? $message->getDestinataire() : $message->getExpediteur();
+            if (!$other) {
+                continue;
+            }
+
+            $key = $other->getId() . '_' . $trajet->getId();
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'key' => $key,
+                    'user' => $other,
+                    'trajet' => $trajet,
+                    'lastMessage' => $message,
+                    'unreadCount' => 0,
+                ];
+            }
+
+            if ($message->getDestinataire() === $user && !$message->isRead()) {
+                $grouped[$key]['unreadCount']++;
+            }
+        }
+
+        return $grouped;
     }
 
     private function formatConversationDate(\DateTimeInterface $date): string
@@ -272,6 +259,4 @@ class MessageController extends AbstractController
 
         return $date->format('d/m/Y à H:i');
     }
-
-
 }
