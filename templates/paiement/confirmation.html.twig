@@ -1,24 +1,51 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Paiement autorisé - HaloGari{% endblock %}
+{% block title %}HaloGari | Paiement autorisé{% endblock %}
 
 {% block body %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-  <div class="text-center">
-
-    <h2 class="text-success mb-4">
-      ✅ Paiement autorisé avec succès !
-    </h2>
-
-    <p class="lead">
-      Votre réservation a bien été enregistrée.<br>
-      Vous serez débité plus tard, une fois le trajet confirmé.
-    </p>
-
-    <a href="{{ path('app_mes_reservations') }}" class="btn btn-primary mt-4">
-      Voir mes réservations
-    </a>
-
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Paiement</p>
+    <h1>Paiement autorisé</h1>
+    <p>Votre réservation est prête. Vous pouvez retrouver le suivi complet dans votre espace.</p>
   </div>
-</div>
+</section>
+
+<section class="container hg-account-section reservation-confirmation">
+  <article class="app-panel reservation-confirmation__card">
+    <div class="reservation-success-icon">
+      <i class="bi bi-shield-check"></i>
+    </div>
+    <div class="reservation-confirmation__intro">
+      <h2>Autorisation confirmée.</h2>
+      <p>
+        Le paiement de votre réservation a bien été autorisé.
+        Le débit final suivra les règles HaloGari liées au trajet.
+      </p>
+    </div>
+
+    <div class="reservation-route-card">
+      <div>
+        <span>Départ</span>
+        <strong>{{ reservation.trajet.depart }}</strong>
+      </div>
+      <i class="bi bi-arrow-right-short"></i>
+      <div>
+        <span>Arrivée</span>
+        <strong>{{ reservation.trajet.arrivee }}</strong>
+      </div>
+    </div>
+
+    <div class="reservation-actions reservation-actions--center">
+      <a href="{{ path('app_user_reservation', { id: reservation.id }) }}" class="btn btn-primary">
+        <i class="bi bi-eye"></i>
+        Voir ma réservation
+      </a>
+      <a href="{{ path('app_mes_reservations') }}" class="btn btn-outline-primary">
+        <i class="bi bi-list-check"></i>
+        Mes réservations
+      </a>
+    </div>
+  </article>
+</section>
 {% endblock %}

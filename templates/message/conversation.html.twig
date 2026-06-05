@@ -129,7 +129,7 @@
             </div>
           </div>
         {% else %}
-          <div class="alert alert-light border text-center mb-0">Aucun message pour le moment.</div>
+          <div class="alert alert-light border text-center mb-0 hg-chat-empty-state" id="messages-empty-state">Aucun message pour le moment.</div>
         {% endfor %}
       </div>
 
@@ -271,6 +271,9 @@ document.addEventListener('DOMContentLoaded', function () {
           });
           return;
         }
+
+        document.getElementById('messages-empty-state')?.remove();
+        container.querySelector('.hg-chat-empty-state')?.remove();
 
         const message = document.createElement('div');
         message.className = 'hg-message is-mine';

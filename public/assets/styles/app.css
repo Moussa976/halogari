@@ -1243,6 +1243,212 @@ textarea.form-control.app-message-textarea {
     font-size: 2rem;
 }
 
+.payment-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 1.2rem;
+    align-items: start;
+}
+
+.payment-summary,
+.payment-card {
+    display: grid;
+    gap: 1rem;
+}
+
+.payment-route {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr);
+    gap: .75rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .06);
+}
+
+.payment-route span,
+.payment-driver span,
+.payment-total span {
+    display: block;
+    color: var(--hg-muted);
+    font-size: .82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.payment-route strong {
+    display: block;
+    color: var(--hg-ink);
+    font-size: 1.25rem;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+}
+
+.payment-route > i {
+    color: var(--hg-green);
+    font-size: 2rem;
+}
+
+.payment-driver {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    padding: .85rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .72);
+}
+
+.payment-driver strong {
+    color: var(--hg-ink);
+    font-weight: 900;
+}
+
+.payment-total {
+    padding: 1rem;
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--hg-green), #4aa763);
+    box-shadow: 0 16px 36px rgba(36, 92, 54, .18);
+}
+
+.payment-total span {
+    color: rgba(255, 255, 255, .78);
+}
+
+.payment-total strong {
+    display: block;
+    margin-top: .2rem;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+}
+
+.payment-card-element {
+    min-height: 46px;
+    padding: .9rem 1rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .9);
+}
+
+.payment-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.payment-note {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .85rem;
+    border-radius: 8px;
+    color: var(--hg-green-2);
+    background: rgba(36, 92, 54, .08);
+}
+
+.payment-note p {
+    margin: 0;
+}
+
+.ride-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 1.2rem;
+    align-items: start;
+}
+
+.ride-detail-main,
+.ride-detail-side {
+    display: grid;
+    gap: 1rem;
+}
+
+.ride-detail-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ride-description-box {
+    display: grid;
+    gap: .85rem;
+    padding: 1rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .05);
+}
+
+.ride-description-box p {
+    margin: 0;
+    color: var(--hg-muted);
+    line-height: 1.65;
+}
+
+.ride-cancel-form {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ride-reservations-panel {
+    margin-top: 1.2rem;
+}
+
+.ride-reservation-list {
+    display: grid;
+    gap: .85rem;
+}
+
+.ride-reservation-card {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, auto) minmax(260px, auto);
+    gap: .9rem;
+    align-items: center;
+    padding: .9rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .72);
+    box-shadow: 0 12px 32px rgba(23, 33, 27, .06);
+}
+
+.ride-reservation-card__user {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+    min-width: 0;
+}
+
+.ride-reservation-card__user strong,
+.ride-reservation-card__user span {
+    display: block;
+}
+
+.ride-reservation-card__user strong {
+    color: var(--hg-ink);
+    font-weight: 900;
+}
+
+.ride-reservation-card__user span {
+    color: var(--hg-muted);
+}
+
+.ride-reservation-card__badges,
+.ride-reservation-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: flex-end;
+}
+
+.ride-reservation-card__actions form {
+    margin: 0;
+}
+
+.ride-reservation-card__actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
 .hg-photo-preview-row {
     display: flex;
     gap: 1rem;
@@ -2961,7 +3167,10 @@ textarea.form-control.app-message-textarea {
     .app-page-grid,
     .app-results-layout,
     .auth-layout,
-    .reservation-layout {
+    .reservation-layout,
+    .payment-layout,
+    .ride-detail-layout,
+    .ride-reservation-card {
         grid-template-columns: 1fr;
     }
 
@@ -2971,6 +3180,19 @@ textarea.form-control.app-message-textarea {
 
     .reservation-side > .app-panel {
         min-width: 0;
+    }
+
+    .ride-detail-side {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ride-detail-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ride-reservation-card__badges,
+    .ride-reservation-card__actions {
+        justify-content: flex-start;
     }
 
     .hg-profile-grid {
@@ -3073,6 +3295,8 @@ textarea.form-control.app-message-textarea {
     .profile-hero,
     .hg-form-grid,
     .reservation-side,
+    .ride-detail-side,
+    .ride-detail-stats,
     .reservation-stats,
     .reservation-confirmation .reservation-stats {
         grid-template-columns: 1fr;
@@ -3091,6 +3315,18 @@ textarea.form-control.app-message-textarea {
     }
 
     .reservation-actions .btn {
+        width: 100%;
+    }
+
+    .ride-cancel-form,
+    .ride-reservation-card__actions {
+        display: grid;
+        justify-content: stretch;
+    }
+
+    .ride-cancel-form .btn,
+    .ride-reservation-card__actions .btn,
+    .ride-reservation-card__actions form {
         width: 100%;
     }
 
@@ -3120,6 +3356,14 @@ textarea.form-control.app-message-textarea {
     }
 
     .reservation-route-card > i {
+        transform: rotate(90deg);
+    }
+
+    .payment-route {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-route > i {
         transform: rotate(90deg);
     }
 

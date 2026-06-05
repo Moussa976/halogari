@@ -1,225 +1,263 @@
 {% extends 'base.html.twig' %}
 {% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Mon trajet | HaloGari
-{% endblock %}
+{% block title %}HaloGari | Mon trajet{% endblock %}
+
+{% set reservationLabels = {
+  'en_attente': 'En attente',
+  'acceptee': 'Acceptée',
+  'payee': 'Payée',
+  'refusee': 'Refusée',
+  'annulee': 'Annulée'
+} %}
+
+{% set paymentLabels = {
+  'en_attente': 'En attente',
+  'autorise': 'Paiement autorisé',
+  'capture': 'Paiement confirmé',
+  'rembourse': 'Remboursé',
+  'echoue': 'Échoué',
+  'annule': 'Annulé'
+} %}
+
+{% set activeReservations = reservations|filter(r => r.statut in ['en_attente', 'acceptee', 'payee']) %}
+{% set pendingReservations = reservations|filter(r => r.statut == 'en_attente') %}
+{% set confirmedReservations = reservations|filter(r => r.statut in ['acceptee', 'payee']) %}
+{% set reservedPlaces = activeReservations|reduce((carry, r) => carry + r.places, 0) %}
+{% set totalAutorise = reservations|reduce((carry, r) => carry + (r.paiement and r.paiement.statut == 'autorise' ? r.prixTotal : 0), 0) %}
+{% set totalConfirme = reservations|reduce((carry, r) => carry + (r.paiement and r.paiement.statut == 'capture' ? r.prixTotal : 0), 0) %}
 
 {% block body %}
-	<div class="container py-5">
-		<h1 class="mb-4">🚗 Mon trajet</h1>
-		<div class="row justify-content-center align-items-center g-2">
-			<div class="col-lg-8">
-				<a href="{{ path('app_mes_trajets') }}" class="text-decoration-none my-2">← Voir mes trajets</a>
-				<div class="card mb-4">
-					<div class="card-body">
-						<h5 class="card-title text-center">
-							<i class="bi bi-geo-fill"></i>
-							{{ trajet.depart }}
-							→
-							<i class="bi bi-flag-fill"></i>
-							{{ trajet.arrivee }}
-						</h5>
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Conducteur</p>
+    <h1>{{ trajet.depart }} → {{ trajet.arrivee }}</h1>
+    <p>Suivez les réservations reçues, contactez vos passagers et gardez le contrôle du trajet.</p>
+  </div>
+</section>
 
-						<div class="row justify-content-center g-2">
-							<div class="col-md-6">
-								<h6 class="text-center text-vert">Informations sur le trajet :</h6>
-								<ul class="list-group list-group-flush">
-									<li class="list-group-item">
-										<strong>Date :</strong>
-										{{ ladateTrajet }}
-									</li>
-									<li class="list-group-item">
-										<strong>Heure :</strong>
-										{{ trajet.heureTrajet|date('H:i') }}
-									</li>
-									<li class="list-group-item">
-										<strong>Places disponibles :</strong>
-										{{ trajet.placesDisponibles }}
-									</li>
-									<li class="list-group-item">
-										<strong>Prix par place :</strong>
-										{{ trajet.prix|number_format(2, ',', '.') }}€ / place
-									</li>
-									<li class="list-group-item">
-										<div class="mt-3 text-muted small">
-											<strong>Conducteur :</strong>
-											{{ avatar.formatSimple(trajet.conducteur, 35, 0, 0) }}
-											{{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' :
-										trajet.conducteur.prenom }}
-										</div>
-									</li>
-								</ul>
-							</div>
+<section class="container hg-account-section ride-detail">
+  <a href="{{ path('app_mes_trajets') }}" class="reservation-back-link">
+    <i class="bi bi-arrow-left"></i>
+    Voir mes trajets
+  </a>
 
-							<div class="col-md-6">
-								<h6 class="text-center text-vert">Description du trajet :</h6>
-								<div class="bg-light p-2 d-flex align-items-center justify-content-center" style="min-height: 200px;">
-									{% if trajet.description %}
-										<p>{{ trajet.description|nl2br|raw }}</p>
-									{% else %}
-										<p class="text-center">Aucune description sur ce trajet.</p>
-									{% endif %}
-								</div>
-							</div>
-						</div>
-					</div>
+  <div class="ride-detail-layout">
+    <article class="app-panel ride-detail-main">
+      <div class="reservation-hero">
+        <div>
+          <span class="reservation-route-kicker">Trajet publié</span>
+          <h2>{{ trajet.depart }} <i class="bi bi-arrow-right-short"></i> {{ trajet.arrivee }}</h2>
+          <p>{{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
+        </div>
+        {% if trajet.isAnnule() %}
+          <span class="reservation-status reservation-status--annulee">
+            <i class="bi bi-slash-circle-fill"></i>
+            Annulé
+          </span>
+        {% elseif enCours %}
+          <span class="reservation-status reservation-status--en_attente">
+            <i class="bi bi-play-circle-fill"></i>
+            En cours
+          </span>
+        {% elseif datePasse %}
+          <span class="reservation-status reservation-status--payment-rembourse">
+            <i class="bi bi-clock-history"></i>
+            Passé
+          </span>
+        {% else %}
+          <span class="reservation-status reservation-status--acceptee">
+            <i class="bi bi-check-circle-fill"></i>
+            Ouvert
+          </span>
+        {% endif %}
+      </div>
 
-					<div class="card-footer text-muted text-center">
-						{% if not trajet.isAnnule() %}
-							{% if datePasse %}
-								<div class="alert alert-warning">Ce trajet est
-									<strong>passé</strong>. Il n’est plus visible par les passagers.
-								</div>
-							{% elseif enCours %}
-								<div class="alert alert-info">Ce trajet est
-									<strong>en cours</strong>.
-								</div>
-							{% else %}
-								<form method="post" action="{{ path('trajet_annuler', { id: trajet.id }) }}" class="d-inline">
-									<input type="hidden" name="_token" value="{{ csrf_token('annuler_trajet_' ~ trajet.id) }}">
-									<button type="submit" class="btn btn-danger mb-3" data-confirm="Attention : êtes-vous sûr de vouloir annuler ce trajet ? Cette action est irréversible.">
-										Annuler ce trajet
-									</button>
-								</form>
-							{% endif %}
-						{% else %}
-							<div class="alert alert-warning">Ce trajet a été
-								<strong>annulé</strong>. Il n’est plus visible par les passagers.
-							</div>
-						{% endif %}
-					</div>
-				</div>
+      <div class="reservation-stats ride-detail-stats">
+        <div class="reservation-stat">
+          <span>Places restantes</span>
+          <strong>{{ trajet.placesDisponibles }}</strong>
+        </div>
+        <div class="reservation-stat">
+          <span>Places réservées</span>
+          <strong>{{ reservedPlaces }}</strong>
+        </div>
+        <div class="reservation-stat">
+          <span>Prix par place</span>
+          <strong>{{ trajet.prix|number_format(2, ',', ' ') }} €</strong>
+        </div>
+        <div class="reservation-stat">
+          <span>Demandes en attente</span>
+          <strong>{{ pendingReservations|length }}</strong>
+        </div>
+      </div>
 
-				{% if app.user == trajet.conducteur and reservations|length > 0 %}
-					<h4>🧾 Réservations reçues</h4>
-					<div class="table-responsive-md">
-						<table class="table table-striped responsive-card-table">
-							<thead>
-								<tr class="text-center">
-									<th>Passager</th>
-									<th>Place(s)</th>
-									<th>Montant</th>
-									<th>Statut</th>
-									<th>Paiement</th>
-									<th>Action</th>
-									<th>Contact</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% set total = 0 %}
-								{% set totalAutorise = 0 %}
-								{% for reservation in reservations %}
-									{% set total = total + reservation.prixTotal %}
-									{% if reservation.paiement and reservation.paiement.statut == 'autorise' %}
-										{% set totalAutorise = totalAutorise + reservation.prixTotal %}
-									{% endif %}
-									<tr class="text-center">
-										<td data-label="Passager">{{ avatar.formatSimple(reservation.passager, 35, 0, 1) }}
-											{{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' :
-								reservation.passager.prenom }}</td>
-										<td data-label="Place(s)">{{ reservation.places }}</td>
-										<td data-label="Montant">{{ reservation.prixTotal|number_format(2, ',', '.') }}
-											€</td>
-										<td data-label="Statut">
-											{% set statutResa = reservation.statut %}
-											{% set colorMap = {
-								'en_attente': 'warning',
-								'acceptee': 'info',
-								'payee': 'success',
-								'refusee': 'danger',
-								'annulee': 'secondary'
-								} %}
-											{% set labelMap = {
-								'en_attente': 'En attente',
-								'acceptee': 'Acceptée',
-								'payee': 'Payée',
-								'refusee': 'Refusée',
-								'annulee': 'Annulée'
-								} %}
-											<span class="badge bg-{{ colorMap[statutResa]|default('secondary') }} {% if statutResa == 'annulee' %}text-decoration-line-through opacity-75{% endif %}">
-												{{ labelMap[statutResa]|default(statutResa|capitalize) }}
-											</span>
-										</td>
-										<td data-label="Paiement">
-											{% if reservation.paiement %}
-												{% set statutPaiement = reservation.paiement.statut %}
-												{% set colorPaiement = {
-								'en_attente': 'secondary',
-								'autorise': 'warning',
-								'capture': 'success',
-								'rembourse': 'info',
-								'echoue': 'danger'
-								}[statutPaiement] %}
-												{% set iconMap = {
-								'en_attente': 'bi-clock',
-								'autorise': 'bi-shield-check',
-								'capture': 'bi-check-circle-fill',
-								'rembourse': 'bi-arrow-counterclockwise',
-								'echoue': 'bi-x-circle'
-								} %}
-												<span class="badge bg-{{ colorPaiement }}">
-													<i class="bi {{ iconMap[statutPaiement]|default('bi-question-circle') }}"></i>
-													{{ reservation.paiement.getStatutLabel() }}
-												</span>
-											{% else %}
-												<span class="badge bg-light text-muted">Aucun paiement</span>
-											{% endif %}
-										</td>
-										<td data-label="Action">
-											{% if reservation.statut == 'en_attente' %}
-												{% if not datePasse and not enCours %}
-													<form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}" class="d-inline">
-														<input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
-														<button type="submit" class="btn btn-success btn-sm">✅ Accepter</button>
-													</form>
-													<form method="post" action="{{ path('reservation_refuser', { id: reservation.id }) }}" class="d-inline">
-														<input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
-														<button type="submit" class="btn btn-outline-danger btn-sm">❌ Refuser</button>
-													</form>
-												{% elseif enCours %}
-													<small class="text-muted small-sm">Trajet en cours</small>
-												{% else %}
-													<small class="text-muted small-sm">Trop tard</small>
-												{% endif %}
-											{% elseif datePasse and (reservation.statut in ['acceptee', 'payee']) %}
-												{% set noteExistante = false %}
-												{% for note in reservation.passager.notesPour %}
-													{% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
-														{% set noteExistante = true %}
-													{% endif %}
-												{% endfor %}
-												{% if not noteExistante %}
-													<a href="{{ path('app_noter_passager', { trajetId: trajet.id, passagerId: reservation.passager.id }) }}" class="btn btn-sm btn-outline-primary">📝 Noter</a>
-												{% else %}
-													<span class="text-muted small-sm">Déjà noté</span>
-												{% endif %}
-											{% else %}
-												<small class="text-muted small-sm">Déjà
-													{{ reservation.statut }}</small>
-											{% endif %}
-										</td>
-										<td data-label="Contact">
-											<a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">💬 Écrire</a>
-											{% if reservation.statut in ['acceptee', 'payee'] %}
-												<a href="tel:{{ reservation.passager.telephone }}" class="btn btn-orange btn-sm">
-													{{ reservation.passager.telephone }}
-												</a>
-											{% endif %}
-										</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-					<div class="mt-3">
-						<p class="fw-bold">💰 Revenu autorisé :
-							{{ totalAutorise|number_format(2, ',', '.') }}
-							€</p>
-					</div>
-				{% else %}
-					<p class="text-muted">Aucune réservation pour ce trajet.</p>
-				{% endif %}
-			</div>
-		</div>
-	</div>
+      <div class="ride-description-box">
+        <div class="app-panel__header mb-0">
+          <span class="app-panel__icon"><i class="bi bi-chat-left-text-fill"></i></span>
+          <div>
+            <h2>Description</h2>
+            <p>Ce que les passagers voient avant de réserver.</p>
+          </div>
+        </div>
+        {% if trajet.description %}
+          <p>{{ trajet.description|nl2br }}</p>
+        {% else %}
+          <p class="text-muted mb-0">Aucune description n’a été ajoutée pour ce trajet.</p>
+        {% endif %}
+      </div>
+
+      {% if not trajet.isAnnule() %}
+        {% if datePasse %}
+          <div class="alert alert-warning mb-0">Ce trajet est passé. Il n’est plus visible par les passagers.</div>
+        {% elseif enCours %}
+          <div class="alert alert-info mb-0">Ce trajet est en cours. Les nouvelles actions sont limitées.</div>
+        {% else %}
+          <form method="post" action="{{ path('trajet_annuler', { id: trajet.id }) }}" class="ride-cancel-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('annuler_trajet_' ~ trajet.id) }}">
+            <button type="submit" class="btn btn-outline-danger" data-confirm="Attention : êtes-vous sûr de vouloir annuler ce trajet ? Cette action est irréversible.">
+              <i class="bi bi-x-circle"></i>
+              Annuler ce trajet
+            </button>
+          </form>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-warning mb-0">Ce trajet a été annulé. Il n’est plus visible par les passagers.</div>
+      {% endif %}
+    </article>
+
+    <aside class="ride-detail-side">
+      <article class="app-panel">
+        <div class="app-panel__header">
+          <span class="app-panel__icon"><i class="bi bi-cash-coin"></i></span>
+          <div>
+            <h2>Revenus</h2>
+            <p>Suivi des paiements liés au trajet.</p>
+          </div>
+        </div>
+        <dl class="reservation-info-list">
+          <div>
+            <dt>Autorisé</dt>
+            <dd>{{ totalAutorise|number_format(2, ',', ' ') }} €</dd>
+          </div>
+          <div>
+            <dt>Confirmé</dt>
+            <dd>{{ totalConfirme|number_format(2, ',', ' ') }} €</dd>
+          </div>
+          <div>
+            <dt>Passagers confirmés</dt>
+            <dd>{{ confirmedReservations|length }}</dd>
+          </div>
+        </dl>
+      </article>
+
+      <article class="app-panel">
+        <div class="app-panel__header">
+          <span class="app-panel__icon"><i class="bi bi-person-badge-fill"></i></span>
+          <div>
+            <h2>Conducteur</h2>
+            <p>Votre profil affiché aux passagers.</p>
+          </div>
+        </div>
+        <div class="reservation-driver-card__identity">
+          {{ avatar.formatSimple(trajet.conducteur, 58, 0, 1) }}
+          <div>
+            <span>{{ trajet.conducteur.isProfilVerifieComplet ? 'Profil vérifié' : 'Profil à compléter' }}</span>
+            <strong>{{ trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : trajet.conducteur.prenom }}</strong>
+          </div>
+        </div>
+      </article>
+    </aside>
+  </div>
+
+  <article class="app-panel ride-reservations-panel">
+    <div class="app-panel__header">
+      <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
+      <div>
+        <h2>Réservations reçues</h2>
+        <p>Acceptez, refusez ou contactez les passagers depuis un seul endroit.</p>
+      </div>
+    </div>
+
+    {% if reservations|length > 0 %}
+      <div class="ride-reservation-list">
+        {% for reservation in reservations %}
+          {% set passengerName = reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom %}
+          {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
+          <div class="ride-reservation-card">
+            <div class="ride-reservation-card__user">
+              {{ avatar.formatSimple(reservation.passager, 48, 0, 1) }}
+              <div>
+                <strong>{{ passengerName }}</strong>
+                <span>{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</span>
+              </div>
+            </div>
+
+            <div class="ride-reservation-card__badges">
+              <span class="reservation-status reservation-status--{{ reservation.statut }}">
+                {{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}
+              </span>
+              <span class="reservation-status reservation-status--payment-{{ statutPaiement }}">
+                {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
+              </span>
+            </div>
+
+            <div class="ride-reservation-card__actions">
+              {% if reservation.statut == 'en_attente' %}
+                {% if not datePasse and not enCours %}
+                  <form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+                    <button type="submit" class="btn btn-success btn-sm">
+                      <i class="bi bi-check-lg"></i>
+                      Accepter
+                    </button>
+                  </form>
+                  <form method="post" action="{{ path('reservation_refuser', { id: reservation.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="bi bi-x-lg"></i>
+                      Refuser
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="text-muted small">Action indisponible</span>
+                {% endif %}
+              {% elseif datePasse and reservation.statut in ['acceptee', 'payee'] %}
+                {% set noteExistante = false %}
+                {% for note in reservation.passager.notesPour %}
+                  {% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
+                    {% set noteExistante = true %}
+                  {% endif %}
+                {% endfor %}
+                {% if not noteExistante %}
+                  <a href="{{ path('app_noter_passager', { trajetId: trajet.id, passagerId: reservation.passager.id }) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-star"></i>
+                    Noter
+                  </a>
+                {% else %}
+                  <span class="text-muted small">Déjà noté</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted small">{{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}</span>
+              {% endif %}
+
+              <a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-chat-dots"></i>
+                Écrire
+              </a>
+              {% if reservation.statut in ['acceptee', 'payee'] and reservation.passager.telephone %}
+                <a href="tel:{{ reservation.passager.telephone }}" class="btn btn-orange btn-sm">
+                  <i class="bi bi-telephone"></i>
+                  Appeler
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info mb-0">Aucune réservation pour ce trajet pour le moment.</div>
+    {% endif %}
+  </article>
+</section>
 {% endblock %}

@@ -1,74 +1,94 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Paiement HaloGari
-{% endblock %}
+{% block title %}HaloGari | Paiement sécurisé{% endblock %}
 
 {% block body %}
-<div class="container py-5 ">
-  <div class="row justify-content-center align-items-center g-2">
-    <div class="col-lg-5 mt-4">
-      <div class="card shadow p-4">
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Paiement</p>
+    <h1>Paiement sécurisé</h1>
+    <p>Autorisez le paiement de votre trajet. Le montant sera capturé uniquement selon les règles HaloGari.</p>
+  </div>
+</section>
 
-        <h2 class="text-center mb-4 text-primary">Paiement de votre réservation</h2>
+<section class="container hg-account-section payment-page">
+  <div class="payment-layout">
+    <article class="app-panel payment-summary">
+      <div class="payment-route">
+        <div>
+          <span>Départ</span>
+          <strong>{{ reservation.trajet.depart }}</strong>
+        </div>
+        <i class="bi bi-arrow-right-short"></i>
+        <div>
+          <span>Arrivée</span>
+          <strong>{{ reservation.trajet.arrivee }}</strong>
+        </div>
+      </div>
 
-        {# -- Bloc récapitulatif -- #}
-        <div class="border rounded p-3 bg-light mb-4">
-          <h5 class="text-orange fw-bold mb-3">📝 Récapitulatif de la réservation</h5>
-          <div class="row">
-            <div class="col-md-6">
-              <p>
-                <strong>Départ :</strong>
-                {{ reservation.trajet.depart }}
-              </p>
-              <p>
-                <strong>Arrivée :</strong>
-                {{ reservation.trajet.arrivee }}
-              </p>
-            </div>
-            <div class="col-md-6">
-              <p>
-                <strong>Date :</strong>
-                {{ reservation.trajet.dateTrajet|date_fr('d F Y') }}
-              </p>
-              <p>
-                <strong>Heure :</strong>
-                {{ reservation.trajet.heureTrajet|date('H:i') }}
-              </p>
-            </div>
-          </div>
-          <p>
-            <strong>Places réservées :</strong>
-            {{ reservation.places }}
-          </p>
+      <div class="reservation-stats">
+        <div class="reservation-stat">
+          <span>Date</span>
+          <strong>{{ reservation.trajet.dateTrajet|date_fr('d F Y') }}</strong>
+        </div>
+        <div class="reservation-stat">
+          <span>Heure</span>
+          <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
+        </div>
+        <div class="reservation-stat">
+          <span>Places</span>
+          <strong>{{ reservation.places }}</strong>
+        </div>
+      </div>
+
+      <div class="payment-driver">
+        {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
+        <div>
+          <span>Conducteur</span>
+          <strong>{{ reservation.trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.trajet.conducteur.prenom }}</strong>
+        </div>
+      </div>
+
+      <div class="payment-total">
+        <span>Montant à autoriser</span>
+        <strong>{{ total|number_format(2, ',', ' ') }} €</strong>
+      </div>
+    </article>
+
+    <article class="app-panel payment-card">
+      <div class="app-panel__header">
+        <span class="app-panel__icon"><i class="bi bi-credit-card-2-front-fill"></i></span>
+        <div>
+          <h2>Carte bancaire</h2>
+          <p>Les informations de carte sont traitées par Stripe, pas stockées par HaloGari.</p>
+        </div>
+      </div>
+
+      <form id="payment-form" class="payment-form">
+        <label for="card-element" class="form-label fw-bold">Numéro de carte</label>
+        <div id="card-element" class="payment-card-element"></div>
+
+        <div class="payment-note">
+          <i class="bi bi-shield-lock-fill"></i>
+          <p>Votre paiement est autorisé maintenant, puis finalisé selon le statut réel du trajet.</p>
         </div>
 
-        {# -- Paiement -- #}
-        <form id="payment-form">
-          <div class="mb-3">
-            <label for="card-element" class="form-label">Carte bancaire</label>
-            <div id="card-element" class="form-control" style="padding: 10px;"></div>
-          </div>
-
-          <div class="text-center mt-3 mb-2">
-            <strong>Montant à payer :</strong>
-            <span class="text-success">{{ total|number_format(2, '.', ' ') }}
-              €</span>
-          </div>
-
-          <button class="btn btn-primary w-100">Payer maintenant</button>
-          <div id="payment-result" class="mt-3"></div>
-        </form>
-
-      </div>
-    </div>
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="bi bi-lock-fill"></i>
+          Payer maintenant
+        </button>
+        <div id="payment-result" class="mt-3"></div>
+      </form>
+    </article>
   </div>
-</div>
+</section>
 {% endblock %}
 
 {% block javascripts %}
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-  // 🔐 Initialisation Stripe avec ta clé publique
+document.addEventListener('DOMContentLoaded', function () {
   const stripe = Stripe('{{ stripePublicKey }}');
   const elements = stripe.elements();
   const card = elements.create('card');
@@ -77,50 +97,43 @@
   const form = document.getElementById('payment-form');
   const resultDiv = document.getElementById('payment-result');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    resultDiv.innerHTML = ''; // 🔁 Réinitialise les messages
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    resultDiv.innerHTML = '';
 
-    // 🔄 Lancement du paiement via Stripe
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Vérification...';
+
     const { error, paymentIntent } = await stripe.confirmCardPayment('{{ clientSecret }}', {
       payment_method: {
         card: card,
         billing_details: {
-          name: '{{ reservation.passager.nom ~ ' ' ~ reservation.passager.prenom }}',
-          email: '{{ reservation.passager.email }}'
+          name: '{{ (reservation.passager.nom ~ ' ' ~ reservation.passager.prenom)|e('js') }}',
+          email: '{{ reservation.passager.email|e('js') }}'
         }
       }
     });
 
-    // 🔍 Gère les erreurs Stripe côté client (ex : carte refusée)
     if (error) {
-      resultDiv.innerHTML = `
-        <div class="alert alert-danger">
-          ❌ Paiement refusé : ${error.message}
-        </div>
-      `;
-      console.warn('[Stripe error]', error); // Console dev
-
-    } else if (paymentIntent.status === 'requires_capture') {
-      // ✅ Paiement autorisé (fonds bloqués, mais non capturés)
-      resultDiv.innerHTML = `
-        <div class="alert alert-success">
-          ✅ Paiement autorisé avec succès. Redirection...
-        </div>
-      `;
-
-      // 🔁 Redirection vers page de confirmation
-      setTimeout(() => {
-        window.location.href = '{{ path("paiement_confirmation", { id: reservation.id }) }}';
-      }, 1500);
-    } else {
-      // 🟡 Statut inattendu (rare mais utile pour debug)
-      resultDiv.innerHTML = `
-        <div class="alert alert-warning">
-          ⚠️ Paiement en statut inattendu : ${paymentIntent.status}
-        </div>
-      `;
+      resultDiv.innerHTML = `<div class="alert alert-danger">Paiement refusé : ${error.message}</div>`;
+      submitButton.disabled = false;
+      submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Payer maintenant';
+      return;
     }
+
+    if (paymentIntent.status === 'requires_capture') {
+      resultDiv.innerHTML = '<div class="alert alert-success">Paiement autorisé avec succès. Redirection...</div>';
+      window.setTimeout(() => {
+        window.location.href = '{{ path("paiement_confirmation", { id: reservation.id }) }}';
+      }, 1200);
+      return;
+    }
+
+    resultDiv.innerHTML = `<div class="alert alert-warning">Paiement en statut inattendu : ${paymentIntent.status}</div>`;
+    submitButton.disabled = false;
+    submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Payer maintenant';
   });
+});
 </script>
 {% endblock %}

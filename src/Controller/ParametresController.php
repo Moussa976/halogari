@@ -47,7 +47,7 @@ class ParametresController extends AbstractController
             }
             $user->setPhoto(null);
             $em->flush();
-            $this->addFlash('success', 'Votre photo de profil a ÃƒÂ©tÃƒÂ© supprimÃƒÂ©e.');
+            $this->addFlash('success', 'Votre photo de profil a été supprimée.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -81,9 +81,9 @@ class ParametresController extends AbstractController
                 $user->setPhoto($newFilename);
                 $em->flush();
 
-                $this->addFlash('success', 'Photo mise ÃƒÂ  jour avec succÃƒÂ¨s.');
+                $this->addFlash('success', 'Photo mise à jour avec succès.');
             } catch (FileException $e) {
-                $this->addFlash('error', 'Erreur lors de lÃ¢â‚¬â„¢envoi du fichier.');
+                $this->addFlash('error', "Erreur lors de l'envoi du fichier.");
             }
         }
 
@@ -106,7 +106,7 @@ class ParametresController extends AbstractController
         $user->setNom($request->request->get('nom'));
         $dateNaissance = $this->parseFrenchDate((string) $request->request->get('dateNaissance'));
         if (!$dateNaissance) {
-            $this->addFlash('error', 'La date de naissance doit ÃƒÂªtre au format jj/mm/aaaa.');
+            $this->addFlash('error', 'La date de naissance doit être au format jj/mm/aaaa.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -114,7 +114,7 @@ class ParametresController extends AbstractController
         $user->setTelephone($request->request->get('telephone'));
 
         $em->flush();
-        $this->addFlash('success', 'Informations mises ÃƒÂ  jour avec succÃƒÂ¨s.');
+        $this->addFlash('success', 'Informations mises à jour avec succès.');
 
         return $this->redirectToRoute('app_parametres');
     }
@@ -140,11 +140,11 @@ class ParametresController extends AbstractController
         } elseif ($newPassword !== $confirmPassword) {
             $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
         } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', (string) $newPassword)) {
-            $this->addFlash('error', 'Votre nouveau mot de passe doit contenir au moins 8 caractÃƒÂ¨res, une minuscule, une majuscule, un chiffre et un caractÃƒÂ¨re spÃƒÂ©cial, par exemple : Mayotte@2026.');
+            $this->addFlash('error', 'Votre nouveau mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial, par exemple : Mayotte@2026.');
         } else {
             $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
             $em->flush();
-            $this->addFlash('success', 'Mot de passe modifiÃƒÂ© avec succÃƒÂ¨s.');
+            $this->addFlash('success', 'Mot de passe modifié avec succès.');
         }
 
         return $this->redirectToRoute('app_parametres');
@@ -163,23 +163,21 @@ class ParametresController extends AbstractController
         $fichier = $request->files->get('document');
 
         if (!$type || ($type === 'autre' && !$autre)) {
-            $this->addFlash('error', 'Veuillez spÃƒÂ©cifier le type de document.');
+            $this->addFlash('error', 'Veuillez spécifier le type de document.');
             return $this->redirectToRoute('app_parametres');
         }
 
         if (!$fichier) {
-            $this->addFlash('error', 'Veuillez sÃƒÂ©lectionner un fichier ÃƒÂ  envoyer.');
+            $this->addFlash('error', 'Veuillez sélectionner un fichier à envoyer.');
             return $this->redirectToRoute('app_parametres');
         }
 
-        // SÃƒÂ©curitÃƒÂ© du type MIME
         $allowedMime = ['application/pdf', 'image/jpeg', 'image/png'];
         if (!in_array($fichier->getMimeType(), $allowedMime)) {
-            $this->addFlash('error', 'Format de document invalide. AutorisÃƒÂ©s : PDF, JPG, PNG.');
+            $this->addFlash('error', 'Format de document invalide. Autorisés : PDF, JPG, PNG.');
             return $this->redirectToRoute('app_parametres');
         }
 
-        // Taille max 2 Mo
         if ($fichier->getSize() > 2 * 1024 * 1024) {
             $this->addFlash('error', 'Fichier trop volumineux. 2 Mo max.');
             return $this->redirectToRoute('app_parametres');
@@ -188,11 +186,10 @@ class ParametresController extends AbstractController
         $finalType = $type === 'autre' && $autre ? $autre : $type;
         $verification = $documentVerificationService->verify($fichier, $finalType);
         if (!$verification['valid']) {
-            $this->addFlash('error', 'Document refusÃƒÂ© par la prÃƒÂ©-vÃƒÂ©rification automatique : ' . $verification['reason']);
+            $this->addFlash('error', 'Document refusé par la pré-vérification automatique : ' . $verification['reason']);
             return $this->redirectToRoute('app_parametres');
         }
 
-        // Nom du fichier
         $originalName = pathinfo($fichier->getClientOriginalName(), PATHINFO_FILENAME);
         $safeName = $slugger->slug($originalName);
         $newFilename = $safeName . '-' . uniqid() . '.' . $fichier->guessExtension();
@@ -200,25 +197,23 @@ class ParametresController extends AbstractController
         try {
             $fichier->move($this->getParameter('documents_directory'), $newFilename);
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de l\'upload du document.');
+            $this->addFlash('error', "Erreur lors de l'envoi du document.");
             return $this->redirectToRoute('app_parametres');
         }
 
-        // CrÃƒÂ©ation de l'entitÃƒÂ© Document
         $document = new Document();
         $document->setUser($user);
         $document->setTypeDocument($finalType);
         $document->setFilenameDocument($newFilename);
-        $document->setDateDocument(new \DateTime()); // date automatique
+        $document->setDateDocument(new \DateTime());
         $document->setStatus(Document::STATUS_APPROVED);
 
         $em->persist($document);
         $em->flush();
 
-        $this->addFlash('success', 'Document ajoutÃƒÂ© et validÃƒÂ© automatiquement. ' . $verification['reason']);
+        $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
         return $this->redirectToRoute('app_parametres');
     }
-
 
     /**
      * @Route("/user/parametres/delete", name="app_account_delete", methods={"POST"})
@@ -247,7 +242,7 @@ class ParametresController extends AbstractController
 
         $deletePassword = (string) $request->request->get('deletePassword', '');
         if (!$passwordHasher->isPasswordValid($user, $deletePassword)) {
-            $this->addFlash('error', 'Mot de passe incorrect. La suppression du compte a Ã©tÃ© annulÃ©e.');
+            $this->addFlash('error', 'Mot de passe incorrect. La suppression du compte a été annulée.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -272,12 +267,12 @@ class ParametresController extends AbstractController
 
             $mailer->send($message);
         } catch (\Throwable $exception) {
-            // Le compte est dÃ©jÃ  anonymisÃ© : on Ã©vite de bloquer la suppression si l'e-mail Ã©choue.
+            // Le compte est déjà anonymisé : on évite de bloquer la suppression si l'e-mail échoue.
         }
 
         $tokenStorage->setToken(null);
         $request->getSession()->invalidate();
-        $this->addFlash('info', 'Votre compte a Ã©tÃ© supprimÃ©. Un e-mail de confirmation vous a Ã©tÃ© envoyÃ©.');
+        $this->addFlash('info', 'Votre compte a été supprimé. Un e-mail de confirmation vous a été envoyé.');
 
         return $this->redirectToRoute('app_home');
     }
