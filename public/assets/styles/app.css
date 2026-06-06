@@ -1554,6 +1554,8 @@ textarea.form-control.app-message-textarea {
     position: relative;
     display: inline-flex;
     flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
     vertical-align: middle;
 }
@@ -1563,12 +1565,19 @@ textarea.form-control.app-message-textarea {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border: 2px solid rgba(206, 212, 218, .95);
+    border-radius: 50%;
+    background: #fff;
 }
 
 .hg-avatar-wrap.is-verified .profile-avatar,
 .hg-avatar-wrap.is-verified img,
 .hg-profile-photo-wrap.is-verified .hg-profile-photo {
-    border-color: #22c55e;
+    border-color: #22c55e !important;
+}
+
+.profile-avatar-inline {
+    overflow: visible;
 }
 
 .hg-verified-badge {
@@ -1588,6 +1597,12 @@ textarea.form-control.app-message-textarea {
     background: linear-gradient(135deg, #166534, #22c55e);
     box-shadow: 0 6px 14px rgba(22, 101, 52, .28);
     font-size: clamp(.65rem, 45%, .9rem);
+}
+
+.hg-avatar-wrap.is-verified .hg-verified-badge {
+    color: #fff !important;
+    border-color: #22c55e !important;
+    background: linear-gradient(135deg, #166534, #22c55e) !important;
 }
 
 .hg-profile-photo-wrap .hg-verified-badge {

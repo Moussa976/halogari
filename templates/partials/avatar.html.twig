@@ -35,7 +35,7 @@
     {% set showBadge = isVerified and afficheBadge is not same as(false) %}
     <div
         {% if forElement %} onclick="document.getElementById('{{ forElement }}').click()" {% endif %}
-        class="hg-avatar-wrap position-relative d-inline-block img-note {% if showBadge %}is-verified{% endif %}"
+        class="hg-avatar-wrap profile-avatar-inline{% if showBadge %} is-verified{% endif %}"
         {% if showBadge %}
             tabindex="0"
             data-bs-toggle="tooltip"
@@ -46,7 +46,7 @@
     >
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
             alt="Photo de {{ user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : user.prenom }}"
-            class="rounded-circle img-fluid profile-avatar">
+            class="profile-avatar">
 
         {% if showBadge %}
             <span class="hg-verified-badge" aria-label="Profil vérifié">
