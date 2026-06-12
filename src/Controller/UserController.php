@@ -158,7 +158,7 @@ class UserController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('profile_preferences_' . $user->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         $preferences = $request->request->all('preferences');
@@ -181,7 +181,7 @@ class UserController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('profile_photo_' . $user->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         if ($request->get('remove_photo') && $user->getPhoto()) {
@@ -246,7 +246,7 @@ class UserController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('profile_description_' . $user->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         $description = trim($request->request->get('description'));
@@ -283,7 +283,7 @@ class UserController extends AbstractController
         // Soumission du formulaire manuel
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('documents_add', (string) $request->request->get('_token'))) {
-                $this->addFlash('error', 'Token CSRF invalide.');
+                $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
                 return $this->redirectToRoute('app_documents');
             }
 
@@ -584,7 +584,7 @@ class UserController extends AbstractController
 
         // 🔐 Vérifie le token CSRF
         if (!$this->isCsrfTokenValid('annuler_reservation_' . $reservation->getId(), $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         // ➕ On ne supprime pas la réservation : on la marque comme annulée
@@ -632,7 +632,7 @@ class UserController extends AbstractController
         }
 
         if (!$this->isCsrfTokenValid('resend_confirmation_' . $user->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         if ($user->isVerified()) {
@@ -661,3 +661,4 @@ class UserController extends AbstractController
     }
 
 }
+

@@ -110,8 +110,9 @@ class AdminPaiementController extends AbstractController
     private function assertValidPaymentToken(Paiement $paiement, Request $request, string $action): void
     {
         if (!$this->isCsrfTokenValid('admin_paiement_' . $action . '_' . $paiement->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
     }
 
 }
+

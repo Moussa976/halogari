@@ -36,7 +36,7 @@ class ParametresController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('parametres_photo', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -98,7 +98,7 @@ class ParametresController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('parametres_infos', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -127,7 +127,7 @@ class ParametresController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('parametres_password', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -231,12 +231,12 @@ class ParametresController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('parametres_document', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
         }
 
         if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
         }
 
@@ -290,3 +290,4 @@ class ParametresController extends AbstractController
         return null;
     }
 }
+

@@ -323,8 +323,9 @@ class AdminUserController extends AbstractController
 private function assertValidUserToken(User $user, Request $request, string $action): void
 {
     if (!$this->isCsrfTokenValid('admin_user_' . $action . '_' . $user->getId(), (string) $request->request->get('_token'))) {
-        throw $this->createAccessDeniedException('Token CSRF invalide.');
+        throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
     }
 }
 
 }
+

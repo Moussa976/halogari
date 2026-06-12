@@ -64,7 +64,8 @@ class AdminDocumentController extends AbstractController
     private function assertValidDocumentToken(Document $document, Request $request, string $action): void
     {
         if (!$this->isCsrfTokenValid('admin_document_' . $action . '_' . $document->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
     }
 }
+

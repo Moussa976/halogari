@@ -403,7 +403,7 @@ class TrajetController extends AbstractController
         }
 
         if (!$this->isCsrfTokenValid('annuler_trajet_' . $trajet->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         $annulationService->annulerTrajet($trajet);
@@ -445,3 +445,4 @@ class TrajetController extends AbstractController
         return null;
     }
 }
+

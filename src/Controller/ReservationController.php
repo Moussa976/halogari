@@ -76,7 +76,7 @@ class ReservationController extends AbstractController
         }
 
         if (!$this->isCsrfTokenValid('reserver_trajet_' . $trajet->getId(), (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
 
         if ($trajet->getConducteur() === $this->getUser()) {
@@ -166,7 +166,7 @@ class ReservationController extends AbstractController
             throw $this->createNotFoundException('Reservation introuvable.');
         }
         if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
         $trajet = $trajetRepository->find($reservation->getTrajet()->getId());
 
@@ -213,7 +213,7 @@ class ReservationController extends AbstractController
             throw $this->createNotFoundException('Reservation introuvable.');
         }
         if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
         $trajet = $trajetRepository->find($reservation->getTrajet()->getId());
 
@@ -257,7 +257,7 @@ class ReservationController extends AbstractController
 
         // ✅ Vérifie le token CSRF
         if (!$this->isCsrfTokenValid('annuler_reservation_' . $reservation->getId(), $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException("Token CSRF invalide.");
+            throw $this->createAccessDeniedException("La session a expiré. Veuillez réessayer.");
         }
 
         // 💡 On rend les places dans tous les cas sauf si déjà annulée ou refusée
@@ -291,3 +291,4 @@ class ReservationController extends AbstractController
 
 
 }
+
