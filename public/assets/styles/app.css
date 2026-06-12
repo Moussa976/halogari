@@ -673,6 +673,11 @@ textarea.form-control.app-message-textarea {
     box-shadow: var(--hg-shadow);
 }
 
+.quick-search {
+    border: 2px solid rgba(255, 209, 106, .92) !important;
+    box-shadow: 0 26px 70px rgba(0, 0, 0, .26), 0 0 0 8px rgba(255, 255, 255, .16);
+}
+
 .list-group {
     gap: .7rem;
 }

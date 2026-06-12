@@ -47,6 +47,23 @@ class AdminPaiementController extends AbstractController
     }
 
     /**
+     * @Route("/admin/paiements/{id}/transfer", name="admin_paiement_transfer", methods={"POST"})
+     */
+    public function transfer(Paiement $paiement, Request $request, PaiementService $paiementService): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->assertValidPaymentToken($paiement, $request, 'transfer');
+        try {
+            $paiementService->verserConducteur($paiement);
+            $this->addFlash('success', 'Versement conducteur effectue.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_paiements');
+    }
+
+    /**
      * @Route("/admin/paiements/{id}/cancel", name="admin_paiement_cancel", methods={"POST"})
      */
     public function cancel(Paiement $paiement, Request $request, PaiementService $paiementService): RedirectResponse

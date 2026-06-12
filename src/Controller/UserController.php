@@ -418,8 +418,49 @@ class UserController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        $paiementsReservations = [];
+        $paiementsGains = [];
+        $totalReserve = 0.0;
+        $totalRembourse = 0.0;
+        $totalGainsAVerser = 0.0;
+        $totalGainsVerses = 0.0;
+
+        foreach ($paiements as $paiement) {
+            $reservation = $paiement->getReservation();
+            if (!$reservation || !$reservation->getTrajet()) {
+                continue;
+            }
+
+            $montant = (float) $paiement->getMontant();
+            if ($reservation->getPassager() === $user) {
+                $paiementsReservations[] = $paiement;
+                if ($paiement->getStatut() === 'rembourse') {
+                    $totalRembourse += $montant;
+                } elseif ($paiement->getStatut() === 'capture') {
+                    $totalReserve += $montant;
+                }
+            }
+
+            if ($reservation->getTrajet()->getConducteur() === $user) {
+                $paiementsGains[] = $paiement;
+                $commissionHaloGari = max(round($montant * 0.12, 2), 0.50);
+                $gainConducteur = max(round($montant - $commissionHaloGari, 2), 0);
+                if ($reservation->getCommissions()->count() > 0) {
+                    $totalGainsVerses += $gainConducteur;
+                } elseif ($paiement->getStatut() === 'capture') {
+                    $totalGainsAVerser += $gainConducteur;
+                }
+            }
+        }
+
         return $this->render('user/mes_paiements.html.twig', [
             'paiements' => $paiements,
+            'paiementsReservations' => $paiementsReservations,
+            'paiementsGains' => $paiementsGains,
+            'totalReserve' => $totalReserve,
+            'totalRembourse' => $totalRembourse,
+            'totalGainsAVerser' => $totalGainsAVerser,
+            'totalGainsVerses' => $totalGainsVerses,
         ]);
     }
 

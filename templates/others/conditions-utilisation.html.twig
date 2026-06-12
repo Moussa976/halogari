@@ -23,7 +23,7 @@
       <li>Publier un trajet en tant que conducteur.</li>
       <li>Rechercher et réserver une place en tant que passager.</li>
       <li>Échanger des messages liés à l'organisation du trajet.</li>
-      <li>Gérer les notifications, paiements et remboursements associés.</li>
+      <li>Gérer les notifications, paiements, reversements et remboursements associés.</li>
     </ul>
 
     <h2>2. Compte utilisateur</h2>
@@ -42,8 +42,12 @@
 
     <h2>4. Paiements</h2>
     <p>
-      Les paiements sont gérés via Stripe. HaloGari ne stocke pas les données complètes de carte bancaire.
-      Une commission de service peut être appliquée afin de financer la maintenance, la sécurité et le support.
+      Le passager paie uniquement après acceptation de sa réservation par le conducteur. Le paiement est traité par Stripe
+      et capturé au moment où le passager confirme sa carte. HaloGari ne stocke pas les données complètes de carte bancaire.
+    </p>
+    <p>
+      Après le trajet, HaloGari traite le reversement de la part conducteur et conserve sa commission de service.
+      En cas d'annulation ou de litige, le remboursement est étudié selon la politique ci-dessous.
     </p>
 
     <h2 id="remboursement">5. Annulation et remboursement</h2>

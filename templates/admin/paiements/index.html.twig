@@ -2,7 +2,7 @@
 {% block title %}Paiements | Admin{% endblock %}
 
 {% block body %}
-<h1 class="mb-4">💸 Paiements</h1>
+<h1 class="mb-4">Paiements</h1>
 
 <div class="table-responsive">
     <table class="table table-bordered table-hover">
@@ -18,37 +18,55 @@
         </thead>
         <tbody>
         {% for paiement in paiements %}
+            {% set dejaVerse = paiement.reservation.commissions|length > 0 %}
             <tr>
                 <td>{{ paiement.id }}</td>
-                <td>{{ paiement.montant }} €</td>
+                <td>{{ paiement.montant }} EUR</td>
                 <td>ID {{ paiement.reservation.id }}</td>
-                <td>{{ paiement.statut }}</td>
+                <td>
+                    {{ paiement.statut }}
+                    {% if dejaVerse %}
+                        <span class="badge bg-success ms-1">versé</span>
+                    {% endif %}
+                </td>
                 <td>{{ paiement.createdAt|date('d/m/Y H:i') }}</td>
                 <td>
                     {% if paiement.statut == 'autorise' %}
                         <form method="post" action="{{ path('admin_paiement_capture', {id: paiement.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_capture_' ~ paiement.id) }}">
                             <button class="btn btn-sm btn-success" onclick="return confirm('Capturer le paiement ?')">
-                                💰 Capturer
+                                Capturer
                             </button>
                         </form>
                         <form method="post" action="{{ path('admin_paiement_cancel', {id: paiement.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_cancel_' ~ paiement.id) }}">
                             <button class="btn btn-sm btn-warning mt-1" onclick="return confirm('Annuler ce paiement ?')">
-                                ❌ Annuler
+                                Annuler
                             </button>
                         </form>
                     {% elseif paiement.statut == 'capture' %}
+                        {% if not dejaVerse %}
+                            <form method="post" action="{{ path('admin_paiement_transfer', {id: paiement.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_transfer_' ~ paiement.id) }}">
+                                <button class="btn btn-sm btn-success" onclick="return confirm('Verser la part conducteur maintenant ?')">
+                                    Verser conducteur
+                                </button>
+                            </form>
+                        {% endif %}
                         <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
-                            <button class="btn btn-sm btn-danger" onclick="return confirm('Rembourser ce paiement ?')">
-                                ↩️ Rembourser
+                            <button class="btn btn-sm btn-danger mt-1" onclick="return confirm('Rembourser ce paiement ?')">
+                                Rembourser
                             </button>
                         </form>
                     {% else %}
                         <span class="text-muted">Aucune action</span>
                     {% endif %}
                 </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">Aucun paiement.</td>
             </tr>
         {% endfor %}
         </tbody>

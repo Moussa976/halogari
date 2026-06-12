@@ -96,7 +96,6 @@ class WebhookController extends AbstractController
 
                 if ($reservation->getStatut() !== 'payee') {
                     $reservation->setStatut('payee');
-                    $this->notifier->envoyerConfirmationPaiement($reservation);
                 }
 
                 $em->flush();

@@ -38,6 +38,14 @@ class TrajetSearchService
     }
 
     /**
+     * @return Trajet[]
+     */
+    public function availableUpcoming(int $limit = 10): array
+    {
+        return $this->trajetRepository->findAvailableUpcoming($limit);
+    }
+
+    /**
      * Format commun pour Twig leger, API web et future app mobile.
      *
      * @return array<string, mixed>

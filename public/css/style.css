@@ -404,20 +404,24 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: .55rem;
-    min-height: 52px;
+    min-height: 58px;
     border-radius: 8px;
     font-weight: 800;
+}
+
+.quick-search .btn {
+    box-shadow: 0 14px 30px rgba(238, 121, 17, .24);
 }
 
 .quick-search {
     display: grid;
     gap: .85rem;
-    padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, .2);
+    padding: 1.15rem;
+    border: 2px solid rgba(255, 209, 106, .92);
     border-radius: 8px;
     background: rgba(255, 255, 255, .96);
     color: #1f2d24;
-    box-shadow: 0 22px 60px rgba(0, 0, 0, .2);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, .26), 0 0 0 8px rgba(255, 255, 255, .16);
 }
 
 .quick-search__title {
@@ -425,11 +429,19 @@ h1 {
     justify-content: space-between;
     gap: .8rem;
     align-items: end;
+    padding: .15rem .1rem .25rem;
+}
+
+.quick-search__title strong {
+    color: #1f7447;
+    font-size: 1.35rem;
+    line-height: 1.1;
 }
 
 .quick-search__title span {
     color: #6c757d;
     font-size: .9rem;
+    font-weight: 800;
 }
 
 .quick-search__row {

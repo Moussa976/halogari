@@ -58,6 +58,25 @@ class TrajetRepository extends ServiceEntityRepository
     /**
      * @return Trajet[]
      */
+    public function findAvailableUpcoming(int $limit = 10): array
+    {
+        $now = new \DateTime();
+
+        return $this->createQueryBuilder('t')
+            ->where('t.dateTrajet >= :today')
+            ->andWhere('t.placesDisponibles > 0')
+            ->andWhere('t.annule IS NULL OR t.annule = false')
+            ->setParameter('today', $now->setTime(0, 0, 0))
+            ->orderBy('t.dateTrajet', 'ASC')
+            ->addOrderBy('t.heureTrajet', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Trajet[]
+     */
     public function findByRecherche(string $depart, string $arrivee, string $date, int $places): array
     {
         $dateObj = new \DateTime($date);

@@ -16,7 +16,7 @@
   <div class="container">
     <p class="app-kicker">Portefeuille</p>
     <h1>Mes paiements</h1>
-    <p>Suivez vos paiements, remboursements et autorisations liés aux trajets HaloGari.</p>
+    <p>Suivez séparément vos réservations payées et les gains de vos trajets conducteur.</p>
   </div>
 </section>
 
@@ -25,60 +25,160 @@
     <div class="app-panel__header">
       <div>
         <h2>Historique</h2>
-        <p>Les paiements sont sécurisés par Stripe. HaloGari n'enregistre jamais les numéros complets de carte bancaire.</p>
+        <p>Les paiements sont sécurisés par Stripe. HaloGari conserve le paiement puis traite remboursements et reversements selon les règles du trajet.</p>
       </div>
       <span class="badge bg-light text-dark border">{{ paiements|length }} opération{{ paiements|length > 1 ? 's' : '' }}</span>
     </div>
 
-    {% if paiements is empty %}
-      <div class="alert alert-info mb-0">
-        Aucun paiement pour le moment. Vos opérations apparaîtront ici après une réservation acceptée ou un paiement conducteur.
+    <ul class="nav nav-tabs mb-4" id="paymentTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="reserved-tab" data-bs-toggle="tab" data-bs-target="#reserved-pane" type="button" role="tab" aria-controls="reserved-pane" aria-selected="true">
+          J'ai réservé
+          <span class="badge bg-light text-dark ms-1">{{ paiementsReservations|length }}</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="earned-tab" data-bs-toggle="tab" data-bs-target="#earned-pane" type="button" role="tab" aria-controls="earned-pane" aria-selected="false">
+          J'ai récolté
+          <span class="badge bg-light text-dark ms-1">{{ paiementsGains|length }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="paymentTabsContent">
+      <div class="tab-pane fade show active" id="reserved-pane" role="tabpanel" aria-labelledby="reserved-tab" tabindex="0">
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <span class="text-muted d-block">Total payé</span>
+              <strong class="fs-4">{{ totalReserve|number_format(2, ',', ' ') }} €</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <span class="text-muted d-block">Total remboursé</span>
+              <strong class="fs-4">{{ totalRembourse|number_format(2, ',', ' ') }} €</strong>
+            </div>
+          </div>
+        </div>
+
+        {% if paiementsReservations is empty %}
+          <div class="alert alert-info mb-0">
+            Aucun paiement côté réservation pour le moment.
+          </div>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table align-middle responsive-card-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Trajet</th>
+                  <th>Montant</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for paiement in paiementsReservations %}
+                  {% set reservation = paiement.reservation %}
+                  {% set trajet = reservation.trajet %}
+                  <tr>
+                    <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
+                    <td data-label="Trajet">
+                      <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
+                      <small class="text-muted">{{ trajet.dateTrajet|date_fr('d F Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
+                    </td>
+                    <td data-label="Montant"><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
+                    <td data-label="Statut">
+                      <span class="badge {% if paiement.statut == 'capture' %}bg-success{% elseif paiement.statut == 'rembourse' %}bg-info text-dark{% elseif paiement.statut in ['annule', 'echoue'] %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                        {{ paiementLabels[paiement.statut]|default(paiement.statut) }}
+                      </span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
       </div>
-    {% else %}
-      <div class="table-responsive">
-        <table class="table align-middle responsive-card-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Trajet</th>
-              <th>Rôle</th>
-              <th>Montant</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for paiement in paiements %}
-              {% set reservation = paiement.reservation %}
-              {% set trajet = reservation.trajet %}
-              {% set role = reservation.passager == app.user ? 'Passager' : 'Conducteur' %}
-              <tr>
-                <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
-                <td data-label="Trajet">
-                  <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
-                  <small class="text-muted">{{ trajet.dateTrajet|date_fr('d F Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
-                </td>
-                <td data-label="Rôle">{{ role }}</td>
-                <td data-label="Montant"><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
-                <td data-label="Statut">
-                  <span class="badge {% if paiement.statut in ['capture', 'autorise'] %}bg-success{% elseif paiement.statut in ['rembourse'] %}bg-info text-dark{% elseif paiement.statut in ['annule', 'echoue'] %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                    {{ paiementLabels[paiement.statut]|default(paiement.statut) }}
-                  </span>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+      <div class="tab-pane fade" id="earned-pane" role="tabpanel" aria-labelledby="earned-tab" tabindex="0">
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <span class="text-muted d-block">À verser</span>
+              <strong class="fs-4">{{ totalGainsAVerser|number_format(2, ',', ' ') }} €</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <span class="text-muted d-block">Déjà versé</span>
+              <strong class="fs-4">{{ totalGainsVerses|number_format(2, ',', ' ') }} €</strong>
+            </div>
+          </div>
+        </div>
+
+        {% if paiementsGains is empty %}
+          <div class="alert alert-info mb-0">
+            Aucun gain conducteur pour le moment.
+          </div>
+        {% else %}
+          <div class="table-responsive">
+            <table class="table align-middle responsive-card-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Trajet</th>
+                  <th>Passager</th>
+                  <th>Gain conducteur</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for paiement in paiementsGains %}
+                  {% set reservation = paiement.reservation %}
+                  {% set trajet = reservation.trajet %}
+                  {% set commissionHaloGari = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
+                  {% set gainConducteur = max(paiement.montant - commissionHaloGari, 0) %}
+                  {% set dejaVerse = reservation.commissions|length > 0 %}
+                  <tr>
+                    <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
+                    <td data-label="Trajet">
+                      <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
+                      <small class="text-muted">{{ trajet.dateTrajet|date_fr('d F Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
+                    </td>
+                    <td data-label="Passager">{{ reservation.passager.prenom }}</td>
+                    <td data-label="Gain conducteur">
+                      <strong>{{ gainConducteur|number_format(2, ',', ' ') }} €</strong><br>
+                      <small class="text-muted">Brut {{ paiement.montant|number_format(2, ',', ' ') }} €</small>
+                    </td>
+                    <td data-label="Statut">
+                      {% if dejaVerse %}
+                        <span class="badge bg-success">Versé</span>
+                      {% elseif paiement.statut == 'capture' %}
+                        <span class="badge bg-warning text-dark">À verser</span>
+                      {% elseif paiement.statut == 'rembourse' %}
+                        <span class="badge bg-info text-dark">Remboursé</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ paiementLabels[paiement.statut]|default(paiement.statut) }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
       </div>
-    {% endif %}
+    </div>
   </article>
 
   <aside class="app-panel app-tips-panel">
     <span class="app-panel__icon"><i class="bi bi-shield-check"></i></span>
     <h2>À savoir</h2>
     <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Autorisation avant capture</span>
-      <span><i class="bi bi-check-circle-fill"></i> Remboursement selon la politique HaloGari</span>
-      <span><i class="bi bi-check-circle-fill"></i> Reçus et opérations gérés via Stripe</span>
+      <span><i class="bi bi-check-circle-fill"></i> Les réservations payées sont dans l'onglet passager</span>
+      <span><i class="bi bi-check-circle-fill"></i> Les gains conducteur restent en attente jusqu'au reversement</span>
+      <span><i class="bi bi-check-circle-fill"></i> Les remboursements suivent la politique HaloGari</span>
     </div>
     <a class="btn btn-outline-primary w-100 mt-3" href="{{ path('app_conditionsutisation') }}#remboursement">
       <i class="bi bi-arrow-repeat"></i>

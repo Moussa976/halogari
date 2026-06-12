@@ -45,7 +45,7 @@
 {% set trajetPasse = trajetTimestamp < nowTimestamp %}
 {% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'en_attente') %}
 {% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
-{% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['autorise', 'capture'] %}
+{% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['capture'] %}
 
 {% set dejaNote = false %}
 {% set maNote = null %}
@@ -125,7 +125,7 @@
             </p>
           </div>
         </div>
-        <div class="reservation-timeline__item {{ statutPaiement in ['capture', 'autorise'] ? 'is-done' : (peutPayer ? 'is-current' : 'is-muted') }}">
+        <div class="reservation-timeline__item {{ statutPaiement in ['capture'] ? 'is-done' : (peutPayer ? 'is-current' : 'is-muted') }}">
           <span><i class="bi {{ paymentIcons[statutPaiement]|default('bi-credit-card') }}"></i></span>
           <div>
             <strong>Paiement</strong>
@@ -253,7 +253,7 @@
         <article class="app-panel reservation-cancel-policy">
           <h2>Conditions d’annulation</h2>
           {% if paiementEngage %}
-            <p>Votre paiement est déjà autorisé ou confirmé. En cas d’annulation, HaloGari applique la politique de remboursement selon le délai avant le départ.</p>
+            <p>Votre paiement est confirme. En cas d'annulation, HaloGari applique la politique de remboursement selon le delai avant le depart.</p>
             <ul>
               <li>Plus de 24 h avant le départ : remboursement total.</li>
               <li>Entre 24 h et 3 h avant le départ : remboursement partiel possible.</li>

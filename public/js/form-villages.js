@@ -131,7 +131,7 @@
       if (value.length >= MIN_CHARS) {
         const empty = document.createElement("div");
         empty.className = "hg-autocomplete__empty";
-        empty.textContent = "Aucun village trouve";
+        empty.textContent = "Aucun village trouvé";
         panel.appendChild(empty);
         panel.hidden = false;
         input.setAttribute("aria-expanded", "true");
