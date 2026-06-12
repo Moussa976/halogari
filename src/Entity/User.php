@@ -631,8 +631,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function hasVerifiedIdentity(): bool
     {
-        $doc = $this->getDocumentByType("identite");
-        return $doc && $doc->getStatus() === Document::STATUS_APPROVED;
+        return $this->hasApprovedDocumentByTypes(['identite', 'piece_identite', 'piece-identite']);
+    }
+
+    public function hasVerifiedRib(): bool
+    {
+        return $this->hasApprovedDocumentByTypes(['rib']);
+    }
+
+    public function canPublishRide(): bool
+    {
+        return $this->hasVerifiedIdentity() && $this->hasVerifiedRib();
+    }
+
+    private function hasApprovedDocumentByTypes(array $types): bool
+    {
+        $allowed = array_map(static fn(string $type): string => strtolower(trim($type)), $types);
+        foreach ($this->documents as $document) {
+            $documentType = strtolower(trim((string) $document->getTypeDocument()));
+            if (in_array($documentType, $allowed, true) && $document->getStatus() === Document::STATUS_APPROVED) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasVerifiedPhone(): bool

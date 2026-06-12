@@ -97,7 +97,7 @@ class NotificationService
         $this->createNotification(
             $conducteur,
             'reservation',
-            'Nouvelle demande de reservation',
+            'Nouvelle demande de réservation',
             sprintf(
                 '%s demande %d place(s) pour le trajet %s -> %s.',
                 $reservation->getPassager()->getPrenom(),
@@ -110,8 +110,8 @@ class NotificationService
     }
 
     /**
-     * Envoie un e-mail au passager pour confirmer que son paiement a été autorisé.
-     * Le débit réel se fera plus tard (capture manuelle par l’admin).
+     * Envoie un e-mail au passager pour confirmer que son paiement a été validé.
+     * Le débit est capturé par Stripe quand le passager confirme sa carte.
      *
      * @param Reservation $reservation La réservation dont le paiement a été autorisé
      */
@@ -122,7 +122,7 @@ class NotificationService
         $email = (new Email())
             ->from('moussa@halogari.yt')
             ->to($passager->getEmail())
-            ->subject('Paiement autorisé - Réservation HaloGari')
+            ->subject('Paiement validé - Réservation HaloGari')
             ->html($this->twig->render('emails/paiement_confirme.html.twig', [
                 'reservation' => $reservation
             ]))
@@ -205,8 +205,8 @@ class NotificationService
         $this->createNotification(
             $reservation->getPassager(),
             'paiement',
-            'Paiement annule ou expire',
-            'Votre paiement n\'a pas abouti. Verifiez votre reservation.',
+            'Paiement annulé ou expiré',
+            'Votre paiement n\'a pas abouti. Vérifiez votre réservation.',
             '/user/reservation/' . $reservation->getId()
         );
     }
@@ -226,8 +226,8 @@ class NotificationService
     $this->createNotification(
         $reservation->getPassager(),
         'paiement',
-        'Paiement capture',
-        'Votre paiement est confirme pour cette reservation.',
+        'Paiement capturé',
+        'Votre paiement est confirmé pour cette réservation.',
         '/user/reservation/' . $reservation->getId()
     );
 }

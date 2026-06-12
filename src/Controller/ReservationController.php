@@ -71,7 +71,7 @@ class ReservationController extends AbstractController
         }
 
         if ($trajet->isAnnule()) {
-            $this->addFlash('error', 'Ce trajet est annule et ne peut plus etre reserve.');
+            $this->addFlash('error', 'Ce trajet est annulé et ne peut plus être réservé.');
             return $this->redirectToRoute('app_chercher');
         }
 
@@ -80,14 +80,14 @@ class ReservationController extends AbstractController
         }
 
         if ($trajet->getConducteur() === $this->getUser()) {
-            $this->addFlash('error', 'Vous ne pouvez pas reserver votre propre trajet.');
+            $this->addFlash('error', 'Vous ne pouvez pas réserver votre propre trajet.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
         $now = new \DateTimeImmutable();
         $trajetDateTime = new \DateTimeImmutable($trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i'));
         if ($trajetDateTime < $now) {
-            $this->addFlash('error', 'Ce trajet est deja passe.');
+            $this->addFlash('error', 'Ce trajet est déjà passé.');
             return $this->redirectToRoute('app_chercher');
         }
 
@@ -109,7 +109,7 @@ class ReservationController extends AbstractController
             'passager' => $this->getUser(),
         ]);
         if ($existingReservation && in_array($existingReservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
-            $this->addFlash('info', 'Vous avez deja une reservation active pour ce trajet.');
+            $this->addFlash('info', 'Vous avez déjà une réservation active pour ce trajet.');
             return $this->redirectToRoute('app_user_reservation', ['id' => $existingReservation->getId()]);
         }
 
@@ -163,7 +163,7 @@ class ReservationController extends AbstractController
     ): Response {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
-            throw $this->createNotFoundException('Reservation introuvable.');
+            throw $this->createNotFoundException('Réservation introuvable.');
         }
         if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
@@ -176,7 +176,7 @@ class ReservationController extends AbstractController
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            $this->addFlash('info', 'Cette reservation a deja ete traitee.');
+            $this->addFlash('info', 'Cette réservation a déjà été traitée.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
@@ -210,7 +210,7 @@ class ReservationController extends AbstractController
     {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
-            throw $this->createNotFoundException('Reservation introuvable.');
+            throw $this->createNotFoundException('Réservation introuvable.');
         }
         if (!$this->isCsrfTokenValid('reservation_action_' . $reservation->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
@@ -222,7 +222,7 @@ class ReservationController extends AbstractController
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            $this->addFlash('info', 'Cette reservation a deja ete traitee.');
+            $this->addFlash('info', 'Cette réservation a déjà été traitée.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 

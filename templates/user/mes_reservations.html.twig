@@ -3,11 +3,11 @@
 {% block title %}HaloGari | Mes réservations{% endblock %}
 
 {% set trajetLabels = {
+  'all': 'Toutes',
   'annule': 'Annulé',
   'passe': 'Passé',
   'avenir': 'À venir',
-  'en_cours': 'En cours',
-  'all': 'Toutes'
+  'en_cours': 'En cours'
 } %}
 
 {% set reservationLabels = {
@@ -40,7 +40,16 @@
       </a>
     </div>
 
-    <ul class="nav nav-pills app-tabs mb-4" id="filtreTabs" role="tablist">
+    <div class="hg-filter-select mb-4">
+      <label for="filtreReservationsSelect">Filtrer les réservations</label>
+      <select id="filtreReservationsSelect" class="form-select" onchange="filterReservations(this.value)">
+        {% for key, label in trajetLabels %}
+          <option value="{{ key }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <ul class="nav nav-pills app-tabs hg-filter-tabs mb-4" id="filtreTabs" role="tablist" aria-label="Filtrer les réservations">
       {% for key, label in trajetLabels %}
         <li class="nav-item" role="presentation">
           <button class="nav-link {{ loop.first ? 'active' : '' }}" id="tab-{{ key }}" type="button" onclick="filterReservations('{{ key }}')">{{ label }}</button>
@@ -83,6 +92,10 @@
           </div>
         </div>
       {% endfor %}
+
+      <div class="alert alert-info mb-0 d-none" id="empty-reservations-filter">
+        Aucune réservation ne correspond à ce filtre.
+      </div>
     </div>
   </div>
 </section>
@@ -91,12 +104,24 @@
 {% block javascripts %}
 <script>
 function filterReservations(status) {
+  let visibleCount = 0;
   document.querySelectorAll('#liste-reservations [data-status]').forEach(item => {
-    item.style.display = (status === 'all' || item.dataset.status === status) ? '' : 'none';
+    const visible = status === 'all' || item.dataset.status === status;
+    item.style.display = visible ? '' : 'none';
+    if (visible) {
+      visibleCount++;
+    }
   });
 
   document.querySelectorAll('#filtreTabs .nav-link').forEach(tab => tab.classList.remove('active'));
   document.getElementById('tab-' + status)?.classList.add('active');
+
+  const select = document.getElementById('filtreReservationsSelect');
+  if (select) {
+    select.value = status;
+  }
+
+  document.getElementById('empty-reservations-filter')?.classList.toggle('d-none', visibleCount > 0);
 }
 </script>
 {% endblock %}

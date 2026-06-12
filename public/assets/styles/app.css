@@ -715,6 +715,39 @@ textarea.form-control.app-message-textarea {
     border-color: transparent;
 }
 
+.hg-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .28rem;
+    border: 1px solid rgba(36, 92, 54, .1);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .05);
+}
+
+.hg-filter-tabs .nav-item {
+    display: flex;
+}
+
+.hg-filter-tabs .nav-link {
+    min-height: 40px;
+    padding: .58rem .85rem;
+    white-space: nowrap;
+    box-shadow: none;
+}
+
+.hg-filter-select {
+    display: none;
+}
+
+.hg-filter-select label {
+    display: block;
+    margin-bottom: .45rem;
+    color: var(--hg-ink);
+    font-size: .88rem;
+    font-weight: 850;
+}
+
 .app-page-header {
     position: relative;
     padding: 7rem 0 3rem;
@@ -771,8 +804,7 @@ textarea.form-control.app-message-textarea {
 
 .app-hero__content h1,
 .app-page-header h1,
-.app-section-heading h2,
-.app-main :is(h1, h2, h3):not(.modal-title):not(.offcanvas-title):not(.swal2-title):not(.navbar-brand) {
+.app-section-heading h2 {
     position: relative;
     display: inline;
     z-index: 0;
@@ -782,39 +814,32 @@ textarea.form-control.app-message-textarea {
 
 .app-hero__content h1::after,
 .app-page-header h1::after,
-.app-section-heading h2::after,
-.app-main :is(h1, h2, h3):not(.modal-title):not(.offcanvas-title):not(.swal2-title):not(.navbar-brand)::after {
+.app-section-heading h2::after {
     content: "";
     position: absolute;
-    left: .03em;
-    right: .02em;
-    bottom: .035em;
+    left: .02em;
+    right: .18em;
+    bottom: .015em;
     z-index: -1;
-    height: .22em;
+    height: .16em;
     border-radius: 999px 44% 999px 38%;
     background: linear-gradient(90deg, rgba(255, 189, 89, .95), rgba(238, 121, 17, .9) 48%, rgba(60, 168, 96, .9));
-    filter: drop-shadow(0 8px 12px rgba(238, 121, 17, .18));
-    opacity: .9;
-    transform: scaleX(.08) rotate(-1deg);
+    filter: drop-shadow(0 5px 8px rgba(238, 121, 17, .12));
+    opacity: .72;
+    transform: scaleX(.16) rotate(-1deg);
     transform-origin: left center;
-    animation: hgMarkerSwipe .9s cubic-bezier(.2, .8, .2, 1) .18s forwards;
+    animation: hgMarkerSwipe .72s cubic-bezier(.2, .8, .2, 1) .12s forwards;
 }
 
 .app-page-header h1::after {
     background: linear-gradient(90deg, rgba(255, 189, 89, .98), rgba(255, 255, 255, .72) 58%, rgba(60, 168, 96, .88));
-    opacity: .78;
+    opacity: .62;
 }
 
 .app-section-heading h2::after {
     bottom: .01em;
-    height: .18em;
-    opacity: .68;
-}
-
-.app-main :is(h2, h3):not(.modal-title):not(.offcanvas-title):not(.swal2-title)::after {
-    bottom: .02em;
-    height: .16em;
-    opacity: .58;
+    height: .13em;
+    opacity: .5;
 }
 
 .app-page-header p:not(.app-kicker) {
@@ -2793,6 +2818,20 @@ textarea.form-control.app-message-textarea {
 .app-main .nav-tabs,
 .app-main .nav-pills {
     gap: .45rem;
+}
+
+@media screen and (max-width: 575.98px) {
+    .app-panel__header {
+        align-items: flex-start;
+    }
+
+    .hg-filter-tabs {
+        display: none;
+    }
+
+    .hg-filter-select {
+        display: block;
+    }
 }
 
 .auth-layout {

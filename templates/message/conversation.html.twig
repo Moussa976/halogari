@@ -34,8 +34,8 @@
                     {% if conv.user.isProfilVerifieComplet %}
                       tabindex="0"
                       data-bs-toggle="tooltip"
-                      data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                      title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                      data-bs-title="Profil vérifié : pièce d'identité validée"
+                      title="Profil vérifié : pièce d'identité validée"
                     {% endif %}>
                 <img src="{{ conv.user.photo ? asset('uploads/photos/' ~ conv.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ convName }}" class="hg-chat-item__avatar">
                 {% if conv.user.isProfilVerifieComplet %}
@@ -78,8 +78,8 @@
              {% if otherUser.isProfilVerifieComplet %}
                tabindex="0"
                data-bs-toggle="tooltip"
-               data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-               title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+               data-bs-title="Profil vérifié : pièce d'identité validée"
+               title="Profil vérifié : pièce d'identité validée"
              {% endif %}>
             <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
             {% if otherUser.isProfilVerifieComplet %}
@@ -104,8 +104,8 @@
                {% if message.expediteur.isProfilVerifieComplet %}
                  tabindex="0"
                  data-bs-toggle="tooltip"
-                 data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-                 title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+                 data-bs-title="Profil vérifié : pièce d'identité validée"
+                 title="Profil vérifié : pièce d'identité validée"
                {% endif %}>
               <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
               {% if message.expediteur.isProfilVerifieComplet %}
@@ -162,7 +162,6 @@
   </div>
 </div>
 {% endblock %}
-
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -347,8 +346,8 @@ document.addEventListener('DOMContentLoaded', function () {
           avatarWrap.classList.add('is-verified');
           avatarWrap.tabIndex = 0;
           avatarWrap.setAttribute('data-bs-toggle', 'tooltip');
-          avatarWrap.setAttribute('data-bs-title', "Profil vérifié : pièce d'identité et adresse e-mail validées");
-          avatarWrap.setAttribute('title', "Profil vérifié : pièce d'identité et adresse e-mail validées");
+          avatarWrap.setAttribute('data-bs-title', "Profil vérifié : pièce d'identité validée");
+          avatarWrap.setAttribute('title', "Profil vérifié : pièce d'identité validée");
         }
 
         const avatar = document.createElement('img');

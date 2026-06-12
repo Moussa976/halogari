@@ -179,6 +179,7 @@ class AccountApiController extends AbstractController
             'data' => [
                 'photo' => $user->getPhoto(),
                 'profilVerifie' => $user->isProfilVerifieComplet(),
+                'canPublishRide' => $user->canPublishRide(),
                 'hasRib' => $this->hasApprovedDocument($user, ['rib']),
                 'hasIdentity' => $this->hasApprovedDocument($user, ['identite', 'piece_identite', 'piece-identite']),
                 'documents' => array_map(fn (Document $document) => $this->documentPayload($document), $documents),

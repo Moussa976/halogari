@@ -45,8 +45,6 @@ class NotificationController extends AbstractController
             $em->flush();
         }
 
-        // dd($notification->getLien());
-
         // Redirection vers le lien réel
         return $this->redirect($notification->getLien() ?? $this->generateUrl('app_notifications'));
     }

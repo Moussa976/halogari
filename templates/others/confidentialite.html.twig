@@ -23,9 +23,9 @@
     <ul>
       <li>Identité : nom, prénom, date de naissance.</li>
       <li>Coordonnées : adresse e-mail et numéro de téléphone.</li>
-      <li>Compte : mot de passe chiffré, photo, préférences et description.</li>
+      <li>Compte : mot de passe chiffré, photo facultative, préférences et description.</li>
       <li>Trajets : trajets publiés, réservations, avis et messages.</li>
-      <li>Documents : justificatif d'identité, RIB ou documents nécessaires à la vérification.</li>
+      <li>Documents : justificatif d'identité et RIB nécessaires pour autoriser la publication de trajets.</li>
       <li>Paiements : informations techniques liées aux opérations Stripe, remboursements et reversements.</li>
     </ul>
 
@@ -33,6 +33,7 @@
     <ul>
       <li>Créer et gérer votre compte HaloGari.</li>
       <li>Permettre la publication, la recherche et la réservation de trajets.</li>
+      <li>Vérifier qu'un conducteur dispose d'une pièce d'identité et d'un RIB validés avant la publication d'un trajet.</li>
       <li>Sécuriser les échanges entre conducteurs et passagers.</li>
       <li>Gérer les paiements, remboursements, reversements, notifications et messages utiles.</li>
       <li>Prévenir les abus et améliorer la fiabilité du service.</li>
@@ -40,7 +41,9 @@
 
     <h2>Sécurité</h2>
     <p>
-      Les mots de passe sont hachés. Les documents sont utilisés pour la vérification du profil.
+      Les mots de passe sont hachés. Les documents sont utilisés pour vérifier le droit de publier un trajet
+      et pour préparer les reversements conducteur. La vérification peut être automatique lorsque les contrôles
+      techniques le permettent, ou manuelle par un administrateur HaloGari.
       HaloGari ne vend pas les données personnelles et ne stocke pas les numéros complets de carte bancaire.
     </p>
 
@@ -71,6 +74,7 @@
     <div class="tip-list">
       <span><i class="bi bi-check-circle-fill"></i> Pas de revente de données</span>
       <span><i class="bi bi-check-circle-fill"></i> Mots de passe hachés</span>
+      <span><i class="bi bi-check-circle-fill"></i> Photo de profil facultative</span>
       <span><i class="bi bi-check-circle-fill"></i> Suppression protégée</span>
       <span><i class="bi bi-check-circle-fill"></i> Contact disponible pour vos droits</span>
     </div>

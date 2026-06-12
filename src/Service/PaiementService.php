@@ -27,7 +27,7 @@ class PaiementService
     }
 
     /**
-     * Prepare le paiement apres acceptation conducteur.
+     * Prépare le paiement après acceptation conducteur.
      * Stripe capture le montant quand le passager confirme sa carte.
      */
     public function autoriserPaiement(Reservation $reservation): string
@@ -81,7 +81,7 @@ class PaiementService
     }
 
     /**
-     * Ancien point d'entree admin conserve pour les anciens paiements en capture manuelle.
+     * Ancien point d'entrée admin conservé pour les anciens paiements en capture manuelle.
      */
     public function capturerPaiement(string $intentId): void
     {
@@ -108,21 +108,21 @@ class PaiementService
     public function verserConducteur(Paiement $paiement): void
     {
         if ($paiement->getStatut() !== 'capture') {
-            throw new \RuntimeException('Le paiement doit etre capture avant le versement conducteur.');
+            throw new \RuntimeException('Le paiement doit être capturé avant le versement conducteur.');
         }
 
         $reservation = $paiement->getReservation();
         if (!$reservation) {
-            throw new \RuntimeException('Reservation introuvable pour ce paiement.');
+            throw new \RuntimeException('Réservation introuvable pour ce paiement.');
         }
 
         if (count($reservation->getCommissions()) > 0) {
-            throw new \RuntimeException('Ce paiement a deja ete traite pour reversement.');
+            throw new \RuntimeException('Ce paiement a déjà été traité pour reversement.');
         }
 
         $conducteur = $reservation->getTrajet()->getConducteur();
         if (!$conducteur->getStripeAccountId()) {
-            throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lie.");
+            throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lié.");
         }
 
         $montantBrut = (float) $paiement->getMontant();

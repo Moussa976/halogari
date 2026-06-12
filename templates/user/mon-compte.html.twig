@@ -17,8 +17,8 @@
           {% if app.user and app.user.isProfilVerifieComplet %}
             tabindex="0"
             data-bs-toggle="tooltip"
-            data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-            title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+            data-bs-title="Profil vérifié : pièce d'identité validée"
+            title="Profil vérifié : pièce d'identité validée"
           {% endif %}>
       <img src="{{ asset(app.user and app.user.photo ? '/uploads/photos/' ~ app.user.photo : '/images/profil.png') }}" class="profile-hero__avatar" alt="Photo de profil">
       {% if app.user and app.user.isProfilVerifieComplet %}

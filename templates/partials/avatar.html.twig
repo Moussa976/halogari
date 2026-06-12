@@ -4,8 +4,8 @@
          {% if isVerified %}
              tabindex="0"
              data-bs-toggle="tooltip"
-             data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-             title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+             data-bs-title="Profil vérifié : pièce d'identité validée"
+             title="Profil vérifié : pièce d'identité validée"
          {% endif %}
          style="width: {{ size }}px; height: {{ size }}px;">
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}"
@@ -29,7 +29,6 @@
         {% endif %}
     </div>
 {% endmacro %}
-
 {% macro formatSimple(user, size, forElement, afficheBadge) %}
     {% set isVerified = user and user.isProfilVerifieComplet() %}
     {% set showBadge = isVerified and afficheBadge is not same as(false) %}
@@ -39,8 +38,8 @@
         {% if showBadge %}
             tabindex="0"
             data-bs-toggle="tooltip"
-            data-bs-title="Profil vérifié : pièce d'identité et adresse e-mail validées"
-            title="Profil vérifié : pièce d'identité et adresse e-mail validées"
+            data-bs-title="Profil vérifié : pièce d'identité validée"
+            title="Profil vérifié : pièce d'identité validée"
         {% endif %}
         style="width: {{ size }}px; height: {{ size }}px;"
     >

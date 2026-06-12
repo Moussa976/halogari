@@ -42,13 +42,13 @@ class TrajetApiController extends AbstractController
 
         if (!$depart || !$arrivee || !$normalizedDate || $places < 1) {
             return $this->json([
-                'message' => 'Parametres invalides. Utilisez depart, arrivee, date=jj/mm/aaaa et places.',
+                'message' => 'Paramètres invalides. Utilisez depart, arrivee, date=jj/mm/aaaa et places.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         if (!$villages->isValid($depart) || !$villages->isValid($arrivee)) {
             return $this->json([
-                'message' => 'Choisissez le depart et l arrivee dans la liste des villages.',
+                'message' => 'Choisissez le départ et l’arrivée dans la liste des villages.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -121,9 +121,9 @@ class TrajetApiController extends AbstractController
             return $this->json(['message' => 'Connexion requise pour publier un trajet.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        if (!$this->hasApprovedDocument($user, ['rib']) || !$this->hasApprovedDocument($user, ['identite', 'piece_identite', 'piece-identite'])) {
+        if (!$user->canPublishRide()) {
             return $this->json([
-                'message' => 'Vos documents RIB et piece d identite doivent etre valides avant de publier.',
+                'message' => 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.',
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 
@@ -144,12 +144,12 @@ class TrajetApiController extends AbstractController
         $dateTrajet = $date ? \DateTime::createFromFormat('Y-m-d', $date) : false;
 
         if ($depart === '' || $arrivee === '' || $depart === $arrivee) {
-            return $this->json(['message' => 'Depart et arrivee invalides.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Départ et arrivée invalides.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         if (!$villages->isValid($depart) || !$villages->isValid($arrivee)) {
             return $this->json([
-                'message' => 'Choisissez le depart et l arrivee dans la liste des villages.',
+                'message' => 'Choisissez le départ et l’arrivée dans la liste des villages.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -165,11 +165,11 @@ class TrajetApiController extends AbstractController
         }
 
         if ($prix < 1) {
-            return $this->json(['message' => 'Le prix doit etre au moins de 1 EUR.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Le prix doit être au moins de 1 EUR.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         if (mb_strlen($description) < 30) {
-            return $this->json(['message' => 'Ajoutez une description d au moins 30 caracteres.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Ajoutez une description d’au moins 30 caractères.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $trajet = new Trajet();
@@ -189,7 +189,7 @@ class TrajetApiController extends AbstractController
         $bus->dispatch(new TrajetPublieMessage($trajet->getId()));
 
         return $this->json([
-            'message' => 'Trajet publie.',
+            'message' => 'Trajet publié.',
             'data' => $this->trajetSearch->toMobilePayload($trajet),
         ], JsonResponse::HTTP_CREATED);
     }

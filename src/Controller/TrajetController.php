@@ -133,7 +133,7 @@ class TrajetController extends AbstractController
         $user = $this->getUser();
         $rib = $this->findDocumentByTypes($user, ['rib']);
         $identite = $this->findDocumentByTypes($user, ['identite', 'piece_identite', 'piece-identite']);
-        $documentsReady = $rib && $identite && $rib->getStatus() === 'approved' && $identite->getStatus() === 'approved';
+        $documentsReady = $user->canPublishRide();
 
         if ($request->isMethod('POST')) {
 
@@ -146,7 +146,7 @@ class TrajetController extends AbstractController
             }
 
             if (!$documentsReady) {
-                $this->addFlash('error', 'Vos documents doivent être validés par un administrateur.');
+                $this->addFlash('error', 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.');
                 return $this->redirectToRoute('app_documents');
             }
 

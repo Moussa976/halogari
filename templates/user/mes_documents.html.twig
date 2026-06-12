@@ -3,14 +3,14 @@
 {% block title %}HaloGari | Mes documents{% endblock %}
 
 {% block body %}
-{% set hasRIB = documents|filter(doc => doc.typeDocument in ['RIB', 'rib'])|length > 0 %}
-{% set hasID = documents|filter(doc => doc.typeDocument == 'identite')|length > 0 %}
+{% set hasRIB = documents|filter(doc => doc.status == 'approved' and doc.typeDocument|lower == 'rib')|length > 0 %}
+{% set hasID = documents|filter(doc => doc.status == 'approved' and doc.typeDocument|lower in ['identite', 'piece_identite', 'piece-identite'])|length > 0 %}
 
 <section class="app-page-header app-page-header--compact">
   <div class="container">
     <p class="app-kicker">Vérification</p>
     <h1>Mes documents</h1>
-    <p>Ajoutez vos justificatifs pour renforcer la confiance et activer les fonctionnalités conducteur.</p>
+    <p>Ajoutez votre pièce d'identité et votre RIB pour pouvoir publier un trajet. La photo de profil reste facultative.</p>
   </div>
 </section>
 
@@ -19,7 +19,7 @@
     <div class="app-panel__header">
       <div>
         <h2>Documents envoyés</h2>
-        <p>Les fichiers sont pré-vérifiés automatiquement : format, lisibilité minimale et taille maximale.</p>
+        <p>Les fichiers sont contrôlés avant validation : format, lisibilité minimale et taille maximale.</p>
       </div>
       <button class="btn btn-orange btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
         <i class="bi bi-file-earmark-plus-fill"></i>
@@ -30,9 +30,9 @@
     {% if not hasRIB or not hasID %}
       <div class="alert alert-warning">
         <strong>À compléter :</strong>
-        {% if not hasID %} justificatif d'identité{% endif %}
+        {% if not hasID %} pièce d'identité validée{% endif %}
         {% if not hasID and not hasRIB %} et{% endif %}
-        {% if not hasRIB %} RIB{% endif %}.
+        {% if not hasRIB %} RIB validé{% endif %}.
       </div>
     {% endif %}
 
@@ -84,6 +84,7 @@
     <h2>Conseils</h2>
     <div class="tip-list">
       <span><i class="bi bi-check-circle-fill"></i> Document lisible et complet</span>
+      <span><i class="bi bi-check-circle-fill"></i> Pièce d'identité + RIB pour publier</span>
       <span><i class="bi bi-check-circle-fill"></i> Même nom que votre profil si possible</span>
       <span><i class="bi bi-check-circle-fill"></i> PDF, JPG ou PNG uniquement</span>
       <span><i class="bi bi-check-circle-fill"></i> 2 Mo maximum</span>

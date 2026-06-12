@@ -38,7 +38,7 @@
       return;
     }
 
-    alert(options.text || options.title || "Veuillez verifier le formulaire.");
+    alert(options.text || options.title || "Veuillez vérifier le formulaire.");
   }
 
   function firstValue(form, selectors) {
@@ -74,7 +74,7 @@
       showAlert({
         icon: "warning",
         title: "Villages identiques",
-        text: "Le village de depart et le village d'arrivee doivent etre differents."
+        text: "Le village de départ et le village d'arrivée doivent être différents."
       });
       return;
     }
@@ -86,7 +86,7 @@
       showAlert({
         icon: "warning",
         title: "Date manquante",
-        text: "Veuillez selectionner une date de trajet."
+        text: "Veuillez sélectionner une date de trajet."
       });
       return;
     }
@@ -95,8 +95,8 @@
       event.preventDefault();
       showAlert({
         icon: "error",
-        title: "Village a verifier",
-        text: "Choisissez un village dans la liste proposee pour que la recherche fonctionne correctement."
+        title: "Village à vérifier",
+        text: "Choisissez un village dans la liste proposée pour que la recherche fonctionne correctement."
       });
     }
   }
