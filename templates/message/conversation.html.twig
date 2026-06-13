@@ -31,12 +31,10 @@
             {% set convName = conv.user.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : conv.user.prenom %}
             <a href="{{ path('app_conversation', { userId: conv.user.id, trajetId: conv.trajet.id }) }}" class="hg-chat-item {{ conv.key == activeConversationKey ? 'is-active' : '' }}">
               <span class="hg-avatar-wrap hg-chat-item__avatar-wrap{% if conv.user.isProfilVerifieComplet %} is-verified{% endif %}"
-                    {% if conv.user.isProfilVerifieComplet %}
+                  {% if conv.user.isProfilVerifieComplet %}
                       tabindex="0"
-                      data-bs-toggle="tooltip"
-                      data-bs-title="Profil vérifié : pièce d'identité validée"
                       title="Profil vérifié : pièce d'identité validée"
-                    {% endif %}>
+                  {% endif %}>
                 <img src="{{ conv.user.photo ? asset('uploads/photos/' ~ conv.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ convName }}" class="hg-chat-item__avatar">
                 {% if conv.user.isProfilVerifieComplet %}
                   <span class="hg-verified-badge" aria-label="Profil vérifié">
@@ -75,12 +73,10 @@
         </a>
         <div class="d-flex align-items-center gap-3">
           <a href="{{ path('app_profile', { id: otherUser.id }) }}" class="hg-avatar-wrap hg-chat-header__avatar-wrap{% if otherUser.isProfilVerifieComplet %} is-verified{% endif %}"
-             {% if otherUser.isProfilVerifieComplet %}
+            {% if otherUser.isProfilVerifieComplet %}
                tabindex="0"
-               data-bs-toggle="tooltip"
-               data-bs-title="Profil vérifié : pièce d'identité validée"
                title="Profil vérifié : pièce d'identité validée"
-             {% endif %}>
+            {% endif %}>
             <img src="{{ otherUser.photo ? asset('uploads/photos/' ~ otherUser.photo) : asset('images/profil.png') }}" alt="Photo de {{ otherName }}" class="hg-chat-header__avatar">
             {% if otherUser.isProfilVerifieComplet %}
               <span class="hg-verified-badge" aria-label="Profil vérifié">
@@ -101,12 +97,10 @@
           {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
           <div class="hg-message {{ isMine ? 'is-mine' : '' }}">
             <a href="{{ path('app_profile', { id: message.expediteur.id }) }}" class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
-               {% if message.expediteur.isProfilVerifieComplet %}
+              {% if message.expediteur.isProfilVerifieComplet %}
                  tabindex="0"
-                 data-bs-toggle="tooltip"
-                 data-bs-title="Profil vérifié : pièce d'identité validée"
                  title="Profil vérifié : pièce d'identité validée"
-               {% endif %}>
+              {% endif %}>
               <img src="{{ message.expediteur.photo ? asset('uploads/photos/' ~ message.expediteur.photo) : asset('images/profil.png') }}" alt="Photo de {{ senderName }}" class="hg-message__avatar">
               {% if message.expediteur.isProfilVerifieComplet %}
                 <span class="hg-verified-badge" aria-label="Profil vérifié">
@@ -345,8 +339,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.isVerifiedProfile) {
           avatarWrap.classList.add('is-verified');
           avatarWrap.tabIndex = 0;
-          avatarWrap.setAttribute('data-bs-toggle', 'tooltip');
-          avatarWrap.setAttribute('data-bs-title', "Profil vérifié : pièce d'identité validée");
           avatarWrap.setAttribute('title', "Profil vérifié : pièce d'identité validée");
         }
 

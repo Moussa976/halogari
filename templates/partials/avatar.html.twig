@@ -3,8 +3,6 @@
     <div class="hg-avatar-wrap profile-avatar-container{% if isVerified %} is-verified{% endif %}"
          {% if isVerified %}
              tabindex="0"
-             data-bs-toggle="tooltip"
-             data-bs-title="Profil vérifié : pièce d'identité validée"
              title="Profil vérifié : pièce d'identité validée"
          {% endif %}
          style="width: {{ size }}px; height: {{ size }}px;">
@@ -37,8 +35,6 @@
         class="hg-avatar-wrap profile-avatar-inline{% if showBadge %} is-verified{% endif %}"
         {% if showBadge %}
             tabindex="0"
-            data-bs-toggle="tooltip"
-            data-bs-title="Profil vérifié : pièce d'identité validée"
             title="Profil vérifié : pièce d'identité validée"
         {% endif %}
         style="width: {{ size }}px; height: {{ size }}px;"

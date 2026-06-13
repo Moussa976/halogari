@@ -19,12 +19,10 @@
   <article class="app-panel hg-profile-main">
     <div class="hg-profile-summary">
       <div class="hg-profile-photo-wrap{% if isProfileVerified %} is-verified{% endif %}"
-           {% if isProfileVerified %}
+          {% if isProfileVerified %}
              tabindex="0"
-             data-bs-toggle="tooltip"
-             data-bs-title="Profil vérifié : pièce d'identité validée"
              title="Profil vérifié : pièce d'identité validée"
-           {% endif %}>
+          {% endif %}>
         <img src="{{ user.photo ? asset('uploads/photos/' ~ user.photo) : asset('images/profil.png') }}" alt="Photo de {{ displayName }}" class="hg-profile-photo">
         {% if isProfileVerified %}
           <span class="hg-verified-badge" aria-label="Profil vérifié">

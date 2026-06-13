@@ -27,8 +27,6 @@
           <span class="hg-avatar-wrap hg-photo-preview-wrap{% if app.user.isProfilVerifieComplet %} is-verified{% endif %}"
                 {% if app.user.isProfilVerifieComplet %}
                   tabindex="0"
-                  data-bs-toggle="tooltip"
-                  data-bs-title="Profil vérifié : pièce d'identité validée"
                   title="Profil vérifié : pièce d'identité validée"
                 {% endif %}>
             <img id="settingsPhotoPreview" src="{{ app.user.photo ? asset('uploads/photos/' ~ app.user.photo) : asset('images/profil.png') }}" alt="Photo de profil actuelle" class="hg-photo-preview">

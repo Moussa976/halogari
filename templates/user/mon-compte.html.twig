@@ -14,12 +14,10 @@
 <section class="container dashboard-grid">
   <article class="app-panel profile-hero">
     <span class="hg-avatar-wrap profile-hero__avatar-wrap{% if app.user and app.user.isProfilVerifieComplet %} is-verified{% endif %}"
-          {% if app.user and app.user.isProfilVerifieComplet %}
-            tabindex="0"
-            data-bs-toggle="tooltip"
-            data-bs-title="Profil vérifié : pièce d'identité validée"
-            title="Profil vérifié : pièce d'identité validée"
-          {% endif %}>
+      {% if app.user and app.user.isProfilVerifieComplet %}
+          tabindex="0"
+          title="Profil vérifié : pièce d'identité validée"
+      {% endif %}>
       <img src="{{ asset(app.user and app.user.photo ? '/uploads/photos/' ~ app.user.photo : '/images/profil.png') }}" class="profile-hero__avatar" alt="Photo de profil">
       {% if app.user and app.user.isProfilVerifieComplet %}
         <span class="hg-verified-badge" aria-label="Profil vérifié">
