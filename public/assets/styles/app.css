@@ -252,11 +252,23 @@ body.app-shell::before {
 .mobile-tabbar__account {
     min-width: 0;
     padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: 0;
+    box-shadow: none;
 }
 
 .mobile-tabbar__account:hover,
 .mobile-tabbar__account:focus-visible {
     background: transparent;
+    outline: 0;
+    box-shadow: none;
+    transform: none;
+}
+
+.mobile-tabbar__account:focus {
+    outline: 0;
+    box-shadow: none;
 }
 
 .mobile-tabbar__account:hover .hg-verified-badge,
