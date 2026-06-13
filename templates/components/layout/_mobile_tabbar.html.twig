@@ -17,9 +17,8 @@
       <i class="bi bi-calendar-check-fill"></i>
       <span>Réservations</span>
     </a>
-    <button type="button" class="mobile-tabbar__account" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+    <button type="button" class="mobile-tabbar__account" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-label="Ouvrir le menu du compte" title="Menu du compte">
       {{ avatar.formatSimple(app.user, 30) }}
-      <span>Compte</span>
     </button>
   {% else %}
     <a href="{{ path('app_login') }}" class="{{ app.request.attributes.get('_route') == 'app_login' ? 'active' : '' }}">

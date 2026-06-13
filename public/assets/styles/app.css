@@ -245,13 +245,23 @@ body.app-shell::before {
 }
 
 .mobile-tabbar__account .hg-avatar-wrap {
-    width: 30px !important;
-    height: 30px !important;
+    width: 34px !important;
+    height: 34px !important;
+}
+
+.mobile-tabbar__account {
+    min-width: 0;
+    padding: 0;
+}
+
+.mobile-tabbar__account:hover,
+.mobile-tabbar__account:focus-visible {
+    background: transparent;
 }
 
 .mobile-tabbar__account:hover .hg-verified-badge,
 .mobile-tabbar__account:focus-visible .hg-verified-badge {
-    border-color: #fff;
+    border-color: #22c55e;
 }
 
 .mobile-tabbar__main {
