@@ -3,11 +3,26 @@
 {% block title %}Trajets | Admin{% endblock %}
 
 {% block body %}
+  {% set reservationLabels = {
+    'en_attente': 'En attente',
+    'acceptee': 'Acceptée',
+    'refusee': 'Refusée',
+    'payee': 'Payée',
+    'annulee': 'Annulée'
+  } %}
+  {% set reservationClasses = {
+    'en_attente': 'warning text-dark',
+    'acceptee': 'success',
+    'refusee': 'danger',
+    'payee': 'primary',
+    'annulee': 'secondary'
+  } %}
+
   <div class="container-fluid px-1">
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
       <div>
         <h1 class="h3 mb-1">Trajets</h1>
-        <p class="text-muted mb-0">Tous les trajets publiés, annulés ou passés.</p>
+        <p class="text-muted mb-0">Vue complète des trajets, passagers, places, paiements et conversations associées.</p>
       </div>
       <span class="badge bg-primary align-self-start">{{ trajets|length }} trajet{{ trajets|length > 1 ? 's' : '' }}</span>
     </div>
@@ -24,26 +39,32 @@
               <th>Places</th>
               <th>Prix</th>
               <th>Statut</th>
-              <th>Demandes</th>
+              <th>Passagers</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for trajet in trajets %}
               {% set dateDepart = trajet.dateTrajet ? trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ trajet.heureTrajet|date('H:i:s') : null %}
               {% set isPast = dateDepart ? date(dateDepart) < date() : false %}
-              {% set activeReservations = trajet.reservations|filter(r => r.statut in ['en_attente', 'acceptee', 'payee'])|length %}
+              {% set activeReservations = trajet.reservations|filter(r => r.statut in ['en_attente', 'acceptee', 'payee']) %}
+              {% set paidReservations = trajet.reservations|filter(r => r.statut == 'payee') %}
               <tr>
                 <td>#{{ trajet.id }}</td>
                 <td>
                   <strong>{{ trajet.depart }}</strong>
                   <span class="text-muted">→</span>
                   <strong>{{ trajet.arrivee }}</strong>
+                  {% if trajet.description %}
+                    <div class="small text-muted text-truncate" style="max-width: 260px;">{{ trajet.description }}</div>
+                  {% endif %}
                 </td>
                 <td>
                   {% if trajet.conducteur %}
                     <a href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">
                       {{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}
                     </a>
+                    <div class="small text-muted">{{ trajet.conducteur.telephone ?: trajet.conducteur.email }}</div>
                   {% else %}
                     <span class="text-muted">-</span>
                   {% endif %}
@@ -60,11 +81,125 @@
                     <span class="badge bg-success">À venir</span>
                   {% endif %}
                 </td>
-                <td>{{ activeReservations }} active{{ activeReservations > 1 ? 's' : '' }}</td>
+                <td>
+                  <strong>{{ trajet.reservations|length }}</strong>
+                  <div class="small text-muted">{{ activeReservations|length }} active{{ activeReservations|length > 1 ? 's' : '' }}, {{ paidReservations|length }} payée{{ paidReservations|length > 1 ? 's' : '' }}</div>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#trajet-modal-{{ trajet.id }}">
+                    Voir détail
+                  </button>
+                </td>
               </tr>
+
+              <div class="modal fade" id="trajet-modal-{{ trajet.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <div>
+                        <h5 class="modal-title">Trajet #{{ trajet.id }} - {{ trajet.depart }} → {{ trajet.arrivee }}</h5>
+                        <div class="text-muted small">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
+                      </div>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                          <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Conducteur</div>
+                            {% if trajet.conducteur %}
+                              <a class="fw-bold" href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</a>
+                              <div class="small">{{ trajet.conducteur.email }}</div>
+                              <div class="small">{{ trajet.conducteur.telephone ?: '-' }}</div>
+                            {% else %}
+                              <strong>-</strong>
+                            {% endif %}
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Places</div>
+                            <strong>{{ trajet.placesDisponibles }}/{{ trajet.places }}</strong>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Prix</div>
+                            <strong>{{ trajet.prix|number_format(2, ',', ' ') }} € / place</strong>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="border rounded p-3 h-100">
+                            <div class="text-muted small">Réservations</div>
+                            <strong>{{ trajet.reservations|length }}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <h6>Passagers et demandes</h6>
+                      <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered align-middle">
+                          <thead class="table-light">
+                            <tr>
+                              <th>Réservation</th>
+                              <th>Passager</th>
+                              <th>Places</th>
+                              <th>Total</th>
+                              <th>Statut</th>
+                              <th>Paiement</th>
+                              <th>Contact</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for reservation in trajet.reservations %}
+                              <tr>
+                                <td>#{{ reservation.id }}</td>
+                                <td>
+                                  {% if reservation.passager %}
+                                    <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
+                                  {% else %}
+                                    <span class="text-muted">-</span>
+                                  {% endif %}
+                                </td>
+                                <td>{{ reservation.places }}</td>
+                                <td>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</td>
+                                <td><span class="badge bg-{{ reservationClasses[reservation.statut]|default('secondary') }}">{{ reservationLabels[reservation.statut]|default(reservation.statut) }}</span></td>
+                                <td>
+                                  {% if reservation.paiement %}
+                                    <span class="badge bg-light text-dark border">{{ reservation.paiement.statutLabel }}</span>
+                                  {% else %}
+                                    <span class="text-muted">Aucun</span>
+                                  {% endif %}
+                                </td>
+                                <td>
+                                  {% if reservation.passager %}
+                                    <span class="small">{{ reservation.passager.telephone ?: reservation.passager.email }}</span>
+                                  {% else %}
+                                    <span class="text-muted">-</span>
+                                  {% endif %}
+                                </td>
+                              </tr>
+                            {% else %}
+                              <tr>
+                                <td colspan="7" class="text-center text-muted">Aucun passager sur ce trajet.</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <h6>Description</h6>
+                      <p class="mb-0">{{ trajet.description ?: 'Aucune description.' }}</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             {% else %}
               <tr>
-                <td colspan="8" class="text-center text-muted">Aucun trajet.</td>
+                <td colspan="9" class="text-center text-muted">Aucun trajet.</td>
               </tr>
             {% endfor %}
           </tbody>

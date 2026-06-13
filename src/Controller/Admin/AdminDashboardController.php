@@ -69,6 +69,8 @@ class AdminDashboardController extends AbstractController
             'count_reservations' => $resaRepo->count([]),
             'count_users' => $userRepo->count([]),
             'count_documents' => $docRepo->count(['status' => Document::STATUS_APPROVED]),
+            'count_documents_pending' => $docRepo->count(['status' => Document::STATUS_PENDING]),
+            'count_reservations_pending' => $resaRepo->count(['statut' => 'en_attente']),
 
             'last_trajets' => $lastTrajets,
             'last_reservations' => $lastReservations,

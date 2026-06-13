@@ -1,0 +1,47 @@
+<li class="nav-item dropdown">
+  <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown" aria-label="Notifications admin">
+    <div class="position-relative">
+      <i class="align-middle" data-feather="bell"></i>
+      {% if pendingCount > 0 %}
+        <span class="indicator">{{ pendingCount }}</span>
+      {% endif %}
+    </div>
+  </a>
+  <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
+    <div class="dropdown-menu-header">
+      {{ pendingCount }} action{{ pendingCount > 1 ? 's' : '' }} à traiter
+    </div>
+    <div class="list-group">
+      <a href="{{ path('admin_reservations') }}" class="list-group-item">
+        <div class="row g-0 align-items-center">
+          <div class="col-2"><i class="text-warning" data-feather="clock"></i></div>
+          <div class="col-10">
+            <div class="text-dark">{{ pendingReservations|length }} demande{{ pendingReservations|length > 1 ? 's' : '' }} de réservation</div>
+            <div class="text-muted small mt-1">Réservations en attente de réponse conducteur.</div>
+          </div>
+        </div>
+      </a>
+      <a href="{{ path('admin_documents') }}" class="list-group-item">
+        <div class="row g-0 align-items-center">
+          <div class="col-2"><i class="text-primary" data-feather="file-text"></i></div>
+          <div class="col-10">
+            <div class="text-dark">{{ pendingDocuments|length }} document{{ pendingDocuments|length > 1 ? 's' : '' }} à vérifier</div>
+            <div class="text-muted small mt-1">Pièces d'identité et RIB en attente.</div>
+          </div>
+        </div>
+      </a>
+      <a href="{{ path('admin_paiements') }}" class="list-group-item">
+        <div class="row g-0 align-items-center">
+          <div class="col-2"><i class="text-success" data-feather="dollar-sign"></i></div>
+          <div class="col-10">
+            <div class="text-dark">{{ capturedPayments|length }} paiement{{ capturedPayments|length > 1 ? 's' : '' }} capturé{{ capturedPayments|length > 1 ? 's' : '' }}</div>
+            <div class="text-muted small mt-1">À contrôler avant versement conducteur.</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="dropdown-menu-footer">
+      <a href="{{ path('admin_dashboard') }}" class="text-muted">Voir le tableau de bord</a>
+    </div>
+  </div>
+</li>
