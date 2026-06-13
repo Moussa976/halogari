@@ -199,6 +199,16 @@ body.app-shell::before {
     text-align: left;
 }
 
+.app-drawer__actions a:not(.app-drawer__logout):hover,
+.app-drawer__actions a:not(.app-drawer__logout):focus-visible,
+.app-drawer__actions button:not(.app-drawer__logout):hover,
+.app-drawer__actions button:not(.app-drawer__logout):focus-visible,
+.app-drawer__actions .is-active {
+    color: #fff;
+    border-color: transparent;
+    background: var(--hg-green);
+}
+
 .app-drawer__actions .app-drawer__logout {
     color: #b42318;
     border-color: rgba(180, 35, 24, .18);
