@@ -1,0 +1,94 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Documents | Admin{% endblock %}
+
+{% block body %}
+  {% set labels = {
+    'pending': 'En attente',
+    'approved': 'Validé',
+    'rejected': 'Refusé'
+  } %}
+  {% set classes = {
+    'pending': 'warning text-dark',
+    'approved': 'success',
+    'rejected': 'danger'
+  } %}
+
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Documents</h1>
+        <p class="text-muted mb-0">Pièces d'identité, RIB et documents envoyés par les utilisateurs.</p>
+      </div>
+      <span class="badge bg-primary align-self-start">{{ documents|length }} document{{ documents|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="card">
+      <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Utilisateur</th>
+              <th>Type</th>
+              <th>Fichier</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for document in documents %}
+              <tr>
+                <td>#{{ document.id }}</td>
+                <td>
+                  {% if document.user %}
+                    <a href="{{ path('admin_user_show', { id: document.user.id }) }}">
+                      {{ document.user.prenom }} {{ document.user.nom }}
+                    </a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>{{ document.typeDocument|replace({'_': ' ', '-': ' '})|title }}</td>
+                <td class="text-truncate" style="max-width: 220px;">
+                  <a href="{{ asset('uploads/documents/' ~ document.filenameDocument) }}" target="_blank" rel="noopener">
+                    {{ document.filenameDocument }}
+                  </a>
+                </td>
+                <td><span class="badge bg-{{ classes[document.status]|default('secondary') }}">{{ labels[document.status]|default(document.status) }}</span></td>
+                <td>{{ document.dateDocument|date('d/m/Y H:i') }}</td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    {% if document.status != 'approved' %}
+                      <form method="post" action="{{ path('admin_document_validate', { id: document.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_document_validate_' ~ document.id) }}">
+                        <button class="btn btn-sm btn-success" onclick="return confirm('Valider ce document ?')">Valider</button>
+                      </form>
+                    {% endif %}
+                    {% if document.status != 'rejected' %}
+                      <form method="post" action="{{ path('admin_document_reject', { id: document.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_document_reject_' ~ document.id) }}">
+                        <button class="btn btn-sm btn-danger" onclick="return confirm('Refuser ce document ?')">Refuser</button>
+                      </form>
+                    {% endif %}
+                    {% if document.status != 'pending' %}
+                      <form method="post" action="{{ path('admin_document_pending', { id: document.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_document_pending_' ~ document.id) }}">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="return confirm('Remettre ce document en attente ?')">En attente</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted">Aucun document.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

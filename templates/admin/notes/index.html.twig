@@ -1,0 +1,68 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Notes | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Notes</h1>
+        <p class="text-muted mb-0">Avis laissés après les trajets.</p>
+      </div>
+      <span class="badge bg-primary align-self-start">{{ notes|length }} note{{ notes|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="card">
+      <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Note</th>
+              <th>De</th>
+              <th>Pour</th>
+              <th>Trajet</th>
+              <th>Commentaire</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for note in notes %}
+              <tr>
+                <td>#{{ note.id }}</td>
+                <td><span class="badge bg-warning text-dark">{{ note.note }}/5</span></td>
+                <td>
+                  {% if note.noteur %}
+                    <a href="{{ path('admin_user_show', { id: note.noteur.id }) }}">{{ note.noteur.prenom }} {{ note.noteur.nom }}</a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if note.notePour %}
+                    <a href="{{ path('admin_user_show', { id: note.notePour.id }) }}">{{ note.notePour.prenom }} {{ note.notePour.nom }}</a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if note.trajet %}
+                    {{ note.trajet.depart }} → {{ note.trajet.arrivee }}
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>{{ note.commentaire ?: '-' }}</td>
+                <td>{{ note.createdAt|date('d/m/Y H:i') }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center text-muted">Aucune note.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
