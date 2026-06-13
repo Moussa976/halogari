@@ -216,14 +216,17 @@ body.app-shell::before {
     box-shadow: 0 16px 45px rgba(23, 33, 27, .2);
 }
 
-.mobile-tabbar a {
+.mobile-tabbar a,
+.mobile-tabbar button {
     display: grid;
     flex: 1 1 0;
     place-items: center;
     gap: .12rem;
     min-height: 54px;
     border-radius: 14px;
+    border: 0;
     color: var(--hg-muted);
+    background: transparent;
     text-decoration: none;
     font-size: .68rem;
     font-weight: 800;
@@ -234,9 +237,21 @@ body.app-shell::before {
 }
 
 .mobile-tabbar a.active,
-.mobile-tabbar a:hover {
+.mobile-tabbar a:hover,
+.mobile-tabbar button:hover,
+.mobile-tabbar button:focus-visible {
     color: #fff;
     background: linear-gradient(135deg, var(--hg-green), #3a8a52);
+}
+
+.mobile-tabbar__account .hg-avatar-wrap {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+.mobile-tabbar__account:hover .hg-verified-badge,
+.mobile-tabbar__account:focus-visible .hg-verified-badge {
+    border-color: #fff;
 }
 
 .mobile-tabbar__main {

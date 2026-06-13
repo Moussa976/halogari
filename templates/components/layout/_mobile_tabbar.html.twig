@@ -1,3 +1,4 @@
+{% import 'partials/avatar.html.twig' as avatar %}
 <nav class="mobile-tabbar d-lg-none" aria-label="Navigation mobile">
   <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
     <i class="bi bi-house-door-fill"></i>
@@ -16,10 +17,10 @@
       <i class="bi bi-calendar-check-fill"></i>
       <span>Réservations</span>
     </a>
-    <a href="{{ path('app_message') }}" class="{{ app.request.attributes.get('_route') == 'app_message' ? 'active' : '' }}">
-      <i class="bi bi-chat-dots-fill"></i>
-      <span>Messages</span>
-    </a>
+    <button type="button" class="mobile-tabbar__account" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+      {{ avatar.formatSimple(app.user, 30) }}
+      <span>Compte</span>
+    </button>
   {% else %}
     <a href="{{ path('app_login') }}" class="{{ app.request.attributes.get('_route') == 'app_login' ? 'active' : '' }}">
       <i class="bi bi-person-fill"></i>

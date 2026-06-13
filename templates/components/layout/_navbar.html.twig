@@ -42,18 +42,19 @@
 
     <div class="d-flex d-lg-none align-items-center gap-2 ms-auto">
       {% if app.user %}
+        <a class="app-icon-link position-relative" href="{{ path('app_message') }}" title="Messages">
+          <i class="bi bi-chat-dots-fill"></i>
+          <span class="message-notif position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style="display:none;">0</span>
+        </a>
         <a class="app-icon-link position-relative" href="{{ path('app_notifications') }}" title="Notifications">
           <i class="bi bi-bell-fill"></i>
           <span class="notification-badge position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style="display:none;">0</span>
         </a>
-      {% endif %}
-      <button class="app-menu-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
-        {% if app.user %}
-          {{ avatar.formatSimple(app.user, 38) }}
-        {% else %}
+      {% else %}
+        <button class="app-menu-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
           <i class="bi bi-list"></i>
-        {% endif %}
-      </button>
+        </button>
+      {% endif %}
     </div>
   </div>
 </nav>
@@ -75,6 +76,8 @@
         <a href="{{ path('app_profile', { id: app.user.id }) }}"><i class="bi bi-person"></i> Mon profil</a>
         <a href="{{ path('app_mes_trajets') }}"><i class="bi bi-signpost-2"></i> Mes trajets</a>
         <a href="{{ path('app_mes_reservations') }}"><i class="bi bi-calendar-check"></i> Mes réservations</a>
+        <a href="{{ path('app_message') }}"><i class="bi bi-chat-dots"></i> Mes messages</a>
+        <a href="{{ path('app_notifications') }}"><i class="bi bi-bell"></i> Mes notifications</a>
         <a href="{{ path('app_mes_paiements') }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
         <a href="{{ path('app_parametres') }}"><i class="bi bi-gear"></i> Paramètres</a>
