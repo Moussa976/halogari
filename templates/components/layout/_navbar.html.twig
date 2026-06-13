@@ -69,15 +69,15 @@
   </div>
   <div class="offcanvas-body">
     <div class="app-drawer__actions">
-      <a href="{{ path('app_chercher') }}"><i class="bi bi-search"></i> Chercher un trajet</a>
-      <a href="{{ path('app_publier') }}"><i class="bi bi-plus-circle"></i> Publier un trajet</a>
+      <a href="{{ path('app_chercher') }}" class="app-drawer__mobile-redundant"><i class="bi bi-search"></i> Chercher un trajet</a>
+      <a href="{{ path('app_publier') }}" class="app-drawer__mobile-redundant"><i class="bi bi-plus-circle"></i> Publier un trajet</a>
 
       {% if app.user %}
         <a href="{{ path('app_profile', { id: app.user.id }) }}"><i class="bi bi-person"></i> Mon profil</a>
         <a href="{{ path('app_mes_trajets') }}"><i class="bi bi-signpost-2"></i> Mes trajets</a>
-        <a href="{{ path('app_mes_reservations') }}"><i class="bi bi-calendar-check"></i> Mes réservations</a>
-        <a href="{{ path('app_message') }}"><i class="bi bi-chat-dots"></i> Mes messages</a>
-        <a href="{{ path('app_notifications') }}"><i class="bi bi-bell"></i> Mes notifications</a>
+        <a href="{{ path('app_mes_reservations') }}" class="app-drawer__mobile-redundant"><i class="bi bi-calendar-check"></i> Mes réservations</a>
+        <a href="{{ path('app_message') }}" class="app-drawer__mobile-redundant"><i class="bi bi-chat-dots"></i> Mes messages</a>
+        <a href="{{ path('app_notifications') }}" class="app-drawer__mobile-redundant"><i class="bi bi-bell"></i> Mes notifications</a>
         <a href="{{ path('app_mes_paiements') }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
         <a href="{{ path('app_parametres') }}"><i class="bi bi-gear"></i> Paramètres</a>
