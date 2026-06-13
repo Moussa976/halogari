@@ -2,16 +2,12 @@
   <div class="hg-consent__content">
     <strong>Confidentialité HaloGari</strong>
     <p>
-      Nous utilisons des cookies nécessaires au fonctionnement du site. Les notifications restent facultatives
-      et ne sont activées qu'après votre accord.
+      HaloGari utilise uniquement des cookies nécessaires au bon fonctionnement du site :
+      connexion, sécurité, session et préférences. Aucun cookie publicitaire n'est utilisé.
     </p>
   </div>
   <div class="hg-consent__actions">
     <button type="button" class="btn btn-outline-secondary btn-sm" data-hg-consent-refuse>Refuser</button>
-    <button type="button" class="btn btn-outline-primary btn-sm" data-hg-consent-notifications>
-      <i class="bi bi-bell"></i>
-      Notifications
-    </button>
     <button type="button" class="btn btn-orange btn-sm" data-hg-consent-accept>Accepter</button>
   </div>
 </div>
@@ -32,18 +28,5 @@
     banner.hidden = false;
     banner.querySelector('[data-hg-consent-accept]')?.addEventListener('click', () => saveConsent('accepted'));
     banner.querySelector('[data-hg-consent-refuse]')?.addEventListener('click', () => saveConsent('necessary_only'));
-    banner.querySelector('[data-hg-consent-notifications]')?.addEventListener('click', async () => {
-      saveConsent('accepted');
-
-      if (!('Notification' in window)) {
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-      localStorage.setItem('pushPermissionAsked', '1');
-      if (permission === 'granted' && typeof window.subscribeToHaloGariPush === 'function') {
-        window.subscribeToHaloGariPush();
-      }
-    });
   });
 </script>

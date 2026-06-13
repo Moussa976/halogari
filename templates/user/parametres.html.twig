@@ -144,6 +144,26 @@
     <article class="app-panel">
       <div class="app-panel__header">
         <div>
+          <h2>Notifications</h2>
+          <p>Activez les notifications du navigateur pour être prévenu lors des demandes, messages et paiements importants.</p>
+        </div>
+        <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
+      </div>
+      <div class="hg-form-actions">
+        <button class="btn btn-orange btnEnableNotifications" type="button">
+          <i class="bi bi-bell-fill"></i>
+          Activer les notifications
+        </button>
+        <a class="btn btn-outline-primary" href="{{ path('app_notifications') }}">
+          <i class="bi bi-inbox-fill"></i>
+          Voir mes notifications
+        </a>
+      </div>
+    </article>
+
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
           <h2>Documents</h2>
           <p>Ajoutez les documents utiles à la vérification de votre profil et à l'activation des paiements.</p>
         </div>
