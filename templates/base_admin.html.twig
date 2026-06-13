@@ -111,22 +111,37 @@
 				align-items: end;
 				margin-bottom: 1rem;
 			}
-			.admin-table-filters {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-				gap: .5rem;
-				margin-bottom: 1rem;
-			}
-			.admin-table-filters .form-label {
-				margin-bottom: .2rem;
-				font-size: .72rem;
-				font-weight: 700;
-				color: #6c757d;
-				text-transform: uppercase;
-			}
 			.admin-table-empty {
 				display: none;
 				margin: .75rem 0 0;
+			}
+			.admin-sort-button {
+				width: 100%;
+				display: inline-flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: .5rem;
+				padding: 0;
+				color: inherit;
+				font: inherit;
+				font-weight: 700;
+				text-align: left;
+				background: transparent;
+				border: 0;
+			}
+			.admin-sort-button:hover,
+			.admin-sort-button:focus {
+				color: #245c36;
+			}
+			.admin-sort-icon {
+				flex: 0 0 auto;
+				min-width: 1rem;
+				color: #adb5bd;
+				font-size: .78rem;
+				text-align: center;
+			}
+			.admin-sort-button.is-active .admin-sort-icon {
+				color: #245c36;
 			}
 			.admin-dashboard-chart {
 				position: relative;
@@ -220,51 +235,44 @@
 								<label class="form-label small text-muted" for="admin-table-search-${tableIndex}">Recherche</label>
 								<input id="admin-table-search-${tableIndex}" type="search" class="form-control" placeholder="Rechercher dans le tableau">
 							</div>
-							<button type="button" class="btn btn-outline-secondary">Réinitialiser les filtres</button>
+							<button type="button" class="btn btn-outline-secondary">Réinitialiser</button>
 						`;
-
-						const filters = document.createElement('div');
-						filters.className = 'admin-table-filters';
-						const filterInputs = headers.map((header, columnIndex) => {
-							const label = header.textContent.trim();
-							if (!label || label.toLowerCase() === 'actions') {
-								return null;
-							}
-
-							const group = document.createElement('div');
-							group.innerHTML = `
-								<label class="form-label" for="admin-table-${tableIndex}-filter-${columnIndex}">${label}</label>
-								<input id="admin-table-${tableIndex}-filter-${columnIndex}" type="search" class="form-control form-control-sm" placeholder="Filtrer">
-							`;
-							filters.appendChild(group);
-							return { columnIndex, input: group.querySelector('input') };
-						}).filter(Boolean);
 
 						const empty = document.createElement('div');
 						empty.className = 'alert alert-light border text-muted admin-table-empty';
-						empty.textContent = 'Aucun résultat pour ces filtres.';
+						empty.textContent = 'Aucun résultat pour cette recherche.';
 
 						wrapper.before(tools);
-						wrapper.before(filters);
 						wrapper.after(empty);
 
 						const globalInput = tools.querySelector('input');
 						const resetButton = tools.querySelector('button');
 						const rows = Array.from(body.rows).filter(row => row.cells.length === headers.length);
+						const originalRows = rows.slice();
 						const normalize = value => (value || '').toString().toLocaleLowerCase('fr-FR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+						const getCellText = (row, columnIndex) => row.cells[columnIndex]?.textContent.trim() || '';
+						const asSortableValue = value => {
+							const numeric = normalize(value).replace(/\s/g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+							if (numeric && !Number.isNaN(Number(numeric))) {
+								return Number(numeric);
+							}
 
-						const applyFilters = () => {
+							const dateMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+[àa]\s+|\s+)?(\d{2}:\d{2})?/i);
+							if (dateMatch) {
+								const [, day, month, year, time = '00:00'] = dateMatch;
+								return new Date(`${year}-${month}-${day}T${time}:00`).getTime();
+							}
+
+							return normalize(value);
+						};
+
+						const applySearch = () => {
 							const globalNeedle = normalize(globalInput.value);
 							let visibleCount = 0;
 
 							rows.forEach(row => {
 								const rowText = normalize(row.textContent);
-								const matchesGlobal = !globalNeedle || rowText.includes(globalNeedle);
-								const matchesColumns = filterInputs.every(({ columnIndex, input }) => {
-									const needle = normalize(input.value);
-									return !needle || normalize(row.cells[columnIndex]?.textContent).includes(needle);
-								});
-								const visible = matchesGlobal && matchesColumns;
+								const visible = !globalNeedle || rowText.includes(globalNeedle);
 								row.hidden = !visible;
 								if (visible) {
 									visibleCount++;
@@ -274,14 +282,67 @@
 							empty.style.display = rows.length > 0 && visibleCount === 0 ? 'block' : 'none';
 						};
 
-						globalInput.addEventListener('input', applyFilters);
-						filterInputs.forEach(({ input }) => input.addEventListener('input', applyFilters));
+						headers.forEach((header, columnIndex) => {
+							const label = header.textContent.trim();
+							if (!label || label.toLowerCase() === 'actions') {
+								return;
+							}
+
+							header.dataset.sortDirection = '';
+							header.innerHTML = '';
+							const button = document.createElement('button');
+							button.type = 'button';
+							button.className = 'admin-sort-button';
+							button.innerHTML = `<span>${label}</span><span class="admin-sort-icon" aria-hidden="true">↕</span>`;
+							button.setAttribute('aria-label', `Trier par ${label}`);
+							header.appendChild(button);
+
+							button.addEventListener('click', () => {
+								const direction = header.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
+
+								headers.forEach(otherHeader => {
+									otherHeader.dataset.sortDirection = '';
+									otherHeader.querySelector('.admin-sort-button')?.classList.remove('is-active');
+									const icon = otherHeader.querySelector('.admin-sort-icon');
+									if (icon) {
+										icon.textContent = '↕';
+									}
+								});
+
+								header.dataset.sortDirection = direction;
+								button.classList.add('is-active');
+								button.querySelector('.admin-sort-icon').textContent = direction === 'asc' ? '↑' : '↓';
+
+								rows.slice().sort((a, b) => {
+									const valueA = asSortableValue(getCellText(a, columnIndex));
+									const valueB = asSortableValue(getCellText(b, columnIndex));
+
+									if (typeof valueA === 'number' && typeof valueB === 'number') {
+										return direction === 'asc' ? valueA - valueB : valueB - valueA;
+									}
+
+									return direction === 'asc'
+										? String(valueA).localeCompare(String(valueB), 'fr-FR')
+										: String(valueB).localeCompare(String(valueA), 'fr-FR');
+								}).forEach(row => body.appendChild(row));
+
+								applySearch();
+							});
+						});
+
+						globalInput.addEventListener('input', applySearch);
 						resetButton.addEventListener('click', () => {
 							globalInput.value = '';
-							filterInputs.forEach(({ input }) => {
-								input.value = '';
+							headers.forEach(header => {
+								header.dataset.sortDirection = '';
+								header.querySelector('.admin-sort-button')?.classList.remove('is-active');
+								const icon = header.querySelector('.admin-sort-icon');
+								if (icon) {
+									icon.textContent = '↕';
+								}
 							});
-							applyFilters();
+							originalRows.forEach(row => body.appendChild(row));
+							applySearch();
 						});
 					});
 				});
