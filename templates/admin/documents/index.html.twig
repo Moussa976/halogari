@@ -1,4 +1,5 @@
 {% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}Documents | Admin{% endblock %}
 
@@ -25,7 +26,7 @@
 
     <div class="card">
       <div class="card-body table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle js-admin-table">
           <thead class="table-light">
             <tr>
               <th>ID</th>
@@ -39,16 +40,20 @@
           </thead>
           <tbody>
             {% for document in documents %}
-              {% set fileUrl = asset('uploads/documents/' ~ document.filenameDocument) %}
-              {% set ext = document.filenameDocument|split('.')|last|lower %}
               <tr>
                 <td>#{{ document.id }}</td>
                 <td>
                   {% if document.user %}
-                    <a href="{{ path('admin_user_show', { id: document.user.id }) }}">
-                      {{ document.user.prenom }} {{ document.user.nom }}
-                    </a>
-                    <div class="small text-muted">{{ document.user.email }}</div>
+                    <div class="d-flex align-items-center gap-2">
+                      {{ avatar.formatSimple(document.user, 42, 0, 1) }}
+                      <div class="min-w-0">
+                        <a href="{{ path('admin_user_show', { id: document.user.id }) }}">{{ document.user.prenom }} {{ document.user.nom }}</a>
+                        {% if document.user.isProfilVerifieComplet %}
+                          <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">Profil vérifié</span>
+                        {% endif %}
+                        <div class="small text-muted text-truncate" style="max-width: 220px;">{{ document.user.email }}</div>
+                      </div>
+                    </div>
                   {% else %}
                     <span class="text-muted">-</span>
                   {% endif %}
@@ -63,83 +68,6 @@
                   </button>
                 </td>
               </tr>
-
-              <div class="modal fade" id="document-modal-{{ document.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <div>
-                        <h5 class="modal-title">Document #{{ document.id }} - {{ document.typeDocument|replace({'_': ' ', '-': ' '})|title }}</h5>
-                        <div class="text-muted small">{{ document.filenameDocument }}</div>
-                      </div>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Utilisateur</div>
-                            {% if document.user %}
-                              <a class="fw-bold" href="{{ path('admin_user_show', { id: document.user.id }) }}">{{ document.user.prenom }} {{ document.user.nom }}</a>
-                              <div class="small">{{ document.user.email }}</div>
-                              <div class="small">{{ document.user.telephone ?: '-' }}</div>
-                            {% else %}
-                              <strong>-</strong>
-                            {% endif %}
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Statut</div>
-                            <span class="badge bg-{{ classes[document.status]|default('secondary') }}">{{ labels[document.status]|default(document.status) }}</span>
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Date d'envoi</div>
-                            <strong>{{ document.dateDocument|date('d/m/Y H:i') }}</strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
-                        <img src="{{ fileUrl }}" alt="Document #{{ document.id }}" class="img-fluid rounded border w-100">
-                      {% elseif ext == 'pdf' %}
-                        <iframe src="{{ fileUrl }}" class="w-100 border rounded" style="min-height: 70vh;"></iframe>
-                      {% else %}
-                        <div class="alert alert-info">
-                          Aperçu non disponible pour ce format.
-                          <a href="{{ fileUrl }}" target="_blank" rel="noopener">Ouvrir le fichier</a>
-                        </div>
-                      {% endif %}
-                    </div>
-                    <div class="modal-footer justify-content-between">
-                      <a href="{{ fileUrl }}" target="_blank" rel="noopener" class="btn btn-outline-primary">Ouvrir dans un onglet</a>
-                      <div class="d-flex flex-wrap gap-2">
-                        {% if document.status != 'approved' %}
-                          <form method="post" action="{{ path('admin_document_validate', { id: document.id }) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('admin_document_validate_' ~ document.id) }}">
-                            <button class="btn btn-success" onclick="return confirm('Valider ce document ?')">Valider</button>
-                          </form>
-                        {% endif %}
-                        {% if document.status != 'rejected' %}
-                          <form method="post" action="{{ path('admin_document_reject', { id: document.id }) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('admin_document_reject_' ~ document.id) }}">
-                            <button class="btn btn-danger" onclick="return confirm('Refuser ce document ?')">Refuser</button>
-                          </form>
-                        {% endif %}
-                        {% if document.status != 'pending' %}
-                          <form method="post" action="{{ path('admin_document_pending', { id: document.id }) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('admin_document_pending_' ~ document.id) }}">
-                            <button class="btn btn-outline-secondary" onclick="return confirm('Remettre ce document en attente ?')">Remettre en attente</button>
-                          </form>
-                        {% endif %}
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             {% else %}
               <tr>
                 <td colspan="7" class="text-center text-muted">Aucun document.</td>
@@ -149,5 +77,89 @@
         </table>
       </div>
     </div>
+
+    {% for document in documents %}
+      {% set fileUrl = asset('uploads/documents/' ~ document.filenameDocument) %}
+      {% set ext = document.filenameDocument|split('.')|last|lower %}
+      <div class="modal fade" id="document-modal-{{ document.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">Document #{{ document.id }} - {{ document.typeDocument|replace({'_': ' ', '-': ' '})|title }}</h5>
+                <div class="text-muted small">{{ document.filenameDocument }}</div>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Utilisateur</div>
+                    {% if document.user %}
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        {{ avatar.formatSimple(document.user, 48, 0, 1) }}
+                        <a class="fw-bold" href="{{ path('admin_user_show', { id: document.user.id }) }}">{{ document.user.prenom }} {{ document.user.nom }}</a>
+                      </div>
+                      <div class="small">{{ document.user.email }}</div>
+                      <div class="small">{{ document.user.telephone ?: '-' }}</div>
+                    {% else %}
+                      <strong>-</strong>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Statut</div>
+                    <span class="badge bg-{{ classes[document.status]|default('secondary') }}">{{ labels[document.status]|default(document.status) }}</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Date d'envoi</div>
+                    <strong>{{ document.dateDocument|date('d/m/Y H:i') }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
+                <img src="{{ fileUrl }}" alt="Document #{{ document.id }}" class="img-fluid rounded border w-100" style="max-height: 72vh; object-fit: contain; background: #f8f9fa;">
+              {% elseif ext == 'pdf' %}
+                <iframe src="{{ fileUrl }}" class="w-100 border rounded" style="min-height: 70vh;"></iframe>
+              {% else %}
+                <div class="alert alert-info">
+                  Aperçu non disponible pour ce format.
+                  <a href="{{ fileUrl }}" target="_blank" rel="noopener">Ouvrir le fichier</a>
+                </div>
+              {% endif %}
+            </div>
+            <div class="modal-footer justify-content-between">
+              <a href="{{ fileUrl }}" target="_blank" rel="noopener" class="btn btn-outline-primary">Ouvrir dans un onglet</a>
+              <div class="d-flex flex-wrap gap-2">
+                {% if document.status != 'approved' %}
+                  <form method="post" action="{{ path('admin_document_validate', { id: document.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_document_validate_' ~ document.id) }}">
+                    <button class="btn btn-success" onclick="return confirm('Valider ce document ?')">Valider</button>
+                  </form>
+                {% endif %}
+                {% if document.status != 'rejected' %}
+                  <form method="post" action="{{ path('admin_document_reject', { id: document.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_document_reject_' ~ document.id) }}">
+                    <button class="btn btn-danger" onclick="return confirm('Refuser ce document ?')">Refuser</button>
+                  </form>
+                {% endif %}
+                {% if document.status != 'pending' %}
+                  <form method="post" action="{{ path('admin_document_pending', { id: document.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_document_pending_' ~ document.id) }}">
+                    <button class="btn btn-outline-secondary" onclick="return confirm('Remettre ce document en attente ?')">Remettre en attente</button>
+                  </form>
+                {% endif %}
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
   </div>
 {% endblock %}

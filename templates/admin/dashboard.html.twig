@@ -1,177 +1,365 @@
 {% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Dashboard Admin{% endblock %}
+{% block title %}Tableau de bord | Admin{% endblock %}
 
 {% block stylesheets %}
-	{{ parent() }}
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  {{ parent() }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block body %}
-<div class="container-fluid px-1">
-	<div class="row mb-4">
-		<div class="col">
-			<h1 class="h3 mb-3">Bienvenue dans l'administration de HaloGari</h1>
-			<p class="text-muted">Depuis ce tableau de bord, vous pouvez gérer les trajets, utilisateurs, réservations, documents, etc.</p>
-		</div>
-	</div>
+  {% set reservationLabels = {
+    'en_attente': 'En attente',
+    'acceptee': 'Acceptée',
+    'refusee': 'Refusée',
+    'payee': 'Payée',
+    'annulee': 'Annulée'
+  } %}
+  {% set reservationClasses = {
+    'en_attente': 'warning text-dark',
+    'acceptee': 'success',
+    'refusee': 'danger',
+    'payee': 'primary',
+    'annulee': 'secondary'
+  } %}
+  {% set documentLabels = {
+    'pending': 'En attente',
+    'approved': 'Validé',
+    'rejected': 'Refusé'
+  } %}
+  {% set documentClasses = {
+    'pending': 'warning text-dark',
+    'approved': 'success',
+    'rejected': 'danger'
+  } %}
+  {% set paymentClasses = {
+    'en_attente': 'secondary',
+    'autorise': 'warning text-dark',
+    'capture': 'success',
+    'rembourse': 'info text-dark',
+    'echoue': 'danger',
+    'annule': 'dark'
+  } %}
 
-	<div class="row">
-		{% set stats = [
-			{'label': 'Trajets publiés', 'count': count_trajets, 'desc': 'Total sur la plateforme'},
-			{'label': 'Réservations', 'count': count_reservations, 'desc': 'Toutes réservations enregistrées'},
-			{'label': 'Utilisateurs', 'count': count_users, 'desc': 'Comptes inscrits'},
-			{'label': 'Documents validés', 'count': count_documents, 'desc': 'Statut “validé”'}
-		] %}
-		{% for s in stats %}
-			<div class="col-sm-6 col-xl-3">
-				<div class="card mb-3">
-					<div class="card-body">
-						<h5 class="card-title mb-4">{{ s.label }}</h5>
-						<h1 class="mt-1 mb-3">{{ s.count }}</h1>
-						<div class="mb-1">
-							<span class="text-muted">{{ s.desc }}</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		{% endfor %}
-	</div>
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Tableau de bord</h1>
+        <p class="text-muted mb-0">Pilotage rapide des trajets, réservations, documents et paiements HaloGari.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-self-xl-start">
+        <a href="{{ path('admin_trajets') }}" class="btn btn-outline-primary btn-sm">Trajets</a>
+        <a href="{{ path('admin_reservations') }}" class="btn btn-outline-primary btn-sm">Réservations</a>
+        <a href="{{ path('admin_documents') }}" class="btn btn-outline-primary btn-sm">Documents</a>
+        <a href="{{ path('admin_paiements') }}" class="btn btn-outline-primary btn-sm">Paiements</a>
+      </div>
+    </div>
 
-	<div class="row mb-4">
-		<div class="col-md-6">
-			<a href="{{ path('admin_reservations') }}" class="card text-decoration-none">
-				<div class="card-body d-flex justify-content-between align-items-center">
-					<div>
-						<h5 class="card-title mb-1">Demandes à suivre</h5>
-						<p class="text-muted mb-0">Réservations en attente de réponse.</p>
-					</div>
-					<span class="badge bg-warning text-dark fs-6">{{ count_reservations_pending }}</span>
-				</div>
-			</a>
-		</div>
-		<div class="col-md-6">
-			<a href="{{ path('admin_documents') }}" class="card text-decoration-none">
-				<div class="card-body d-flex justify-content-between align-items-center">
-					<div>
-						<h5 class="card-title mb-1">Documents à vérifier</h5>
-						<p class="text-muted mb-0">Pièces d'identité et RIB en attente.</p>
-					</div>
-					<span class="badge bg-primary fs-6">{{ count_documents_pending }}</span>
-				</div>
-			</a>
-		</div>
-	</div>
+    <div class="row g-3 mb-4">
+      {% set stats = [
+        {'label': 'Trajets publiés', 'count': count_trajets, 'desc': 'Tous les trajets', 'route': 'admin_trajets', 'class': 'primary'},
+        {'label': 'Réservations', 'count': count_reservations, 'desc': count_reservations_pending ~ ' en attente', 'route': 'admin_reservations', 'class': count_reservations_pending > 0 ? 'warning text-dark' : 'success'},
+        {'label': 'Utilisateurs', 'count': count_users, 'desc': 'Comptes inscrits', 'route': 'admin_users', 'class': 'info text-dark'},
+        {'label': 'Documents validés', 'count': count_documents, 'desc': count_documents_pending ~ ' à vérifier', 'route': 'admin_documents', 'class': count_documents_pending > 0 ? 'warning text-dark' : 'success'}
+      ] %}
+      {% for s in stats %}
+        <div class="col-sm-6 col-xl-3">
+          <a href="{{ path(s.route) }}" class="card h-100 text-decoration-none">
+            <div class="card-body">
+              <div class="d-flex justify-content-between gap-3">
+                <div>
+                  <div class="text-muted small">{{ s.label }}</div>
+                  <h2 class="mb-1">{{ s.count }}</h2>
+                  <div class="small text-muted">{{ s.desc }}</div>
+                </div>
+                <span class="badge bg-{{ s.class }} align-self-start">Voir</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
 
-	{# --- GRAPHIQUE --- #}
-	<div class="card mb-4">
-		<div class="card-header">
-			📊 Évolution mensuelle des trajets et réservations
-		</div>
-		<div class="card-body">
-			<canvas id="statsChart" height="90"></canvas>
-		</div>
-	</div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <a href="{{ path('admin_reservations') }}" class="card h-100 text-decoration-none border-warning">
+          <div class="card-body">
+            <div class="text-muted small">Demandes à suivre</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">{{ count_reservations_pending }}</h3>
+              <span class="badge bg-warning text-dark">Réservations</span>
+            </div>
+            <p class="text-muted small mb-0 mt-2">À surveiller pour éviter les trajets bloqués côté passager.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ path('admin_documents') }}" class="card h-100 text-decoration-none border-primary">
+          <div class="card-body">
+            <div class="text-muted small">Documents à vérifier</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">{{ count_documents_pending }}</h3>
+              <span class="badge bg-primary">Documents</span>
+            </div>
+            <p class="text-muted small mb-0 mt-2">Identité et RIB conditionnent la publication et les reversements.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ path('admin_paiements') }}" class="card h-100 text-decoration-none border-success">
+          <div class="card-body">
+            <div class="text-muted small">Paiements capturés</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">{{ captured_revenue|number_format(2, ',', ' ') }} €</h3>
+              <span class="badge bg-success">{{ count_payments_captured }}</span>
+            </div>
+            <p class="text-muted small mb-0 mt-2">{{ count_payments_authorized }} autorisé{{ count_payments_authorized > 1 ? 's' : '' }}, {{ refunded_revenue|number_format(2, ',', ' ') }} € remboursés.</p>
+          </div>
+        </a>
+      </div>
+    </div>
 
-	{# --- TABLEAU : 10 derniers trajets --- #}
-	<div class="card mb-4">
-		<div class="card-header">🚌 10 derniers trajets publiés</div>
-		<div class="card-body table-responsive">
-			<table class="table table-bordered table-hover align-middle">
-				<thead class="table-light">
-					<tr>
-						<th>ID</th>
-						<th>Départ</th>
-						<th>Arrivée</th>
-						<th>Date</th>
-						<th>Heure</th>
-						<th>Conducteur</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for trajet in last_trajets %}
-						<tr>
-							<td>{{ trajet.id }}</td>
-							<td>{{ trajet.depart }}</td>
-							<td>{{ trajet.arrivee }}</td>
-							<td>{{ trajet.dateTrajet|date('d/m/Y') }}</td>
-							<td>{{ trajet.heureTrajet|date('H:i') }}</td>
-							<td>{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</td>
-						</tr>
-					{% else %}
-						<tr><td colspan="6" class="text-muted">Aucun trajet récent.</td></tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
+    <div class="row g-3 mb-4">
+      <div class="col-xl-8">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Évolution mensuelle</span>
+            <span class="text-muted small">12 derniers mois</span>
+          </div>
+          <div class="card-body">
+            <canvas id="statsChart" height="110"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="card h-100">
+          <div class="card-header">Actions rapides</div>
+          <div class="card-body d-grid gap-2">
+            <a href="{{ path('admin_documents') }}" class="btn btn-outline-primary text-start">Vérifier les documents en attente</a>
+            <a href="{{ path('admin_reservations') }}" class="btn btn-outline-primary text-start">Contrôler les réservations</a>
+            <a href="{{ path('admin_paiements') }}" class="btn btn-outline-primary text-start">Gérer paiements et remboursements</a>
+            <a href="{{ path('admin_users') }}" class="btn btn-outline-primary text-start">Consulter les utilisateurs</a>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	{# --- TABLEAU : 10 dernières réservations --- #}
-	<div class="card mb-4">
-		<div class="card-header">📑 10 dernières réservations</div>
-		<div class="card-body table-responsive">
-			<table class="table table-bordered table-hover align-middle">
-				<thead class="table-light">
-					<tr>
-						<th>ID</th>
-						<th>Passager</th>
-						<th>Trajet</th>
-						<th>Date</th>
-						<th>Places</th>
-						<th>Statut</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for resa in last_reservations %}
-						<tr>
-							<td>{{ resa.id }}</td>
-							<td>{{ resa.passager.prenom }} {{ resa.passager.nom }}</td>
-							<td>{{ resa.trajet.depart }} → {{ resa.trajet.arrivee }}</td>
-							<td>{{ resa.trajet.dateTrajet|date('d/m/Y') }} à {{ resa.trajet.heureTrajet|date('H:i') }}</td>
-							<td>{{ resa.places }}</td>
-							<td>
-								<span class="badge bg-{{ resa.statut == 'acceptee' ? 'success' : (resa.statut == 'en_attente' ? 'warning text-dark' : 'danger') }}">
-									{{ resa.statut|capitalize }}
-								</span>
-							</td>
-						</tr>
-					{% else %}
-						<tr><td colspan="6" class="text-muted">Aucune réservation récente.</td></tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
-</div>
+    <div class="row g-3 mb-4">
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Derniers trajets</span>
+            <a href="{{ path('admin_trajets') }}" class="small">Tout voir</a>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Trajet</th>
+                  <th>Date</th>
+                  <th>Conducteur</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for trajet in last_trajets %}
+                  <tr>
+                    <td>#{{ trajet.id }}</td>
+                    <td>{{ trajet.depart }} → {{ trajet.arrivee }}</td>
+                    <td>{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</td>
+                    <td>
+                      {% if trajet.conducteur %}
+                        <div class="d-flex align-items-center gap-2">
+                          {{ avatar.formatSimple(trajet.conducteur, 34, 0, 1) }}
+                          <a href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</a>
+                        </div>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-muted">Aucun trajet récent.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-{# --- Script pour le graphique --- #}
-<script>
-	const ctx = document.getElementById('statsChart').getContext('2d');
-	const statsChart = new Chart(ctx, {
-		type: 'line',
-		data: {
-			labels: {{ chart_labels|json_encode|raw }},
-			datasets: [
-				{
-					label: 'Trajets',
-					data: {{ chart_trajets|json_encode|raw }},
-					borderColor: 'rgba(54, 162, 235, 1)',
-					tension: 0.3
-				},
-				{
-					label: 'Réservations',
-					data: {{ chart_reservations|json_encode|raw }},
-					borderColor: 'rgba(255, 99, 132, 1)',
-					tension: 0.3
-				}
-			]
-		},
-		options: {
-			responsive: true,
-			scales: {
-				y: { beginAtZero: true }
-			}
-		}
-	});
-</script>
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Dernières réservations</span>
+            <a href="{{ path('admin_reservations') }}" class="small">Tout voir</a>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Passager</th>
+                  <th>Trajet</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for resa in last_reservations %}
+                  <tr>
+                    <td>#{{ resa.id }}</td>
+                    <td>
+                      {% if resa.passager %}
+                        <div class="d-flex align-items-center gap-2">
+                          {{ avatar.formatSimple(resa.passager, 34, 0, 1) }}
+                          <a href="{{ path('admin_user_show', { id: resa.passager.id }) }}">{{ resa.passager.prenom }} {{ resa.passager.nom }}</a>
+                        </div>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if resa.trajet %}
+                        {{ resa.trajet.depart }} → {{ resa.trajet.arrivee }}
+                      {% else %}
+                        <span class="text-muted">Trajet supprimé</span>
+                      {% endif %}
+                    </td>
+                    <td><span class="badge bg-{{ reservationClasses[resa.statut]|default('secondary') }}">{{ reservationLabels[resa.statut]|default(resa.statut) }}</span></td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-muted">Aucune réservation récente.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Documents récents</span>
+            <a href="{{ path('admin_documents') }}" class="small">Tout voir</a>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Utilisateur</th>
+                  <th>Type</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for document in last_documents %}
+                  <tr>
+                    <td>#{{ document.id }}</td>
+                    <td>
+                      {% if document.user %}
+                        <a href="{{ path('admin_user_show', { id: document.user.id }) }}">{{ document.user.prenom }} {{ document.user.nom }}</a>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ document.typeDocument|replace({'_': ' ', '-': ' '})|title }}</td>
+                    <td><span class="badge bg-{{ documentClasses[document.status]|default('secondary') }}">{{ documentLabels[document.status]|default(document.status) }}</span></td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-muted">Aucun document récent.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Paiements récents</span>
+            <a href="{{ path('admin_paiements') }}" class="small">Tout voir</a>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Montant</th>
+                  <th>Réservation</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for paiement in last_paiements %}
+                  <tr>
+                    <td>#{{ paiement.id }}</td>
+                    <td>{{ paiement.montant|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ paiement.reservation ? '#' ~ paiement.reservation.id : '-' }}</td>
+                    <td><span class="badge bg-{{ paymentClasses[paiement.statut]|default('secondary') }}">{{ paiement.statutLabel }}</span></td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="4" class="text-muted">Aucun paiement récent.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('statsChart');
+      if (!ctx) {
+        return;
+      }
+
+      new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: {{ chart_labels|json_encode|raw }},
+          datasets: [
+            {
+              label: 'Trajets',
+              data: {{ chart_trajets|json_encode|raw }},
+              borderColor: '#245c36',
+              backgroundColor: 'rgba(36, 92, 54, .12)',
+              tension: .35,
+              fill: true
+            },
+            {
+              label: 'Réservations',
+              data: {{ chart_reservations|json_encode|raw }},
+              borderColor: '#ee7811',
+              backgroundColor: 'rgba(238, 120, 17, .12)',
+              tension: .35,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
 {% endblock %}

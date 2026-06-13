@@ -104,6 +104,38 @@
 				min-width: 720px;
 				margin-bottom: 0;
 			}
+			.admin-table-tools {
+				display: grid;
+				grid-template-columns: minmax(220px, 1fr) auto;
+				gap: .75rem;
+				align-items: end;
+				margin-bottom: 1rem;
+			}
+			.admin-table-filters {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+				gap: .5rem;
+				margin-bottom: 1rem;
+			}
+			.admin-table-filters .form-label {
+				margin-bottom: .2rem;
+				font-size: .72rem;
+				font-weight: 700;
+				color: #6c757d;
+				text-transform: uppercase;
+			}
+			.admin-table-empty {
+				display: none;
+				margin: .75rem 0 0;
+			}
+			@media (max-width: 767.98px) {
+				.admin-table-tools {
+					grid-template-columns: 1fr;
+				}
+				.admin-table-tools .btn {
+					width: 100%;
+				}
+			}
 		</style>
 
 		{% block stylesheets %}{% endblock %}
@@ -154,6 +186,90 @@
 			{# ✅ Bootstrap JS avec SRI completé #}
 			<script src="https://unpkg.com/@adminkit/core@latest/dist/js/app.js"></script>
 			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
+			<script>
+				document.addEventListener('DOMContentLoaded', () => {
+					document.querySelectorAll('.js-admin-table').forEach((table, tableIndex) => {
+						const body = table.tBodies[0];
+						const headers = Array.from(table.querySelectorAll('thead th'));
+						if (!body || headers.length === 0 || table.dataset.enhanced === '1') {
+							return;
+						}
+
+						table.dataset.enhanced = '1';
+						const wrapper = table.closest('.table-responsive') || table.parentElement;
+						const tools = document.createElement('div');
+						tools.className = 'admin-table-tools';
+						tools.innerHTML = `
+							<div>
+								<label class="form-label small text-muted" for="admin-table-search-${tableIndex}">Recherche</label>
+								<input id="admin-table-search-${tableIndex}" type="search" class="form-control" placeholder="Rechercher dans le tableau">
+							</div>
+							<button type="button" class="btn btn-outline-secondary">Réinitialiser les filtres</button>
+						`;
+
+						const filters = document.createElement('div');
+						filters.className = 'admin-table-filters';
+						const filterInputs = headers.map((header, columnIndex) => {
+							const label = header.textContent.trim();
+							if (!label || label.toLowerCase() === 'actions') {
+								return null;
+							}
+
+							const group = document.createElement('div');
+							group.innerHTML = `
+								<label class="form-label" for="admin-table-${tableIndex}-filter-${columnIndex}">${label}</label>
+								<input id="admin-table-${tableIndex}-filter-${columnIndex}" type="search" class="form-control form-control-sm" placeholder="Filtrer">
+							`;
+							filters.appendChild(group);
+							return { columnIndex, input: group.querySelector('input') };
+						}).filter(Boolean);
+
+						const empty = document.createElement('div');
+						empty.className = 'alert alert-light border text-muted admin-table-empty';
+						empty.textContent = 'Aucun résultat pour ces filtres.';
+
+						wrapper.before(tools);
+						wrapper.before(filters);
+						wrapper.after(empty);
+
+						const globalInput = tools.querySelector('input');
+						const resetButton = tools.querySelector('button');
+						const rows = Array.from(body.rows).filter(row => row.cells.length === headers.length);
+						const normalize = value => (value || '').toString().toLocaleLowerCase('fr-FR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+						const applyFilters = () => {
+							const globalNeedle = normalize(globalInput.value);
+							let visibleCount = 0;
+
+							rows.forEach(row => {
+								const rowText = normalize(row.textContent);
+								const matchesGlobal = !globalNeedle || rowText.includes(globalNeedle);
+								const matchesColumns = filterInputs.every(({ columnIndex, input }) => {
+									const needle = normalize(input.value);
+									return !needle || normalize(row.cells[columnIndex]?.textContent).includes(needle);
+								});
+								const visible = matchesGlobal && matchesColumns;
+								row.hidden = !visible;
+								if (visible) {
+									visibleCount++;
+								}
+							});
+
+							empty.style.display = rows.length > 0 && visibleCount === 0 ? 'block' : 'none';
+						};
+
+						globalInput.addEventListener('input', applyFilters);
+						filterInputs.forEach(({ input }) => input.addEventListener('input', applyFilters));
+						resetButton.addEventListener('click', () => {
+							globalInput.value = '';
+							filterInputs.forEach(({ input }) => {
+								input.value = '';
+							});
+							applyFilters();
+						});
+					});
+				});
+			</script>
 
 			{% for type, messages in app.flashes %}
 				{% for message in messages %}
