@@ -202,7 +202,12 @@ body.app-shell::before {
 .app-drawer__actions a:not(.app-drawer__logout):hover,
 .app-drawer__actions a:not(.app-drawer__logout):focus-visible,
 .app-drawer__actions button:not(.app-drawer__logout):hover,
-.app-drawer__actions button:not(.app-drawer__logout):focus-visible,
+.app-drawer__actions button:not(.app-drawer__logout):focus-visible {
+    color: var(--hg-green);
+    border-color: rgba(36, 92, 54, .22);
+    background: rgba(36, 92, 54, .08);
+}
+
 .app-drawer__actions .is-active {
     color: #fff;
     border-color: transparent;
