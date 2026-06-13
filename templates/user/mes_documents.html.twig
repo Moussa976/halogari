@@ -54,7 +54,7 @@
               <tr>
                 <td data-label="Type">{{ doc.typeDocument == 'identite' ? "Justificatif d'identité" : doc.typeDocument }}</td>
                 <td data-label="Fichier">
-                  <a href="{{ asset('uploads/documents/' ~ doc.filenameDocument) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                  <a href="{{ path('app_document_file', { id: doc.id }) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-box-arrow-up-right"></i>
                     Ouvrir
                   </a>
@@ -67,6 +67,9 @@
                     <span class="badge bg-success">Validé</span>
                   {% elseif doc.status == 'rejected' %}
                     <span class="badge bg-danger">Refusé</span>
+                    {% if doc.rejectionReason %}
+                      <div class="small text-danger mt-1">{{ doc.rejectionReason }}</div>
+                    {% endif %}
                   {% else %}
                     <span class="badge bg-secondary">{{ doc.status|default('-') }}</span>
                   {% endif %}

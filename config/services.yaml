@@ -4,7 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    documents_directory: '%kernel.project_dir%/public/uploads/documents'
+    documents_directory: '%kernel.project_dir%/var/private/documents'
+    legacy_documents_directory: '%kernel.project_dir%/public/uploads/documents'
     photos_directory: '%kernel.project_dir%/public/uploads/photos'
     messages_directory: '%kernel.project_dir%/public/uploads/messages'
 
@@ -59,5 +60,10 @@ services:
     App\Service\VillageCatalog:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\DocumentStorage:
+        arguments:
+            $documentsDirectory: '%documents_directory%'
+            $legacyDocumentsDirectory: '%legacy_documents_directory%'
 
 

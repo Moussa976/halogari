@@ -482,7 +482,7 @@
     </div>
 
     {% for doc in user.documents %}
-      {% set fileUrl = asset('uploads/documents/' ~ doc.filenameDocument) %}
+      {% set fileUrl = path('admin_document_file', { id: doc.id }) %}
       {% set ext = doc.filenameDocument|split('.')|last|lower %}
       <div class="modal fade" id="modal-doc-{{ doc.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -498,6 +498,9 @@
               <div class="mb-3">
                 <span class="badge bg-{{ documentClasses[doc.status]|default('secondary') }}">{{ documentLabels[doc.status]|default(doc.status) }}</span>
                 <span class="text-muted small ms-2">{{ doc.dateDocument|date('d/m/Y H:i') }}</span>
+                {% if doc.rejectionReason %}
+                  <div class="small text-danger mt-2">{{ doc.rejectionReason }}</div>
+                {% endif %}
               </div>
               {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
                 <img src="{{ fileUrl }}" alt="Document #{{ doc.id }}" class="img-fluid rounded border w-100" style="max-height: 72vh; object-fit: contain; background: #f8f9fa;">
@@ -513,18 +516,22 @@
                 {% if doc.status != 'approved' %}
                   <form method="post" action="{{ path('admin_document_validate', {id: doc.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_document_validate_' ~ doc.id) }}">
+                    <input type="hidden" name="_return_to" value="user">
                     <button class="btn btn-success" onclick="return confirm('Valider ce document ?')">Valider</button>
                   </form>
                 {% endif %}
                 {% if doc.status != 'rejected' %}
-                  <form method="post" action="{{ path('admin_document_reject', {id: doc.id}) }}">
+                  <form method="post" action="{{ path('admin_document_reject', {id: doc.id}) }}" class="d-flex flex-wrap gap-2">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_document_reject_' ~ doc.id) }}">
+                    <input type="hidden" name="_return_to" value="user">
+                    <input type="text" name="reason" class="form-control form-control-sm" placeholder="Motif du refus" required style="max-width: 220px;">
                     <button class="btn btn-danger" onclick="return confirm('Refuser ce document ?')">Refuser</button>
                   </form>
                 {% endif %}
                 {% if doc.status != 'pending' %}
                   <form method="post" action="{{ path('admin_document_pending', {id: doc.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_document_pending_' ~ doc.id) }}">
+                    <input type="hidden" name="_return_to" value="user">
                     <button class="btn btn-outline-secondary" onclick="return confirm('Remettre ce document en attente ?')">Remettre en attente</button>
                   </form>
                 {% endif %}

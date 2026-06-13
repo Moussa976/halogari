@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Service\AdminAuditLogger;
+use App\Service\DocumentStorage;
 use App\Service\StripeConnectService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -266,7 +267,7 @@ class AdminUserController extends AbstractController
      * Envoie la pièce d'identité à Stripe
      * @Route("/admin/utilisateurs/{id}/envoyer-identite-stripe", name="admin_user_stripe_upload_identity", methods={"POST"})
      */
-    public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService, AdminAuditLogger $auditLogger): RedirectResponse
+    public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService, AdminAuditLogger $auditLogger, DocumentStorage $documentStorage): RedirectResponse
     {
         $this->assertValidUserToken($user, $request, 'stripe_identity');
 
@@ -278,7 +279,11 @@ class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
         }
 
-        $cheminFichier = $this->getParameter('documents_directory') . '/' . $doc->getFilenameDocument();
+        $cheminFichier = $documentStorage->resolvePath($doc);
+        if (!$cheminFichier) {
+            $this->addFlash('error', 'Le fichier de pièce d’identité est introuvable.');
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+        }
 
         try {
             $stripeService->ajouterPieceIdentite($user, $cheminFichier);

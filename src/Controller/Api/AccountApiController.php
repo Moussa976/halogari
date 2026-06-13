@@ -15,6 +15,7 @@ use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
 use App\Service\AdminNotificationMailer;
 use App\Service\ApiTokenService;
+use App\Service\DocumentStorage;
 use App\Service\DocumentVerificationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
@@ -196,9 +197,9 @@ class AccountApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        SluggerInterface $slugger,
         DocumentVerificationService $documentVerificationService,
-        AdminNotificationMailer $adminNotificationMailer
+        AdminNotificationMailer $adminNotificationMailer,
+        DocumentStorage $documentStorage
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -227,12 +228,8 @@ class AccountApiController extends AbstractController
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeName = $slugger->slug($originalName);
-        $filename = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
-
         try {
-            $file->move($this->getParameter('documents_directory'), $filename);
+            $filename = $documentStorage->store($file, $user->getId());
         } catch (\Throwable $error) {
             return $this->json(['message' => "Erreur lors de l'envoi du fichier."], JsonResponse::HTTP_BAD_REQUEST);
         }
@@ -241,8 +238,11 @@ class AccountApiController extends AbstractController
         $document->setUser($user);
         $document->setTypeDocument($type);
         $document->setFilenameDocument($filename);
+        $document->setOriginalFilename($file->getClientOriginalName());
+        $document->setMimeType($file->getMimeType());
+        $document->setFileSize($file->getSize());
         $document->setDateDocument(new \DateTime());
-        $document->setStatus(Document::STATUS_APPROVED);
+        $document->setStatus(Document::STATUS_PENDING);
 
         $em->persist($document);
         $em->flush();
@@ -250,7 +250,7 @@ class AccountApiController extends AbstractController
         $adminNotificationMailer->notify(
             'Document utilisateur recu',
             sprintf(
-                "%s %s <%s> a envoye un document %s depuis l'application, valide automatiquement.",
+                "%s %s <%s> a envoye un document %s depuis l'application. Il attend une validation admin.",
                 $user->getPrenom(),
                 $user->getNom(),
                 $user->getEmail(),
@@ -260,7 +260,7 @@ class AccountApiController extends AbstractController
         );
 
         return $this->json([
-            'message' => 'Document ajouté et validé automatiquement.',
+            'message' => 'Document envoyé. Il est maintenant en attente de validation par l’administration.',
             'data' => $this->documentPayload($document),
         ], JsonResponse::HTTP_CREATED);
     }
@@ -422,7 +422,7 @@ class AccountApiController extends AbstractController
             'filename' => $document->getFilenameDocument(),
             'status' => $document->getStatus(),
             'date' => $document->getDateDocument() ? $document->getDateDocument()->format(\DateTimeInterface::ATOM) : null,
-            'url' => '/uploads/documents/' . $document->getFilenameDocument(),
+            'url' => null,
         ];
     }
 

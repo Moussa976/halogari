@@ -15,14 +15,17 @@ use App\Security\EmailVerifier;
 use App\Service\AdminNotificationMailer;
 use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
+use App\Service\DocumentStorage;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -275,8 +278,8 @@ class UserController extends AbstractController
     public function mesDocuments(
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger,
         DocumentVerificationService $documentVerificationService,
+        DocumentStorage $documentStorage,
         AdminNotificationMailer $adminNotificationMailer
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
@@ -320,20 +323,18 @@ class UserController extends AbstractController
                 return $this->redirectToRoute('app_documents');
             }
 
-            // Générer un nom de fichier unique
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeName = $slugger->slug($originalName);
-            $filename = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
-
             try {
-                $file->move($this->getParameter('documents_directory'), $filename);
+                $filename = $documentStorage->store($file, $user->getId());
 
                 $document = new Document();
                 $document->setTypeDocument($finalType);
                 $document->setFilenameDocument($filename);
+                $document->setOriginalFilename($file->getClientOriginalName());
+                $document->setMimeType($file->getMimeType());
+                $document->setFileSize($file->getSize());
                 $document->setDateDocument(new \DateTime());
                 $document->setUser($user);
-                $document->setStatus(Document::STATUS_APPROVED);
+                $document->setStatus(Document::STATUS_PENDING);
 
                 $em->persist($document);
                 $em->flush();
@@ -341,7 +342,7 @@ class UserController extends AbstractController
                 $adminNotificationMailer->notify(
                     'Document utilisateur reçu',
                     sprintf(
-                        "%s %s <%s> a envoyé un document %s, validé automatiquement.",
+                        "%s %s <%s> a envoyé un document %s. Il attend une validation admin.",
                         $user->getPrenom(),
                         $user->getNom(),
                         $user->getEmail(),
@@ -350,7 +351,7 @@ class UserController extends AbstractController
                     '/admin/documents'
                 );
 
-                $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
+                $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration.');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
             }
@@ -363,6 +364,35 @@ class UserController extends AbstractController
         return $this->render('user/mes_documents.html.twig', [
             'documents' => $documents,
         ]);
+    }
+
+    /**
+     * @Route("/user/documents/{id}/fichier", name="app_document_file", requirements={"id"="\d+"}, methods={"GET"})
+     */
+    public function documentFile(Document $document, DocumentStorage $documentStorage): BinaryFileResponse
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $user = $this->getUser();
+        if (!$user instanceof User || !$document->getUser() || $document->getUser()->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas ouvrir ce document.');
+        }
+
+        $path = $documentStorage->resolvePath($document);
+        if (!$path) {
+            throw $this->createNotFoundException('Document introuvable.');
+        }
+
+        $response = new BinaryFileResponse($path);
+        if ($document->getMimeType()) {
+            $response->headers->set('Content-Type', $document->getMimeType());
+        }
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            $document->getOriginalFilename() ?: basename($path)
+        );
+
+        return $response;
     }
 
 

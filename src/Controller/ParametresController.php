@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Document;
 use App\Entity\User;
 use App\Service\AdminNotificationMailer;
+use App\Service\DocumentStorage;
 use App\Service\DocumentVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -157,9 +158,9 @@ class ParametresController extends AbstractController
     public function addDocument(
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger,
         DocumentVerificationService $documentVerificationService,
-        AdminNotificationMailer $adminNotificationMailer
+        AdminNotificationMailer $adminNotificationMailer,
+        DocumentStorage $documentStorage
     ): Response
     {
         /** @var User $user */
@@ -197,12 +198,8 @@ class ParametresController extends AbstractController
             return $this->redirectToRoute('app_parametres');
         }
 
-        $originalName = pathinfo($fichier->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeName = $slugger->slug($originalName);
-        $newFilename = $safeName . '-' . uniqid() . '.' . $fichier->guessExtension();
-
         try {
-            $fichier->move($this->getParameter('documents_directory'), $newFilename);
+            $newFilename = $documentStorage->store($fichier, $user->getId());
         } catch (\Exception $e) {
             $this->addFlash('error', "Erreur lors de l'envoi du document.");
             return $this->redirectToRoute('app_parametres');
@@ -212,8 +209,11 @@ class ParametresController extends AbstractController
         $document->setUser($user);
         $document->setTypeDocument($finalType);
         $document->setFilenameDocument($newFilename);
+        $document->setOriginalFilename($fichier->getClientOriginalName());
+        $document->setMimeType($fichier->getMimeType());
+        $document->setFileSize($fichier->getSize());
         $document->setDateDocument(new \DateTime());
-        $document->setStatus(Document::STATUS_APPROVED);
+        $document->setStatus(Document::STATUS_PENDING);
 
         $em->persist($document);
         $em->flush();
@@ -221,7 +221,7 @@ class ParametresController extends AbstractController
         $adminNotificationMailer->notify(
             'Document utilisateur reçu',
             sprintf(
-                "%s %s <%s> a envoyé un document %s, validé automatiquement.",
+                "%s %s <%s> a envoyé un document %s. Il attend une validation admin.",
                 $user->getPrenom(),
                 $user->getNom(),
                 $user->getEmail(),
@@ -230,7 +230,7 @@ class ParametresController extends AbstractController
             '/admin/documents'
         );
 
-        $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
+        $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration.');
         return $this->redirectToRoute('app_parametres');
     }
 

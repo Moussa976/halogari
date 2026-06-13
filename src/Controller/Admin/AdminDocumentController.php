@@ -6,11 +6,14 @@ use App\Entity\Document;
 use App\Entity\User;
 use App\Repository\DocumentRepository;
 use App\Service\AdminAuditLogger;
+use App\Service\DocumentStorage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AdminDocumentController extends AbstractController
@@ -36,12 +39,15 @@ class AdminDocumentController extends AbstractController
         $this->assertValidDocumentToken($document, $request, 'validate');
 
         $document->setStatus(Document::STATUS_APPROVED);
+        $document->setRejectionReason(null);
+        $document->setReviewedAt(new \DateTime());
+        $document->setReviewedBy($this->getUser() instanceof User ? $this->getUser() : null);
         $em->flush();
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_validate', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
 
         $this->addFlash('success', 'Document validé avec succès.');
 
-        return $this->redirectToRoute('admin_user_show', ['id' => $document->getUser()->getId()]);
+        return $this->redirectAfterAction($document, $request);
     }
 
     /**
@@ -51,14 +57,22 @@ class AdminDocumentController extends AbstractController
     public function reject(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'reject');
+        $reason = trim((string) $request->request->get('reason'));
+        if ($reason === '') {
+            $this->addFlash('error', 'Merci d’indiquer un motif de refus.');
+            return $this->redirectAfterAction($document, $request);
+        }
 
         $document->setStatus(Document::STATUS_REJECTED);
+        $document->setRejectionReason($reason);
+        $document->setReviewedAt(new \DateTime());
+        $document->setReviewedBy($this->getUser() instanceof User ? $this->getUser() : null);
         $em->flush();
-        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_reject', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_reject', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument(), 'reason' => $reason]);
 
         $this->addFlash('warning', 'Document refusé.');
 
-        return $this->redirectToRoute('admin_user_show', ['id' => $document->getUser()->getId()]);
+        return $this->redirectAfterAction($document, $request);
     }
 
     /**
@@ -70,14 +84,41 @@ class AdminDocumentController extends AbstractController
         $this->assertValidDocumentToken($document, $request, 'pending');
 
         $document->setStatus(Document::STATUS_PENDING);
+        $document->setRejectionReason(null);
+        $document->setReviewedAt(null);
+        $document->setReviewedBy(null);
         $em->flush();
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_pending', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
 
         $this->addFlash('info', 'Le document a été remis en attente.');
 
-        return $this->redirectToRoute('admin_user_show', [
-            'id' => $document->getUser()->getId(),
-        ]);
+        return $this->redirectAfterAction($document, $request);
+    }
+
+    /**
+     * @Route("/admin/document/{id}/fichier", name="admin_document_file", methods={"GET"})
+     */
+    public function documentFile(Document $document, DocumentStorage $documentStorage, AdminAuditLogger $auditLogger): BinaryFileResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $path = $documentStorage->resolvePath($document);
+        if (!$path) {
+            throw $this->createNotFoundException('Document introuvable.');
+        }
+
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_open', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
+
+        $response = new BinaryFileResponse($path);
+        if ($document->getMimeType()) {
+            $response->headers->set('Content-Type', $document->getMimeType());
+        }
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            $document->getOriginalFilename() ?: basename($path)
+        );
+
+        return $response;
     }
 
     private function assertValidDocumentToken(Document $document, Request $request, string $action): void
@@ -85,6 +126,20 @@ class AdminDocumentController extends AbstractController
         if (!$this->isCsrfTokenValid('admin_document_' . $action . '_' . $document->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
         }
+    }
+
+    private function redirectAfterAction(Document $document, Request $request): RedirectResponse
+    {
+        $returnTo = (string) $request->request->get('_return_to');
+        if ($returnTo === 'documents') {
+            return $this->redirectToRoute('admin_documents');
+        }
+
+        if ($document->getUser()) {
+            return $this->redirectToRoute('admin_user_show', ['id' => $document->getUser()->getId()]);
+        }
+
+        return $this->redirectToRoute('admin_documents');
     }
 }
 

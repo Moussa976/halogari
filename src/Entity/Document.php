@@ -62,6 +62,37 @@ class Document
      */
     private $status = self::STATUS_PENDING;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $originalFilename;
+
+    /**
+     * @ORM\Column(type="string", length=120, nullable=true)
+     */
+    private $mimeType;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $fileSize;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $rejectionReason;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $reviewedAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(onDelete="SET NULL")
+     */
+    private $reviewedBy;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -118,6 +149,10 @@ class Document
 
     public function setStatus(string $status): self
     {
+        if (!in_array($status, [self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_REJECTED], true)) {
+            throw new \InvalidArgumentException('Statut de document invalide.');
+        }
+
         $this->status = $status;
         return $this;
     }
@@ -135,5 +170,71 @@ class Document
     public function isRejected(): bool
     {
         return $this->status === self::STATUS_REJECTED;
+    }
+
+    public function getOriginalFilename(): ?string
+    {
+        return $this->originalFilename;
+    }
+
+    public function setOriginalFilename(?string $originalFilename): self
+    {
+        $this->originalFilename = $originalFilename;
+        return $this;
+    }
+
+    public function getMimeType(): ?string
+    {
+        return $this->mimeType;
+    }
+
+    public function setMimeType(?string $mimeType): self
+    {
+        $this->mimeType = $mimeType;
+        return $this;
+    }
+
+    public function getFileSize(): ?int
+    {
+        return $this->fileSize;
+    }
+
+    public function setFileSize(?int $fileSize): self
+    {
+        $this->fileSize = $fileSize;
+        return $this;
+    }
+
+    public function getRejectionReason(): ?string
+    {
+        return $this->rejectionReason;
+    }
+
+    public function setRejectionReason(?string $rejectionReason): self
+    {
+        $this->rejectionReason = $rejectionReason;
+        return $this;
+    }
+
+    public function getReviewedAt(): ?\DateTimeInterface
+    {
+        return $this->reviewedAt;
+    }
+
+    public function setReviewedAt(?\DateTimeInterface $reviewedAt): self
+    {
+        $this->reviewedAt = $reviewedAt;
+        return $this;
+    }
+
+    public function getReviewedBy(): ?User
+    {
+        return $this->reviewedBy;
+    }
+
+    public function setReviewedBy(?User $reviewedBy): self
+    {
+        $this->reviewedBy = $reviewedBy;
+        return $this;
     }
 }
