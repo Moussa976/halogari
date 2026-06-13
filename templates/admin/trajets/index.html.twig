@@ -1,4 +1,5 @@
 {% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}Trajets | Admin{% endblock %}
 
@@ -61,10 +62,18 @@
                 </td>
                 <td>
                   {% if trajet.conducteur %}
-                    <a href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">
-                      {{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}
-                    </a>
-                    <div class="small text-muted">{{ trajet.conducteur.telephone ?: trajet.conducteur.email }}</div>
+                    <div class="d-flex align-items-center gap-2">
+                      {{ avatar.formatSimple(trajet.conducteur, 42, 0, 1) }}
+                      <div class="min-w-0">
+                        <a href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">
+                          {{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}
+                        </a>
+                        {% if trajet.conducteur.isProfilVerifieComplet %}
+                          <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">Profil vérifié</span>
+                        {% endif %}
+                        <div class="small text-muted text-truncate" style="max-width: 210px;">{{ trajet.conducteur.telephone ?: trajet.conducteur.email }}</div>
+                      </div>
+                    </div>
                   {% else %}
                     <span class="text-muted">-</span>
                   {% endif %}
@@ -91,112 +100,6 @@
                   </button>
                 </td>
               </tr>
-
-              <div class="modal fade" id="trajet-modal-{{ trajet.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <div>
-                        <h5 class="modal-title">Trajet #{{ trajet.id }} - {{ trajet.depart }} → {{ trajet.arrivee }}</h5>
-                        <div class="text-muted small">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
-                      </div>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Conducteur</div>
-                            {% if trajet.conducteur %}
-                              <a class="fw-bold" href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</a>
-                              <div class="small">{{ trajet.conducteur.email }}</div>
-                              <div class="small">{{ trajet.conducteur.telephone ?: '-' }}</div>
-                            {% else %}
-                              <strong>-</strong>
-                            {% endif %}
-                          </div>
-                        </div>
-                        <div class="col-md-3">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Places</div>
-                            <strong>{{ trajet.placesDisponibles }}/{{ trajet.places }}</strong>
-                          </div>
-                        </div>
-                        <div class="col-md-3">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Prix</div>
-                            <strong>{{ trajet.prix|number_format(2, ',', ' ') }} € / place</strong>
-                          </div>
-                        </div>
-                        <div class="col-md-3">
-                          <div class="border rounded p-3 h-100">
-                            <div class="text-muted small">Réservations</div>
-                            <strong>{{ trajet.reservations|length }}</strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      <h6>Passagers et demandes</h6>
-                      <div class="table-responsive mb-4">
-                        <table class="table table-sm table-bordered align-middle">
-                          <thead class="table-light">
-                            <tr>
-                              <th>Réservation</th>
-                              <th>Passager</th>
-                              <th>Places</th>
-                              <th>Total</th>
-                              <th>Statut</th>
-                              <th>Paiement</th>
-                              <th>Contact</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for reservation in trajet.reservations %}
-                              <tr>
-                                <td>#{{ reservation.id }}</td>
-                                <td>
-                                  {% if reservation.passager %}
-                                    <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
-                                  {% else %}
-                                    <span class="text-muted">-</span>
-                                  {% endif %}
-                                </td>
-                                <td>{{ reservation.places }}</td>
-                                <td>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</td>
-                                <td><span class="badge bg-{{ reservationClasses[reservation.statut]|default('secondary') }}">{{ reservationLabels[reservation.statut]|default(reservation.statut) }}</span></td>
-                                <td>
-                                  {% if reservation.paiement %}
-                                    <span class="badge bg-light text-dark border">{{ reservation.paiement.statutLabel }}</span>
-                                  {% else %}
-                                    <span class="text-muted">Aucun</span>
-                                  {% endif %}
-                                </td>
-                                <td>
-                                  {% if reservation.passager %}
-                                    <span class="small">{{ reservation.passager.telephone ?: reservation.passager.email }}</span>
-                                  {% else %}
-                                    <span class="text-muted">-</span>
-                                  {% endif %}
-                                </td>
-                              </tr>
-                            {% else %}
-                              <tr>
-                                <td colspan="7" class="text-center text-muted">Aucun passager sur ce trajet.</td>
-                              </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <h6>Description</h6>
-                      <p class="mb-0">{{ trajet.description ?: 'Aucune description.' }}</p>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             {% else %}
               <tr>
                 <td colspan="9" class="text-center text-muted">Aucun trajet.</td>
@@ -206,5 +109,129 @@
         </table>
       </div>
     </div>
+
+    {% for trajet in trajets %}
+      <div class="modal fade" id="trajet-modal-{{ trajet.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">Trajet #{{ trajet.id }} - {{ trajet.depart }} → {{ trajet.arrivee }}</h5>
+                <div class="text-muted small">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Conducteur</div>
+                    {% if trajet.conducteur %}
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        {{ avatar.formatSimple(trajet.conducteur, 48, 0, 1) }}
+                        <div class="min-w-0">
+                          <a class="fw-bold" href="{{ path('admin_user_show', { id: trajet.conducteur.id }) }}">{{ trajet.conducteur.prenom }} {{ trajet.conducteur.nom }}</a>
+                          {% if trajet.conducteur.isProfilVerifieComplet %}
+                            <div><span class="badge bg-success-subtle text-success border border-success-subtle">Profil vérifié</span></div>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="small text-truncate">{{ trajet.conducteur.email }}</div>
+                      <div class="small">{{ trajet.conducteur.telephone ?: '-' }}</div>
+                    {% else %}
+                      <strong>-</strong>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Places</div>
+                    <strong>{{ trajet.placesDisponibles }}/{{ trajet.places }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Prix</div>
+                    <strong>{{ trajet.prix|number_format(2, ',', ' ') }} € / place</strong>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">Réservations</div>
+                    <strong>{{ trajet.reservations|length }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <h6>Passagers et demandes</h6>
+              <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Réservation</th>
+                      <th>Passager</th>
+                      <th>Places</th>
+                      <th>Total</th>
+                      <th>Statut</th>
+                      <th>Paiement</th>
+                      <th>Contact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for reservation in trajet.reservations %}
+                      <tr>
+                        <td>#{{ reservation.id }}</td>
+                        <td>
+                          {% if reservation.passager %}
+                            <div class="d-flex align-items-center gap-2">
+                              {{ avatar.formatSimple(reservation.passager, 38, 0, 1) }}
+                              <div class="min-w-0">
+                                <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
+                                {% if reservation.passager.isProfilVerifieComplet %}
+                                  <div><span class="badge bg-success-subtle text-success border border-success-subtle">Profil vérifié</span></div>
+                                {% endif %}
+                              </div>
+                            </div>
+                          {% else %}
+                            <span class="text-muted">-</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ reservation.places }}</td>
+                        <td>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</td>
+                        <td><span class="badge bg-{{ reservationClasses[reservation.statut]|default('secondary') }}">{{ reservationLabels[reservation.statut]|default(reservation.statut) }}</span></td>
+                        <td>
+                          {% if reservation.paiement %}
+                            <span class="badge bg-light text-dark border">{{ reservation.paiement.statutLabel }}</span>
+                          {% else %}
+                            <span class="text-muted">Aucun</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if reservation.passager %}
+                            <span class="small">{{ reservation.passager.telephone ?: reservation.passager.email }}</span>
+                          {% else %}
+                            <span class="text-muted">-</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td colspan="7" class="text-center text-muted">Aucun passager sur ce trajet.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <h6>Description</h6>
+              <p class="mb-0">{{ trajet.description ?: 'Aucune description.' }}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
   </div>
 {% endblock %}
