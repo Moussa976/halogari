@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Document;
 use App\Entity\User;
+use App\Service\AdminNotificationMailer;
 use App\Service\DocumentVerificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -153,7 +154,13 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres/document", name="app_document_add", methods={"POST"})
      */
-    public function addDocument(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, DocumentVerificationService $documentVerificationService): Response
+    public function addDocument(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        DocumentVerificationService $documentVerificationService,
+        AdminNotificationMailer $adminNotificationMailer
+    ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -210,6 +217,18 @@ class ParametresController extends AbstractController
 
         $em->persist($document);
         $em->flush();
+
+        $adminNotificationMailer->notify(
+            'Document utilisateur reçu',
+            sprintf(
+                "%s %s <%s> a envoyé un document %s, validé automatiquement.",
+                $user->getPrenom(),
+                $user->getNom(),
+                $user->getEmail(),
+                $finalType
+            ),
+            '/admin/documents'
+        );
 
         $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
         return $this->redirectToRoute('app_parametres');

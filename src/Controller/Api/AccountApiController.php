@@ -13,6 +13,7 @@ use App\Repository\PaiementRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
+use App\Service\AdminNotificationMailer;
 use App\Service\ApiTokenService;
 use App\Service\DocumentVerificationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -196,7 +197,8 @@ class AccountApiController extends AbstractController
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
         SluggerInterface $slugger,
-        DocumentVerificationService $documentVerificationService
+        DocumentVerificationService $documentVerificationService,
+        AdminNotificationMailer $adminNotificationMailer
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -244,6 +246,18 @@ class AccountApiController extends AbstractController
 
         $em->persist($document);
         $em->flush();
+
+        $adminNotificationMailer->notify(
+            'Document utilisateur recu',
+            sprintf(
+                "%s %s <%s> a envoye un document %s depuis l'application, valide automatiquement.",
+                $user->getPrenom(),
+                $user->getNom(),
+                $user->getEmail(),
+                $type
+            ),
+            '/admin/documents'
+        );
 
         return $this->json([
             'message' => 'Document ajouté et validé automatiquement.',

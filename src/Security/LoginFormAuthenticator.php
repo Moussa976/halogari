@@ -2,6 +2,8 @@
 
 namespace App\Security;
 
+use App\Entity\User;
+use App\Service\AdminAuditLogger;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,10 +24,12 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public const LOGIN_ROUTE = 'app_login';
 
     private UrlGeneratorInterface $urlGenerator;
+    private AdminAuditLogger $auditLogger;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    public function __construct(UrlGeneratorInterface $urlGenerator, AdminAuditLogger $auditLogger)
     {
         $this->urlGenerator = $urlGenerator;
+        $this->auditLogger = $auditLogger;
     }
 
     public function authenticate(Request $request): Passport
@@ -45,6 +49,11 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $user = $token->getUser();
+        if ($user instanceof User && in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $this->auditLogger->log($user, 'admin_login', $user);
+        }
+
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             // Flash message ici
             $request->getSession()->getFlashBag()->add('success', 'Connexion réussie !');

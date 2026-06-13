@@ -44,6 +44,8 @@ async function subscribeToPush() {
   }
 }
 
+window.subscribeToHaloGariPush = subscribeToPush;
+
 /**
  * Gère l’affichage du popup de notifications + installation PWA sur iOS
  */
@@ -65,26 +67,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 10000);
   }
 
-  // ✅ Demande de permission push (si pas encore faite)
-  if (!localStorage.getItem('pushPermissionAsked')) {
-    setTimeout(() => {
-      Swal.fire({
-        title: '🔔 Notifications HaloGari',
-        html: 'Souhaitez-vous recevoir les notifications pour vos réservations et messages ?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Oui, activer',
-        cancelButtonText: 'Non, refuser',
-        allowOutsideClick: false,
-        allowEscapeKey: false
-      }).then((result) => {
-        localStorage.setItem('pushPermissionAsked', '1');
-        if (result.isConfirmed) {
-          subscribeToPush();
-        } else {
-          Swal.fire('ℹ️ Notifications désactivées', '', 'info');
-        }
-      });
-    }, 2000);
-  }
+  // Les notifications sont activees uniquement apres un clic utilisateur.
 });

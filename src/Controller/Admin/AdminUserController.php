@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
+use App\Service\AdminAuditLogger;
 use App\Service\StripeConnectService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -157,7 +158,7 @@ class AdminUserController extends AbstractController
      * Anonymise (supprime) le compte utilisateur
      * @Route("/admin/utilisateurs/{id}/supprimer", name="admin_user_delete", methods={"POST"})
      */
-    public function delete(User $user, Request $request, EntityManagerInterface $em): RedirectResponse
+    public function delete(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidUserToken($user, $request, 'delete');
 
@@ -172,6 +173,7 @@ class AdminUserController extends AbstractController
 
         // Sauvegarde
         $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'admin_user_delete', $user);
 
         $this->addFlash('success', 'Le compte a été supprimé (anonymisé) avec succès.');
 
@@ -182,12 +184,16 @@ class AdminUserController extends AbstractController
      * Donne le rôle ADMIN à l'utilisateur
      * @Route("/admin/utilisateurs/{id}/promouvoir", name="admin_user_promote", methods={"POST"})
      */
-    public function promote(User $user, Request $request, EntityManagerInterface $em): RedirectResponse
+    public function promote(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'promote');
 
-        $user->setRoles(['ROLE_ADMIN']);
+        $roles = $user->getRoles();
+        $roles[] = 'ROLE_ADMIN';
+        $user->setRoles(array_values(array_unique(array_diff($roles, ['ROLE_USER']))));
         $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'admin_user_promote', $user);
 
         $this->addFlash('success', 'Utilisateur promu au rôle ADMIN.');
         return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
@@ -203,7 +209,8 @@ class AdminUserController extends AbstractController
         User $user,
         Request $request,
         StripeConnectService $stripeService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        AdminAuditLogger $auditLogger
     ): RedirectResponse {
         $this->assertValidUserToken($user, $request, 'stripe_create');
 
@@ -226,6 +233,7 @@ class AdminUserController extends AbstractController
             // Mise à jour des champs supplémentaires dans User si tu veux les conserver
             $user->setTelephone($telephone);
             $em->flush();
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_connect_create', $user);
 
             $this->addFlash('success', '✅ Compte Stripe Connect créé avec succès.');
         } catch (\Exception $e) {
@@ -239,12 +247,13 @@ class AdminUserController extends AbstractController
      * Supprime (ferme) le compte Stripe d’un utilisateur
      * @Route("/admin/utilisateurs/{id}/stripe-supprimer", name="admin_user_delete_stripe", methods={"POST"})
      */
-    public function deleteStripe(User $user, Request $request, StripeConnectService $stripeConnectService): RedirectResponse
+    public function deleteStripe(User $user, Request $request, StripeConnectService $stripeConnectService, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidUserToken($user, $request, 'stripe_delete');
 
         try {
             $stripeConnectService->supprimerCompteStripe($user);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_connect_delete', $user);
             $this->addFlash('success', '🚫 Compte Stripe supprimé avec succès.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la suppression du compte Stripe : ' . $e->getMessage());
@@ -257,7 +266,7 @@ class AdminUserController extends AbstractController
      * Envoie la pièce d'identité à Stripe
      * @Route("/admin/utilisateurs/{id}/envoyer-identite-stripe", name="admin_user_stripe_upload_identity", methods={"POST"})
      */
-    public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService): RedirectResponse
+    public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidUserToken($user, $request, 'stripe_identity');
 
@@ -273,6 +282,7 @@ class AdminUserController extends AbstractController
 
         try {
             $stripeService->ajouterPieceIdentite($user, $cheminFichier);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_identity_upload', $user);
             $this->addFlash('success', '✅ Pièce d’identité envoyée avec succès à Stripe.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de l\'envoi de la pièce d\'identité : ' . $e->getMessage());

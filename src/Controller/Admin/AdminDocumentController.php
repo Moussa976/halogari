@@ -3,7 +3,9 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Document;
+use App\Entity\User;
 use App\Repository\DocumentRepository;
+use App\Service\AdminAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -29,12 +31,13 @@ class AdminDocumentController extends AbstractController
      * Valider un document
      * @Route("/admin/document/{id}/valider", name="admin_document_validate", methods={"POST"})
      */
-    public function validate(Document $document, Request $request, EntityManagerInterface $em): RedirectResponse
+    public function validate(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'validate');
 
         $document->setStatus(Document::STATUS_APPROVED);
         $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_validate', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
 
         $this->addFlash('success', 'Document validé avec succès.');
 
@@ -45,12 +48,13 @@ class AdminDocumentController extends AbstractController
      * Refuser un document
      * @Route("/admin/document/{id}/refuser", name="admin_document_reject", methods={"POST"})
      */
-    public function reject(Document $document, Request $request, EntityManagerInterface $em): RedirectResponse
+    public function reject(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'reject');
 
         $document->setStatus(Document::STATUS_REJECTED);
         $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_reject', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
 
         $this->addFlash('warning', 'Document refusé.');
 
@@ -61,12 +65,13 @@ class AdminDocumentController extends AbstractController
      * Remettre un document en attente (pending)
      * @Route("/admin/document/{id}/en-attente", name="admin_document_pending", methods={"POST"})
      */
-    public function setPending(Document $document, Request $request, EntityManagerInterface $em): RedirectResponse
+    public function setPending(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'pending');
 
         $document->setStatus(Document::STATUS_PENDING);
         $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_pending', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
 
         $this->addFlash('info', 'Le document a été remis en attente.');
 

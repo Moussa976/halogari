@@ -293,10 +293,12 @@
         <div class="card h-100">
           <div class="card-header">Actions sensibles</div>
           <div class="card-body d-flex flex-wrap gap-2 align-items-start">
-            <form method="post" action="{{ path('admin_user_promote', {id: user.id}) }}" onsubmit="return confirm('Promouvoir cet utilisateur au rôle ADMIN ?');">
-              <input type="hidden" name="_token" value="{{ csrf_token('admin_user_promote_' ~ user.id) }}">
-              <button type="submit" class="btn btn-outline-success btn-sm" disabled>Promouvoir en admin</button>
-            </form>
+            {% if is_granted('ROLE_SUPER_ADMIN') and 'ROLE_ADMIN' not in user.roles and 'ROLE_SUPER_ADMIN' not in user.roles %}
+              <form method="post" action="{{ path('admin_user_promote', {id: user.id}) }}" onsubmit="return confirm('Promouvoir cet utilisateur au rôle ADMIN ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_promote_' ~ user.id) }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">Promouvoir en admin</button>
+              </form>
+            {% endif %}
             <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression (anonymisation) de ce compte ?');">
               <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_' ~ user.id) }}">
               <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer ce compte</button>

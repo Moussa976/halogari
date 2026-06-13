@@ -18,12 +18,19 @@ class NotificationService
     private MailerInterface $mailer;
     private Environment $twig;
     private EntityManagerInterface $em;
+    private AdminNotificationMailer $adminNotificationMailer;
 
-    public function __construct(MailerInterface $mailer, Environment $twig, EntityManagerInterface $em)
+    public function __construct(
+        MailerInterface $mailer,
+        Environment $twig,
+        EntityManagerInterface $em,
+        AdminNotificationMailer $adminNotificationMailer
+    )
     {
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->em = $em;
+        $this->adminNotificationMailer = $adminNotificationMailer;
     }
 
     /**
@@ -106,6 +113,22 @@ class NotificationService
                 $reservation->getTrajet()->getArrivee()
             ),
             '/user/trajet/' . $reservation->getTrajet()->getId()
+        );
+
+        $this->adminNotificationMailer->notify(
+            'Nouvelle reservation a suivre',
+            sprintf(
+                "%s %s demande %d place(s) pour %s -> %s.\nConducteur : %s %s <%s>",
+                $reservation->getPassager()->getPrenom(),
+                $reservation->getPassager()->getNom(),
+                $reservation->getPlaces(),
+                $reservation->getTrajet()->getDepart(),
+                $reservation->getTrajet()->getArrivee(),
+                $conducteur->getPrenom(),
+                $conducteur->getNom(),
+                $conducteur->getEmail()
+            ),
+            '/admin/reservations'
         );
     }
 
@@ -229,6 +252,19 @@ class NotificationService
         'Paiement capturé',
         'Votre paiement est confirmé pour cette réservation.',
         '/user/reservation/' . $reservation->getId()
+    );
+    $this->adminNotificationMailer->notify(
+        'Paiement capture a controler',
+        sprintf(
+            "Paiement capture pour la reservation #%d.\nPassager : %s %s <%s>\nTrajet : %s -> %s",
+            $reservation->getId(),
+            $reservation->getPassager()->getPrenom(),
+            $reservation->getPassager()->getNom(),
+            $reservation->getPassager()->getEmail(),
+            $reservation->getTrajet()->getDepart(),
+            $reservation->getTrajet()->getArrivee()
+        ),
+        '/admin/paiements'
     );
 }
 

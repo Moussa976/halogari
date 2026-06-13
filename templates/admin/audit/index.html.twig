@@ -1,0 +1,64 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Historique admin | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Historique admin</h1>
+        <p class="text-muted mb-0">Connexions administrateur et actions sensibles de la plateforme.</p>
+      </div>
+      <span class="badge bg-primary align-self-start">{{ logs|length }} événement{{ logs|length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="card">
+      <div class="card-body table-responsive">
+        <table class="table table-hover align-middle js-admin-table">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Admin</th>
+              <th>Action</th>
+              <th>Cible</th>
+              <th>IP</th>
+              <th>Détails</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+              <tr>
+                <td>{{ log.createdAt|date('d/m/Y H:i') }}</td>
+                <td>
+                  {% if log.actor %}
+                    <div class="d-flex align-items-center gap-2">
+                      {{ avatar.formatSimple(log.actor, 34, 0, 1) }}
+                      <a href="{{ path('admin_user_show', { id: log.actor.id }) }}">{{ log.actor.prenom }} {{ log.actor.nom }}</a>
+                    </div>
+                  {% else %}
+                    <span class="text-muted">Compte supprimé</span>
+                  {% endif %}
+                </td>
+                <td><span class="badge bg-light text-dark border">{{ log.action }}</span></td>
+                <td>
+                  {% if log.targetUser %}
+                    <a href="{{ path('admin_user_show', { id: log.targetUser.id }) }}">{{ log.targetUser.prenom }} {{ log.targetUser.nom }}</a>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>{{ log.ipAddress ?: '-' }}</td>
+                <td class="text-truncate" style="max-width: 340px;">{{ log.details ?: '-' }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">Aucun événement enregistré.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

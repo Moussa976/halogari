@@ -12,6 +12,7 @@ use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
+use App\Service\AdminNotificationMailer;
 use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
 use Carbon\Carbon;
@@ -275,7 +276,8 @@ class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         SluggerInterface $slugger,
-        DocumentVerificationService $documentVerificationService
+        DocumentVerificationService $documentVerificationService,
+        AdminNotificationMailer $adminNotificationMailer
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
@@ -335,6 +337,18 @@ class UserController extends AbstractController
 
                 $em->persist($document);
                 $em->flush();
+
+                $adminNotificationMailer->notify(
+                    'Document utilisateur reçu',
+                    sprintf(
+                        "%s %s <%s> a envoyé un document %s, validé automatiquement.",
+                        $user->getPrenom(),
+                        $user->getNom(),
+                        $user->getEmail(),
+                        $finalType
+                    ),
+                    '/admin/documents'
+                );
 
                 $this->addFlash('success', 'Document ajouté et validé automatiquement. ' . $verification['reason']);
             } catch (\Exception $e) {

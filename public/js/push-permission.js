@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
       Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
           localStorage.setItem('pushPermissionAsked', 'true');
+          if (typeof window.subscribeToHaloGariPush === 'function') {
+            window.subscribeToHaloGariPush();
+          }
           console.log('🔔 Notifications autorisées');
           notifButtons.forEach(b => b.classList.add('d-none'));
         } else {

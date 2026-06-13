@@ -26,10 +26,14 @@ class PushController extends AbstractController
      */
     public function pushNotifJs(): Response
     {
-        $vapidPublicKey = (string) $this->params->get('env(VAPID_PUBLIC_KEY)');
+        $vapidPublicKey = (string) ($_ENV['VAPID_PUBLIC_KEY'] ?? getenv('VAPID_PUBLIC_KEY') ?: '');
 
         if ($vapidPublicKey === '') {
-            return new Response('// VAPID key not configured', 200, ['Content-Type' => 'application/javascript']);
+            return new Response(
+                "window.subscribeToHaloGariPush = async function () { console.warn('VAPID key not configured'); };",
+                200,
+                ['Content-Type' => 'application/javascript']
+            );
         }
 
         return $this->render('push/push-notif.js.twig', [
