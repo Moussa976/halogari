@@ -3531,9 +3531,6 @@ textarea.form-control.app-message-textarea {
         grid-column: 2 / 4;
     }
 
-    .app-drawer__mobile-redundant {
-        display: none !important;
-    }
 }
 
 @media screen and (max-width: 575.98px) {
