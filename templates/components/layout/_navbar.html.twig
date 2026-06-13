@@ -72,6 +72,7 @@
       {% if app.user %}
         <a href="{{ path('app_profile', { id: app.user.id }) }}"><i class="bi bi-person"></i> Mon profil</a>
         <a href="{{ path('app_mes_trajets') }}"><i class="bi bi-signpost-2"></i> Mes trajets</a>
+        <a href="{{ path('app_mes_reservations') }}" class="app-drawer__mobile-redundant"><i class="bi bi-calendar-check"></i> Mes réservations</a>
         <a href="{{ path('app_mes_paiements') }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
         <a href="{{ path('app_parametres') }}"><i class="bi bi-gear"></i> Paramètres</a>
