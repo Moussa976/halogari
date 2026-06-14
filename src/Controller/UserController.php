@@ -326,6 +326,7 @@ class UserController extends AbstractController
             try {
                 $filename = $documentStorage->store($file, $user->getId());
             } catch (\Throwable $e) {
+                $this->logDocumentUploadError('storage', $e);
                 $this->addFlash('error', 'Erreur lors du stockage du fichier. Merci de réessayer avec un nom de fichier simple, sans caractères spéciaux.');
                 return $this->redirectToRoute('app_documents');
             }
@@ -358,6 +359,7 @@ class UserController extends AbstractController
 
                 $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration.');
             } catch (\Throwable $e) {
+                $this->logDocumentUploadError('database', $e);
                 $this->addFlash('error', 'Le fichier a été reçu, mais l’enregistrement du document a échoué. Merci de réessayer avec un nom de fichier plus court.');
             }
 
@@ -369,6 +371,20 @@ class UserController extends AbstractController
         return $this->render('user/mes_documents.html.twig', [
             'documents' => $documents,
         ]);
+    }
+
+    private function logDocumentUploadError(string $step, \Throwable $exception): void
+    {
+        $line = sprintf(
+            "[%s] %s: %s: %s\n%s\n\n",
+            (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            $step,
+            get_class($exception),
+            $exception->getMessage(),
+            $exception->getTraceAsString()
+        );
+
+        @file_put_contents($this->getParameter('kernel.logs_dir') . '/document_upload_error.log', $line, FILE_APPEND);
     }
 
     /**
