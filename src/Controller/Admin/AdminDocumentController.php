@@ -6,6 +6,7 @@ use App\Entity\Document;
 use App\Entity\User;
 use App\Repository\DocumentRepository;
 use App\Service\AdminAuditLogger;
+use App\Service\DocumentDecisionNotifier;
 use App\Service\DocumentStorage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,7 +35,7 @@ class AdminDocumentController extends AbstractController
      * Valider un document
      * @Route("/admin/document/{id}/valider", name="admin_document_validate", methods={"POST"})
      */
-    public function validate(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
+    public function validate(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger, DocumentDecisionNotifier $documentDecisionNotifier): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'validate');
 
@@ -44,6 +45,7 @@ class AdminDocumentController extends AbstractController
         $document->setReviewedBy($this->getUser() instanceof User ? $this->getUser() : null);
         $em->flush();
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_validate', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
+        $this->notifyUser($documentDecisionNotifier, $document, Document::STATUS_APPROVED);
 
         $this->addFlash('success', 'Document validé avec succès.');
 
@@ -54,7 +56,7 @@ class AdminDocumentController extends AbstractController
      * Refuser un document
      * @Route("/admin/document/{id}/refuser", name="admin_document_reject", methods={"POST"})
      */
-    public function reject(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
+    public function reject(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger, DocumentDecisionNotifier $documentDecisionNotifier): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'reject');
         $reason = trim((string) $request->request->get('reason'));
@@ -69,6 +71,7 @@ class AdminDocumentController extends AbstractController
         $document->setReviewedBy($this->getUser() instanceof User ? $this->getUser() : null);
         $em->flush();
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_reject', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument(), 'reason' => $reason]);
+        $this->notifyUser($documentDecisionNotifier, $document, Document::STATUS_REJECTED);
 
         $this->addFlash('warning', 'Document refusé.');
 
@@ -79,7 +82,7 @@ class AdminDocumentController extends AbstractController
      * Remettre un document en attente (pending)
      * @Route("/admin/document/{id}/en-attente", name="admin_document_pending", methods={"POST"})
      */
-    public function setPending(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
+    public function setPending(Document $document, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger, DocumentDecisionNotifier $documentDecisionNotifier): RedirectResponse
     {
         $this->assertValidDocumentToken($document, $request, 'pending');
 
@@ -89,6 +92,7 @@ class AdminDocumentController extends AbstractController
         $document->setReviewedBy(null);
         $em->flush();
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'document_pending', $document->getUser(), ['documentId' => $document->getId(), 'type' => $document->getTypeDocument()]);
+        $this->notifyUser($documentDecisionNotifier, $document, Document::STATUS_PENDING);
 
         $this->addFlash('info', 'Le document a été remis en attente.');
 
@@ -140,6 +144,15 @@ class AdminDocumentController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_documents');
+    }
+
+    private function notifyUser(DocumentDecisionNotifier $notifier, Document $document, string $decision): void
+    {
+        try {
+            $notifier->notify($document, $decision);
+        } catch (\Throwable $exception) {
+            $this->addFlash('warning', 'La décision a été enregistrée, mais l’e-mail utilisateur n’a pas pu être envoyé.');
+        }
     }
 }
 
