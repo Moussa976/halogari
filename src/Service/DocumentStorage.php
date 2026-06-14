@@ -23,8 +23,14 @@ class DocumentStorage
     public function store(UploadedFile $file, int $userId): string
     {
         $directory = $this->documentsDirectory . DIRECTORY_SEPARATOR . $userId;
-        if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new FileException('Impossible de préparer le dossier de stockage.');
+        }
+
+        @chmod($directory, 0775);
+        clearstatcache(true, $directory);
+        if (!is_writable($directory)) {
+            throw new FileException('Le dossier de stockage des documents n’est pas accessible en écriture.');
         }
 
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
