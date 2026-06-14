@@ -200,8 +200,8 @@ class ParametresController extends AbstractController
 
         try {
             $newFilename = $documentStorage->store($fichier, $user->getId());
-        } catch (\Exception $e) {
-            $this->addFlash('error', "Erreur lors de l'envoi du document.");
+        } catch (\Throwable $e) {
+            $this->addFlash('error', "Erreur lors du stockage du document. Merci de réessayer avec un nom de fichier simple.");
             return $this->redirectToRoute('app_parametres');
         }
 

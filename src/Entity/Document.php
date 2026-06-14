@@ -105,7 +105,7 @@ class Document
 
     public function setTypeDocument(string $typeDocument): self
     {
-        $this->typeDocument = $typeDocument;
+        $this->typeDocument = mb_substr($typeDocument, 0, 255);
         return $this;
     }
 
@@ -116,7 +116,7 @@ class Document
 
     public function setFilenameDocument(string $filenameDocument): self
     {
-        $this->filenameDocument = $filenameDocument;
+        $this->filenameDocument = mb_substr($filenameDocument, 0, 255);
         return $this;
     }
 
@@ -179,7 +179,7 @@ class Document
 
     public function setOriginalFilename(?string $originalFilename): self
     {
-        $this->originalFilename = $originalFilename;
+        $this->originalFilename = $originalFilename ? mb_substr($originalFilename, 0, 255) : null;
         return $this;
     }
 
@@ -190,7 +190,7 @@ class Document
 
     public function setMimeType(?string $mimeType): self
     {
-        $this->mimeType = $mimeType;
+        $this->mimeType = $mimeType ? mb_substr($mimeType, 0, 120) : null;
         return $this;
     }
 

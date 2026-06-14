@@ -325,7 +325,12 @@ class UserController extends AbstractController
 
             try {
                 $filename = $documentStorage->store($file, $user->getId());
+            } catch (\Throwable $e) {
+                $this->addFlash('error', 'Erreur lors du stockage du fichier. Merci de réessayer avec un nom de fichier simple, sans caractères spéciaux.');
+                return $this->redirectToRoute('app_documents');
+            }
 
+            try {
                 $document = new Document();
                 $document->setTypeDocument($finalType);
                 $document->setFilenameDocument($filename);
@@ -352,8 +357,8 @@ class UserController extends AbstractController
                 );
 
                 $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration.');
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur lors de l’envoi du fichier.');
+            } catch (\Throwable $e) {
+                $this->addFlash('error', 'Le fichier a été reçu, mais l’enregistrement du document a échoué. Merci de réessayer avec un nom de fichier plus court.');
             }
 
             return $this->redirectToRoute('app_documents');
