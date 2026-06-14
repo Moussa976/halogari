@@ -323,6 +323,10 @@ class UserController extends AbstractController
                 return $this->redirectToRoute('app_documents');
             }
 
+            $originalFilename = $file->getClientOriginalName();
+            $mimeType = $file->getMimeType();
+            $fileSize = $file->getSize();
+
             try {
                 $filename = $documentStorage->store($file, $user->getId());
             } catch (\Throwable $e) {
@@ -335,9 +339,9 @@ class UserController extends AbstractController
                 $document = new Document();
                 $document->setTypeDocument($finalType);
                 $document->setFilenameDocument($filename);
-                $document->setOriginalFilename($file->getClientOriginalName());
-                $document->setMimeType($file->getMimeType());
-                $document->setFileSize($file->getSize());
+                $document->setOriginalFilename($originalFilename);
+                $document->setMimeType($mimeType);
+                $document->setFileSize($fileSize);
                 $document->setDateDocument(new \DateTime());
                 $document->setUser($user);
                 $document->setStatus(Document::STATUS_PENDING);

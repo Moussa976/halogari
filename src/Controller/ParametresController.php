@@ -198,6 +198,10 @@ class ParametresController extends AbstractController
             return $this->redirectToRoute('app_parametres');
         }
 
+        $originalFilename = $fichier->getClientOriginalName();
+        $mimeType = $fichier->getMimeType();
+        $fileSize = $fichier->getSize();
+
         try {
             $newFilename = $documentStorage->store($fichier, $user->getId());
         } catch (\Throwable $e) {
@@ -209,9 +213,9 @@ class ParametresController extends AbstractController
         $document->setUser($user);
         $document->setTypeDocument($finalType);
         $document->setFilenameDocument($newFilename);
-        $document->setOriginalFilename($fichier->getClientOriginalName());
-        $document->setMimeType($fichier->getMimeType());
-        $document->setFileSize($fichier->getSize());
+        $document->setOriginalFilename($originalFilename);
+        $document->setMimeType($mimeType);
+        $document->setFileSize($fileSize);
         $document->setDateDocument(new \DateTime());
         $document->setStatus(Document::STATUS_PENDING);
 

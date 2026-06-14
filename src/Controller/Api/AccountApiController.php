@@ -228,6 +228,10 @@ class AccountApiController extends AbstractController
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
+        $originalFilename = $file->getClientOriginalName();
+        $mimeType = $file->getMimeType();
+        $fileSize = $file->getSize();
+
         try {
             $filename = $documentStorage->store($file, $user->getId());
         } catch (\Throwable $error) {
@@ -238,9 +242,9 @@ class AccountApiController extends AbstractController
         $document->setUser($user);
         $document->setTypeDocument($type);
         $document->setFilenameDocument($filename);
-        $document->setOriginalFilename($file->getClientOriginalName());
-        $document->setMimeType($file->getMimeType());
-        $document->setFileSize($file->getSize());
+        $document->setOriginalFilename($originalFilename);
+        $document->setMimeType($mimeType);
+        $document->setFileSize($fileSize);
         $document->setDateDocument(new \DateTime());
         $document->setStatus(Document::STATUS_PENDING);
 

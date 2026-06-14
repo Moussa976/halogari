@@ -47,14 +47,17 @@ class VerificationController extends AbstractController
                     continue;
                 }
 
+                $originalFilename = $file->getClientOriginalName();
+                $mimeType = $file->getMimeType();
+                $fileSize = $file->getSize();
                 $filename = $documentStorage->store($file, $user->getId());
                 $document = (new Document())
                     ->setUser($user)
                     ->setTypeDocument($type)
                     ->setFilenameDocument($filename)
-                    ->setOriginalFilename($file->getClientOriginalName())
-                    ->setMimeType($file->getMimeType())
-                    ->setFileSize($file->getSize())
+                    ->setOriginalFilename($originalFilename)
+                    ->setMimeType($mimeType)
+                    ->setFileSize($fileSize)
                     ->setDateDocument(new \DateTime())
                     ->setStatus(Document::STATUS_PENDING);
 
