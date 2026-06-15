@@ -1011,16 +1011,10 @@ textarea.form-control.app-message-textarea {
 
 .ride-show-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
+    gap: .75rem;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: .85rem;
-    padding: .55rem;
-    border: 1px solid var(--hg-line);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, .82);
-    box-shadow: 0 12px 32px rgba(23, 33, 27, .07);
+    margin-bottom: .45rem;
 }
 
 .ride-show-actions .btn {
@@ -1028,10 +1022,20 @@ textarea.form-control.app-message-textarea {
     align-items: center;
     justify-content: center;
     gap: .35rem;
-    min-height: 38px;
-    padding: .42rem .7rem;
-    font-size: .86rem;
+    min-height: 34px;
+    padding: .25rem .35rem;
+    border: 0;
+    color: var(--hg-green);
+    background: transparent;
+    font-size: .84rem;
     font-weight: 800;
+    box-shadow: none;
+}
+
+.ride-show-actions .btn:hover,
+.ride-show-actions .btn:focus-visible {
+    color: var(--hg-green-2);
+    background: rgba(36, 92, 54, .06);
 }
 
 .ride-show-actions .btn i {
@@ -1254,6 +1258,10 @@ textarea.form-control.app-message-textarea {
 .ride-mobile-reservation .btn {
     min-height: 42px;
     padding-inline: .75rem;
+}
+
+.ride-mobile-reservation.fixed {
+    display: grid !important;
 }
 
 .reservation-layout {
@@ -4086,16 +4094,15 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-show-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: .45rem;
-        padding: .5rem;
+        display: flex;
+        gap: .5rem;
+        padding: 0;
     }
 
     .ride-show-actions .btn {
-        width: 100%;
-        min-height: 38px;
-        padding: .4rem .55rem;
+        width: auto;
+        min-height: 34px;
+        padding: .25rem .35rem;
         font-size: .82rem;
     }
 

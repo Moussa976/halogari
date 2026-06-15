@@ -532,6 +532,44 @@ observer.observe(stopAt);
 	</script>
 
 	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+const sticky = document.getElementById('reservation-sticky');
+const stopAt = document.getElementById('reservation-section');
+
+if (! sticky || ! stopAt)
+return;
+
+const mobileQuery = window.matchMedia('(max-width: 991.98px)');
+
+function syncStickyReservation() {
+if (! mobileQuery.matches) {
+sticky.classList.remove('fixed');
+sticky.classList.add('d-none');
+return;
+}
+
+const rect = stopAt.getBoundingClientRect();
+const stopVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+if (stopVisible) {
+sticky.classList.remove('fixed');
+sticky.classList.add('d-none');
+} else {
+sticky.classList.add('fixed');
+sticky.classList.remove('d-none');
+}
+}
+
+syncStickyReservation();
+window.addEventListener('scroll', syncStickyReservation, {passive: true});
+window.addEventListener('resize', syncStickyReservation);
+if (mobileQuery.addEventListener) {
+mobileQuery.addEventListener('change', syncStickyReservation);
+}
+});
+	</script>
+
+	<script>
 		document.addEventListener('DOMContentLoaded', function () {
 const buttons = document.querySelectorAll('.contacter-non-connecte');
 buttons.forEach(btn => {
