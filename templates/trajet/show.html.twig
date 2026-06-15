@@ -21,6 +21,27 @@
 
 {% block body %}
 	<div class="container mt-3 py-5">
+		<div class="ride-show-actions">
+			<a href="{{ path('app_chercherResultats', {
+				depart: trajet.depart,
+				arrivee: trajet.arrivee,
+				date: trajet.dateTrajet|date('Y-m-d'),
+				heure: trajet.heureTrajet|date('H:i'),
+				places: nbPlaceReservee
+			}) }}" class="btn btn-outline-primary">
+				<i class="bi bi-arrow-left"></i>
+				Retour à la recherche
+			</a>
+			<button type="button"
+				class="btn btn-outline-success js-share-ride"
+				data-share-title="Trajet HaloGari : {{ trajet.depart }} vers {{ trajet.arrivee }}"
+				data-share-text="J'ai trouvé un trajet {{ trajet.depart }} → {{ trajet.arrivee }} le {{ dateTrajet }} à {{ trajet.heureTrajet|date('H:i') }} sur HaloGari."
+				data-share-url="{{ absolute_url(path('app_trajet_show', { id: trajet.id, ledepart: trajet.depart, larrive: trajet.arrivee, nbPlaceReservee: nbPlaceReservee })) }}">
+				<i class="bi bi-share"></i>
+				Partager le trajet
+			</button>
+		</div>
+
 		<div
 			class="row g-4">
 			{# Colonne gauche — Détail du trajet #}
@@ -269,6 +290,51 @@
 {% endblock %}
 
 {% block javascripts %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const shareButtons = document.querySelectorAll('.js-share-ride');
+
+shareButtons.forEach(button => {
+button.addEventListener('click', async () => {
+const shareData = {
+title: button.dataset.shareTitle || document.title,
+text: button.dataset.shareText || '',
+url: button.dataset.shareUrl || window.location.href
+};
+
+if (navigator.share) {
+try {
+await navigator.share(shareData);
+return;
+} catch (error) {
+if (error && error.name === 'AbortError') {
+return;
+}
+}
+}
+
+try {
+await navigator.clipboard.writeText(shareData.url);
+Swal.fire({
+icon: 'success',
+title: 'Lien copié',
+text: 'Le lien du trajet est prêt à être partagé.',
+confirmButtonColor: '#245c36'
+});
+} catch (error) {
+Swal.fire({
+icon: 'info',
+title: 'Lien du trajet',
+html: `<input class="form-control" value="${shareData.url.replace(/"/g, '&quot;')}" readonly>`,
+confirmButtonText: 'Fermer',
+confirmButtonColor: '#245c36'
+});
+}
+});
+});
+});
+	</script>
+
 	<script>
 		document.addEventListener("DOMContentLoaded", function () {
 const forms = [document.querySelector("#formDesk"), document.querySelector("#formMobile")];

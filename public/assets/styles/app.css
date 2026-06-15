@@ -1009,6 +1009,28 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-green-2);
 }
 
+.ride-show-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: .75rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .82);
+    box-shadow: 0 12px 32px rgba(23, 33, 27, .07);
+}
+
+.ride-show-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .42rem;
+    font-weight: 850;
+}
+
 .reservation-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -3824,6 +3846,15 @@ textarea.form-control.app-message-textarea {
     }
 
     .reservation-actions .btn {
+        width: 100%;
+    }
+
+    .ride-show-actions {
+        display: grid;
+        gap: .55rem;
+    }
+
+    .ride-show-actions .btn {
         width: 100%;
     }
 
