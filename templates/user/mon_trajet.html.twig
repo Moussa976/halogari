@@ -184,6 +184,7 @@
         {% for reservation in reservations %}
           {% set passengerName = reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom %}
           {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
+          {% set showPaymentBadge = (statutPaiement != 'en_attente' or reservation.statut == 'acceptee') and not (reservation.statut == 'payee' and statutPaiement == 'capture') %}
           <div class="ride-reservation-card">
             <div class="ride-reservation-card__user">
               {{ avatar.formatSimple(reservation.passager, 48, 0, 1) }}
@@ -197,9 +198,11 @@
               <span class="reservation-status reservation-status--{{ reservation.statut }}">
                 {{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}
               </span>
-              <span class="reservation-status reservation-status--payment-{{ statutPaiement }}">
-                {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
-              </span>
+              {% if showPaymentBadge %}
+                <span class="reservation-status reservation-status--payment-{{ statutPaiement }}">
+                  {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
+                </span>
+              {% endif %}
             </div>
 
             <div class="ride-reservation-card__actions">
@@ -237,8 +240,6 @@
                 {% else %}
                   <span class="text-muted small">Déjà noté</span>
                 {% endif %}
-              {% else %}
-                <span class="text-muted small">{{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}</span>
               {% endif %}
 
               <a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">
