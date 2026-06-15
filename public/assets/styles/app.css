@@ -4068,6 +4068,14 @@ textarea.form-control.app-message-textarea {
         text-align: left;
     }
 
+    .ride-show-main-col {
+        order: 2;
+    }
+
+    .ride-show-booking-col {
+        order: 1;
+    }
+
     .ride-show-map-shell,
     .ride-show-map-shell #map {
         min-height: 180px;
