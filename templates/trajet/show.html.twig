@@ -20,6 +20,8 @@
 {% endblock %}
 
 {% block body %}
+	{% set totalReservation = trajet.prix * nbPlaceReservee %}
+	{% set passengerLabel = nbPlaceReservee ~ ' passager' ~ (nbPlaceReservee > 1 ? 's' : '') %}
 	<div class="container mt-3 py-5">
 		<div class="ride-show-actions">
 			<a href="{{ path('app_chercherResultats', {
@@ -43,20 +45,28 @@
 			</button>
 		</div>
 
+		<header class="ride-show-heading">
+			<p class="app-kicker">Trajet disponible</p>
+			<h1>{{ trajet.depart }}
+				<i class="bi bi-arrow-right-short"></i>
+				{{ trajet.arrivee }}</h1>
+			<p>Envoyez votre demande au conducteur. Vous paierez uniquement après son acceptation.</p>
+		</header>
+
 		<div
 			class="row g-4">
 			{# Colonne gauche — Détail du trajet #}
 			<div class="col-lg-8">
-				<div class="card shadow-sm">
+				<div class="card shadow-sm ride-show-main-card">
 					<div class="card-body">
-						<h5 class="mb-3 text-center">
+						<h2 class="ride-show-date">
 							{{ dateTrajet }}
-						</h5>
+						</h2>
 
-						<div class="row mb-4">
+						<div class="row mb-4 ride-show-route-grid">
 
 							<div class="col-12 col-md-4">
-								<div class="d-flex align-items-center">
+								<div class="d-flex align-items-center ride-show-route-point">
 									<strong class="me-2">{{ trajet.heureTrajet|date('H:i') }}</strong>
 									<div>
 										<div class="fw-bold text-orange">
@@ -66,14 +76,14 @@
 									</div>
 								</div>
 
-								<div class="border-start ms-4 my-3" style="height: 30px; border-left: 2px solid #ccc;">
+								<div class="ride-show-route-duration">
 									<small class="ms-2 text-muted small">
-										<span id="temps-trajet">...</span>
+										<span id="temps-trajet">Calcul en cours</span>
 									</small>
 								</div>
 
-								<div class="d-flex align-items-center">
-									<strong class="me-2" id="arrivee-traject-time">...</strong>
+								<div class="d-flex align-items-center ride-show-route-point">
+									<strong class="me-2" id="arrivee-traject-time">Arrivée</strong>
 									<div>
 										<div class="fw-bold text-orange">
 											<i class="bi bi-flag-fill"></i>
@@ -88,7 +98,13 @@
 							</div>
 
 							<div class="col-12 col-md-8">
-								<div class="card-body shadow-sm" id="map"></div>
+								<div class="ride-show-map-shell">
+									<div class="ride-show-map-label">
+										<i class="bi bi-map"></i>
+										Itinéraire estimé
+									</div>
+									<div class="card-body shadow-sm" id="map"></div>
+								</div>
 							</div>
 						</div>
 
@@ -114,13 +130,26 @@
 																		<small class="text-muted">Annule rarement ses trajets</small>
 																	</div> #}
 
-						<div class="mb-3">
+						<div class="ride-show-description">
 							<p>{{ trajet.description|nl2br }}</p>
 						</div>
 
-						<hr>
-						<div class="text-muted small">
-							Le conducteur validera votre réservation.
+						<div class="ride-show-flow">
+							<div>
+								<span>1</span>
+								<strong>Demande envoyée</strong>
+								<small>Le conducteur reçoit votre réservation.</small>
+							</div>
+							<div>
+								<span>2</span>
+								<strong>Acceptation</strong>
+								<small>Vous payez seulement si le conducteur accepte.</small>
+							</div>
+							<div>
+								<span>3</span>
+								<strong>Trajet confirmé</strong>
+								<small>Vous voyagez ensemble, simplement.</small>
+							</div>
 						</div>
 					</div>
 
@@ -162,11 +191,15 @@
 
 			{# Colonne droite — Résumé & bouton réservation #}
 			<div class="col-lg-4">
-				<div class="card shadow-sm">
+				<div class="card shadow-sm ride-booking-card">
 					<div class="card-body">
-						<h6 class="text-muted mb-2">{{ dateTrajet }}</h6>
+						<p class="ride-booking-card__kicker">Votre réservation</p>
+						<h2 class="ride-booking-card__title">{{ totalReservation|number_format(2, ',', '.') }}
+							€</h2>
+						<p class="ride-booking-card__subtitle">{{ passengerLabel }}
+							· paiement après acceptation</p>
 
-						<div class="mb-3">
+						<div class="ride-booking-card__route">
 							<div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
 								|
 								<i class="bi bi-geo-fill"></i>
@@ -178,20 +211,19 @@
 							</div>
 						</div>
 
-						<div class="d-flex align-items-center mb-3">
+						<div class="d-flex align-items-center ride-booking-card__driver">
 							{{ avatar.formatSimple(trajet.conducteur, 30,0,1) }}<span class="ms-2">{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
 						</div>
 
-						<div class="border-top pt-3 mt-3">
+						<div class="ride-booking-card__price">
 							<div class="d-flex justify-content-between align-items-center">
-								<span>{{ nbPlaceReservee }}
-									passager(s)</span>
+								<span>{{ passengerLabel }}</span>
 								<span class="fw-bold">{{ trajet.prix|number_format(2, ',', '.') }}
 									€</span>
 							</div>
 							<div class="d-flex justify-content-between align-items-center border-top border-success">
 								<strong>Total</strong>
-								<span class="fw-bold">{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.')}}
+								<span class="fw-bold">{{ totalReservation|number_format(2, ',', '.')}}
 									€</span>
 							</div>
 						</div>
@@ -349,15 +381,16 @@ return;
 const prix = parseFloat("{{ trajet.prix }}");
 const nb = parseInt("{{ nbPlaceReservee }}");
 const total = (prix * nb).toFixed(2).replace('.', ',');
+const passengerLabel = `${nb} passager${nb > 1 ? 's' : ''}`;
 
 form.addEventListener('submit', function (e) {
 e.preventDefault();
 Swal.fire({
 icon: 'question',
-title: 'Confirmer la réservation',
-html: `Vous allez réserver <strong>${nb}</strong> place(s) pour <strong>${total} €</strong>.<br>Souhaitez-vous continuer ?`,
+title: 'Envoyer la demande ?',
+html: `Vous demandez <strong>${passengerLabel}</strong> pour <strong>${total} €</strong>.<br>Le paiement se fera après acceptation du conducteur.`,
 showCancelButton: true,
-confirmButtonText: 'Oui, je confirme',
+confirmButtonText: 'Envoyer la demande',
 cancelButtonText: 'Annuler',
 confirmButtonColor: '#ff6f00'
 }).then(result => {
