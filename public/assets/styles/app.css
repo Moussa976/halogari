@@ -3944,8 +3944,8 @@ textarea.form-control.app-message-textarea {
     .ride-card__route {
         grid-area: route;
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: .2rem;
+        grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr);
+        gap: .2rem .35rem;
         align-items: center;
         padding: 0;
         border: 0;
@@ -3962,16 +3962,17 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card__route i {
-        display: none;
-    }
-
-    .ride-card__route span + i + span::before {
-        content: "→ ";
+        display: inline-grid;
+        width: 22px;
+        height: 22px;
+        justify-self: center;
+        border-radius: 999px;
         color: var(--hg-orange);
+        background: rgba(238, 121, 17, .09);
     }
 
     .ride-card__route small {
-        grid-column: auto;
+        grid-column: 1 / -1;
         display: inline-flex;
         width: fit-content;
         margin-top: .15rem;
