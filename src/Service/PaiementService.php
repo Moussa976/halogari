@@ -105,6 +105,45 @@ class PaiementService
         }
     }
 
+    public function synchroniserPaiementStripe(Reservation $reservation): bool
+    {
+        $paiement = $reservation->getPaiement();
+        if (!$paiement || !$paiement->getPaymentIntentId()) {
+            return false;
+        }
+
+        $intent = PaymentIntent::retrieve($paiement->getPaymentIntentId());
+
+        if ($intent->status === 'succeeded') {
+            $wasCaptured = $paiement->getStatut() === 'capture';
+
+            $paiement->setStatut('capture');
+            if (!$paiement->getCapturedAt()) {
+                $paiement->setCapturedAt(new \DateTimeImmutable());
+            }
+
+            if ($reservation->getStatut() !== 'payee') {
+                $reservation->setStatut('payee');
+            }
+
+            $this->em->flush();
+
+            return !$wasCaptured;
+        }
+
+        if ($intent->status === 'requires_capture') {
+            $paiement->setStatut('autorise');
+            $this->em->flush();
+        }
+
+        if (in_array($intent->status, ['canceled', 'requires_payment_method'], true)) {
+            $paiement->setStatut($intent->status === 'canceled' ? 'annule' : 'echoue');
+            $this->em->flush();
+        }
+
+        return false;
+    }
+
     public function verserConducteur(Paiement $paiement): void
     {
         if ($paiement->getStatut() !== 'capture') {

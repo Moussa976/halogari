@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ReservationRepository;
+use App\Service\NotificationService;
 use App\Service\PaiementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -67,7 +68,12 @@ class PaiementController extends AbstractController
      * @Route("/user/paiement/confirmation/{id}", name="paiement_confirmation", methods={"GET"})
      * @IsGranted("ROLE_USER")
      */
-    public function confirmation(int $id, ReservationRepository $repo): Response
+    public function confirmation(
+        int $id,
+        ReservationRepository $repo,
+        PaiementService $paiementService,
+        NotificationService $notificationService
+    ): Response
     {
         $reservation = $repo->find($id);
 
@@ -75,9 +81,17 @@ class PaiementController extends AbstractController
             throw $this->createNotFoundException('Accès interdit ou réservation introuvable.');
         }
 
+        try {
+            if ($paiementService->synchroniserPaiementStripe($reservation)) {
+                $notificationService->envoyerPaiementCapture($reservation);
+            }
+        } catch (\Throwable $exception) {
+            // Le webhook Stripe reste le filet de securite si la synchronisation directe echoue.
+        }
+
         $paiement = $reservation->getPaiement();
         if (!$paiement || $paiement->getStatut() !== 'capture') {
-            $this->addFlash('warning', "Le paiement n'est pas encore confirmé. Si vous venez de payer, patientez quelques secondes puis actualisez vos réservations.");
+            $this->addFlash('warning', "Le paiement est en cours de confirmation. Si votre banque l'a validé, HaloGari mettra votre réservation à jour dans quelques secondes.");
             return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
         }
 
