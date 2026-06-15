@@ -1012,11 +1012,11 @@ textarea.form-control.app-message-textarea {
 .ride-show-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: .65rem;
+    gap: .5rem;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
-    padding: .75rem;
+    margin-bottom: .85rem;
+    padding: .55rem;
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     background: rgba(255, 255, 255, .82);
@@ -1027,8 +1027,11 @@ textarea.form-control.app-message-textarea {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: .42rem;
-    font-weight: 850;
+    gap: .35rem;
+    min-height: 38px;
+    padding: .42rem .7rem;
+    font-size: .86rem;
+    font-weight: 800;
 }
 
 .reservation-layout {
@@ -3851,11 +3854,15 @@ textarea.form-control.app-message-textarea {
 
     .ride-show-actions {
         display: grid;
-        gap: .55rem;
+        gap: .45rem;
+        padding: .5rem;
     }
 
     .ride-show-actions .btn {
         width: 100%;
+        min-height: 40px;
+        padding: .45rem .65rem;
+        font-size: .84rem;
     }
 
     .ride-cancel-form,
