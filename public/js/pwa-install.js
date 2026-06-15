@@ -1,5 +1,35 @@
-// 📲 Gestion de l'installation manuelle PWA (Android/Chrome)
+// Installation PWA Android/Chrome.
 let deferredPrompt;
+
+function isHaloGariStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+}
+
+function getInstallButtons() {
+    return document.querySelectorAll('.installAppBtn');
+}
+
+function hideInstallButtons() {
+    getInstallButtons().forEach((btn) => {
+        btn.classList.add('d-none');
+        btn.disabled = false;
+    });
+}
+
+function showInstallButtons() {
+    if (isHaloGariStandalone()) {
+        hideInstallButtons();
+        return;
+    }
+
+    getInstallButtons().forEach((btn) => {
+        btn.classList.remove('d-none');
+        btn.disabled = false;
+        btn.removeEventListener('click', handlePWAInstall);
+        btn.addEventListener('click', handlePWAInstall);
+    });
+}
 
 function handlePWAInstall() {
     if (!deferredPrompt) return;
@@ -8,23 +38,31 @@ function handlePWAInstall() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-            console.log('✅ L’app HaloGari a été installée');
+            localStorage.setItem('halogariPwaInstalled', '1');
+            hideInstallButtons();
         } else {
-            console.log('❌ Installation refusée');
+            this.disabled = false;
         }
+
         deferredPrompt = null;
     });
 }
 
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    if (localStorage.getItem('pushPermissionAsked')) {
-        document.querySelectorAll('.installAppBtn').forEach((btn) => {
-            btn.classList.remove('d-none');
-            btn.removeEventListener('click', handlePWAInstall); // sécurité
-            btn.addEventListener('click', handlePWAInstall);
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    if (isHaloGariStandalone()) {
+        localStorage.setItem('halogariPwaInstalled', '1');
+        hideInstallButtons();
     }
+});
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    showInstallButtons();
+});
+
+window.addEventListener('appinstalled', () => {
+    localStorage.setItem('halogariPwaInstalled', '1');
+    deferredPrompt = null;
+    hideInstallButtons();
 });

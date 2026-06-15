@@ -52,10 +52,15 @@ window.subscribeToHaloGariPush = subscribeToPush;
 document.addEventListener('DOMContentLoaded', () => {
   const ua = navigator.userAgent.toLowerCase();
   const isIos = /iphone|ipad|ipod/.test(ua);
-  const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+    || (('standalone' in window.navigator) && window.navigator.standalone);
   const installHelpStorageKey = 'halogariIosInstallHelpSeen';
 
-  // ✅ Guide d'installation iOS (Safari ou Chrome depuis iOS 16.4)
+  if (isInStandaloneMode) {
+    localStorage.setItem('halogariPwaInstalled', '1');
+  }
+
+  // Guide d'installation iOS affiche une seule fois hors mode installe.
   if (isIos && !isInStandaloneMode && !localStorage.getItem(installHelpStorageKey)) {
     setTimeout(() => {
       Swal.fire({
