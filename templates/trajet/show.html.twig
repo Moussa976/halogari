@@ -22,6 +22,11 @@
 {% block body %}
 	{% set totalReservation = trajet.prix * nbPlaceReservee %}
 	{% set passengerLabel = nbPlaceReservee ~ ' passager' ~ (nbPlaceReservee > 1 ? 's' : '') %}
+	{% set nowDate = "now"|date("Y-m-d") %}
+	{% set nowTime = "now"|date("H:i") %}
+	{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
+	{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
+	{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %}
 	<div class="container mt-3 py-5">
 		<div class="ride-show-actions">
 			<a href="{{ path('app_chercherResultats', {
@@ -246,51 +251,50 @@
 
 					</div>
 
-					<div id="reservation-sticky" class="ride-mobile-reservation d-lg-none d-none">
-						<div class="ride-mobile-reservation__summary">
-							<span>{{ passengerLabel }}</span>
-							<strong>{{ totalReservation|number_format(2, ',', '.') }}
-								€</strong>
-						</div>
-						<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
-							<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
-							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
-
-							{% if app.user %}
-								{% if app.user.id != trajet.conducteur.id %}
-									<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
-										{% if isPassed %}
-											Trajet terminé
-										{% else %}
-											Réserver
-										{% endif %}
-									</button>
-								{% else %}
-									<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
-
-										{% if isPassed %}
-											<i class="bi bi-eye"></i>
-											Voir mon trajet
-										{% else %}
-											<i class="bi bi-gear"></i>
-											Gérer mon trajet
-										{% endif %}
-									</a>
-								{% endif %}
-							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
-									{% if isPassed %}
-										Trajet terminé
-									{% else %}
-										Réserver
-									{% endif %}
-								</a>
-							{% endif %}
-						</form>
-					</div>
-
 				</div>
 			</div>
+		</div>
+
+		<div id="reservation-sticky" class="ride-mobile-reservation d-lg-none d-none">
+			<div class="ride-mobile-reservation__summary">
+				<span>{{ passengerLabel }}</span>
+				<strong>{{ totalReservation|number_format(2, ',', '.') }}
+					€</strong>
+			</div>
+			<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+				<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
+				<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
+
+				{% if app.user %}
+					{% if app.user.id != trajet.conducteur.id %}
+						<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+							{% if isPassed %}
+								Trajet terminé
+							{% else %}
+								Réserver
+							{% endif %}
+						</button>
+					{% else %}
+						<a href="{{ path('app_user_trajet', { id: trajet.id }) }}" class="btn btn-orange w-100">
+							{% if isPassed %}
+								<i class="bi bi-eye"></i>
+								Voir mon trajet
+							{% else %}
+								<i class="bi bi-gear"></i>
+								Gérer mon trajet
+							{% endif %}
+						</a>
+					{% endif %}
+				{% else %}
+					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+						{% if isPassed %}
+							Trajet terminé
+						{% else %}
+							Réserver
+						{% endif %}
+					</a>
+				{% endif %}
+			</form>
 		</div>
 	</div>
 {% endblock %}
