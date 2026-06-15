@@ -2464,15 +2464,16 @@ textarea.form-control.app-message-textarea {
 .ride-card {
     position: relative;
     display: grid;
-    grid-template-columns: 86px minmax(0, 1.4fr) minmax(120px, .7fr) 96px;
-    gap: 1rem;
+    grid-template-columns: 94px minmax(0, 1.55fr) minmax(150px, .75fr) 112px;
+    gap: 1.1rem;
     align-items: center;
-    min-height: 112px;
-    padding: 1rem;
+    min-height: 118px;
+    padding: 1rem 1.1rem;
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     color: var(--hg-ink);
-    background: rgba(255, 255, 255, .9);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, .96), rgba(247, 249, 245, .9));
     text-decoration: none;
     box-shadow: 0 18px 48px rgba(23, 33, 27, .1);
     overflow: hidden;
@@ -2494,11 +2495,29 @@ textarea.form-control.app-message-textarea {
     transform: translateY(-3px);
 }
 
+.ride-card__time {
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    min-height: 74px;
+    padding: .65rem .5rem;
+    border: 1px solid rgba(36, 92, 54, .12);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .07);
+    text-align: center;
+}
+
 .ride-card__time strong,
 .ride-card__route span,
 .ride-card__price strong {
     display: block;
     font-weight: 900;
+}
+
+.ride-card__time strong {
+    color: var(--hg-green);
+    font-size: 1.2rem;
+    line-height: 1.05;
 }
 
 .ride-card__time span,
@@ -2509,20 +2528,40 @@ textarea.form-control.app-message-textarea {
 }
 
 .ride-card__route {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .35rem .55rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+    gap: .3rem .55rem;
     align-items: center;
     min-width: 0;
+    padding: .2rem 0;
 }
 
 .ride-card__route span {
     min-width: 0;
+    font-size: 1.08rem;
+    line-height: 1.18;
     overflow-wrap: anywhere;
 }
 
+.ride-card__route i {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: var(--hg-orange);
+    background: rgba(238, 121, 17, .1);
+}
+
 .ride-card__route small {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
+    display: inline-flex;
+    width: fit-content;
+    padding: .24rem .55rem;
+    border-radius: 999px;
+    color: var(--hg-green);
+    background: rgba(36, 92, 54, .09);
+    font-weight: 850;
 }
 
 .ride-card__driver {
@@ -2530,17 +2569,36 @@ textarea.form-control.app-message-textarea {
     align-items: center;
     gap: .55rem;
     min-width: 0;
+    padding: .7rem;
+    border: 1px solid rgba(36, 92, 54, .1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .64);
     color: var(--hg-muted);
     font-weight: 800;
 }
 
+.ride-card__driver > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .ride-card__price {
+    align-self: stretch;
+    display: grid;
+    place-content: center;
+    min-height: 74px;
+    padding: .65rem .55rem;
+    border-radius: 8px;
+    background: rgba(238, 121, 17, .1);
     text-align: right;
 }
 
 .ride-card__price strong {
     color: var(--hg-orange);
-    font-size: 1.65rem;
+    font-size: 1.8rem;
+    line-height: .95;
 }
 
 .ride-card__price sup {
@@ -3658,11 +3716,27 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card {
-        grid-template-columns: 70px minmax(0, 1fr) 82px;
+        grid-template-columns: 82px minmax(0, 1fr) 104px;
+        gap: .85rem;
     }
 
     .ride-card__driver {
         grid-column: 2 / 4;
+        justify-self: start;
+        max-width: 100%;
+    }
+
+    .ride-card__route {
+        grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr);
+    }
+
+    .ride-card__route i {
+        width: 30px;
+        height: 30px;
+    }
+
+    .ride-card__price strong {
+        font-size: 1.55rem;
     }
 
     .app-drawer__mobile-redundant {
