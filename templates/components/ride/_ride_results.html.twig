@@ -31,6 +31,11 @@
           <span>{{ trajet.dateTrajet|date('d/m') }}</span>
         </div>
 
+        <div class="ride-card__avatar">
+          {{ avatar.formatSimple(trajet.conducteur, 42, 0, 1) }}
+          <span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
+        </div>
+
         <div class="ride-card__route">
           <span>{{ trajet.depart }}</span>
           <i class="bi bi-arrow-right"></i>
@@ -39,11 +44,6 @@
             {{ trajet.placesDisponibles }}
             {{ trajet.placesDisponibles < 2 ? 'place disponible' : 'places disponibles' }}
           </small>
-        </div>
-
-        <div class="ride-card__driver">
-          {{ avatar.formatSimple(trajet.conducteur, 34, 0, 1) }}
-          <span>{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
         </div>
 
         <div class="ride-card__price">

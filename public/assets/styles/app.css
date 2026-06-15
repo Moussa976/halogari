@@ -2464,11 +2464,11 @@ textarea.form-control.app-message-textarea {
 .ride-card {
     position: relative;
     display: grid;
-    grid-template-columns: 94px minmax(0, 1.55fr) minmax(150px, .75fr) 112px;
-    gap: 1.1rem;
+    grid-template-columns: 96px 78px minmax(0, 1fr) 112px;
+    gap: .95rem;
     align-items: center;
-    min-height: 118px;
-    padding: 1rem 1.1rem;
+    min-height: 104px;
+    padding: .9rem 1rem;
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     color: var(--hg-ink);
@@ -2495,12 +2495,14 @@ textarea.form-control.app-message-textarea {
     transform: translateY(-3px);
 }
 
-.ride-card__time {
+.ride-card__time,
+.ride-card__avatar,
+.ride-card__price {
     display: grid;
     place-items: center;
     align-self: stretch;
-    min-height: 74px;
-    padding: .65rem .5rem;
+    min-height: 70px;
+    padding: .55rem .5rem;
     border: 1px solid rgba(36, 92, 54, .12);
     border-radius: 8px;
     background: rgba(36, 92, 54, .07);
@@ -2516,15 +2518,30 @@ textarea.form-control.app-message-textarea {
 
 .ride-card__time strong {
     color: var(--hg-green);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     line-height: 1.05;
 }
 
 .ride-card__time span,
 .ride-card__route small,
-.ride-card__price span {
+.ride-card__price span,
+.ride-card__avatar span {
     color: var(--hg-muted);
     font-size: .82rem;
+}
+
+.ride-card__avatar {
+    gap: .25rem;
+    background: rgba(255, 255, 255, .66);
+}
+
+.ride-card__avatar > span {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 850;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .ride-card__route {
@@ -2564,40 +2581,14 @@ textarea.form-control.app-message-textarea {
     font-weight: 850;
 }
 
-.ride-card__driver {
-    display: flex;
-    align-items: center;
-    gap: .55rem;
-    min-width: 0;
-    padding: .7rem;
-    border: 1px solid rgba(36, 92, 54, .1);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, .64);
-    color: var(--hg-muted);
-    font-weight: 800;
-}
-
-.ride-card__driver > span {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .ride-card__price {
-    align-self: stretch;
-    display: grid;
-    place-content: center;
-    min-height: 74px;
-    padding: .65rem .55rem;
-    border-radius: 8px;
     background: rgba(238, 121, 17, .1);
     text-align: right;
 }
 
 .ride-card__price strong {
     color: var(--hg-orange);
-    font-size: 1.8rem;
+    font-size: 1.65rem;
     line-height: .95;
 }
 
@@ -3716,14 +3707,13 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card {
-        grid-template-columns: 82px minmax(0, 1fr) 104px;
-        gap: .85rem;
+        grid-template-columns: 86px 72px minmax(0, 1fr) 102px;
+        gap: .75rem;
     }
 
-    .ride-card__driver {
-        grid-column: 2 / 4;
-        justify-self: start;
-        max-width: 100%;
+    .ride-card__avatar {
+        padding-right: .35rem;
+        padding-left: .35rem;
     }
 
     .ride-card__route {
@@ -3736,7 +3726,7 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card__price strong {
-        font-size: 1.55rem;
+        font-size: 1.45rem;
     }
 
     .app-drawer__mobile-redundant {
@@ -3909,93 +3899,108 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card {
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: 58px minmax(0, 1fr) auto;
         grid-template-areas:
-            "time price"
-            "route route"
-            "driver driver";
-        gap: .75rem;
+            "time route price"
+            "avatar route price";
+        gap: .45rem .65rem;
         min-height: 0;
-        padding: .9rem .9rem .9rem 1rem;
+        padding: .75rem .75rem .75rem .95rem;
     }
 
     .ride-card__time {
         grid-area: time;
-        text-align: left;
+        min-height: 48px;
+        padding: .35rem .25rem;
+        text-align: center;
     }
 
     .ride-card__time strong {
-        font-size: 1.15rem;
+        font-size: .98rem;
         line-height: 1.05;
+    }
+
+    .ride-card__time span {
+        font-size: .68rem;
+    }
+
+    .ride-card__avatar {
+        grid-area: avatar;
+        min-height: 34px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+
+    .ride-card__avatar .hg-avatar-wrap {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .ride-card__avatar > span {
+        display: none;
     }
 
     .ride-card__route {
         grid-area: route;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
-        gap: .35rem;
+        grid-template-columns: minmax(0, 1fr);
+        gap: .2rem;
         align-items: center;
-        padding: .75rem;
-        border: 1px solid rgba(36, 92, 54, .12);
-        border-radius: 8px;
-        background: rgba(36, 92, 54, .05);
+        padding: 0;
+        border: 0;
+        background: transparent;
     }
 
     .ride-card__route span {
         min-width: 0;
-        font-size: 1rem;
-        line-height: 1.18;
-        overflow-wrap: anywhere;
-    }
-
-    .ride-card__route i {
-        justify-self: center;
-        color: var(--hg-orange);
-    }
-
-    .ride-card__route small {
-        grid-column: 1 / -1;
-        display: inline-flex;
-        width: fit-content;
-        margin-top: .15rem;
-        padding: .22rem .5rem;
-        border-radius: 999px;
-        color: var(--hg-green);
-        background: rgba(36, 92, 54, .09);
-        font-weight: 850;
-    }
-
-    .ride-card__driver {
-        grid-area: driver;
-        min-width: 0;
-        padding-top: .15rem;
-        border-top: 1px solid rgba(36, 92, 54, .1);
-    }
-
-    .ride-card__driver > span {
-        min-width: 0;
+        font-size: .98rem;
+        line-height: 1.08;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
+    .ride-card__route i {
+        display: none;
+    }
+
+    .ride-card__route span + i + span::before {
+        content: "→ ";
+        color: var(--hg-orange);
+    }
+
+    .ride-card__route small {
+        grid-column: auto;
+        display: inline-flex;
+        width: fit-content;
+        margin-top: .15rem;
+        padding: .18rem .45rem;
+        border-radius: 999px;
+        color: var(--hg-green);
+        background: rgba(36, 92, 54, .09);
+        font-size: .72rem;
+        font-weight: 850;
+    }
+
     .ride-card__price {
         grid-area: price;
-        align-self: start;
-        min-width: 76px;
-        padding: .45rem .55rem;
+        align-self: stretch;
+        min-width: 64px;
+        min-height: 0;
+        padding: .35rem .45rem;
         border-radius: 8px;
         text-align: right;
         background: rgba(238, 121, 17, .1);
     }
 
     .ride-card__price strong {
-        font-size: 1.35rem;
+        font-size: 1.15rem;
         line-height: 1;
     }
 
     .ride-card__price span {
-        font-size: .7rem;
+        font-size: .62rem;
         font-weight: 850;
     }
 
