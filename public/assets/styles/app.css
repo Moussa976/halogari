@@ -2513,6 +2513,12 @@ textarea.form-control.app-message-textarea {
     flex-wrap: wrap;
     gap: .35rem .55rem;
     align-items: center;
+    min-width: 0;
+}
+
+.ride-card__route span {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .ride-card__route small {
@@ -2523,6 +2529,7 @@ textarea.form-control.app-message-textarea {
     display: flex;
     align-items: center;
     gap: .55rem;
+    min-width: 0;
     color: var(--hg-muted);
     font-weight: 800;
 }
@@ -3828,17 +3835,94 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card {
-        grid-template-columns: 1fr;
-        gap: .55rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "time price"
+            "route route"
+            "driver driver";
+        gap: .75rem;
+        min-height: 0;
+        padding: .9rem .9rem .9rem 1rem;
     }
 
-    .ride-card__time,
-    .ride-card__price {
+    .ride-card__time {
+        grid-area: time;
         text-align: left;
     }
 
+    .ride-card__time strong {
+        font-size: 1.15rem;
+        line-height: 1.05;
+    }
+
+    .ride-card__route {
+        grid-area: route;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+        gap: .35rem;
+        align-items: center;
+        padding: .75rem;
+        border: 1px solid rgba(36, 92, 54, .12);
+        border-radius: 8px;
+        background: rgba(36, 92, 54, .05);
+    }
+
+    .ride-card__route span {
+        min-width: 0;
+        font-size: 1rem;
+        line-height: 1.18;
+        overflow-wrap: anywhere;
+    }
+
+    .ride-card__route i {
+        justify-self: center;
+        color: var(--hg-orange);
+    }
+
+    .ride-card__route small {
+        grid-column: 1 / -1;
+        display: inline-flex;
+        width: fit-content;
+        margin-top: .15rem;
+        padding: .22rem .5rem;
+        border-radius: 999px;
+        color: var(--hg-green);
+        background: rgba(36, 92, 54, .09);
+        font-weight: 850;
+    }
+
     .ride-card__driver {
-        grid-column: auto;
+        grid-area: driver;
+        min-width: 0;
+        padding-top: .15rem;
+        border-top: 1px solid rgba(36, 92, 54, .1);
+    }
+
+    .ride-card__driver > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ride-card__price {
+        grid-area: price;
+        align-self: start;
+        min-width: 76px;
+        padding: .45rem .55rem;
+        border-radius: 8px;
+        text-align: right;
+        background: rgba(238, 121, 17, .1);
+    }
+
+    .ride-card__price strong {
+        font-size: 1.35rem;
+        line-height: 1;
+    }
+
+    .ride-card__price span {
+        font-size: .7rem;
+        font-weight: 850;
     }
 
     .mobile-tabbar span {
