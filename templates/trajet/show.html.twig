@@ -10,11 +10,7 @@
 {% block stylesheets %}
 	<style>
 		#reservation-sticky.fixed {
-			position: fixed;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			z-index: 1030;
+			display: grid;
 		}
 	</style>
 {% endblock %}
@@ -199,34 +195,6 @@
 						<p class="ride-booking-card__subtitle">{{ passengerLabel }}
 							· paiement après acceptation</p>
 
-						<div class="ride-booking-card__route">
-							<div class="fw-bold">{{ trajet.heureTrajet|date('H:i') }}
-								|
-								<i class="bi bi-geo-fill"></i>
-								{{
-							trajet.depart }}
-								→
-								<i class="bi bi-flag-fill"></i>
-								{{ trajet.arrivee }}
-							</div>
-						</div>
-
-						<div class="d-flex align-items-center ride-booking-card__driver">
-							{{ avatar.formatSimple(trajet.conducteur, 30,0,1) }}<span class="ms-2">{{ trajet.conducteur.prenom ?? 'Conducteur' }}</span>
-						</div>
-
-						<div class="ride-booking-card__price">
-							<div class="d-flex justify-content-between align-items-center">
-								<span>{{ passengerLabel }}</span>
-								<span class="fw-bold">{{ trajet.prix|number_format(2, ',', '.') }}
-									€</span>
-							</div>
-							<div class="d-flex justify-content-between align-items-center border-top border-success">
-								<strong>Total</strong>
-								<span class="fw-bold">{{ totalReservation|number_format(2, ',', '.')}}
-									€</span>
-							</div>
-						</div>
 					</div>
 
 					<div id="reservation-section" class="card-footer bg-white border-top text-center">
@@ -247,9 +215,7 @@
 										{% if isPassed %}
 											Trajet terminé
 										{% else %}
-											Je réserve |
-											{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
-											€
+											Réserver
 										{% endif %}
 									</button>
 								{% else %}
@@ -268,7 +234,7 @@
 									{% if isPassed %}
 										Trajet terminé
 									{% else %}
-										Se connecter pour réserver
+										Réserver
 									{% endif %}
 								</a>
 							{% endif %}
@@ -276,7 +242,12 @@
 
 					</div>
 
-					<div id="reservation-sticky" class="d-lg-none bg-white p-3 shadow-sm text-center d-none">
+					<div id="reservation-sticky" class="ride-mobile-reservation d-lg-none d-none">
+						<div class="ride-mobile-reservation__summary">
+							<span>{{ passengerLabel }}</span>
+							<strong>{{ totalReservation|number_format(2, ',', '.') }}
+								€</strong>
+						</div>
 						<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
 							<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
 							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
@@ -287,9 +258,7 @@
 										{% if isPassed %}
 											Trajet terminé
 										{% else %}
-											Je réserve |
-											{{ (trajet.prix * nbPlaceReservee)|number_format(2, ',', '.') }}
-											€
+											Réserver
 										{% endif %}
 									</button>
 								{% else %}
@@ -309,7 +278,7 @@
 									{% if isPassed %}
 										Trajet terminé
 									{% else %}
-										Se connecter pour réserver
+										Réserver
 									{% endif %}
 								</a>
 							{% endif %}
