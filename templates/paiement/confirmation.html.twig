@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
 
 {% block title %}HaloGari | Paiement confirmé{% endblock %}
 
@@ -7,7 +8,7 @@
   <div class="container">
     <p class="app-kicker">Paiement</p>
     <h1>Paiement confirmé</h1>
-    <p>Votre réservation est payée. Le suivi complet reste disponible dans votre espace.</p>
+    <p>Votre place est confirmée. Voici la suite pour préparer le trajet sereinement.</p>
   </div>
 </section>
 
@@ -17,10 +18,10 @@
       <i class="bi bi-shield-check"></i>
     </div>
     <div class="reservation-confirmation__intro">
-      <h2>Paiement enregistré.</h2>
+      <h2>Votre place est confirmée.</h2>
       <p>
-        Le paiement de votre réservation a bien été capturé.
-        HaloGari le traite ensuite selon le déroulement du trajet et les règles d'annulation.
+        Le paiement de votre réservation a bien été capturé. HaloGari sécurise le montant,
+        puis le reversement conducteur et la commission HaloGari seront traités après le trajet selon les règles prévues.
       </p>
     </div>
 
@@ -36,11 +37,65 @@
       </div>
     </div>
 
+    <div class="reservation-stats">
+      <div class="reservation-stat">
+        <span>Date</span>
+        <strong>{{ reservation.trajet.dateTrajet|date_fr('d F Y') }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Heure</span>
+        <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Places</span>
+        <strong>{{ reservation.places }}</strong>
+      </div>
+      <div class="reservation-stat">
+        <span>Total payé</span>
+        <strong>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</strong>
+      </div>
+    </div>
+
+    <div class="reservation-confirmation__driver">
+      {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
+      <div>
+        <span>Conducteur</span>
+        <strong>{{ reservation.trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.trajet.conducteur.prenom }}</strong>
+      </div>
+    </div>
+
+    <div class="reservation-next-steps">
+      <div class="reservation-next-step is-active">
+        <span><i class="bi bi-check-circle-fill"></i></span>
+        <p>Votre réservation est payée et votre place est bloquée.</p>
+      </div>
+      <div class="reservation-next-step">
+        <span><i class="bi bi-chat-dots-fill"></i></span>
+        <p>Contactez le conducteur si vous devez confirmer un point de rendez-vous ou un détail pratique.</p>
+      </div>
+      <div class="reservation-next-step">
+        <span><i class="bi bi-flag-fill"></i></span>
+        <p>Après le trajet, vous pourrez laisser un avis depuis le suivi de réservation.</p>
+      </div>
+    </div>
+
     <div class="reservation-actions reservation-actions--center">
       <a href="{{ path('app_user_reservation', { id: reservation.id }) }}" class="btn btn-primary">
         <i class="bi bi-eye"></i>
-        Voir ma réservation
+        Suivre ma réservation
       </a>
+      {% if reservation.trajet.conducteur.nom != 'Utilisateur supprimé' %}
+        <a href="{{ path('app_conversation', { userId: reservation.trajet.conducteur.id, trajetId: reservation.trajet.id }) }}" class="btn btn-outline-primary">
+          <i class="bi bi-chat-dots"></i>
+          Écrire au conducteur
+        </a>
+        {% if reservation.trajet.conducteur.telephone %}
+          <a href="tel:{{ reservation.trajet.conducteur.telephone }}" class="btn btn-outline-success">
+            <i class="bi bi-telephone"></i>
+            Appeler
+          </a>
+        {% endif %}
+      {% endif %}
       <a href="{{ path('app_mes_reservations') }}" class="btn btn-outline-primary">
         <i class="bi bi-list-check"></i>
         Mes réservations

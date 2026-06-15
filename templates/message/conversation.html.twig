@@ -95,7 +95,7 @@
         {% for message in messages %}
           {% set isMine = message.expediteur.id == app.user.id %}
           {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
-          <div class="hg-message {{ isMine ? 'is-mine' : '' }}" data-message-id="{{ message.id }}">
+          <div class="hg-message {{ isMine ? 'is-mine' : '' }}" data-message-id="{{ message.id }}" data-message-read="{{ message.isRead ? '1' : '0' }}">
             <a href="{{ path('app_profile', { id: message.expediteur.id }) }}" class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
               {% if message.expediteur.isProfilVerifieComplet %}
                  tabindex="0"
@@ -122,12 +122,22 @@
                   <div class="hg-message__text">{{ message.contenu|nl2br }}</div>
                 {% endif %}
               </div>
-              <div class="hg-message__date">{{ message.createdAt|date_conversation }}</div>
+              <div class="hg-message__date">
+                <span>{{ message.createdAt|date_conversation }}</span>
+                {% if isMine %}
+                  <span class="hg-message__read-status">{{ message.isRead ? 'Lu' : 'Envoyé' }}</span>
+                {% endif %}
+              </div>
             </div>
           </div>
         {% else %}
           <div class="alert alert-light border text-center mb-0 hg-chat-empty-state" id="messages-empty-state">Aucun message pour le moment.</div>
         {% endfor %}
+      </div>
+
+      <div class="hg-chat-typing" id="typing-indicator" hidden>
+        <span class="hg-chat-typing__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>{{ otherName }} écrit...</span>
       </div>
 
       <form id="message-form" class="hg-chat-form" enctype="multipart/form-data">
@@ -169,14 +179,18 @@ document.addEventListener('DOMContentLoaded', function () {
   const imageInput = document.getElementById('message-image');
   const imageButton = document.getElementById('message-image-button');
   const imagePreview = document.getElementById('message-image-preview');
+  const typingIndicator = document.getElementById('typing-indicator');
   const chatImageModal = document.getElementById('chatImageModal');
   const chatImageModalImg = document.getElementById('chatImageModalImg');
   const destinataireId = {{ otherUser.id|json_encode }};
   const trajetId = {{ trajet.id|json_encode }};
   const newMessagesUrl = {{ path('api_conversation_new_messages', { userId: otherUser.id, trajetId: trajet.id })|json_encode|raw }};
+  const typingUrl = {{ path('api_conversation_typing', { userId: otherUser.id, trajetId: trajet.id })|json_encode|raw }};
   let previewUrl = null;
   let lastMessageId = Math.max(0, ...Array.from(container?.querySelectorAll('[data-message-id]') || []).map((message) => Number(message.dataset.messageId) || 0));
   let isFetchingMessages = false;
+  let lastTypingSentAt = 0;
+  let typingStopTimer = null;
 
   const openChatImageModal = (src, alt) => {
     if (!chatImageModal || !chatImageModalImg || !window.bootstrap) {
@@ -228,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const message = document.createElement('div');
     message.className = data.isMine ? 'hg-message is-mine' : 'hg-message';
     message.dataset.messageId = data.id;
+    message.dataset.messageRead = data.isRead ? '1' : '0';
 
     const avatarWrap = document.createElement('a');
     avatarWrap.className = 'hg-avatar-wrap hg-message__avatar-wrap';
@@ -291,7 +306,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const date = document.createElement('div');
     date.className = 'hg-message__date';
-    date.textContent = data.createdAt || '';
+    const dateText = document.createElement('span');
+    dateText.textContent = data.createdAt || '';
+    date.appendChild(dateText);
+
+    if (data.isMine) {
+      const readStatus = document.createElement('span');
+      readStatus.className = 'hg-message__read-status';
+      readStatus.textContent = data.isRead ? 'Lu' : 'Envoyé';
+      date.appendChild(readStatus);
+    }
 
     content.appendChild(bubble);
     content.appendChild(date);
@@ -300,6 +324,44 @@ document.addEventListener('DOMContentLoaded', function () {
     container.appendChild(message);
     lastMessageId = Math.max(lastMessageId, Number(data.id) || 0);
     container.scrollTop = container.scrollHeight;
+  };
+
+  const updateReadStatuses = (readMessageIds) => {
+    if (!Array.isArray(readMessageIds)) {
+      return;
+    }
+
+    readMessageIds.forEach((id) => {
+      const message = container?.querySelector(`.hg-message.is-mine[data-message-id="${id}"]`);
+      if (!message || message.dataset.messageRead === '1') {
+        return;
+      }
+
+      message.dataset.messageRead = '1';
+      const readStatus = message.querySelector('.hg-message__read-status');
+      if (readStatus) {
+        readStatus.textContent = 'Lu';
+      }
+    });
+  };
+
+  const setTypingVisible = (visible) => {
+    if (!typingIndicator) {
+      return;
+    }
+
+    typingIndicator.hidden = !visible;
+  };
+
+  const sendTypingState = (typing) => {
+    fetch(typingUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ typing })
+    }).catch(() => {});
   };
 
   document.querySelectorAll('.js-chat-image').forEach(prepareChatImage);
@@ -386,6 +448,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  input?.addEventListener('input', function () {
+    const now = Date.now();
+    if (input.value.trim() === '') {
+      window.clearTimeout(typingStopTimer);
+      sendTypingState(false);
+      return;
+    }
+
+    if (now - lastTypingSentAt > 1800) {
+      lastTypingSentAt = now;
+      sendTypingState(true);
+    }
+
+    window.clearTimeout(typingStopTimer);
+    typingStopTimer = window.setTimeout(() => {
+      sendTypingState(false);
+    }, 3500);
+  });
+
   const fetchNewMessages = () => {
     if (!container || isFetchingMessages || document.hidden) {
       return;
@@ -404,6 +485,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         data.messages.forEach(appendChatMessage);
+        updateReadStatuses(data.readMessageIds);
+        setTypingVisible(Boolean(data.otherUserTyping));
       })
       .catch(() => {})
       .finally(() => {
@@ -417,7 +500,10 @@ document.addEventListener('DOMContentLoaded', function () {
       fetchNewMessages();
     }
   });
-  window.addEventListener('beforeunload', () => window.clearInterval(newMessagesTimer));
+  window.addEventListener('beforeunload', () => {
+    window.clearInterval(newMessagesTimer);
+    sendTypingState(false);
+  });
 
   form?.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -455,6 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
         message.className = 'hg-message is-mine';
         if (data.id) {
           message.dataset.messageId = data.id;
+          message.dataset.messageRead = data.isRead ? '1' : '0';
           lastMessageId = Math.max(lastMessageId, Number(data.id) || 0);
         }
 
@@ -521,7 +608,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const date = document.createElement('div');
         date.className = 'hg-message__date';
-        date.textContent = data.createdAt;
+        const dateText = document.createElement('span');
+        dateText.textContent = data.createdAt;
+        const readStatus = document.createElement('span');
+        readStatus.className = 'hg-message__read-status';
+        readStatus.textContent = data.isRead ? 'Lu' : 'Envoyé';
+        date.appendChild(dateText);
+        date.appendChild(readStatus);
 
         content.appendChild(bubble);
         content.appendChild(date);
@@ -531,6 +624,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.scrollTop = container.scrollHeight;
         input.value = '';
         clearImagePreview();
+        sendTypingState(false);
       })
       .catch(() => {
         Swal.fire({

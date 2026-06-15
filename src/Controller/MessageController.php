@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class MessageController extends AbstractController
 {
@@ -215,7 +217,8 @@ class MessageController extends AbstractController
         int $trajetId,
         Request $request,
         MessageRepository $repo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        CacheInterface $cache
     ): JsonResponse {
         $currentUser = $this->getUser();
         if (!$currentUser instanceof User) {
@@ -260,7 +263,48 @@ class MessageController extends AbstractController
         return new JsonResponse([
             'status' => 'ok',
             'messages' => array_map(fn (Message $message) => $this->messagePayload($message, $currentUser), $messages),
+            'readMessageIds' => $this->readMessageIds($repo, $currentUser, $otherUser, $trajet),
+            'otherUserTyping' => $this->isUserTyping($cache, $otherUser, $currentUser, $trajet),
         ]);
+    }
+
+    /**
+     * @Route("/user/messages/{userId<\d+>}/{trajetId<\d+>}/typing", name="api_conversation_typing", methods={"POST"})
+     */
+    public function typing(
+        int $userId,
+        int $trajetId,
+        Request $request,
+        EntityManagerInterface $em,
+        CacheInterface $cache
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['status' => 'error'], 401);
+        }
+
+        $otherUser = $em->getRepository(User::class)->find($userId);
+        $trajet = $em->getRepository(Trajet::class)->find($trajetId);
+
+        if (!$otherUser || !$trajet || !$this->findValidReservation($trajet, $currentUser, $otherUser)) {
+            return new JsonResponse(['status' => 'error'], 403);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?: [];
+        $isTyping = (bool) ($payload['typing'] ?? false);
+
+        if ($isTyping) {
+            $cache->delete($this->typingCacheKey($currentUser, $otherUser, $trajet));
+            $cache->get($this->typingCacheKey($currentUser, $otherUser, $trajet), function (ItemInterface $item) {
+                $item->expiresAfter(6);
+
+                return time();
+            });
+        } else {
+            $cache->delete($this->typingCacheKey($currentUser, $otherUser, $trajet));
+        }
+
+        return new JsonResponse(['status' => 'ok']);
     }
 
     private function findValidReservation(Trajet $trajet, User $userA, User $userB): ?Reservation
@@ -377,6 +421,40 @@ class MessageController extends AbstractController
             'profileUrl' => $expediteur ? $this->generateUrl('app_profile', ['id' => $expediteur->getId()]) : '#',
             'isVerifiedProfile' => $expediteur ? $expediteur->isProfilVerifieComplet() : false,
             'isMine' => $expediteur && (int) $expediteur->getId() === (int) $currentUser->getId(),
+            'isRead' => $message->isRead(),
         ];
+    }
+
+    private function readMessageIds(MessageRepository $repo, User $currentUser, User $otherUser, Trajet $trajet): array
+    {
+        $ids = $repo->createQueryBuilder('m')
+            ->select('m.id')
+            ->where('m.trajet = :trajet')
+            ->andWhere('m.expediteur = :me')
+            ->andWhere('m.destinataire = :them')
+            ->andWhere('m.isRead = true')
+            ->setParameters([
+                'me' => $currentUser,
+                'them' => $otherUser,
+                'trajet' => $trajet,
+            ])
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_map('intval', array_column($ids, 'id'));
+    }
+
+    private function typingCacheKey(User $typingUser, User $receiver, Trajet $trajet): string
+    {
+        return sprintf('conversation_typing_%d_%d_%d', $trajet->getId(), $typingUser->getId(), $receiver->getId());
+    }
+
+    private function isUserTyping(CacheInterface $cache, User $typingUser, User $receiver, Trajet $trajet): bool
+    {
+        return null !== $cache->get($this->typingCacheKey($typingUser, $receiver, $trajet), function (ItemInterface $item) {
+            $item->expiresAfter(1);
+
+            return null;
+        });
     }
 }
