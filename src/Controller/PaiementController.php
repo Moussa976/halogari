@@ -23,7 +23,8 @@ class PaiementController extends AbstractController
         int $id,
         ReservationRepository $repo,
         PaiementService $paiementService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        NotificationService $notificationService
     ): Response {
         $reservation = $repo->find($id);
 
@@ -33,6 +34,18 @@ class PaiementController extends AbstractController
 
         if ($reservation->getPassager() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Accès refusé à cette réservation.');
+        }
+
+        try {
+            if ($paiementService->synchroniserPaiementStripe($reservation)) {
+                $notificationService->envoyerPaiementCapture($reservation);
+            }
+        } catch (\Throwable $exception) {
+            // Le formulaire reste disponible si Stripe n'est pas joignable ici.
+        }
+
+        if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'capture') {
+            return $this->redirectToRoute('paiement_confirmation', ['id' => $reservation->getId()]);
         }
 
         if ($reservation->getStatut() !== 'acceptee') {

@@ -6,6 +6,7 @@ use App\Entity\Reservation;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\ApiTokenService;
+use App\Service\NotificationService;
 use App\Service\PaiementService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,7 +29,8 @@ class PaiementApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        PaiementService $paiementService
+        PaiementService $paiementService,
+        NotificationService $notificationService
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -38,6 +40,22 @@ class PaiementApiController extends AbstractController
         $reservation = $em->getRepository(Reservation::class)->find($id);
         if (!$reservation || $reservation->getPassager() !== $user) {
             return $this->json(['message' => 'Reservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        try {
+            if ($paiementService->synchroniserPaiementStripe($reservation)) {
+                $notificationService->envoyerPaiementCapture($reservation);
+            }
+        } catch (\Throwable $error) {
+            // Le webhook Stripe ou la confirmation web reprendront la synchronisation.
+        }
+
+        if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'capture') {
+            return $this->json([
+                'message' => 'Paiement deja confirme.',
+                'status' => 'capture',
+                'paymentUrl' => $this->generateUrl('paiement_confirmation', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+            ]);
         }
 
         if ($reservation->getStatut() !== 'acceptee') {

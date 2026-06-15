@@ -45,7 +45,12 @@ class PaiementService
 
         if ($paiement->getPaymentIntentId()) {
             $intent = PaymentIntent::retrieve($paiement->getPaymentIntentId());
-            if (in_array($intent->status, ['canceled', 'succeeded'], true)) {
+            if ($intent->status === 'succeeded') {
+                $this->synchroniserPaiementStripe($reservation);
+                throw new \RuntimeException('Ce paiement est déjà confirmé.');
+            }
+
+            if ($intent->status === 'canceled') {
                 $intent = $this->createPaymentIntent($reservation, $montant);
             }
         } else {
