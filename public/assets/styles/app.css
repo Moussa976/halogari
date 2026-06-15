@@ -3899,13 +3899,13 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card {
-        grid-template-columns: 58px minmax(0, 1fr) auto;
+        grid-template-columns: 72px minmax(0, 1fr) auto;
         grid-template-areas:
             "time route price"
             "avatar route price";
-        gap: .45rem .65rem;
+        gap: .42rem .55rem;
         min-height: 0;
-        padding: .75rem .75rem .75rem .95rem;
+        padding: .72rem .72rem .72rem .9rem;
     }
 
     .ride-card__time {
@@ -3926,6 +3926,10 @@ textarea.form-control.app-message-textarea {
 
     .ride-card__avatar {
         grid-area: avatar;
+        display: flex;
+        gap: .35rem;
+        align-items: center;
+        justify-content: flex-start;
         min-height: 34px;
         padding: 0;
         border: 0;
@@ -3938,7 +3942,15 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-card__avatar > span {
-        display: none;
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        color: var(--hg-muted);
+        font-size: .72rem;
+        font-weight: 850;
+        line-height: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .ride-card__route {
