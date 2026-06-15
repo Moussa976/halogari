@@ -1368,10 +1368,23 @@ textarea.form-control.app-message-textarea {
     align-items: start;
 }
 
+.payment-layout--checkout {
+    grid-template-columns: minmax(0, 720px);
+    justify-content: center;
+}
+
 .payment-summary,
 .payment-card {
     display: grid;
     gap: 1rem;
+}
+
+.payment-summary--collapsed {
+    margin-top: .25rem;
+    padding: 1rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(247, 249, 245, .72);
 }
 
 .payment-route {
@@ -1441,6 +1454,27 @@ textarea.form-control.app-message-textarea {
     margin-top: .2rem;
     font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 900;
+}
+
+.payment-total--compact {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+.payment-total--compact strong {
+    margin-top: 0;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    white-space: nowrap;
+}
+
+.payment-detail-toggle {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    font-weight: 850;
 }
 
 .payment-card-element {
@@ -3769,6 +3803,20 @@ textarea.form-control.app-message-textarea {
 
     .payment-route > i {
         transform: rotate(90deg);
+    }
+
+    .payment-total--compact {
+        display: grid;
+        gap: .25rem;
+    }
+
+    .payment-total--compact strong {
+        white-space: normal;
+    }
+
+    .payment-detail-toggle {
+        width: 100%;
+        justify-content: center;
     }
 
     .hg-form-full {

@@ -13,55 +13,62 @@
 </section>
 
 <section class="container hg-account-section payment-page">
-  <div class="payment-layout">
-    <article class="app-panel payment-summary">
-      <div class="payment-route">
-        <div>
-          <span>Départ</span>
-          <strong>{{ reservation.trajet.depart }}</strong>
-        </div>
-        <i class="bi bi-arrow-right-short"></i>
-        <div>
-          <span>Arrivée</span>
-          <strong>{{ reservation.trajet.arrivee }}</strong>
-        </div>
-      </div>
-
-      <div class="reservation-stats">
-        <div class="reservation-stat">
-          <span>Date</span>
-          <strong>{{ reservation.trajet.dateTrajet|date_fr('d F Y') }}</strong>
-        </div>
-        <div class="reservation-stat">
-          <span>Heure</span>
-          <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
-        </div>
-        <div class="reservation-stat">
-          <span>Places</span>
-          <strong>{{ reservation.places }}</strong>
-        </div>
-      </div>
-
-      <div class="payment-driver">
-        {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
-        <div>
-          <span>Conducteur</span>
-          <strong>{{ reservation.trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.trajet.conducteur.prenom }}</strong>
-        </div>
-      </div>
-
-      <div class="payment-total">
-        <span>Montant à payer</span>
-        <strong>{{ total|number_format(2, ',', ' ') }} €</strong>
-      </div>
-    </article>
-
+  <div class="payment-layout payment-layout--checkout">
     <article class="app-panel payment-card">
       <div class="app-panel__header">
         <span class="app-panel__icon"><i class="bi bi-credit-card-2-front-fill"></i></span>
         <div>
           <h2>Carte bancaire</h2>
           <p>Les informations de carte sont traitées par Stripe, pas stockées par HaloGari.</p>
+        </div>
+      </div>
+
+      <div class="payment-total payment-total--compact">
+        <span>Montant à payer</span>
+        <strong>{{ total|number_format(2, ',', ' ') }} €</strong>
+      </div>
+
+      <button class="btn btn-outline-primary payment-detail-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#reservationPaymentDetail" aria-expanded="false" aria-controls="reservationPaymentDetail">
+        <i class="bi bi-receipt"></i>
+        Voir le détail de la réservation
+      </button>
+
+      <div class="collapse" id="reservationPaymentDetail">
+        <div class="payment-summary payment-summary--collapsed">
+          <div class="payment-route">
+            <div>
+              <span>Départ</span>
+              <strong>{{ reservation.trajet.depart }}</strong>
+            </div>
+            <i class="bi bi-arrow-right-short"></i>
+            <div>
+              <span>Arrivée</span>
+              <strong>{{ reservation.trajet.arrivee }}</strong>
+            </div>
+          </div>
+
+          <div class="reservation-stats">
+            <div class="reservation-stat">
+              <span>Date</span>
+              <strong>{{ reservation.trajet.dateTrajet|date_fr('d F Y') }}</strong>
+            </div>
+            <div class="reservation-stat">
+              <span>Heure</span>
+              <strong>{{ reservation.trajet.heureTrajet|date('H:i') }}</strong>
+            </div>
+            <div class="reservation-stat">
+              <span>Places</span>
+              <strong>{{ reservation.places }}</strong>
+            </div>
+          </div>
+
+          <div class="payment-driver">
+            {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
+            <div>
+              <span>Conducteur</span>
+              <strong>{{ reservation.trajet.conducteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.trajet.conducteur.prenom }}</strong>
+            </div>
+          </div>
         </div>
       </div>
 
