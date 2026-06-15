@@ -53,16 +53,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const ua = navigator.userAgent.toLowerCase();
   const isIos = /iphone|ipad|ipod/.test(ua);
   const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+  const installHelpStorageKey = 'halogariIosInstallHelpSeen';
 
   // ✅ Guide d'installation iOS (Safari ou Chrome depuis iOS 16.4)
-  if (isIos && !isInStandaloneMode) {
+  if (isIos && !isInStandaloneMode && !localStorage.getItem(installHelpStorageKey)) {
     setTimeout(() => {
       Swal.fire({
         icon: 'info',
-        title: '📲 Installer HaloGari',
-        html: `Dans Safari <strong>ou Chrome</strong>, appuyez sur <i class="bi bi-box-arrow-up"></i><br>
-               puis sur <strong>« Sur l’écran d’accueil »</strong> pour installer l’app.`,
-        confirmButtonText: 'OK'
+        title: 'Installer HaloGari',
+        html: `Pour installer HaloGari sur iPhone, ouvrez le menu de partage puis choisissez <strong>« Sur l’écran d’accueil »</strong>.<br><br>
+               Les étapes complètes sont disponibles dans l'assistant d'aide et la FAQ.`,
+        confirmButtonText: "J'ai compris",
+        showDenyButton: true,
+        denyButtonText: 'Ne plus afficher'
+      }).then((result) => {
+        if (result.isConfirmed || result.isDenied) {
+          localStorage.setItem(installHelpStorageKey, '1');
+        }
       });
     }, 10000);
   }
