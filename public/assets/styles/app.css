@@ -1034,6 +1034,10 @@ textarea.form-control.app-message-textarea {
     font-weight: 800;
 }
 
+.ride-show-actions .btn i {
+    font-size: .95rem;
+}
+
 .reservation-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -3854,15 +3858,16 @@ textarea.form-control.app-message-textarea {
 
     .ride-show-actions {
         display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: .45rem;
         padding: .5rem;
     }
 
     .ride-show-actions .btn {
         width: 100%;
-        min-height: 40px;
-        padding: .45rem .65rem;
-        font-size: .84rem;
+        min-height: 38px;
+        padding: .4rem .55rem;
+        font-size: .82rem;
     }
 
     .ride-cancel-form,

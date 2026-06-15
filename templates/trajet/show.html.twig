@@ -28,17 +28,18 @@
 				date: trajet.dateTrajet|date('Y-m-d'),
 				heure: trajet.heureTrajet|date('H:i'),
 				places: nbPlaceReservee
-			}) }}" class="btn btn-outline-primary">
+			}) }}" class="btn btn-outline-primary" title="Retour à la recherche">
 				<i class="bi bi-arrow-left"></i>
-				Retour à la recherche
+				<span>Retour</span>
 			</a>
 			<button type="button"
 				class="btn btn-outline-success js-share-ride"
+				title="Partager le trajet"
 				data-share-title="Trajet HaloGari : {{ trajet.depart }} vers {{ trajet.arrivee }}"
 				data-share-text="J'ai trouvé un trajet {{ trajet.depart }} → {{ trajet.arrivee }} le {{ dateTrajet }} à {{ trajet.heureTrajet|date('H:i') }} sur HaloGari."
 				data-share-url="{{ absolute_url(path('app_trajet_show', { id: trajet.id, ledepart: trajet.depart, larrive: trajet.arrivee, nbPlaceReservee: nbPlaceReservee })) }}">
 				<i class="bi bi-share"></i>
-				Partager le trajet
+				<span>Partager</span>
 			</button>
 		</div>
 
