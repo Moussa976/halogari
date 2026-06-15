@@ -95,7 +95,7 @@
         {% for message in messages %}
           {% set isMine = message.expediteur.id == app.user.id %}
           {% set senderName = message.expediteur.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : message.expediteur.prenom %}
-          <div class="hg-message {{ isMine ? 'is-mine' : '' }}">
+          <div class="hg-message {{ isMine ? 'is-mine' : '' }}" data-message-id="{{ message.id }}">
             <a href="{{ path('app_profile', { id: message.expediteur.id }) }}" class="hg-avatar-wrap hg-message__avatar-wrap{% if message.expediteur.isProfilVerifieComplet %} is-verified{% endif %}"
               {% if message.expediteur.isProfilVerifieComplet %}
                  tabindex="0"
@@ -173,7 +173,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const chatImageModalImg = document.getElementById('chatImageModalImg');
   const destinataireId = {{ otherUser.id|json_encode }};
   const trajetId = {{ trajet.id|json_encode }};
+  const newMessagesUrl = {{ path('api_conversation_new_messages', { userId: otherUser.id, trajetId: trajet.id })|json_encode|raw }};
   let previewUrl = null;
+  let lastMessageId = Math.max(0, ...Array.from(container?.querySelectorAll('[data-message-id]') || []).map((message) => Number(message.dataset.messageId) || 0));
+  let isFetchingMessages = false;
 
   const openChatImageModal = (src, alt) => {
     if (!chatImageModal || !chatImageModalImg || !window.bootstrap) {
@@ -212,6 +215,91 @@ document.addEventListener('DOMContentLoaded', function () {
       event.preventDefault();
       openChatImageModal(link.href || image.currentSrc || image.src, image.alt);
     });
+  };
+
+  const appendChatMessage = (data) => {
+    if (!container || !data || !data.id || container.querySelector(`[data-message-id="${data.id}"]`)) {
+      return;
+    }
+
+    document.getElementById('messages-empty-state')?.remove();
+    container.querySelector('.hg-chat-empty-state')?.remove();
+
+    const message = document.createElement('div');
+    message.className = data.isMine ? 'hg-message is-mine' : 'hg-message';
+    message.dataset.messageId = data.id;
+
+    const avatarWrap = document.createElement('a');
+    avatarWrap.className = 'hg-avatar-wrap hg-message__avatar-wrap';
+    avatarWrap.href = data.profileUrl || '#';
+    if (data.isVerifiedProfile) {
+      avatarWrap.classList.add('is-verified');
+      avatarWrap.tabIndex = 0;
+      avatarWrap.setAttribute('title', "Profil vérifié : pièce d'identité validée");
+    }
+
+    const avatar = document.createElement('img');
+    avatar.className = 'hg-message__avatar';
+    avatar.src = data.avatarUrl || '{{ asset('images/profil.png') }}';
+    avatar.alt = data.avatarAlt || 'Photo de profil';
+
+    avatarWrap.appendChild(avatar);
+    if (data.isVerifiedProfile) {
+      const badge = document.createElement('span');
+      badge.className = 'hg-verified-badge';
+      badge.setAttribute('aria-label', 'Profil vérifié');
+      badge.innerHTML = '<i class="bi bi-patch-check-fill"></i>';
+      avatarWrap.appendChild(badge);
+    }
+
+    const content = document.createElement('div');
+    content.className = 'hg-message__content';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'hg-message__bubble';
+
+    if (data.imageUrl) {
+      const imageLink = document.createElement('a');
+      imageLink.href = data.imageUrl;
+      imageLink.className = 'hg-message__image-link js-chat-image is-loading';
+      imageLink.setAttribute('aria-label', 'Agrandir la photo envoyée');
+
+      const loader = document.createElement('span');
+      loader.className = 'hg-message__image-loader';
+      loader.setAttribute('aria-hidden', 'true');
+      loader.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+      const imageElement = document.createElement('img');
+      imageElement.src = data.imageUrl;
+      imageElement.alt = 'Photo envoyée';
+      imageElement.className = 'hg-message__image';
+      imageElement.loading = 'lazy';
+      imageElement.decoding = 'async';
+
+      imageLink.appendChild(loader);
+      imageLink.appendChild(imageElement);
+      bubble.appendChild(imageLink);
+      prepareChatImage(imageLink);
+    }
+
+    if (data.contenu) {
+      const text = document.createElement('div');
+      text.className = 'hg-message__text';
+      text.textContent = data.contenu;
+      bubble.appendChild(text);
+    }
+
+    const date = document.createElement('div');
+    date.className = 'hg-message__date';
+    date.textContent = data.createdAt || '';
+
+    content.appendChild(bubble);
+    content.appendChild(date);
+    message.appendChild(avatarWrap);
+    message.appendChild(content);
+    container.appendChild(message);
+    lastMessageId = Math.max(lastMessageId, Number(data.id) || 0);
+    container.scrollTop = container.scrollHeight;
   };
 
   document.querySelectorAll('.js-chat-image').forEach(prepareChatImage);
@@ -298,6 +386,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  const fetchNewMessages = () => {
+    if (!container || isFetchingMessages || document.hidden) {
+      return;
+    }
+
+    isFetchingMessages = true;
+    fetch(`${newMessagesUrl}?after=${lastMessageId}`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!data || data.status !== 'ok' || !Array.isArray(data.messages)) {
+          return;
+        }
+
+        data.messages.forEach(appendChatMessage);
+      })
+      .catch(() => {})
+      .finally(() => {
+        isFetchingMessages = false;
+      });
+  };
+
+  const newMessagesTimer = window.setInterval(fetchNewMessages, 3000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      fetchNewMessages();
+    }
+  });
+  window.addEventListener('beforeunload', () => window.clearInterval(newMessagesTimer));
+
   form?.addEventListener('submit', function (event) {
     event.preventDefault();
     const contenu = input.value.trim();
@@ -332,6 +453,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const message = document.createElement('div');
         message.className = 'hg-message is-mine';
+        if (data.id) {
+          message.dataset.messageId = data.id;
+          lastMessageId = Math.max(lastMessageId, Number(data.id) || 0);
+        }
 
         const avatarWrap = document.createElement('a');
         avatarWrap.className = 'hg-avatar-wrap hg-message__avatar-wrap';

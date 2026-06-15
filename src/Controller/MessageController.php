@@ -193,22 +193,74 @@ class MessageController extends AbstractController
 
             $notificationMessageService->traiterMessageRecu($message);
 
-            return new JsonResponse([
+            $payload = $this->messagePayload($message, $user);
+
+            return new JsonResponse(array_merge([
                 'status' => 'sent',
-                'contenu' => $message->getContenu(),
-                'imageUrl' => $message->getImageFilename() ? '/uploads/messages/' . $message->getImageFilename() : null,
-                'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
-                'avatarUrl' => $user->getPhoto() ? '/uploads/photos/' . $user->getPhoto() : '/images/profil.png',
-                'avatarAlt' => 'Photo de ' . ($user->getPrenom() ?: 'profil'),
-                'profileUrl' => $this->generateUrl('app_profile', ['id' => $user->getId()]),
-                'isVerifiedProfile' => $user->isProfilVerifieComplet(),
-            ]);
+                'message' => $payload,
+            ], $payload));
         } catch (\Throwable $e) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => "Erreur interne lors de l'envoi du message.",
             ], 500);
         }
+    }
+
+    /**
+     * @Route("/user/messages/{userId<\d+>}/{trajetId<\d+>}/new", name="api_conversation_new_messages", methods={"GET"})
+     */
+    public function newMessages(
+        int $userId,
+        int $trajetId,
+        Request $request,
+        MessageRepository $repo,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Vous devez être connecté.'], 401);
+        }
+
+        $otherUser = $em->getRepository(User::class)->find($userId);
+        $trajet = $em->getRepository(Trajet::class)->find($trajetId);
+
+        if (!$otherUser || !$trajet) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Conversation introuvable.'], 404);
+        }
+
+        if (!$this->findValidReservation($trajet, $currentUser, $otherUser)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Conversation non autorisée.'], 403);
+        }
+
+        $afterId = max(0, (int) $request->query->get('after', 0));
+
+        $messages = $repo->createQueryBuilder('m')
+            ->where('m.trajet = :trajet')
+            ->andWhere('m.id > :afterId')
+            ->andWhere('(m.expediteur = :me AND m.destinataire = :them) OR (m.expediteur = :them AND m.destinataire = :me)')
+            ->setParameters([
+                'me' => $currentUser,
+                'them' => $otherUser,
+                'trajet' => $trajet,
+                'afterId' => $afterId,
+            ])
+            ->orderBy('m.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        foreach ($messages as $message) {
+            if ($message->getDestinataire() === $currentUser && !$message->isRead()) {
+                $message->setIsRead(true);
+            }
+        }
+
+        $em->flush();
+
+        return new JsonResponse([
+            'status' => 'ok',
+            'messages' => array_map(fn (Message $message) => $this->messagePayload($message, $currentUser), $messages),
+        ]);
     }
 
     private function findValidReservation(Trajet $trajet, User $userA, User $userB): ?Reservation
@@ -308,5 +360,23 @@ class MessageController extends AbstractController
         }
 
         return $date->format('d/m/Y à H:i');
+    }
+
+    private function messagePayload(Message $message, User $currentUser): array
+    {
+        $expediteur = $message->getExpediteur();
+        $senderName = $expediteur ? ($expediteur->getPrenom() ?: 'profil') : 'profil';
+
+        return [
+            'id' => $message->getId(),
+            'contenu' => $message->getContenu(),
+            'imageUrl' => $message->getImageFilename() ? '/uploads/messages/' . $message->getImageFilename() : null,
+            'createdAt' => $this->formatConversationDate($message->getCreatedAt()),
+            'avatarUrl' => $expediteur && $expediteur->getPhoto() ? '/uploads/photos/' . $expediteur->getPhoto() : '/images/profil.png',
+            'avatarAlt' => 'Photo de ' . $senderName,
+            'profileUrl' => $expediteur ? $this->generateUrl('app_profile', ['id' => $expediteur->getId()]) : '#',
+            'isVerifiedProfile' => $expediteur ? $expediteur->isProfilVerifieComplet() : false,
+            'isMine' => $expediteur && (int) $expediteur->getId() === (int) $currentUser->getId(),
+        ];
     }
 }
