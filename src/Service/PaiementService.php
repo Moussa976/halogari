@@ -283,6 +283,41 @@ class PaiementService
         }
     }
 
+    public function rembourserPaiementSelonPourcentage(Paiement $paiement, int $pourcentage): void
+    {
+        if ($pourcentage <= 0 || $pourcentage > 100) {
+            throw new \RuntimeException('Le pourcentage de remboursement doit être compris entre 1 et 100.');
+        }
+
+        $reservation = $paiement->getReservation();
+        if ($reservation) {
+            $this->assertReservationNotAlreadyTransferred($reservation);
+        }
+
+        $intentId = $paiement->getPaymentIntentId();
+        if (!$intentId) {
+            throw new \RuntimeException('PaymentIntent introuvable pour ce paiement.');
+        }
+
+        $montantTotal = (float) $paiement->getMontant();
+        $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
+        $amount = $pourcentage >= 100 ? null : (int) round($montantRembourse * 100);
+
+        $this->creerRemboursementStripe($intentId, $amount);
+
+        $paiement->setStatut($pourcentage >= 100 ? 'rembourse' : 'rembourse_partiel');
+        $this->eventLogger->log(
+            $paiement,
+            $pourcentage >= 100 ? 'remboursement_total' : 'remboursement_partiel',
+            $pourcentage >= 100 ? 'Remboursement total' : 'Remboursement partiel',
+            sprintf('Remboursement de %d %% appliqué depuis l’administration.', $pourcentage),
+            null,
+            ['pourcentage' => $pourcentage, 'montant' => $montantRembourse]
+        );
+
+        $this->em->flush();
+    }
+
     public function rembourserSelonPolitique(Reservation $reservation, bool $conducteurAnnule = false): void
     {
         $paiement = $reservation->getPaiement();
@@ -342,6 +377,28 @@ class PaiementService
         }
 
         return 0;
+    }
+
+    public static function calculerPourcentageRemboursementReservation(Reservation $reservation): int
+    {
+        if ($reservation->getCanceledBy() === Reservation::CANCELED_BY_CONDUCTEUR) {
+            return 100;
+        }
+
+        if ($reservation->getCanceledBy() !== Reservation::CANCELED_BY_PASSAGER || !$reservation->getCanceledAt()) {
+            return 0;
+        }
+
+        $trajet = $reservation->getTrajet();
+        if (!$trajet || !$trajet->getDateTrajet() || !$trajet->getHeureTrajet()) {
+            return 0;
+        }
+
+        $departTrajet = new \DateTimeImmutable(
+            $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')
+        );
+
+        return self::calculerPourcentageRemboursement($departTrajet, $reservation->getCanceledAt());
     }
 
     private function assertReservationNotAlreadyTransferred(Reservation $reservation): void

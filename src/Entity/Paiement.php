@@ -19,6 +19,7 @@ class Paiement
         'en_attente',     // par défaut, paiement non encore initié
         'autorise',       // utilisateur a autorisé, mais pas encore capturé
         'capture',        // argent capturé avec succès
+        'rembourse_partiel',
         'rembourse',      // remboursement effectué
         'echoue',         // tentative échouée ou expirée
         'annule', // ✅ nouveau statut clair pour une annulation volontaire
@@ -163,6 +164,8 @@ class Paiement
                 return 'Paiement confirmé';
             case 'rembourse':
                 return 'Remboursé';
+            case 'rembourse_partiel':
+                return 'Remboursé partiellement';
             case 'echoue':
                 return 'Échoué';
             case 'annule':

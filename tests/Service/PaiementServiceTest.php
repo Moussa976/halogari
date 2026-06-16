@@ -2,6 +2,8 @@
 
 namespace App\Tests\Service;
 
+use App\Entity\Reservation;
+use App\Entity\Trajet;
 use App\Service\PaiementService;
 use PHPUnit\Framework\TestCase;
 
@@ -41,5 +43,20 @@ class PaiementServiceTest extends TestCase
         self::assertSame(100, PaiementService::calculerPourcentageRemboursement(new \DateTimeImmutable('2026-06-17 11:00:01'), $now));
         self::assertSame(50, PaiementService::calculerPourcentageRemboursement(new \DateTimeImmutable('2026-06-16 14:00:01'), $now));
         self::assertSame(0, PaiementService::calculerPourcentageRemboursement(new \DateTimeImmutable('2026-06-16 12:59:59'), $now));
+    }
+
+    public function testRemboursementReservationUtiliseHeureAnnulation(): void
+    {
+        $trajet = new Trajet();
+        $trajet->setDateTrajet(new \DateTimeImmutable('2026-06-17'));
+        $trajet->setHeureTrajet(new \DateTimeImmutable('2026-06-17 02:20:00'));
+
+        $reservation = new Reservation();
+        $reservation->setTrajet($trajet);
+        $reservation->setStatut('annulee');
+        $reservation->setCanceledBy(Reservation::CANCELED_BY_PASSAGER);
+        $reservation->setCanceledAt(new \DateTimeImmutable('2026-06-16 20:32:00'));
+
+        self::assertSame(50, PaiementService::calculerPourcentageRemboursementReservation($reservation));
     }
 }

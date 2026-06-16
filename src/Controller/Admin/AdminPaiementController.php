@@ -118,13 +118,20 @@ class AdminPaiementController extends AbstractController
                 throw new \RuntimeException('Le versement conducteur a déjà été effectué. Le remboursement doit être traité manuellement depuis Stripe et l’administration HaloGari.');
             }
 
-            $paiementService->rembourserPaiement((string) $paiement->getPaymentIntentId());
-            $paiement->setStatut('rembourse');
-            $eventLogger->log($paiement, 'remboursement_admin', 'Remboursement administrateur', 'Remboursement lancé depuis l’espace admin.', $this->getUser() instanceof User ? $this->getUser() : null);
-            $this->getDoctrine()->getManager()->flush();
+            $pourcentage = $reservation ? PaiementService::calculerPourcentageRemboursementReservation($reservation) : 100;
+            if ($pourcentage <= 0 && $request->request->getBoolean('exceptionnel')) {
+                $pourcentage = 100;
+            }
+
+            if ($pourcentage <= 0) {
+                throw new \RuntimeException('La politique indique 0 % de remboursement automatique. Ouvrez un litige ou confirmez un remboursement exceptionnel.');
+            }
+
+            $paiementService->rembourserPaiementSelonPourcentage($paiement, $pourcentage);
+            $eventLogger->log($paiement, 'remboursement_admin', 'Remboursement administrateur', sprintf('Remboursement de %d %% lancé depuis l’espace admin.', $pourcentage), $this->getUser() instanceof User ? $this->getUser() : null);
 
             $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_refund', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
-            $this->addFlash('success', 'Paiement remboursé.');
+            $this->addFlash('success', $pourcentage >= 100 ? 'Paiement remboursé.' : sprintf('Paiement remboursé à %d %% .', $pourcentage));
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur : ' . $e->getMessage());
         }

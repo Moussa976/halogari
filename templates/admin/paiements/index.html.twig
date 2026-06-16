@@ -8,6 +8,7 @@
     'en_attente': 'secondary',
     'autorise': 'warning text-dark',
     'capture': 'success',
+    'rembourse_partiel': 'info text-dark',
     'rembourse': 'info text-dark',
     'echoue': 'danger',
     'annule': 'dark'
@@ -85,12 +86,12 @@
                 paiement.statut == 'capture' ? 'confirme' : '',
                 aRembourser ? 'a-rembourser' : '',
                 aControler ? 'a-controler' : '',
-                paiement.statut == 'rembourse' ? 'rembourse' : '',
+                paiement.statut in ['rembourse', 'rembourse_partiel'] ? 'rembourse' : '',
                 aVerser ? 'a-verser' : '',
                 dejaVerse ? 'verse' : '',
                 paiement.statut == 'echoue' ? 'erreur' : ''
               ]|join(' ') %}
-              {% set showRow = mode == 'paiements' or aRembourser or paiement.statut in ['rembourse', 'echoue'] or statutTrajet == 'litige' %}
+              {% set showRow = mode == 'paiements' or aRembourser or paiement.statut in ['rembourse', 'rembourse_partiel', 'echoue'] or statutTrajet == 'litige' %}
               {% if showRow %}
                 <tr data-payment-filters="{{ rowFilters|trim ?: 'all' }}">
                   <td>#{{ paiement.id }}</td>
@@ -309,7 +310,10 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
                     <input type="hidden" name="mode" value="{{ mode }}">
                     {% if remboursementPourcentage is same as(0) %}
+                      <input type="hidden" name="exceptionnel" value="1">
                       <button class="btn btn-outline-danger" onclick="return confirm('La politique indique 0 % de remboursement automatique. Confirmer un remboursement exceptionnel ?')">Remboursement exceptionnel</button>
+                    {% elseif remboursementPourcentage is not null and remboursementPourcentage < 100 %}
+                      <button class="btn btn-danger" onclick="return confirm('Rembourser {{ remboursementPourcentage }} % de ce paiement ?')">Rembourser {{ remboursementPourcentage }} %</button>
                     {% else %}
                       <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
                     {% endif %}

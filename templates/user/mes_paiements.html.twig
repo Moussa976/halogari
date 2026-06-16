@@ -6,6 +6,7 @@
   'en_attente': 'En attente',
   'autorise': 'Enregistré',
   'capture': 'Confirmé',
+  'rembourse_partiel': 'Remboursé partiellement',
   'rembourse': 'Remboursé',
   'echoue': 'Échoué',
   'annule': 'Annulé'
@@ -89,7 +90,7 @@
                     </td>
                     <td data-label="Montant"><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
                     <td data-label="Statut">
-                      <span class="badge {% if paiement.statut == 'capture' %}bg-success{% elseif paiement.statut == 'rembourse' %}bg-info text-dark{% elseif paiement.statut in ['annule', 'echoue'] %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                      <span class="badge {% if paiement.statut == 'capture' %}bg-success{% elseif paiement.statut in ['rembourse', 'rembourse_partiel'] %}bg-info text-dark{% elseif paiement.statut in ['annule', 'echoue'] %}bg-danger{% else %}bg-warning text-dark{% endif %}">
                         {{ paiementLabels[paiement.statut]|default(paiement.statut) }}
                       </span>
                     </td>
@@ -157,8 +158,8 @@
                         <span class="badge bg-success">Versé</span>
                       {% elseif paiement.statut == 'capture' %}
                         <span class="badge bg-warning text-dark">À verser</span>
-                      {% elseif paiement.statut == 'rembourse' %}
-                        <span class="badge bg-info text-dark">Remboursé</span>
+                      {% elseif paiement.statut in ['rembourse', 'rembourse_partiel'] %}
+                        <span class="badge bg-info text-dark">{{ paiementLabels[paiement.statut]|default('Remboursé') }}</span>
                       {% else %}
                         <span class="badge bg-secondary">{{ paiementLabels[paiement.statut]|default(paiement.statut) }}</span>
                       {% endif %}
