@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Document;
+use App\Entity\Reservation;
 use App\Entity\Trajet;
 use App\Entity\User;
 use App\Form\DocumentFormType;
@@ -679,7 +680,7 @@ class UserController extends AbstractController
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
 
-        $reservation->setStatut('annulee');
+        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
 
         // 💸 Remboursement partiel ou total → à gérer dans l'étape B
         $em->flush();

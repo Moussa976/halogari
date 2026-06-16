@@ -1497,6 +1497,10 @@ textarea.form-control.app-message-textarea {
     gap: .42rem;
 }
 
+.reservation-actions form {
+    margin: 0;
+}
+
 .reservation-note,
 .reservation-rating {
     display: flex;

@@ -347,6 +347,9 @@ class AccountApiController extends AbstractController
         return [
             'id' => $reservation->getId(),
             'statut' => $reservation->getStatut(),
+            'canceledBy' => $reservation->getCanceledBy(),
+            'canceledAt' => $reservation->getCanceledAt() ? $reservation->getCanceledAt()->format(\DateTimeInterface::ATOM) : null,
+            'cancellationLabel' => $reservation->getCancellationLabel(),
             'places' => $reservation->getPlaces(),
             'prixTotal' => (float) $reservation->getPrixTotal(),
             'trajet' => $reservation->getTrajet()
@@ -375,6 +378,9 @@ class AccountApiController extends AbstractController
                 fn (Reservation $reservation) => [
                     'id' => $reservation->getId(),
                     'statut' => $reservation->getStatut(),
+                    'canceledBy' => $reservation->getCanceledBy(),
+                    'canceledAt' => $reservation->getCanceledAt() ? $reservation->getCanceledAt()->format(\DateTimeInterface::ATOM) : null,
+                    'cancellationLabel' => $reservation->getCancellationLabel(),
                     'places' => $reservation->getPlaces(),
                     'prixTotal' => (float) $reservation->getPrixTotal(),
                     'passager' => [

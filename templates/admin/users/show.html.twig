@@ -372,6 +372,7 @@
               </thead>
               <tbody>
                 {% for resa in user.reservations %}
+                  {% set reservationLabel = resa.statut == 'annulee' and resa.cancellationLabel ? resa.cancellationLabel : reservationLabels[resa.statut]|default(resa.statut) %}
                   <tr>
                     <td>#{{ resa.id }}</td>
                     <td>{{ resa.trajet ? resa.trajet.depart ~ ' → ' ~ resa.trajet.arrivee : 'Trajet supprimé' }}</td>
@@ -384,7 +385,12 @@
                       {% endif %}
                     </td>
                     <td>{{ resa.places ?: '-' }}</td>
-                    <td><span class="badge bg-{{ reservationClasses[resa.statut]|default('secondary') }}">{{ reservationLabels[resa.statut]|default(resa.statut) }}</span></td>
+                    <td>
+                      <span class="badge bg-{{ reservationClasses[resa.statut]|default('secondary') }}">{{ reservationLabel }}</span>
+                      {% if resa.canceledAt %}
+                        <div class="small text-muted">{{ resa.canceledAt|date('d/m/Y à H:i') }}</div>
+                      {% endif %}
+                    </td>
                     <td>{{ resa.createdAt|date('d/m/Y H:i') }}</td>
                   </tr>
                 {% endfor %}

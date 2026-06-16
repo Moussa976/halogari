@@ -126,6 +126,9 @@ class ReservationApiController extends AbstractController
             'places' => $reservation->getPlaces(),
             'prixTotal' => (float) $reservation->getPrixTotal(),
             'statut' => $reservation->getStatut(),
+            'canceledBy' => $reservation->getCanceledBy(),
+            'canceledAt' => $reservation->getCanceledAt() ? $reservation->getCanceledAt()->format(\DateTimeInterface::ATOM) : null,
+            'cancellationLabel' => $reservation->getCancellationLabel(),
         ];
     }
 
@@ -172,7 +175,7 @@ class ReservationApiController extends AbstractController
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
 
-        $reservation->setStatut('annulee');
+        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
 
         return $this->json([

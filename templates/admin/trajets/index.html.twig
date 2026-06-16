@@ -179,6 +179,7 @@
                   </thead>
                   <tbody>
                     {% for reservation in trajet.reservations %}
+                      {% set reservationLabel = reservation.statut == 'annulee' and reservation.cancellationLabel ? reservation.cancellationLabel : reservationLabels[reservation.statut]|default(reservation.statut) %}
                       <tr>
                         <td>#{{ reservation.id }}</td>
                         <td>
@@ -198,7 +199,12 @@
                         </td>
                         <td>{{ reservation.places }}</td>
                         <td>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</td>
-                        <td><span class="badge bg-{{ reservationClasses[reservation.statut]|default('secondary') }}">{{ reservationLabels[reservation.statut]|default(reservation.statut) }}</span></td>
+                        <td>
+                          <span class="badge bg-{{ reservationClasses[reservation.statut]|default('secondary') }}">{{ reservationLabel }}</span>
+                          {% if reservation.canceledAt %}
+                            <div class="small text-muted">{{ reservation.canceledAt|date('d/m/Y à H:i') }}</div>
+                          {% endif %}
+                        </td>
                         <td>
                           {% if reservation.paiement %}
                             <span class="badge bg-light text-dark border">{{ reservation.paiement.statutLabel }}</span>

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Trajet;
+use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\NotificationService;
@@ -43,7 +44,7 @@ class TrajetAnnulationService
         // 🔁 Pour chaque réservation acceptée/payée
         foreach ($trajet->getReservations() as $reservation) {
             if (in_array($reservation->getStatut(), ['acceptee', 'payee'])) {
-                $reservation->setStatut('annulee');
+                $reservation->markCanceled(Reservation::CANCELED_BY_CONDUCTEUR, 'Trajet annulé par le conducteur.');
 
                 // 💳 Paiement : annuler ou rembourser
                 $this->paiementService->annulerPaiement($reservation);

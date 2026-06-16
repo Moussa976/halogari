@@ -38,13 +38,14 @@
 } %}
 
 {% set statutResa = reservation.statut %}
+{% set reservationLabel = statutResa == 'annulee' and reservation.cancellationLabel ? reservation.cancellationLabel : reservationLabels[statutResa]|default(statutResa|capitalize) %}
 {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
 {% set trajetDateTime = trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ trajet.heureTrajet|date('H:i:s') %}
 {% set trajetTimestamp = trajetDateTime|date('U') %}
 {% set nowTimestamp = 'now'|date('U') %}
 {% set trajetPasse = trajetTimestamp < nowTimestamp %}
 {% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'en_attente') %}
-{% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
+{% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee', 'payee'] and not trajetPasse %}
 {% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['autorise', 'capture'] %}
 
 {% set dejaNote = false %}
@@ -81,7 +82,7 @@
         </div>
         <span class="reservation-status reservation-status--{{ statutResa }}">
           <i class="bi {{ reservationIcons[statutResa]|default('bi-question-circle') }}"></i>
-          {{ reservationLabels[statutResa]|default(statutResa|capitalize) }}
+          {{ reservationLabel }}
         </span>
       </div>
 
@@ -118,7 +119,7 @@
               {% elseif reservation.statut == 'refusee' %}
                 La demande a été refusée.
               {% elseif reservation.statut == 'annulee' %}
-                La réservation a été annulée.
+                {{ reservationLabel }}.
               {% else %}
                 Le conducteur a accepté la réservation.
               {% endif %}
@@ -165,6 +166,16 @@
             <i class="bi bi-star"></i>
             Noter le conducteur
           </a>
+        {% endif %}
+
+        {% if peutAnnuler %}
+          <form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
+            <input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="bi bi-x-circle"></i>
+              Annuler ma réservation
+            </button>
+          </form>
         {% endif %}
       </div>
 
@@ -271,17 +282,6 @@
           {% endif %}
         </article>
 
-        <article class="app-panel reservation-danger">
-          <h2>Besoin d’annuler ?</h2>
-          <p>Annulez seulement si vous ne pouvez vraiment pas voyager. Cette action change le statut de votre réservation.</p>
-          <form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
-            <input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
-            <button type="submit" class="btn btn-outline-danger w-100">
-              <i class="bi bi-x-circle"></i>
-              Annuler ma réservation
-            </button>
-          </form>
-        </article>
       {% endif %}
     </aside>
   </div>

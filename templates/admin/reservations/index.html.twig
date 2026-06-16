@@ -45,6 +45,7 @@
           </thead>
           <tbody>
             {% for reservation in reservations %}
+              {% set reservationLabel = reservation.statut == 'annulee' and reservation.cancellationLabel ? reservation.cancellationLabel : labels[reservation.statut]|default(reservation.statut) %}
               <tr>
                 <td>#{{ reservation.id }}</td>
                 <td>
@@ -77,7 +78,12 @@
                 </td>
                 <td>{{ reservation.places ?: '-' }}</td>
                 <td>{{ reservation.prixTotal|default(0)|number_format(2, ',', ' ') }} €</td>
-                <td><span class="badge bg-{{ classes[reservation.statut]|default('secondary') }}">{{ labels[reservation.statut]|default(reservation.statut) }}</span></td>
+                <td>
+                  <span class="badge bg-{{ classes[reservation.statut]|default('secondary') }}">{{ reservationLabel }}</span>
+                  {% if reservation.canceledAt %}
+                    <div class="small text-muted">{{ reservation.canceledAt|date('d/m/Y à H:i') }}</div>
+                  {% endif %}
+                </td>
                 <td>
                   {% if reservation.paiement %}
                     <a href="{{ path('admin_paiements') }}">#{{ reservation.paiement.id }}</a>
@@ -103,6 +109,7 @@
     </div>
 
     {% for reservation in reservations %}
+      {% set reservationLabel = reservation.statut == 'annulee' and reservation.cancellationLabel ? reservation.cancellationLabel : labels[reservation.statut]|default(reservation.statut) %}
       <div class="modal fade" id="reservation-modal-{{ reservation.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
           <div class="modal-content">
@@ -118,7 +125,13 @@
                 <div class="col-md-4">
                   <div class="border rounded p-3 h-100">
                     <div class="text-muted small">Statut</div>
-                    <span class="badge bg-{{ classes[reservation.statut]|default('secondary') }}">{{ labels[reservation.statut]|default(reservation.statut) }}</span>
+                    <span class="badge bg-{{ classes[reservation.statut]|default('secondary') }}">{{ reservationLabel }}</span>
+                    {% if reservation.canceledAt %}
+                      <div class="small text-muted mt-1">Annulée le {{ reservation.canceledAt|date('d/m/Y à H:i') }}</div>
+                    {% endif %}
+                    {% if reservation.cancellationReason %}
+                      <div class="small text-muted">{{ reservation.cancellationReason }}</div>
+                    {% endif %}
                   </div>
                 </div>
                 <div class="col-md-4">

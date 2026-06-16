@@ -287,7 +287,7 @@ class ReservationController extends AbstractController
             );
         }
 
-        $reservation->setStatut('annulee');
+        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
 
         $this->addFlash('info', 'Votre réservation a été annulée.');

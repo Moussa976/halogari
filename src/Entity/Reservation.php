@@ -13,6 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Reservation
 {
+    public const CANCELED_BY_PASSAGER = 'passager';
+    public const CANCELED_BY_CONDUCTEUR = 'conducteur';
+    public const CANCELED_BY_ADMIN = 'admin';
+    public const CANCELED_BY_SYSTEME = 'systeme';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -64,6 +69,21 @@ class Reservation
      * @ORM\OneToMany(targetEntity=Commission::class, mappedBy="reservation")
      */
     private $commissions;
+
+    /**
+     * @ORM\Column(type="string", length=30, nullable=true)
+     */
+    private $canceledBy;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $canceledAt;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $cancellationReason;
 
     public function __construct()
     {
@@ -130,6 +150,77 @@ class Reservation
         $this->statut = $statut;
 
         return $this;
+    }
+
+    public function markCanceled(string $canceledBy, ?string $reason = null): self
+    {
+        if (!in_array($canceledBy, [
+            self::CANCELED_BY_PASSAGER,
+            self::CANCELED_BY_CONDUCTEUR,
+            self::CANCELED_BY_ADMIN,
+            self::CANCELED_BY_SYSTEME,
+        ], true)) {
+            throw new \InvalidArgumentException("Auteur d'annulation non valide : " . $canceledBy);
+        }
+
+        $this->setStatut('annulee');
+        $this->canceledBy = $canceledBy;
+        $this->canceledAt = new \DateTimeImmutable();
+        $this->cancellationReason = $reason;
+
+        return $this;
+    }
+
+    public function getCanceledBy(): ?string
+    {
+        return $this->canceledBy;
+    }
+
+    public function setCanceledBy(?string $canceledBy): self
+    {
+        $this->canceledBy = $canceledBy;
+
+        return $this;
+    }
+
+    public function getCanceledAt(): ?\DateTimeImmutable
+    {
+        return $this->canceledAt;
+    }
+
+    public function setCanceledAt(?\DateTimeImmutable $canceledAt): self
+    {
+        $this->canceledAt = $canceledAt;
+
+        return $this;
+    }
+
+    public function getCancellationReason(): ?string
+    {
+        return $this->cancellationReason;
+    }
+
+    public function setCancellationReason(?string $cancellationReason): self
+    {
+        $this->cancellationReason = $cancellationReason;
+
+        return $this;
+    }
+
+    public function getCancellationLabel(): ?string
+    {
+        switch ($this->canceledBy) {
+            case self::CANCELED_BY_PASSAGER:
+                return 'Annulée par le passager';
+            case self::CANCELED_BY_CONDUCTEUR:
+                return 'Annulée par le conducteur';
+            case self::CANCELED_BY_ADMIN:
+                return 'Annulée par HaloGari';
+            case self::CANCELED_BY_SYSTEME:
+                return 'Annulée automatiquement';
+            default:
+                return $this->statut === 'annulee' ? 'Annulée' : null;
+        }
     }
 
     public function getPlaces(): ?int

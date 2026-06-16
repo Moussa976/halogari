@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -109,7 +110,7 @@ class WebhookController extends AbstractController
                             $reservation->getTrajet()->getPlacesDisponibles() + $reservation->getPlaces()
                         );
                     }
-                    $reservation->setStatut('annulee');
+                    $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement annulé par Stripe.');
                     $em->flush();
                     $this->notifier->envoyerEchecPaiement($reservation);
                 }
@@ -118,7 +119,7 @@ class WebhookController extends AbstractController
             case 'charge.refunded':
                 if ($paiement && $paiement->getStatut() !== 'rembourse') {
                     $paiement->setStatut('rembourse');
-                    $reservation->setStatut('annulee');
+                    $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement remboursé par Stripe.');
                     $em->flush();
                     $this->notifier->envoyerRemboursementEffectue($reservation);
                 }
