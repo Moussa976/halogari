@@ -42,14 +42,14 @@
     <p>
       Pour publier un trajet, le conducteur doit disposer d'une pièce d'identité validée et d'un RIB validé.
       Ces documents servent à sécuriser la plateforme, à limiter les abus et à préparer les reversements conducteur.
-      Les fichiers envoyés font l'objet d'un pré-contrôle technique, puis d'une validation manuelle par l'administration HaloGari.
+      Les fichiers envoyés font l'objet d'un pré-contrôle technique, puis d'une validation par l'administration HaloGari.
     </p>
 
     <h2>4. Paiements</h2>
     <p>
-      Le passager enregistre le paiement uniquement après acceptation de sa réservation par le conducteur. Le paiement est traité par Stripe :
-      la carte est vérifiée au moment de la confirmation, puis le paiement est finalisé par HaloGari selon le déroulement du trajet.
-      HaloGari ne stocke pas les données complètes de carte bancaire.
+      Le passager enregistre le paiement uniquement après acceptation de sa réservation par le conducteur.
+      Le paiement est traité par Stripe : la carte est vérifiée au moment de la confirmation, puis HaloGari finalise
+      le paiement selon le déroulement du trajet. HaloGari ne stocke pas les données complètes de carte bancaire.
     </p>
     <p>
       Après finalisation du paiement et fin du trajet, HaloGari traite le reversement de la part conducteur et conserve sa commission de service :
@@ -92,35 +92,44 @@
             <td data-label="Remboursement">0 %</td>
             <td data-label="Remarque">Le conducteur a peu de temps pour remplacer la place.</td>
           </tr>
+          <tr>
+            <td data-label="Situation">Litige ouvert</td>
+            <td data-label="Remboursement">Étude manuelle</td>
+            <td data-label="Remarque">HaloGari bloque le versement conducteur pendant l'analyse.</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <h2>6. Comportement et sécurité</h2>
-    <ul>
-      <li>Les échanges doivent rester respectueux, utiles et liés au trajet.</li>
-      <li>Les comportements dangereux, frauduleux ou abusifs peuvent entraîner une suspension.</li>
-      <li>Les profils, documents validés, avis et messages servent à renforcer la confiance.</li>
-    </ul>
-
-    <h2>7. Suppression de compte</h2>
+    <h2>6. Documents et vérification</h2>
     <p>
-      La suppression volontaire du compte nécessite la confirmation par mot de passe. Les informations personnelles
-      directes sont supprimées ou anonymisées. Certains éléments liés aux trajets, réservations, paiements ou messages
-      peuvent être conservés sous forme anonymisée pour préserver la cohérence et la sécurité du service.
+      Les documents transmis par les utilisateurs sont accessibles uniquement à l'utilisateur concerné et à l'administration HaloGari.
+      Toute tentative d'accès non autorisé est interdite.
+    </p>
+
+    <h2>7. Messages, notifications et assistance</h2>
+    <p>
+      Les messages servent à organiser les trajets. Les notifications peuvent informer l'utilisateur d'une demande,
+      d'un paiement, d'un remboursement, d'un document ou d'une action importante sur son compte.
+    </p>
+
+    <h2>8. Responsabilités</h2>
+    <p>
+      HaloGari met à disposition une plateforme de mise en relation. Les conducteurs et passagers restent responsables
+      de leur comportement, de la ponctualité et du respect des règles applicables.
+    </p>
+
+    <h2>9. Données personnelles</h2>
+    <p>
+      Les données sont traitées conformément à la politique de confidentialité. En cas de suppression de compte,
+      certaines données liées aux trajets, réservations, paiements, messages ou avis peuvent être conservées ou anonymisées
+      afin de préserver la cohérence du service et les obligations légales.
+    </p>
+
+    <h2>10. Contact</h2>
+    <p>
+      Pour toute question, contactez HaloGari depuis la page de contact ou à l'adresse indiquée dans les mentions légales.
     </p>
   </article>
-
-  <aside class="app-panel app-tips-panel">
-    <span class="app-panel__icon"><i class="bi bi-file-earmark-check"></i></span>
-    <h2>À retenir</h2>
-    <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Respect entre utilisateurs</span>
-      <span><i class="bi bi-check-circle-fill"></i> Identité et RIB validés pour publier</span>
-      <span><i class="bi bi-check-circle-fill"></i> Paiements sécurisés</span>
-      <span><i class="bi bi-check-circle-fill"></i> Règles d'annulation claires</span>
-      <span><i class="bi bi-check-circle-fill"></i> Suppression protégée par mot de passe</span>
-    </div>
-  </aside>
 </section>
 {% endblock %}

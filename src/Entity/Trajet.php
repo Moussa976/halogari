@@ -13,6 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Trajet
 {
+    public const SUIVI_AUTO = 'auto';
+    public const SUIVI_VALIDE = 'valide';
+    public const SUIVI_LITIGE = 'litige';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -92,6 +96,31 @@ class Trajet
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
+
+    /**
+     * @ORM\Column(type="string", length=30, options={"default": "auto"})
+     */
+    private $statutSuivi = self::SUIVI_AUTO;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $validatedAt;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $disputedAt;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $statusUpdatedAt;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $statusNote;
 
     /**
      * @ORM\PrePersist
@@ -351,6 +380,139 @@ class Trajet
         return $this;
     }
 
-    
+    public function getStatutSuivi(): ?string
+    {
+        return $this->statutSuivi ?: self::SUIVI_AUTO;
+    }
+
+    public function setStatutSuivi(string $statutSuivi): self
+    {
+        if (!in_array($statutSuivi, [self::SUIVI_AUTO, self::SUIVI_VALIDE, self::SUIVI_LITIGE], true)) {
+            throw new \InvalidArgumentException('Statut de suivi du trajet non valide.');
+        }
+
+        $this->statutSuivi = $statutSuivi;
+        $this->statusUpdatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getValidatedAt(): ?\DateTimeInterface
+    {
+        return $this->validatedAt;
+    }
+
+    public function setValidatedAt(?\DateTimeInterface $validatedAt): self
+    {
+        $this->validatedAt = $validatedAt;
+
+        return $this;
+    }
+
+    public function getDisputedAt(): ?\DateTimeInterface
+    {
+        return $this->disputedAt;
+    }
+
+    public function setDisputedAt(?\DateTimeInterface $disputedAt): self
+    {
+        $this->disputedAt = $disputedAt;
+
+        return $this;
+    }
+
+    public function getStatusUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->statusUpdatedAt;
+    }
+
+    public function setStatusUpdatedAt(?\DateTimeInterface $statusUpdatedAt): self
+    {
+        $this->statusUpdatedAt = $statusUpdatedAt;
+
+        return $this;
+    }
+
+    public function getStatusNote(): ?string
+    {
+        return $this->statusNote;
+    }
+
+    public function setStatusNote(?string $statusNote): self
+    {
+        $this->statusNote = $statusNote;
+
+        return $this;
+    }
+
+    public function markValide(?string $note = null): self
+    {
+        $this->statutSuivi = self::SUIVI_VALIDE;
+        $this->validatedAt = new \DateTimeImmutable();
+        $this->disputedAt = null;
+        $this->statusUpdatedAt = new \DateTimeImmutable();
+        $this->statusNote = $note;
+
+        return $this;
+    }
+
+    public function markLitige(?string $note = null): self
+    {
+        $this->statutSuivi = self::SUIVI_LITIGE;
+        $this->disputedAt = new \DateTimeImmutable();
+        $this->statusUpdatedAt = new \DateTimeImmutable();
+        $this->statusNote = $note;
+
+        return $this;
+    }
+
+    public function resetSuiviAutomatique(?string $note = null): self
+    {
+        $this->statutSuivi = self::SUIVI_AUTO;
+        $this->statusUpdatedAt = new \DateTimeImmutable();
+        $this->statusNote = $note;
+
+        return $this;
+    }
+
+    public function getStatutOperationnel(?\DateTimeInterface $now = null): string
+    {
+        if ($this->isAnnule()) {
+            return 'annule';
+        }
+
+        if ($this->getStatutSuivi() === self::SUIVI_LITIGE) {
+            return 'litige';
+        }
+
+        if ($this->getStatutSuivi() === self::SUIVI_VALIDE) {
+            return 'valide';
+        }
+
+        if (!$this->getDateTrajet() || !$this->getHeureTrajet()) {
+            return 'inconnu';
+        }
+
+        $now = $now ? \DateTimeImmutable::createFromInterface($now) : new \DateTimeImmutable();
+        $depart = new \DateTimeImmutable(
+            $this->getDateTrajet()->format('Y-m-d') . ' ' . $this->getHeureTrajet()->format('H:i')
+        );
+        $finEstimee = $depart->modify('+3 hours');
+
+        if ($now < $depart) {
+            return 'avenir';
+        }
+
+        if ($now <= $finEstimee) {
+            return 'en_cours';
+        }
+
+        return 'termine';
+    }
+
+    public function isPretPourVersement(?\DateTimeInterface $now = null): bool
+    {
+        return in_array($this->getStatutOperationnel($now), ['termine', 'valide'], true);
+    }
 
 }

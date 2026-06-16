@@ -1,13 +1,12 @@
 <?php
 
-// src/Controller/Admin/AdminPaiementController.php
-
 namespace App\Controller\Admin;
 
 use App\Entity\Paiement;
 use App\Entity\User;
 use App\Repository\PaiementRepository;
 use App\Service\AdminAuditLogger;
+use App\Service\PaiementEventLogger;
 use App\Service\PaiementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -18,16 +17,28 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminPaiementController extends AbstractController
 {
     /**
-     * Liste des paiements
      * @Route("/admin/paiements", name="admin_paiements", methods={"GET"})
      */
     public function index(PaiementRepository $paiementRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $paiements = $paiementRepository->findBy([], ['createdAt' => 'DESC']);
 
         return $this->render('admin/paiements/index.html.twig', [
-            'paiements' => $paiements,
+            'paiements' => $paiementRepository->findBy([], ['createdAt' => 'DESC']),
+            'mode' => 'paiements',
+        ]);
+    }
+
+    /**
+     * @Route("/admin/litiges-remboursements", name="admin_litiges_remboursements", methods={"GET"})
+     */
+    public function litigesRemboursements(PaiementRepository $paiementRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/paiements/index.html.twig', [
+            'paiements' => $paiementRepository->findBy([], ['createdAt' => 'DESC']),
+            'mode' => 'litiges',
         ]);
     }
 
@@ -38,15 +49,16 @@ class AdminPaiementController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'capture');
+
         try {
-            $paiementService->capturerPaiement($paiement->getPaymentIntentId());
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_capture', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
-            $this->addFlash('success', '✅ Paiement capturé avec succès.');
+            $paiementService->capturerPaiement((string) $paiement->getPaymentIntentId());
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_confirm', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
+            $this->addFlash('success', 'Paiement confirmé avec succès.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur Stripe : ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_paiements');
+        return $this->redirectBackToPayments($request);
     }
 
     /**
@@ -56,15 +68,16 @@ class AdminPaiementController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'transfer');
+
         try {
             $paiementService->verserConducteur($paiement);
             $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_transfer_driver', $paiement->getReservation() && $paiement->getReservation()->getTrajet() ? $paiement->getReservation()->getTrajet()->getConducteur() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
-            $this->addFlash('success', 'Versement conducteur effectue.');
+            $this->addFlash('success', 'Versement conducteur effectué.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur : ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_paiements');
+        return $this->redirectBackToPayments($request);
     }
 
     /**
@@ -74,50 +87,51 @@ class AdminPaiementController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'cancel');
+
         try {
             $reservation = $paiement->getReservation();
             if (!$reservation) {
-                throw new \RuntimeException('Reservation introuvable pour ce paiement.');
+                throw new \RuntimeException('Réservation introuvable pour ce paiement.');
             }
 
             $paiementService->annulerPaiement($reservation);
-            $paiement->setStatut('annule');
-            $this->getDoctrine()->getManager()->flush();
             $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_cancel', $reservation->getPassager(), ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
-
-            $this->addFlash('success', '🚫 Paiement annulé.');
+            $this->addFlash('success', 'Paiement annulé.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur : ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_paiements');
+        return $this->redirectBackToPayments($request);
     }
 
     /**
      * @Route("/admin/paiements/{id}/refund", name="admin_paiement_refund", methods={"POST"})
      */
-    public function refund(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
+    public function refund(Paiement $paiement, Request $request, PaiementService $paiementService, PaiementEventLogger $eventLogger, AdminAuditLogger $auditLogger): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'refund');
+
         try {
             $reservation = $paiement->getReservation();
             if ($reservation && $reservation->getCommissions()->count() > 0) {
                 throw new \RuntimeException('Le versement conducteur a déjà été effectué. Le remboursement doit être traité manuellement depuis Stripe et l’administration HaloGari.');
             }
 
-            $paiementService->rembourserPaiement($paiement->getPaymentIntentId());
+            $paiementService->rembourserPaiement((string) $paiement->getPaymentIntentId());
             $paiement->setStatut('rembourse');
+            $eventLogger->log($paiement, 'remboursement_admin', 'Remboursement administrateur', 'Remboursement lancé depuis l’espace admin.', $this->getUser() instanceof User ? $this->getUser() : null);
             $this->getDoctrine()->getManager()->flush();
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_refund', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
 
-            $this->addFlash('success', '💸 Paiement remboursé.');
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_refund', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
+            $this->addFlash('success', 'Paiement remboursé.');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur : ' . $e->getMessage());
         }
 
-        return $this->redirectToRoute('admin_paiements');
+        return $this->redirectBackToPayments($request);
     }
+
     private function assertValidPaymentToken(Paiement $paiement, Request $request, string $action): void
     {
         if (!$this->isCsrfTokenValid('admin_paiement_' . $action . '_' . $paiement->getId(), (string) $request->request->get('_token'))) {
@@ -125,5 +139,8 @@ class AdminPaiementController extends AbstractController
         }
     }
 
+    private function redirectBackToPayments(Request $request): RedirectResponse
+    {
+        return $this->redirectToRoute($request->request->get('mode') === 'litiges' ? 'admin_litiges_remboursements' : 'admin_paiements');
+    }
 }
-

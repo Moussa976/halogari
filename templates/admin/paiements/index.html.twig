@@ -1,7 +1,7 @@
 {% extends 'base_admin.html.twig' %}
 {% import 'partials/avatar.html.twig' as avatar %}
 
-{% block title %}Paiements | Admin{% endblock %}
+{% block title %}{{ mode == 'litiges' ? 'Litiges et remboursements' : 'Paiements' }} | Admin{% endblock %}
 
 {% block body %}
   {% set statusClasses = {
@@ -12,14 +12,37 @@
     'echoue': 'danger',
     'annule': 'dark'
   } %}
+  {% set pageTitle = mode == 'litiges' ? 'Litiges et remboursements' : 'Paiements' %}
+  {% set pageHelp = mode == 'litiges'
+    ? 'Suivi des remboursements, annulations et paiements à contrôler.'
+    : 'Suivi des paiements enregistrés, confirmés et des versements conducteurs.'
+  %}
 
   <div class="container-fluid px-1">
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
       <div>
-        <h1 class="h3 mb-1">Paiements</h1>
-        <p class="text-muted mb-0">Suivi des autorisations, captures, remboursements et versements conducteurs.</p>
+        <h1 class="h3 mb-1">{{ pageTitle }}</h1>
+        <p class="text-muted mb-0">{{ pageHelp }}</p>
       </div>
-      <span class="badge bg-primary align-self-start">{{ paiements|length }} paiement{{ paiements|length > 1 ? 's' : '' }}</span>
+      <div class="d-flex flex-wrap gap-2 align-self-start">
+        <a class="btn btn-sm {{ mode == 'paiements' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('admin_paiements') }}">Paiements</a>
+        <a class="btn btn-sm {{ mode == 'litiges' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ path('admin_litiges_remboursements') }}">Litiges</a>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 js-payment-filter">
+          <button type="button" class="btn btn-sm btn-primary" data-filter="all">Tous</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="enregistre">Enregistrés</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="confirme">Confirmés</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="a-rembourser">À rembourser</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="rembourse">Remboursés</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="a-verser">À verser</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="verse">Versés</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="erreur">Erreur Stripe</button>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -39,48 +62,67 @@
           <tbody>
             {% for paiement in paiements %}
               {% set reservation = paiement.reservation %}
+              {% set trajet = reservation ? reservation.trajet : null %}
               {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
-              <tr>
-                <td>#{{ paiement.id }}</td>
-                <td><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
-                <td>
-                  {% if reservation and reservation.passager %}
-                    <div class="d-flex align-items-center gap-2">
-                      {{ avatar.formatSimple(reservation.passager, 38, 0, 1) }}
-                      <div class="min-w-0">
-                        <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
-                        <div class="small text-muted text-truncate" style="max-width: 190px;">{{ reservation.passager.email }}</div>
+              {% set statutTrajet = trajet ? trajet.statutOperationnel : 'inconnu' %}
+              {% set aRembourser = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
+              {% set aVerser = paiement.statut == 'capture' and not dejaVerse and trajet and trajet.pretPourVersement %}
+              {% set rowFilters = [
+                paiement.statut == 'autorise' ? 'enregistre' : '',
+                paiement.statut == 'capture' ? 'confirme' : '',
+                aRembourser ? 'a-rembourser' : '',
+                paiement.statut == 'rembourse' ? 'rembourse' : '',
+                aVerser ? 'a-verser' : '',
+                dejaVerse ? 'verse' : '',
+                paiement.statut == 'echoue' ? 'erreur' : ''
+              ]|join(' ') %}
+              {% set showRow = mode == 'paiements' or aRembourser or paiement.statut in ['rembourse', 'echoue'] or statutTrajet == 'litige' %}
+              {% if showRow %}
+                <tr data-payment-filters="{{ rowFilters|trim ?: 'all' }}">
+                  <td>#{{ paiement.id }}</td>
+                  <td><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
+                  <td>
+                    {% if reservation and reservation.passager %}
+                      <div class="d-flex align-items-center gap-2">
+                        {{ avatar.formatSimple(reservation.passager, 38, 0, 1) }}
+                        <div class="min-w-0">
+                          <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
+                          <div class="small text-muted text-truncate" style="max-width: 190px;">{{ reservation.passager.email }}</div>
+                        </div>
                       </div>
-                    </div>
-                  {% else %}
-                    <span class="text-muted">-</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if reservation and reservation.trajet %}
-                    {{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}
-                    <div class="small text-muted">{{ reservation.trajet.dateTrajet|date('d/m/Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}</div>
-                  {% else %}
-                    <span class="text-muted">Réservation introuvable</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <span class="badge bg-{{ statusClasses[paiement.statut]|default('secondary') }}">{{ paiement.statutLabel }}</span>
-                  {% if dejaVerse %}
-                    <span class="badge bg-success ms-1">versé</span>
-                  {% endif %}
-                </td>
-                <td>{{ paiement.createdAt|date('d/m/Y H:i') }}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#paiement-modal-{{ paiement.id }}">
-                    Gérer
-                  </button>
-                </td>
-              </tr>
-            {% else %}
-              <tr>
-                <td colspan="7" class="text-center text-muted">Aucun paiement.</td>
-              </tr>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if trajet %}
+                      {{ trajet.depart }} → {{ trajet.arrivee }}
+                      <div class="small text-muted">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
+                      {% if statutTrajet == 'litige' %}
+                        <span class="badge bg-danger mt-1">Litige</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="text-muted">Réservation introuvable</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ statusClasses[paiement.statut]|default('secondary') }}">{{ paiement.statutLabel }}</span>
+                    {% if aRembourser %}
+                      <span class="badge bg-danger ms-1">à rembourser</span>
+                    {% elseif dejaVerse %}
+                      <span class="badge bg-success ms-1">versé</span>
+                    {% elseif aVerser %}
+                      <span class="badge bg-primary ms-1">à verser</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ paiement.createdAt|date('d/m/Y H:i') }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#paiement-modal-{{ paiement.id }}">
+                      Gérer
+                    </button>
+                  </td>
+                </tr>
+              {% endif %}
             {% endfor %}
           </tbody>
         </table>
@@ -89,12 +131,9 @@
 
     {% for paiement in paiements %}
       {% set reservation = paiement.reservation %}
+      {% set trajet = reservation ? reservation.trajet : null %}
       {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
-      {% set trajetTermine = false %}
-      {% if reservation and reservation.trajet %}
-        {% set departTrajet = reservation.trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ reservation.trajet.heureTrajet|date('H:i:s') %}
-        {% set trajetTermine = date(departTrajet)|date_modify('+3 hours') <= date() %}
-      {% endif %}
+      {% set trajetTermine = trajet and trajet.pretPourVersement %}
       {% set repartitionCommission = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
       {% set repartitionFraisStripe = ((paiement.montant * 0.015) + 0.25)|round(2, 'common') %}
       {% set repartitionConducteur = max(paiement.montant - repartitionCommission - repartitionFraisStripe, 0) %}
@@ -125,7 +164,7 @@
                 <div class="col-md-4">
                   <div class="border rounded p-3 h-100">
                     <div class="text-muted small">Versement</div>
-                    <strong>{{ dejaVerse ? 'Déjà versé' : 'Non versé' }}</strong>
+                    <strong>{{ dejaVerse ? 'Déjà versé' : (trajetTermine ? 'Disponible' : 'En attente') }}</strong>
                   </div>
                 </div>
               </div>
@@ -133,10 +172,13 @@
               {% if reservation %}
                 <div class="border rounded p-3 mb-3">
                   <h6>Réservation #{{ reservation.id }}</h6>
-                  <div class="small text-muted">Statut : {{ reservation.statut }}</div>
-                  {% if reservation.trajet %}
-                    <div>{{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}</div>
-                    <div class="small">{{ reservation.trajet.dateTrajet|date('d/m/Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}</div>
+                  <div>{{ trajet ? trajet.depart ~ ' → ' ~ trajet.arrivee : 'Trajet introuvable' }}</div>
+                  {% if trajet %}
+                    <div class="small text-muted">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
+                    <div class="small text-muted">Suivi : {{ trajet.statutOperationnel|replace({'_': ' '}) }}</div>
+                  {% endif %}
+                  {% if reservation.canceledAt %}
+                    <div class="small text-danger mt-1">{{ reservation.cancellationLabel ?: 'Annulée' }} le {{ reservation.canceledAt|date('d/m/Y à H:i') }}</div>
                   {% endif %}
                 </div>
               {% endif %}
@@ -144,27 +186,40 @@
               <div class="border rounded p-3 mb-3">
                 <h6>Répartition prévue</h6>
                 <div class="row g-3">
-                  <div class="col-md-3">
-                    <div class="small text-muted">Montant brut</div>
-                    <strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong>
-                  </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <div class="small text-muted">Commission HaloGari</div>
                     <strong>{{ repartitionCommission|number_format(2, ',', ' ') }} €</strong>
                   </div>
-                  <div class="col-md-3">
-                    <div class="small text-muted">Frais Stripe estimés</div>
+                  <div class="col-md-4">
+                    <div class="small text-muted">Frais estimés</div>
                     <strong>{{ repartitionFraisStripe|number_format(2, ',', ' ') }} €</strong>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <div class="small text-muted">Net conducteur</div>
                     <strong>{{ repartitionConducteur|number_format(2, ',', ' ') }} €</strong>
                   </div>
                 </div>
               </div>
 
+              <div class="border rounded p-3">
+                <h6>Historique</h6>
+                {% if paiement.evenements|length > 0 %}
+                  <ul class="list-unstyled mb-0">
+                    {% for evenement in paiement.evenements|slice(0, 5) %}
+                      <li class="mb-2">
+                        <strong>{{ evenement.titre }}</strong>
+                        <div class="small text-muted">{{ evenement.createdAt|date('d/m/Y à H:i') }}{% if evenement.acteur %} par {{ evenement.acteur.prenom }}{% endif %}</div>
+                        {% if evenement.message %}<div class="small">{{ evenement.message }}</div>{% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-muted mb-0">Aucun événement enregistré.</p>
+                {% endif %}
+              </div>
+
               {% if paiement.paymentIntentId %}
-                <div class="small text-muted">Stripe PaymentIntent : {{ paiement.paymentIntentId }}</div>
+                <div class="small text-muted mt-3">Stripe PaymentIntent : {{ paiement.paymentIntentId }}</div>
               {% endif %}
             </div>
             <div class="modal-footer justify-content-between">
@@ -175,10 +230,12 @@
                 {% elseif paiement.statut == 'autorise' %}
                   <form method="post" action="{{ path('admin_paiement_capture', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_capture_' ~ paiement.id) }}">
-                    <button class="btn btn-success" onclick="return confirm('Capturer le paiement ?')">Capturer</button>
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    <button class="btn btn-success" onclick="return confirm('Confirmer ce paiement ?')">Confirmer</button>
                   </form>
                   <form method="post" action="{{ path('admin_paiement_cancel', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_cancel_' ~ paiement.id) }}">
+                    <input type="hidden" name="mode" value="{{ mode }}">
                     <button class="btn btn-warning" onclick="return confirm('Annuler ce paiement ?')">Annuler</button>
                   </form>
                 {% elseif paiement.statut == 'capture' %}
@@ -186,14 +243,16 @@
                     {% if trajetTermine %}
                       <form method="post" action="{{ path('admin_paiement_transfer', {id: paiement.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_transfer_' ~ paiement.id) }}">
+                        <input type="hidden" name="mode" value="{{ mode }}">
                         <button class="btn btn-success" onclick="return confirm('Verser la part conducteur maintenant ?')">Verser conducteur</button>
                       </form>
                     {% else %}
-                      <span class="text-muted small align-self-center">Versement disponible après la fin estimée du trajet.</span>
+                      <span class="text-muted small align-self-center">Versement bloqué jusqu’à la fin du trajet ou validation admin.</span>
                     {% endif %}
                   {% endif %}
                   <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
+                    <input type="hidden" name="mode" value="{{ mode }}">
                     <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
                   </form>
                 {% else %}
@@ -206,4 +265,33 @@
       </div>
     {% endfor %}
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const group = document.querySelector('.js-payment-filter');
+      if (!group) {
+        return;
+      }
+
+      const buttons = Array.from(group.querySelectorAll('[data-filter]'));
+      const rows = Array.from(document.querySelectorAll('[data-payment-filters]'));
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter;
+          buttons.forEach((item) => {
+            item.classList.toggle('btn-primary', item === button);
+            item.classList.toggle('btn-outline-secondary', item !== button);
+          });
+
+          rows.forEach((row) => {
+            row.hidden = filter !== 'all' && !row.dataset.paymentFilters.split(' ').includes(filter);
+          });
+        });
+      });
+    });
+  </script>
 {% endblock %}

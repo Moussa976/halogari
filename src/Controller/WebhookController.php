@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
+use App\Service\PaiementEventLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
@@ -32,7 +33,8 @@ class WebhookController extends AbstractController
     public function stripeWebhook(
         Request $request,
         ReservationRepository $reservationRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        PaiementEventLogger $eventLogger
     ): Response {
         $payload = $request->getContent();
         $sigHeader = $request->headers->get('stripe-signature');
@@ -84,6 +86,7 @@ class WebhookController extends AbstractController
             case 'payment_intent.amount_capturable_updated':
                 if ($paiement && $paiement->getStatut() !== 'autorise') {
                     $paiement->setStatut('autorise');
+                    $eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Confirmation reçue depuis Stripe.');
                     $em->flush();
                 }
                 break;
@@ -92,6 +95,7 @@ class WebhookController extends AbstractController
                 if ($paiement && $paiement->getStatut() !== 'capture') {
                     $paiement->setStatut('capture');
                     $paiement->setCapturedAt(new \DateTimeImmutable());
+                    $eventLogger->log($paiement, 'paiement_confirme', 'Paiement confirmé', 'Confirmation reçue depuis Stripe.');
                     $this->notifier->envoyerPaiementCapture($reservation);
                 }
 
@@ -105,6 +109,7 @@ class WebhookController extends AbstractController
             case 'payment_intent.canceled':
                 if ($paiement && !in_array($paiement->getStatut(), ['annule', 'echoue'], true)) {
                     $paiement->setStatut('annule');
+                    $eventLogger->log($paiement, 'paiement_annule', 'Paiement annulé', 'Annulation reçue depuis Stripe.');
                     if (in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
                         $reservation->getTrajet()->setPlacesDisponibles(
                             $reservation->getTrajet()->getPlacesDisponibles() + $reservation->getPlaces()
@@ -121,6 +126,7 @@ class WebhookController extends AbstractController
             case 'charge.refunded':
                 if ($paiement && $paiement->getStatut() !== 'rembourse') {
                     $paiement->setStatut('rembourse');
+                    $eventLogger->log($paiement, 'remboursement_stripe', 'Remboursement confirmé', 'Remboursement reçu depuis Stripe.');
                     if ($reservation->getStatut() !== 'annulee' || !$reservation->getCanceledBy()) {
                         $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement remboursé par Stripe.');
                     }

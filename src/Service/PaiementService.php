@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Commission;
 use App\Entity\Paiement;
 use App\Entity\Reservation;
+use App\Entity\Trajet;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
@@ -20,10 +21,13 @@ class PaiementService
     private const STRIPE_FEE_FIXED = 0.25;
 
     private EntityManagerInterface $em;
+    private PaiementEventLogger $eventLogger;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, PaiementEventLogger $eventLogger)
     {
         $this->em = $em;
+        $this->eventLogger = $eventLogger;
+
         $secretKey = $_ENV['STRIPE_SECRET_KEY'] ?? null;
         if (!$secretKey) {
             throw new \RuntimeException('STRIPE_SECRET_KEY est manquante.');
@@ -32,10 +36,6 @@ class PaiementService
         Stripe::setApiKey($secretKey);
     }
 
-    /**
-     * Prépare le paiement après acceptation conducteur.
-     * Stripe autorise le montant, puis HaloGari le capture plus tard.
-     */
     public function autoriserPaiement(Reservation $reservation): string
     {
         $paiement = $reservation->getPaiement();
@@ -51,6 +51,7 @@ class PaiementService
 
         if ($paiement->getPaymentIntentId()) {
             $intent = PaymentIntent::retrieve($paiement->getPaymentIntentId());
+
             if ($intent->status === 'succeeded') {
                 $this->synchroniserPaiementStripe($reservation);
                 throw new \RuntimeException('Ce paiement est déjà confirmé.');
@@ -58,7 +59,9 @@ class PaiementService
 
             if ($intent->status === 'requires_capture') {
                 $paiement->setStatut('autorise');
+                $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Le montant est sécurisé pour cette réservation.');
                 $this->em->flush();
+
                 throw new \RuntimeException('Ce paiement est déjà enregistré.');
             }
 
@@ -83,7 +86,7 @@ class PaiementService
         $trajet = $reservation->getTrajet();
 
         return PaymentIntent::create([
-            'amount' => intval($montant * 100),
+            'amount' => (int) round($montant * 100),
             'currency' => 'eur',
             'payment_method_types' => ['card'],
             'capture_method' => 'manual',
@@ -97,31 +100,33 @@ class PaiementService
         ]);
     }
 
-    /**
-     * Point d'entrée admin : capture un paiement autorisé.
-     */
     public function capturerPaiement(string $intentId): void
     {
         $intent = PaymentIntent::retrieve($intentId);
         if ($intent->status === 'requires_capture') {
             $intent->capture();
         } elseif ($intent->status !== 'succeeded') {
-            throw new \RuntimeException('Ce paiement ne peut pas être capturé dans son état actuel.');
+            throw new \RuntimeException('Ce paiement ne peut pas être confirmé dans son état actuel.');
         }
 
         $paiement = $this->em->getRepository(Paiement::class)->findOneBy([
             'paymentIntentId' => $intentId,
         ]);
 
-        if ($paiement) {
-            $paiement->setStatut('capture');
-            $paiement->setCapturedAt(new \DateTimeImmutable());
-            $reservation = $paiement->getReservation();
-            if ($reservation && $reservation->getStatut() !== 'payee') {
-                $reservation->setStatut('payee');
-            }
-            $this->em->flush();
+        if (!$paiement) {
+            return;
         }
+
+        $paiement->setStatut('capture');
+        $paiement->setCapturedAt(new \DateTimeImmutable());
+
+        $reservation = $paiement->getReservation();
+        if ($reservation && $reservation->getStatut() !== 'payee') {
+            $reservation->setStatut('payee');
+        }
+
+        $this->eventLogger->log($paiement, 'paiement_confirme', 'Paiement confirmé', 'HaloGari a confirmé le paiement.');
+        $this->em->flush();
     }
 
     public function synchroniserPaiementStripe(Reservation $reservation): bool
@@ -135,14 +140,18 @@ class PaiementService
 
         if ($intent->status === 'succeeded') {
             $wasCaptured = $paiement->getStatut() === 'capture';
-
             $paiement->setStatut('capture');
+
             if (!$paiement->getCapturedAt()) {
                 $paiement->setCapturedAt(new \DateTimeImmutable());
             }
 
             if ($reservation->getStatut() !== 'payee') {
                 $reservation->setStatut('payee');
+            }
+
+            if (!$wasCaptured) {
+                $this->eventLogger->log($paiement, 'paiement_confirme', 'Paiement confirmé', 'Statut confirmé par Stripe.');
             }
 
             $this->em->flush();
@@ -152,11 +161,13 @@ class PaiementService
 
         if ($intent->status === 'requires_capture') {
             $paiement->setStatut('autorise');
+            $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Statut enregistré par Stripe.');
             $this->em->flush();
         }
 
         if (in_array($intent->status, ['canceled', 'requires_payment_method'], true)) {
             $paiement->setStatut($intent->status === 'canceled' ? 'annule' : 'echoue');
+            $this->eventLogger->log($paiement, 'paiement_echec', 'Paiement non abouti', 'Stripe a signalé un paiement annulé ou expiré.');
             $this->em->flush();
         }
 
@@ -166,7 +177,7 @@ class PaiementService
     public function verserConducteur(Paiement $paiement): void
     {
         if ($paiement->getStatut() !== 'capture') {
-            throw new \RuntimeException('Le paiement doit être capturé avant le versement conducteur.');
+            throw new \RuntimeException('Le paiement doit être confirmé avant le versement conducteur.');
         }
 
         $reservation = $paiement->getReservation();
@@ -177,7 +188,7 @@ class PaiementService
         $this->assertReservationNotAlreadyTransferred($reservation);
         $this->assertTrajetTermineAvantVersement($reservation);
 
-        if (count($reservation->getCommissions()) > 0) {
+        if ($reservation->getCommissions()->count() > 0) {
             throw new \RuntimeException('Ce paiement a déjà été traité pour reversement.');
         }
 
@@ -189,7 +200,7 @@ class PaiementService
         $repartition = self::calculerRepartition((float) $paiement->getMontant());
 
         Transfer::create([
-            'amount' => intval($repartition['montantConducteur'] * 100),
+            'amount' => (int) round($repartition['montantConducteur'] * 100),
             'currency' => 'eur',
             'destination' => $conducteur->getStripeAccountId(),
             'metadata' => [
@@ -207,6 +218,7 @@ class PaiementService
         $commission->setMontantNet((string) $repartition['commissionHaloGari']);
 
         $this->em->persist($commission);
+        $this->eventLogger->log($paiement, 'versement_conducteur', 'Versement conducteur', 'La part conducteur a été envoyée.', null, $repartition);
         $this->em->flush();
     }
 
@@ -243,10 +255,12 @@ class PaiementService
             if ($paymentIntent->status === 'requires_capture') {
                 $paymentIntent->cancel();
                 $paiement->setStatut('annule');
+                $this->eventLogger->log($paiement, 'paiement_annule', 'Paiement annulé', 'Le paiement enregistré a été annulé avant confirmation.');
             } elseif ($paymentIntent->status === 'succeeded') {
                 $this->assertReservationNotAlreadyTransferred($reservation);
                 $this->creerRemboursementStripe($intentId);
                 $paiement->setStatut('rembourse');
+                $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Le paiement confirmé a été remboursé.');
             }
 
             $this->em->flush();
@@ -262,6 +276,11 @@ class PaiementService
     public function rembourserPaiement(string $intentId): void
     {
         $this->creerRemboursementStripe($intentId);
+
+        $paiement = $this->em->getRepository(Paiement::class)->findOneBy(['paymentIntentId' => $intentId]);
+        if ($paiement) {
+            $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Remboursement demandé depuis l’administration.');
+        }
     }
 
     public function rembourserSelonPolitique(Reservation $reservation, bool $conducteurAnnule = false): void
@@ -279,33 +298,50 @@ class PaiementService
 
         $this->assertReservationNotAlreadyTransferred($reservation);
 
-        $pourcentage = 0;
         $trajet = $reservation->getTrajet();
         $maintenant = new \DateTimeImmutable();
         $datetimeTrajet = new \DateTimeImmutable(
             $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')
         );
-
-        if ($conducteurAnnule) {
-            $pourcentage = 100;
-        } else {
-            $diff = $datetimeTrajet->getTimestamp() - $maintenant->getTimestamp();
-
-            if ($diff > 86400) {
-                $pourcentage = 100;
-            } elseif ($diff > 10800) {
-                $pourcentage = 50;
-            }
-        }
+        $pourcentage = self::calculerPourcentageRemboursement($datetimeTrajet, $maintenant, $conducteurAnnule);
 
         if ($pourcentage > 0) {
             $montantTotal = (float) $paiement->getMontant();
             $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
 
-            $this->creerRemboursementStripe($intentId, intval($montantRembourse * 100));
+            $this->creerRemboursementStripe($intentId, (int) round($montantRembourse * 100));
+            $this->eventLogger->log($paiement, 'remboursement_politique', 'Remboursement selon la politique HaloGari', sprintf('Remboursement de %d %% appliqué.', $pourcentage), null, [
+                'pourcentage' => $pourcentage,
+                'montant' => $montantRembourse,
+                'conducteurAnnule' => $conducteurAnnule,
+            ]);
+        } else {
+            $this->eventLogger->log($paiement, 'annulation_sans_remboursement', 'Annulation sans remboursement automatique', 'La demande est à contrôler si nécessaire.');
         }
 
         $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+    }
+
+    public static function calculerPourcentageRemboursement(
+        \DateTimeInterface $departTrajet,
+        \DateTimeInterface $maintenant,
+        bool $conducteurAnnule = false
+    ): int {
+        if ($conducteurAnnule) {
+            return 100;
+        }
+
+        $diff = $departTrajet->getTimestamp() - $maintenant->getTimestamp();
+
+        if ($diff > 86400) {
+            return 100;
+        }
+
+        if ($diff > 10800) {
+            return 50;
+        }
+
+        return 0;
     }
 
     private function assertReservationNotAlreadyTransferred(Reservation $reservation): void
@@ -344,13 +380,12 @@ class PaiementService
             throw new \RuntimeException('Impossible de vérifier la fin du trajet avant le versement conducteur.');
         }
 
-        $depart = new \DateTimeImmutable(
-            $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')
-        );
-        $finEstimee = $depart->modify('+3 hours');
+        if ($trajet->getStatutOperationnel() === Trajet::SUIVI_LITIGE) {
+            throw new \RuntimeException('Ce trajet est en litige : le versement conducteur est bloqué.');
+        }
 
-        if ($finEstimee > new \DateTimeImmutable()) {
-            throw new \RuntimeException('Le versement conducteur sera disponible après la fin estimée du trajet.');
+        if (!$trajet->isPretPourVersement()) {
+            throw new \RuntimeException('Le versement conducteur sera disponible après la fin du trajet ou après validation admin.');
         }
     }
 }

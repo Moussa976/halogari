@@ -21,7 +21,7 @@
 
 {% set paymentLabels = {
   'autorise': 'Paiement enregistré',
-  'capture': 'Payé',
+  'capture': 'Paiement confirmé',
   'annule': 'Annulé',
   'rembourse': 'Remboursé',
   'echoue': 'Échoué',
@@ -44,9 +44,16 @@
 {% set trajetTimestamp = trajetDateTime|date('U') %}
 {% set nowTimestamp = 'now'|date('U') %}
 {% set trajetPasse = trajetTimestamp < nowTimestamp %}
+{% set tempsAvantDepart = trajetTimestamp - nowTimestamp %}
 {% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'en_attente') %}
 {% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee', 'payee'] and not trajetPasse %}
 {% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['autorise', 'capture'] %}
+{% set remboursementCourt = paiementEngage
+  ? (tempsAvantDepart > 86400 ? 'Annulation possible avec remboursement total.'
+    : (tempsAvantDepart > 10800 ? 'Annulation possible avec remboursement partiel.'
+      : 'Annulation possible, remboursement non garanti.'))
+  : (reservation.statut == 'acceptee' ? 'Aucun paiement enregistré pour le moment.' : 'Aucun paiement à gérer.')
+%}
 
 {% set dejaNote = false %}
 {% set maNote = null %}
@@ -130,12 +137,7 @@
           <span><i class="bi {{ paymentIcons[statutPaiement]|default('bi-credit-card') }}"></i></span>
           <div>
             <strong>Paiement</strong>
-            <p>
-              {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}
-              {% if statutPaiement == 'autorise' %}
-                · finalisation prévue plus tard
-              {% endif %}
-            </p>
+            <p>{{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}</p>
           </div>
         </div>
       </div>
@@ -169,7 +171,7 @@
         {% endif %}
 
         {% if peutAnnuler %}
-          <form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');">
+          <form method="POST" action="{{ path('reservation_annuler', { id: reservation.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
             <input type="hidden" name="_token" value="{{ csrf_token('annuler_reservation_' ~ reservation.id) }}">
             <button type="submit" class="btn btn-outline-danger">
               <i class="bi bi-x-circle"></i>
@@ -182,7 +184,12 @@
       {% if peutPayer %}
         <div class="reservation-note">
           <i class="bi bi-exclamation-circle-fill"></i>
-          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : enregistrez rapidement le paiement pour confirmer votre place et éviter une annulation avant le départ.</p>
+          <p><strong>Paiement attendu.</strong> Enregistrez le paiement pour confirmer votre place.</p>
+        </div>
+      {% elseif peutAnnuler %}
+        <div class="reservation-note">
+          <i class="bi bi-info-circle-fill"></i>
+          <p><strong>Annulation.</strong> {{ remboursementCourt }} <a href="{{ path('app_conditionsutisation') }}#remboursement">Voir les conditions</a>.</p>
         </div>
       {% endif %}
 
@@ -263,25 +270,6 @@
             <p class="mb-0 text-muted">Vous êtes le seul passager confirmé pour l’instant.</p>
           {% endif %}
         </article>
-      {% endif %}
-
-      {% if peutAnnuler %}
-        <article class="app-panel reservation-cancel-policy">
-          <h2>Conditions d’annulation</h2>
-          {% if paiementEngage %}
-            <p>Votre paiement est confirme. En cas d'annulation, HaloGari applique la politique de remboursement selon le delai avant le depart.</p>
-            <ul>
-              <li>Plus de 24 h avant le départ : remboursement total.</li>
-              <li>Entre 24 h et 3 h avant le départ : remboursement partiel possible.</li>
-              <li>Moins de 3 h avant le départ : remboursement non garanti.</li>
-            </ul>
-          {% elseif reservation.statut == 'acceptee' %}
-            <p>Votre réservation est acceptée, mais le paiement n’est pas encore enregistré. Si vous annulez maintenant, les places seront remises à disposition du conducteur.</p>
-          {% else %}
-            <p>Votre demande est encore en attente. Vous pouvez l’annuler sans paiement ni remboursement à gérer.</p>
-          {% endif %}
-        </article>
-
       {% endif %}
     </aside>
   </div>

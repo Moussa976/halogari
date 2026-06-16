@@ -78,10 +78,12 @@ class AdminAuditLogger
             'document_validate' => 'Validation document',
             'document_reject' => 'Refus document',
             'document_pending' => 'Document remis en attente',
-            'payment_capture' => 'Capture paiement',
+            'payment_capture' => 'Confirmation paiement',
+            'payment_confirm' => 'Confirmation paiement',
             'payment_transfer_driver' => 'Versement conducteur',
             'payment_cancel' => 'Annulation paiement',
             'payment_refund' => 'Remboursement paiement',
+            'ride_status_update' => 'Mise à jour du suivi trajet',
         ];
 
         return $labels[$action] ?? ucfirst(str_replace('_', ' ', $action));

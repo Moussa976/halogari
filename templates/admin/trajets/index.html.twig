@@ -18,6 +18,24 @@
     'payee': 'primary',
     'annulee': 'secondary'
   } %}
+  {% set trajetClasses = {
+    'annule': 'danger',
+    'litige': 'danger',
+    'valide': 'success',
+    'termine': 'secondary',
+    'en_cours': 'info text-dark',
+    'avenir': 'success',
+    'inconnu': 'secondary'
+  } %}
+  {% set trajetLabels = {
+    'annule': 'Annulé',
+    'litige': 'Litige',
+    'valide': 'Validé',
+    'termine': 'Terminé',
+    'en_cours': 'En cours',
+    'avenir': 'À venir',
+    'inconnu': 'Inconnu'
+  } %}
 
   <div class="container-fluid px-1">
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
@@ -46,8 +64,7 @@
           </thead>
           <tbody>
             {% for trajet in trajets %}
-              {% set dateDepart = trajet.dateTrajet ? trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ trajet.heureTrajet|date('H:i:s') : null %}
-              {% set isPast = dateDepart ? date(dateDepart) < date() : false %}
+              {% set statutOperationnel = trajet.statutOperationnel %}
               {% set activeReservations = trajet.reservations|filter(r => r.statut in ['en_attente', 'acceptee', 'payee']) %}
               {% set paidReservations = trajet.reservations|filter(r => r.statut == 'payee') %}
               <tr>
@@ -82,13 +99,7 @@
                 <td>{{ trajet.placesDisponibles }}/{{ trajet.places }}</td>
                 <td>{{ trajet.prix|number_format(2, ',', ' ') }} €</td>
                 <td>
-                  {% if trajet.isAnnule %}
-                    <span class="badge bg-danger">Annulé</span>
-                  {% elseif isPast %}
-                    <span class="badge bg-secondary">Passé</span>
-                  {% else %}
-                    <span class="badge bg-success">À venir</span>
-                  {% endif %}
+                  <span class="badge bg-{{ trajetClasses[statutOperationnel]|default('secondary') }}">{{ trajetLabels[statutOperationnel]|default(statutOperationnel) }}</span>
                 </td>
                 <td>
                   <strong>{{ trajet.reservations|length }}</strong>
@@ -111,6 +122,7 @@
     </div>
 
     {% for trajet in trajets %}
+      {% set statutOperationnel = trajet.statutOperationnel %}
       <div class="modal fade" id="trajet-modal-{{ trajet.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
           <div class="modal-content">
@@ -157,10 +169,35 @@
                 </div>
                 <div class="col-md-3">
                   <div class="border rounded p-3 h-100">
-                    <div class="text-muted small">Réservations</div>
-                    <strong>{{ trajet.reservations|length }}</strong>
+                    <div class="text-muted small">Suivi</div>
+                    <span class="badge bg-{{ trajetClasses[statutOperationnel]|default('secondary') }}">{{ trajetLabels[statutOperationnel]|default(statutOperationnel) }}</span>
+                    {% if trajet.statusUpdatedAt %}
+                      <div class="small text-muted mt-1">{{ trajet.statusUpdatedAt|date('d/m/Y à H:i') }}</div>
+                    {% endif %}
                   </div>
                 </div>
+              </div>
+
+              <div class="border rounded p-3 mb-4">
+                <h6>Actions de suivi</h6>
+                <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'valide' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
+                  <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
+                  <input type="hidden" name="note" value="Trajet validé depuis la page admin.">
+                  <button class="btn btn-sm btn-success" onclick="return confirm('Valider ce trajet ?')">Valider</button>
+                </form>
+                <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'litige' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
+                  <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
+                  <input type="hidden" name="note" value="Litige ouvert depuis la page admin.">
+                  <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Placer ce trajet en litige ?')">Ouvrir un litige</button>
+                </form>
+                <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'auto' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
+                  <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
+                  <input type="hidden" name="note" value="Retour au suivi automatique.">
+                  <button class="btn btn-sm btn-outline-secondary">Suivi automatique</button>
+                </form>
+                {% if trajet.statusNote %}
+                  <div class="small text-muted mt-2">{{ trajet.statusNote }}</div>
+                {% endif %}
               </div>
 
               <h6>Passagers et demandes</h6>

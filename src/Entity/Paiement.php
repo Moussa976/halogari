@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PaiementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -49,6 +51,17 @@ class Paiement
      * @ORM\JoinColumn(nullable=false)
      */
     private $reservation;
+
+    /**
+     * @ORM\OneToMany(targetEntity=PaiementEvenement::class, mappedBy="paiement", cascade={"persist", "remove"})
+     * @ORM\OrderBy({"createdAt" = "DESC"})
+     */
+    private $evenements;
+
+    public function __construct()
+    {
+        $this->evenements = new ArrayCollection();
+    }
 
     /** @ORM\PrePersist */
     public function setCreatedAtValue(): void
@@ -157,5 +170,23 @@ class Paiement
             default:
                 return ucfirst($this->statut);
         }
+    }
+
+    /**
+     * @return Collection<int, PaiementEvenement>
+     */
+    public function getEvenements(): Collection
+    {
+        return $this->evenements;
+    }
+
+    public function addEvenement(PaiementEvenement $evenement): self
+    {
+        if (!$this->evenements->contains($evenement)) {
+            $this->evenements[] = $evenement;
+            $evenement->setPaiement($this);
+        }
+
+        return $this;
     }
 }
