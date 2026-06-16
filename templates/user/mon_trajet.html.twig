@@ -13,7 +13,7 @@
 
 {% set paymentLabels = {
   'en_attente': 'Paiement à venir',
-  'autorise': 'Paiement autorisé',
+  'autorise': 'Paiement enregistré',
   'capture': 'Paiement confirmé',
   'rembourse': 'Remboursé',
   'echoue': 'Échoué',
@@ -137,7 +137,7 @@
         </div>
         <dl class="reservation-info-list">
           <div>
-            <dt>Autorisé</dt>
+            <dt>Enregistré</dt>
             <dd>{{ totalAutorise|number_format(2, ',', ' ') }} €</dd>
           </div>
           <div>

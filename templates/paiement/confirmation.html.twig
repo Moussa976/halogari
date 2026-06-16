@@ -4,14 +4,14 @@
 {% set paiement = paiement ?? reservation.paiement %}
 {% set paiementCapture = paiement and paiement.statut == 'capture' %}
 
-{% block title %}HaloGari | {{ paiementCapture ? 'Paiement confirmé' : 'Paiement autorisé' }}{% endblock %}
+{% block title %}HaloGari | {{ paiementCapture ? 'Paiement confirmé' : 'Paiement enregistré' }}{% endblock %}
 
 {% block body %}
 <section class="app-page-header app-page-header--compact">
   <div class="container">
     <p class="app-kicker">Paiement</p>
-    <h1>{{ paiementCapture ? 'Paiement confirmé' : 'Paiement autorisé' }}</h1>
-    <p>{{ paiementCapture ? 'Votre place est confirmée. Voici la suite pour préparer le trajet sereinement.' : 'Votre carte est autorisée. HaloGari capturera le paiement plus tard selon le déroulement du trajet.' }}</p>
+    <h1>{{ paiementCapture ? 'Paiement confirmé' : 'Paiement enregistré' }}</h1>
+    <p>{{ paiementCapture ? 'Votre place est confirmée. Voici la suite pour préparer le trajet sereinement.' : 'Votre paiement est enregistré. HaloGari le finalisera selon le déroulement du trajet.' }}</p>
   </div>
 </section>
 
@@ -21,14 +21,14 @@
       <i class="bi bi-shield-check"></i>
     </div>
     <div class="reservation-confirmation__intro">
-      <h2>{{ paiementCapture ? 'Votre place est confirmée.' : 'Votre paiement est autorisé.' }}</h2>
+      <h2>{{ paiementCapture ? 'Votre place est confirmée.' : 'Votre paiement est enregistré.' }}</h2>
       <p>
         {% if paiementCapture %}
-          Le paiement de votre réservation a bien été capturé. HaloGari sécurise le montant,
+          Le paiement de votre réservation est confirmé. HaloGari sécurise le montant,
           puis le reversement conducteur et la commission HaloGari seront traités après le trajet selon les règles prévues.
         {% else %}
-          La banque a autorisé le montant de votre réservation. Vous n'avez rien d'autre à faire pour le moment :
-          HaloGari capturera le paiement plus tard, puis traitera la part conducteur et la commission selon les règles prévues.
+          Votre paiement est enregistré. Vous n'avez rien d'autre à faire pour le moment :
+          HaloGari le finalisera au bon moment, puis traitera la part conducteur et la commission selon les règles prévues.
         {% endif %}
       </p>
     </div>
@@ -59,7 +59,7 @@
         <strong>{{ reservation.places }}</strong>
       </div>
       <div class="reservation-stat">
-        <span>{{ paiementCapture ? 'Total payé' : 'Montant autorisé' }}</span>
+        <span>{{ paiementCapture ? 'Total payé' : 'Montant sécurisé' }}</span>
         <strong>{{ reservation.prixTotal|number_format(2, ',', ' ') }} €</strong>
       </div>
     </div>
@@ -75,7 +75,7 @@
     <div class="reservation-next-steps">
       <div class="reservation-next-step is-active">
         <span><i class="bi bi-check-circle-fill"></i></span>
-        <p>{{ paiementCapture ? 'Votre réservation est payée et votre place est bloquée.' : 'Votre carte est autorisée et votre place reste suivie par HaloGari.' }}</p>
+        <p>{{ paiementCapture ? 'Votre réservation est payée et votre place est bloquée.' : 'Votre paiement est enregistré et votre place reste suivie par HaloGari.' }}</p>
       </div>
       <div class="reservation-next-step">
         <span><i class="bi bi-chat-dots-fill"></i></span>

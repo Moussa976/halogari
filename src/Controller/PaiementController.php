@@ -79,7 +79,7 @@ class PaiementController extends AbstractController
     }
 
     /**
-     * Affiche la confirmation après autorisation ou capture du paiement.
+     * Affiche la confirmation après enregistrement ou confirmation du paiement.
      *
      * @Route("/user/paiement/confirmation/{id}", name="paiement_confirmation", methods={"GET"})
      * @IsGranted("ROLE_USER")
@@ -107,7 +107,7 @@ class PaiementController extends AbstractController
 
         $paiement = $reservation->getPaiement();
         if (!$paiement || !in_array($paiement->getStatut(), ['autorise', 'capture'], true)) {
-            $this->addFlash('warning', "Le paiement est en cours d'autorisation. Si votre banque l'a validé, HaloGari mettra votre réservation à jour dans quelques secondes.");
+            $this->addFlash('warning', "Le paiement est en cours d'enregistrement. Si votre banque l'a validé, HaloGari mettra votre réservation à jour dans quelques secondes.");
             return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
         }
 

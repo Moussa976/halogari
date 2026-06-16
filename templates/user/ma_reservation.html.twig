@@ -20,7 +20,7 @@
 } %}
 
 {% set paymentLabels = {
-  'autorise': 'Autorisé',
+  'autorise': 'Paiement enregistré',
   'capture': 'Payé',
   'annule': 'Annulé',
   'rembourse': 'Remboursé',
@@ -133,7 +133,7 @@
             <p>
               {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}
               {% if statutPaiement == 'autorise' %}
-                · capture prévue plus tard
+                · finalisation prévue plus tard
               {% endif %}
             </p>
           </div>
@@ -144,7 +144,7 @@
         {% if peutPayer %}
           <a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success">
             <i class="bi bi-credit-card-2-front"></i>
-            Autoriser le paiement
+            Enregistrer le paiement
           </a>
         {% endif %}
 
@@ -182,7 +182,7 @@
       {% if peutPayer %}
         <div class="reservation-note">
           <i class="bi bi-exclamation-circle-fill"></i>
-          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : autorisez rapidement le paiement pour confirmer votre place et éviter une annulation avant le départ.</p>
+          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : enregistrez rapidement le paiement pour confirmer votre place et éviter une annulation avant le départ.</p>
         </div>
       {% endif %}
 
@@ -276,7 +276,7 @@
               <li>Moins de 3 h avant le départ : remboursement non garanti.</li>
             </ul>
           {% elseif reservation.statut == 'acceptee' %}
-            <p>Votre réservation est acceptée, mais le paiement n’est pas finalisé. Si vous annulez maintenant, les places seront remises à disposition du conducteur.</p>
+            <p>Votre réservation est acceptée, mais le paiement n’est pas encore enregistré. Si vous annulez maintenant, les places seront remises à disposition du conducteur.</p>
           {% else %}
             <p>Votre demande est encore en attente. Vous pouvez l’annuler sans paiement ni remboursement à gérer.</p>
           {% endif %}

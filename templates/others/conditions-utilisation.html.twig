@@ -47,12 +47,12 @@
 
     <h2>4. Paiements</h2>
     <p>
-      Le passager autorise le paiement uniquement après acceptation de sa réservation par le conducteur. Le paiement est traité par Stripe :
-      la carte est autorisée au moment de la confirmation, puis le montant est capturé plus tard par HaloGari selon le déroulement du trajet.
+      Le passager enregistre le paiement uniquement après acceptation de sa réservation par le conducteur. Le paiement est traité par Stripe :
+      la carte est vérifiée au moment de la confirmation, puis le paiement est finalisé par HaloGari selon le déroulement du trajet.
       HaloGari ne stocke pas les données complètes de carte bancaire.
     </p>
     <p>
-      Après capture et fin du trajet, HaloGari traite le reversement de la part conducteur et conserve sa commission de service :
+      Après finalisation du paiement et fin du trajet, HaloGari traite le reversement de la part conducteur et conserve sa commission de service :
       12 % du montant de la réservation, avec une commission minimale de 0,50 €. Les frais Stripe estimés sont pris en compte dans le calcul du net conducteur.
       En cas d'annulation ou de litige, le remboursement est étudié selon la politique ci-dessous.
     </p>

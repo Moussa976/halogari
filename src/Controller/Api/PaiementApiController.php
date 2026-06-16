@@ -60,7 +60,7 @@ class PaiementApiController extends AbstractController
 
         if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'autorise') {
             return $this->json([
-                'message' => 'Paiement deja autorise.',
+                'message' => 'Paiement deja enregistre.',
                 'status' => 'autorise',
                 'paymentUrl' => $this->generateUrl('paiement_confirmation', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ]);
@@ -79,7 +79,7 @@ class PaiementApiController extends AbstractController
         }
 
         return $this->json([
-            'message' => 'Autorisation de paiement initialisee.',
+            'message' => 'Enregistrement du paiement initialise.',
             'clientSecret' => $clientSecret,
             'stripePublicKey' => (string) ($_ENV['STRIPE_PUBLIC_KEY'] ?? ''),
             'amount' => (float) $reservation->getPrixTotal(),

@@ -59,7 +59,7 @@ class PaiementService
             if ($intent->status === 'requires_capture') {
                 $paiement->setStatut('autorise');
                 $this->em->flush();
-                throw new \RuntimeException('Ce paiement est déjà autorisé.');
+                throw new \RuntimeException('Ce paiement est déjà enregistré.');
             }
 
             if ($intent->status === 'canceled') {

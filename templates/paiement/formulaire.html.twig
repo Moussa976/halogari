@@ -8,7 +8,7 @@
   <div class="container">
     <p class="app-kicker">Paiement</p>
     <h1>Paiement sécurisé</h1>
-    <p>Autorisez votre paiement après acceptation du conducteur. HaloGari capturera le montant plus tard selon le déroulement du trajet.</p>
+    <p>Enregistrez votre paiement après acceptation du conducteur. HaloGari le finalisera selon le déroulement du trajet.</p>
   </div>
 </section>
 
@@ -24,7 +24,7 @@
       </div>
 
       <div class="payment-total payment-total--compact">
-        <span>Montant autorisé</span>
+        <span>Montant sécurisé</span>
         <strong>{{ total|number_format(2, ',', ' ') }} €</strong>
       </div>
 
@@ -78,12 +78,12 @@
 
         <div class="payment-note">
           <i class="bi bi-shield-lock-fill"></i>
-          <p>Votre carte est autorisée maintenant. Le débit sera capturé plus tard par HaloGari, puis le reversement conducteur sera traité selon les règles prévues.</p>
+          <p>Votre paiement est enregistré maintenant. HaloGari le finalisera au bon moment, puis traitera le reversement conducteur selon les règles prévues.</p>
         </div>
 
         <button class="btn btn-primary w-100" type="submit">
           <i class="bi bi-lock-fill"></i>
-          Autoriser le paiement
+          Enregistrer le paiement
         </button>
         <div id="payment-result" class="mt-3"></div>
       </form>
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Autorisation...';
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Enregistrement...';
 
     const { error, paymentIntent } = await stripe.confirmCardPayment('{{ clientSecret }}', {
       payment_method: {
@@ -125,12 +125,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (error) {
       resultDiv.innerHTML = `<div class="alert alert-danger">Paiement refusé : ${error.message}</div>`;
       submitButton.disabled = false;
-      submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Autoriser le paiement';
+      submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Enregistrer le paiement';
       return;
     }
 
     if (paymentIntent.status === 'requires_capture' || paymentIntent.status === 'succeeded') {
-      resultDiv.innerHTML = '<div class="alert alert-success">Autorisation enregistrée. Redirection...</div>';
+      resultDiv.innerHTML = '<div class="alert alert-success">Paiement enregistré. Redirection...</div>';
       window.setTimeout(() => {
         window.location.href = '{{ path("paiement_confirmation", { id: reservation.id }) }}';
       }, 1200);
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     resultDiv.innerHTML = `<div class="alert alert-warning">Paiement en statut inattendu : ${paymentIntent.status}</div>`;
     submitButton.disabled = false;
-    submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Autoriser le paiement';
+    submitButton.innerHTML = '<i class="bi bi-lock-fill"></i> Enregistrer le paiement';
   });
 });
 </script>

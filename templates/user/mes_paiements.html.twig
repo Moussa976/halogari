@@ -4,7 +4,7 @@
 
 {% set paiementLabels = {
   'en_attente': 'En attente',
-  'autorise': 'Autorisé',
+  'autorise': 'Enregistré',
   'capture': 'Confirmé',
   'rembourse': 'Remboursé',
   'echoue': 'Échoué',
@@ -16,7 +16,7 @@
   <div class="container">
     <p class="app-kicker">Portefeuille</p>
     <h1>Mes paiements</h1>
-    <p>Suivez séparément vos réservations autorisées, capturées et les gains de vos trajets conducteur.</p>
+    <p>Suivez séparément vos paiements enregistrés, confirmés et les gains de vos trajets conducteur.</p>
   </div>
 </section>
 
@@ -50,7 +50,7 @@
         <div class="row g-3 mb-4">
           <div class="col-md-6">
             <div class="border rounded p-3 h-100">
-              <span class="text-muted d-block">Total capturé</span>
+              <span class="text-muted d-block">Total confirmé</span>
               <strong class="fs-4">{{ totalReserve|number_format(2, ',', ' ') }} €</strong>
             </div>
           </div>
@@ -177,7 +177,7 @@
     <span class="app-panel__icon"><i class="bi bi-shield-check"></i></span>
     <h2>À savoir</h2>
     <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Les réservations autorisées ou capturées sont dans l'onglet passager</span>
+      <span><i class="bi bi-check-circle-fill"></i> Les paiements enregistrés ou confirmés sont dans l'onglet passager</span>
       <span><i class="bi bi-check-circle-fill"></i> Les gains conducteur restent en attente jusqu'au reversement</span>
       <span><i class="bi bi-check-circle-fill"></i> Les remboursements suivent la politique HaloGari</span>
     </div>

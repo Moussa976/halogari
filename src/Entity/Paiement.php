@@ -145,7 +145,7 @@ class Paiement
             case 'en_attente':
                 return 'En attente';
             case 'autorise':
-                return 'Paiement autorisé';
+                return 'Paiement enregistré';
             case 'capture':
                 return 'Paiement confirmé';
             case 'rembourse':
