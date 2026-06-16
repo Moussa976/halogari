@@ -409,6 +409,29 @@ body.app-shell::before {
     transform: scale(.98) !important;
 }
 
+.btn.is-loading,
+a.is-loading {
+    pointer-events: none;
+    cursor: wait;
+    opacity: .9;
+}
+
+.hg-btn-spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    animation: hg-spin .7s linear infinite;
+}
+
+@keyframes hg-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .form-control,
 .form-select,
 .input-group-text {

@@ -159,6 +159,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const setButtonLoading = (button) => {
+        if (!button || button.classList.contains('is-loading')) {
+            return;
+        }
+
+        button.dataset.loadingHtml = button.innerHTML;
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
+
+        if (button.tagName === 'BUTTON') {
+            button.disabled = true;
+        } else {
+            button.setAttribute('aria-disabled', 'true');
+        }
+
+        const label = button.dataset.loadingLabel || 'Chargement';
+        button.innerHTML = `<span class="hg-btn-spinner" aria-hidden="true"></span><span>${label}</span>`;
+    };
+
+    window.HaloGariSetButtonLoading = setButtonLoading;
+
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (event.defaultPrevented || form.matches('[data-loading-defer]') || !form.checkValidity()) {
+                return;
+            }
+
+            const submitter = event.submitter || form.querySelector('[type="submit"][data-loading-button]');
+            if (submitter?.matches('[data-loading-button]')) {
+                setButtonLoading(submitter);
+            }
+        });
+    });
+
+    document.querySelectorAll('a[data-loading-button]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            if (event.defaultPrevented || link.classList.contains('is-disabled') || link.getAttribute('href') === '#') {
+                return;
+            }
+
+            setButtonLoading(link);
+        });
+    });
+
     const revealItems = document.querySelectorAll(
         '.card, .feature-card, .route-item, .list-group-item, .quick-search, .app-section-heading, .ride-card, .app-panel'
     );

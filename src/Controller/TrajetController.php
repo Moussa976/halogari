@@ -84,16 +84,24 @@ class TrajetController extends AbstractController
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
         $dateObj = new \DateTimeImmutable($date);
 
+        $startOfDay = $dateObj->setTime(0, 0, 0);
+        $endOfDay = $dateObj->setTime(23, 59, 59);
+
         $autresTrajets = $trajetRepository->createQueryBuilder('t')
-            ->where('t.dateTrajet = :date')
-            ->andWhere('t.arrivee = :arrivee')
-            ->andWhere('t.depart != :depart')
-            ->andWhere('t.annule != true') // Exclure les trajets annulés
+            ->where('t.dateTrajet >= :startOfDay')
+            ->andWhere('t.dateTrajet < :endOfDay')
+            ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
+            ->andWhere('LOWER(t.depart) != LOWER(:depart)')
+            ->andWhere('t.placesDisponibles >= :places')
+            ->andWhere('t.annule IS NULL OR t.annule = false')
             ->setParameters([
-                'date' => $dateObj,
+                'startOfDay' => $startOfDay,
+                'endOfDay' => $endOfDay,
                 'arrivee' => $arrivee,
-                'depart' => $depart
+                'depart' => $depart,
+                'places' => (int) $places,
             ])
+            ->orderBy('t.heureTrajet', 'ASC')
             ->getQuery()
             ->getResult();
 

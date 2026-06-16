@@ -214,13 +214,13 @@
 						{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
 						{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
 						{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %}
-						<form id="formDesk" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+						<form id="formDesk" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post" data-loading-defer>
 							<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
 							<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 							{% if app.user %}
 								{% if app.user.id != trajet.conducteur.id %}
-									<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+									<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
 										{% if isPassed %}
 											Trajet terminé
 										{% else %}
@@ -239,7 +239,7 @@
 									</a>
 								{% endif %}
 							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 									{% if isPassed %}
 										Trajet terminé
 									{% else %}
@@ -261,13 +261,13 @@
 				<strong>{{ totalReservation|number_format(2, ',', '.') }}
 					€</strong>
 			</div>
-			<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post">
+			<form id="formMobile" action="{{ path('app_reservation', { id: trajet.id }) }}" method="post" data-loading-defer>
 				<input type="hidden" name="_token" value="{{ csrf_token('reserver_trajet_' ~ trajet.id) }}">
 				<input type="hidden" name="placesReservees" value="{{ nbPlaceReservee }}">
 
 				{% if app.user %}
 					{% if app.user.id != trajet.conducteur.id %}
-						<button type="submit" class="btn btn-orange w-100" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+						<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
 							{% if isPassed %}
 								Trajet terminé
 							{% else %}
@@ -286,7 +286,7 @@
 						</a>
 					{% endif %}
 				{% else %}
-					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 						{% if isPassed %}
 							Trajet terminé
 						{% else %}
@@ -362,6 +362,7 @@ const passengerLabel = `${nb} passager${nb > 1 ? 's' : ''}`;
 
 form.addEventListener('submit', function (e) {
 e.preventDefault();
+const submitter = e.submitter || form.querySelector('[data-loading-button]');
 Swal.fire({
 icon: 'question',
 title: 'Envoyer la demande ?',
@@ -372,6 +373,9 @@ cancelButtonText: 'Annuler',
 confirmButtonColor: '#ff6f00'
 }).then(result => {
 if (result.isConfirmed) {
+if (window.HaloGariSetButtonLoading) {
+window.HaloGariSetButtonLoading(submitter);
+}
 form.submit();
 }
 });
