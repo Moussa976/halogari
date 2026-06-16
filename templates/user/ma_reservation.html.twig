@@ -237,10 +237,10 @@
           {% if autresPassagers|length > 0 %}
             <div class="reservation-passenger-list">
               {% for autre in autresPassagers %}
-                <div class="reservation-passenger">
+                <a class="reservation-passenger" href="{{ path('app_profile', { id: autre.passager.id }) }}">
                   {{ avatar.formatSimple(autre.passager, 42, 0, 1) }}
                   <span>{{ autre.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : autre.passager.prenom }}</span>
-                </div>
+                </a>
               {% endfor %}
             </div>
           {% else %}

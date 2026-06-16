@@ -1528,6 +1528,19 @@ textarea.form-control.app-message-textarea {
     align-items: center;
 }
 
+.reservation-passenger,
+.ride-reservation-card__user {
+    color: inherit;
+    text-decoration: none;
+}
+
+.reservation-passenger:hover span,
+.reservation-passenger:focus-visible span,
+.ride-reservation-card__user:hover strong,
+.ride-reservation-card__user:focus-visible strong {
+    color: var(--hg-green);
+}
+
 .reservation-driver-card__identity a,
 .reservation-driver-card__identity strong {
     color: var(--hg-ink);

@@ -186,13 +186,13 @@
           {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
           {% set showPaymentBadge = (statutPaiement != 'en_attente' or reservation.statut == 'acceptee') and not (reservation.statut == 'payee' and statutPaiement == 'capture') %}
           <div class="ride-reservation-card">
-            <div class="ride-reservation-card__user">
+            <a class="ride-reservation-card__user" href="{{ path('app_profile', { id: reservation.passager.id }) }}">
               {{ avatar.formatSimple(reservation.passager, 48, 0, 1) }}
               <div>
                 <strong>{{ passengerName }}</strong>
                 <span>{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</span>
               </div>
-            </div>
+            </a>
 
             <div class="ride-reservation-card__badges">
               <span class="reservation-status reservation-status--{{ reservation.statut }}">
