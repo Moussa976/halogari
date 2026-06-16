@@ -6,6 +6,7 @@ use App\Entity\Commission;
 use App\Entity\Paiement;
 use App\Entity\Reservation;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Refund;
 use Stripe\Stripe;
@@ -244,21 +245,23 @@ class PaiementService
                 $paiement->setStatut('annule');
             } elseif ($paymentIntent->status === 'succeeded') {
                 $this->assertReservationNotAlreadyTransferred($reservation);
-                Refund::create([
-                    'payment_intent' => $intentId,
-                ]);
+                $this->creerRemboursementStripe($intentId);
                 $paiement->setStatut('rembourse');
             }
 
             $this->em->flush();
         } catch (\Exception $e) {
-            // Le webhook Stripe ou l'admin peut reprendre le traitement ensuite.
+            throw new \RuntimeException(
+                "Le paiement n'a pas pu être annulé ou remboursé : " . $e->getMessage(),
+                0,
+                $e
+            );
         }
     }
 
     public function rembourserPaiement(string $intentId): void
     {
-        Refund::create(['payment_intent' => $intentId]);
+        $this->creerRemboursementStripe($intentId);
     }
 
     public function rembourserSelonPolitique(Reservation $reservation, bool $conducteurAnnule = false): void
@@ -299,10 +302,7 @@ class PaiementService
             $montantTotal = (float) $paiement->getMontant();
             $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
 
-            Refund::create([
-                'payment_intent' => $intentId,
-                'amount' => intval($montantRembourse * 100),
-            ]);
+            $this->creerRemboursementStripe($intentId, intval($montantRembourse * 100));
         }
 
         $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
@@ -312,6 +312,28 @@ class PaiementService
     {
         if ($reservation->getCommissions()->count() > 0) {
             throw new \RuntimeException('Le versement conducteur a déjà été effectué. Le remboursement doit être traité manuellement depuis Stripe et l’administration HaloGari.');
+        }
+    }
+
+    private function creerRemboursementStripe(string $intentId, ?int $amount = null): void
+    {
+        $payload = ['payment_intent' => $intentId];
+        if ($amount !== null) {
+            $payload['amount'] = $amount;
+        }
+
+        try {
+            Refund::create($payload);
+        } catch (InvalidRequestException $exception) {
+            if (str_contains($exception->getMessage(), 'No such payment_intent')) {
+                throw new \RuntimeException(
+                    "Stripe ne retrouve pas ce paiement avec la clé configurée actuellement. Il a probablement été créé avec une ancienne clé Stripe : remboursez-le depuis l'ancien compte Stripe ou traitez ce paiement de test manuellement.",
+                    0,
+                    $exception
+                );
+            }
+
+            throw $exception;
         }
     }
 
