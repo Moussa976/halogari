@@ -37,6 +37,7 @@
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="enregistre">Enregistrés</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="confirme">Confirmés</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="a-rembourser">À rembourser</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="a-controler">À contrôler</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="rembourse">Remboursés</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="a-verser">À verser</button>
           <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="verse">Versés</button>
@@ -65,12 +66,25 @@
               {% set trajet = reservation ? reservation.trajet : null %}
               {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
               {% set statutTrajet = trajet ? trajet.statutOperationnel : 'inconnu' %}
-              {% set aRembourser = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
+              {% set remboursementPourcentage = 0 %}
+              {% if reservation and trajet and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
+                {% if reservation.canceledBy == 'conducteur' %}
+                  {% set remboursementPourcentage = 100 %}
+                {% elseif reservation.canceledBy == 'passager' and reservation.canceledAt %}
+                  {% set departTs = (trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ trajet.heureTrajet|date('H:i:s'))|date('U') %}
+                  {% set cancelTs = reservation.canceledAt|date('U') %}
+                  {% set delaiAvantDepart = departTs - cancelTs %}
+                  {% set remboursementPourcentage = delaiAvantDepart > 86400 ? 100 : (delaiAvantDepart > 10800 ? 50 : 0) %}
+                {% endif %}
+              {% endif %}
+              {% set aRembourser = remboursementPourcentage > 0 %}
+              {% set aControler = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse and remboursementPourcentage == 0 %}
               {% set aVerser = paiement.statut == 'capture' and not dejaVerse and trajet and trajet.pretPourVersement %}
               {% set rowFilters = [
                 paiement.statut == 'autorise' ? 'enregistre' : '',
                 paiement.statut == 'capture' ? 'confirme' : '',
                 aRembourser ? 'a-rembourser' : '',
+                aControler ? 'a-controler' : '',
                 paiement.statut == 'rembourse' ? 'rembourse' : '',
                 aVerser ? 'a-verser' : '',
                 dejaVerse ? 'verse' : '',
@@ -109,6 +123,8 @@
                     <span class="badge bg-{{ statusClasses[paiement.statut]|default('secondary') }}">{{ paiement.statutLabel }}</span>
                     {% if aRembourser %}
                       <span class="badge bg-danger ms-1">à rembourser</span>
+                    {% elseif aControler %}
+                      <span class="badge bg-warning text-dark ms-1">à contrôler</span>
                     {% elseif dejaVerse %}
                       <span class="badge bg-success ms-1">versé</span>
                     {% elseif aVerser %}
@@ -137,6 +153,31 @@
       {% set repartitionCommission = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
       {% set repartitionFraisStripe = ((paiement.montant * 0.015) + 0.25)|round(2, 'common') %}
       {% set repartitionConducteur = max(paiement.montant - repartitionCommission - repartitionFraisStripe, 0) %}
+      {% set remboursementPourcentage = null %}
+      {% set remboursementMessage = null %}
+      {% if reservation and trajet and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
+        {% if reservation.canceledBy == 'conducteur' %}
+          {% set remboursementPourcentage = 100 %}
+          {% set remboursementMessage = 'Annulation conducteur : remboursement total prévu.' %}
+        {% elseif reservation.canceledBy == 'passager' and reservation.canceledAt %}
+          {% set departTs = (trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ trajet.heureTrajet|date('H:i:s'))|date('U') %}
+          {% set cancelTs = reservation.canceledAt|date('U') %}
+          {% set delaiAvantDepart = departTs - cancelTs %}
+          {% if delaiAvantDepart > 86400 %}
+            {% set remboursementPourcentage = 100 %}
+            {% set remboursementMessage = 'Annulation passager à plus de 24 h : remboursement total prévu.' %}
+          {% elseif delaiAvantDepart > 10800 %}
+            {% set remboursementPourcentage = 50 %}
+            {% set remboursementMessage = 'Annulation passager entre 24 h et 3 h : remboursement partiel prévu.' %}
+          {% else %}
+            {% set remboursementPourcentage = 0 %}
+            {% set remboursementMessage = 'Annulation passager à moins de 3 h : aucun remboursement automatique. À rembourser uniquement en geste exceptionnel ou après litige.' %}
+          {% endif %}
+        {% else %}
+          {% set remboursementPourcentage = 0 %}
+          {% set remboursementMessage = 'Annulation à contrôler : la règle automatique ne peut pas être déterminée.' %}
+        {% endif %}
+      {% endif %}
       <div class="modal fade" id="paiement-modal-{{ paiement.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
           <div class="modal-content">
@@ -201,6 +242,20 @@
                 </div>
               </div>
 
+              {% if remboursementMessage %}
+                <div class="alert {{ remboursementPourcentage > 0 ? 'alert-warning' : 'alert-light border' }} mb-3">
+                  <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                    <div>
+                      <strong>Décision remboursement</strong>
+                      <div>{{ remboursementMessage }}</div>
+                    </div>
+                    <span class="badge {{ remboursementPourcentage > 0 ? 'bg-danger' : 'bg-secondary' }} align-self-start">
+                      {{ remboursementPourcentage }} %
+                    </span>
+                  </div>
+                </div>
+              {% endif %}
+
               <div class="border rounded p-3">
                 <h6>Historique</h6>
                 {% if paiement.evenements|length > 0 %}
@@ -253,7 +308,11 @@
                   <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
                     <input type="hidden" name="mode" value="{{ mode }}">
-                    <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
+                    {% if remboursementPourcentage is same as(0) %}
+                      <button class="btn btn-outline-danger" onclick="return confirm('La politique indique 0 % de remboursement automatique. Confirmer un remboursement exceptionnel ?')">Remboursement exceptionnel</button>
+                    {% else %}
+                      <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
+                    {% endif %}
                   </form>
                 {% else %}
                   <span class="text-muted">Aucune action disponible</span>
