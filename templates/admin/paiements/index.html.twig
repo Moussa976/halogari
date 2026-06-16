@@ -151,9 +151,10 @@
       {% set trajet = reservation ? reservation.trajet : null %}
       {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
       {% set trajetTermine = trajet and trajet.pretPourVersement %}
-      {% set repartitionCommission = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
-      {% set repartitionFraisStripe = ((paiement.montant * 0.015) + 0.25)|round(2, 'common') %}
-      {% set repartitionConducteur = max(paiement.montant - repartitionCommission - repartitionFraisStripe, 0) %}
+      {% set montantRestant = paiement.montantDisponible %}
+      {% set repartitionCommission = montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0 %}
+      {% set repartitionFraisStripe = montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0 %}
+      {% set repartitionConducteur = max(montantRestant - repartitionCommission - repartitionFraisStripe, 0) %}
       {% set remboursementPourcentage = null %}
       {% set remboursementMessage = null %}
       {% if reservation and trajet and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
@@ -195,6 +196,10 @@
                   <div class="border rounded p-3 h-100">
                     <div class="text-muted small">Montant</div>
                     <strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong>
+                    {% if paiement.montantRembourse > 0 %}
+                      <div class="small text-muted">Remboursé : {{ paiement.montantRembourse|number_format(2, ',', ' ') }} €</div>
+                      <div class="small text-muted">Restant : {{ montantRestant|number_format(2, ',', ' ') }} €</div>
+                    {% endif %}
                   </div>
                 </div>
                 <div class="col-md-4">
@@ -228,15 +233,19 @@
               <div class="border rounded p-3 mb-3">
                 <h6>Répartition prévue</h6>
                 <div class="row g-3">
-                  <div class="col-md-4">
+                  <div class="col-md-3">
+                    <div class="small text-muted">Base après remboursement</div>
+                    <strong>{{ montantRestant|number_format(2, ',', ' ') }} €</strong>
+                  </div>
+                  <div class="col-md-3">
                     <div class="small text-muted">Commission HaloGari</div>
                     <strong>{{ repartitionCommission|number_format(2, ',', ' ') }} €</strong>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="small text-muted">Frais estimés</div>
                     <strong>{{ repartitionFraisStripe|number_format(2, ',', ' ') }} €</strong>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="small text-muted">Net conducteur</div>
                     <strong>{{ repartitionConducteur|number_format(2, ',', ' ') }} €</strong>
                   </div>

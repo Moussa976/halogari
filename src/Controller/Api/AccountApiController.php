@@ -133,12 +133,16 @@ class AccountApiController extends AbstractController
             }
 
             $montant = (float) $paiement->getMontant();
+            $montantDisponible = $paiement->getMontantDisponible();
             if ($reservation->getPassager() === $user) {
                 $reservations[] = $this->paymentPayload($paiement, $trajetSearch, 'reservation');
                 if ($paiement->getStatut() === 'rembourse') {
                     $summary['totalRembourse'] += $montant;
+                } elseif ($paiement->getStatut() === 'rembourse_partiel') {
+                    $summary['totalRembourse'] += (float) $paiement->getMontantRembourse();
+                    $summary['totalReserve'] += $montantDisponible;
                 } elseif ($paiement->getStatut() === 'capture') {
-                    $summary['totalReserve'] += $montant;
+                    $summary['totalReserve'] += $montantDisponible;
                 }
             }
 
@@ -147,7 +151,7 @@ class AccountApiController extends AbstractController
                 $gains[] = $payload;
                 if ($payload['verse']) {
                     $summary['totalGainsVerses'] += $payload['gainConducteur'];
-                } elseif ($paiement->getStatut() === 'capture') {
+                } elseif (in_array($paiement->getStatut(), ['capture', 'rembourse_partiel'], true)) {
                     $summary['totalGainsAVerser'] += $payload['gainConducteur'];
                 }
             }
@@ -400,13 +404,16 @@ class AccountApiController extends AbstractController
     {
         $reservation = $paiement->getReservation();
         $montant = (float) $paiement->getMontant();
-        $repartition = PaiementService::calculerRepartition($montant);
+        $montantDisponible = $paiement->getMontantDisponible();
+        $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
 
         return [
             'id' => $paiement->getId(),
             'role' => $role,
             'statut' => $paiement->getStatut(),
             'montant' => $montant,
+            'montantRembourse' => (float) $paiement->getMontantRembourse(),
+            'montantDisponible' => $montantDisponible,
             'gainConducteur' => $repartition['montantConducteur'],
             'commissionHaloGari' => $repartition['commissionHaloGari'],
             'fraisStripe' => $repartition['fraisStripe'],

@@ -33,6 +33,11 @@ class Paiement
     /** @ORM\Column(type="decimal", precision=10, scale=2) */
     private $montant;
 
+    /**
+     * @ORM\Column(type="decimal", precision=10, scale=2, options={"default": "0.00"})
+     */
+    private $montantRembourse = '0.00';
+
     /** @ORM\Column(type="string", length=30) */
     private $statut;
 
@@ -191,5 +196,30 @@ class Paiement
         }
 
         return $this;
+    }
+
+    public function getMontantRembourse(): ?string
+    {
+        return $this->montantRembourse;
+    }
+
+    public function setMontantRembourse(string $montantRembourse): self
+    {
+        $this->montantRembourse = $montantRembourse;
+
+        return $this;
+    }
+
+    public function addMontantRembourse(float $montant): self
+    {
+        $total = round((float) $this->montantRembourse + $montant, 2);
+        $this->montantRembourse = number_format($total, 2, '.', '');
+
+        return $this;
+    }
+
+    public function getMontantDisponible(): float
+    {
+        return max(round((float) $this->montant - (float) $this->montantRembourse, 2), 0.0);
     }
 }

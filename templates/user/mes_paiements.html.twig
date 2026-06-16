@@ -82,13 +82,19 @@
                 {% for paiement in paiementsReservations %}
                   {% set reservation = paiement.reservation %}
                   {% set trajet = reservation.trajet %}
+                  {% set montantRestant = paiement.montantDisponible %}
                   <tr>
                     <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
                     <td data-label="Trajet">
                       <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
                       <small class="text-muted">{{ trajet.dateTrajet|date_fr('d F Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
                     </td>
-                    <td data-label="Montant"><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
+                    <td data-label="Montant">
+                      <strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong>
+                      {% if paiement.montantRembourse > 0 %}
+                        <br><small class="text-muted">Remboursé {{ paiement.montantRembourse|number_format(2, ',', ' ') }} € · restant {{ montantRestant|number_format(2, ',', ' ') }} €</small>
+                      {% endif %}
+                    </td>
                     <td data-label="Statut">
                       <span class="badge {% if paiement.statut == 'capture' %}bg-success{% elseif paiement.statut in ['rembourse', 'rembourse_partiel'] %}bg-info text-dark{% elseif paiement.statut in ['annule', 'echoue'] %}bg-danger{% else %}bg-warning text-dark{% endif %}">
                         {{ paiementLabels[paiement.statut]|default(paiement.statut) }}
@@ -138,9 +144,10 @@
                 {% for paiement in paiementsGains %}
                   {% set reservation = paiement.reservation %}
                   {% set trajet = reservation.trajet %}
-                  {% set commissionHaloGari = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
-                  {% set fraisStripe = ((paiement.montant * 0.015) + 0.25)|round(2, 'common') %}
-                  {% set gainConducteur = max(paiement.montant - commissionHaloGari - fraisStripe, 0) %}
+                  {% set montantRestant = paiement.montantDisponible %}
+                  {% set commissionHaloGari = montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0 %}
+                  {% set fraisStripe = montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0 %}
+                  {% set gainConducteur = max(montantRestant - commissionHaloGari - fraisStripe, 0) %}
                   {% set dejaVerse = reservation.commissions|length > 0 %}
                   <tr>
                     <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
@@ -151,7 +158,7 @@
                     <td data-label="Passager">{{ reservation.passager.prenom }}</td>
                     <td data-label="Gain conducteur">
                       <strong>{{ gainConducteur|number_format(2, ',', ' ') }} €</strong><br>
-                      <small class="text-muted">Brut {{ paiement.montant|number_format(2, ',', ' ') }} € · Commission {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Frais {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
+                      <small class="text-muted">Base {{ montantRestant|number_format(2, ',', ' ') }} € · Commission {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Frais {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
                     </td>
                     <td data-label="Statut">
                       {% if dejaVerse %}

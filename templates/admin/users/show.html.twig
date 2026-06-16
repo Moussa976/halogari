@@ -8,7 +8,7 @@
   {% set documentClasses = {'pending': 'warning text-dark', 'approved': 'success', 'rejected': 'danger'} %}
   {% set reservationLabels = {'en_attente': 'En attente', 'acceptee': 'Acceptée', 'refusee': 'Refusée', 'payee': 'Payée', 'annulee': 'Annulée'} %}
   {% set reservationClasses = {'en_attente': 'warning text-dark', 'acceptee': 'success', 'refusee': 'danger', 'payee': 'primary', 'annulee': 'secondary'} %}
-  {% set paiementClasses = {'en_attente': 'secondary', 'autorise': 'warning text-dark', 'capture': 'success', 'rembourse': 'info text-dark', 'echoue': 'danger', 'annule': 'dark'} %}
+  {% set paiementClasses = {'en_attente': 'secondary', 'autorise': 'warning text-dark', 'capture': 'success', 'rembourse_partiel': 'info text-dark', 'rembourse': 'info text-dark', 'echoue': 'danger', 'annule': 'dark'} %}
   {% set totalNotes = user.notesPour|length %}
   {% set sommeNotes = user.notesPour|reduce((acc, note) => acc + note.note, 0) %}
   {% set moyenne = totalNotes > 0 ? (sommeNotes / totalNotes)|number_format(1, '.', '') : 0 %}

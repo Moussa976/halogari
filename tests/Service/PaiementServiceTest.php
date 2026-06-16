@@ -3,6 +3,7 @@
 namespace App\Tests\Service;
 
 use App\Entity\Reservation;
+use App\Entity\Paiement;
 use App\Entity\Trajet;
 use App\Service\PaiementService;
 use PHPUnit\Framework\TestCase;
@@ -58,5 +59,19 @@ class PaiementServiceTest extends TestCase
         $reservation->setCanceledAt(new \DateTimeImmutable('2026-06-16 20:32:00'));
 
         self::assertSame(50, PaiementService::calculerPourcentageRemboursementReservation($reservation));
+    }
+
+    public function testRepartitionApresRemboursementPartiel(): void
+    {
+        $paiement = new Paiement();
+        $paiement->setMontant('12.00');
+        $paiement->setMontantRembourse('6.00');
+
+        $repartition = PaiementService::calculerRepartition($paiement->getMontantDisponible(), (float) $paiement->getMontant());
+
+        self::assertSame(6.0, $paiement->getMontantDisponible());
+        self::assertSame(0.72, $repartition['commissionHaloGari']);
+        self::assertSame(0.43, $repartition['fraisStripe']);
+        self::assertSame(4.85, $repartition['montantConducteur']);
     }
 }

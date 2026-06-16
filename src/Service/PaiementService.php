@@ -197,7 +197,12 @@ class PaiementService
             throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lié.");
         }
 
-        $repartition = self::calculerRepartition((float) $paiement->getMontant());
+        $montantDisponible = $paiement->getMontantDisponible();
+        if ($montantDisponible <= 0) {
+            throw new \RuntimeException('Aucun montant disponible pour le versement conducteur.');
+        }
+
+        $repartition = self::calculerRepartition($montantDisponible, (float) $paiement->getMontant());
 
         Transfer::create([
             'amount' => (int) round($repartition['montantConducteur'] * 100),
@@ -206,6 +211,7 @@ class PaiementService
             'metadata' => [
                 'reservation_id' => $reservation->getId(),
                 'paiement_id' => $paiement->getId(),
+                'montant_disponible' => $montantDisponible,
             ],
         ]);
 
@@ -225,10 +231,11 @@ class PaiementService
     /**
      * @return array{montantBrut: float, commissionHaloGari: float, fraisStripe: float, montantConducteur: float}
      */
-    public static function calculerRepartition(float $montantBrut): array
+    public static function calculerRepartition(float $montantBrut, ?float $montantFraisStripe = null): array
     {
         $commissionHaloGari = max(round($montantBrut * self::COMMISSION_RATE, 2), self::COMMISSION_MINIMUM);
-        $fraisStripe = round($montantBrut * self::STRIPE_FEE_RATE + self::STRIPE_FEE_FIXED, 2);
+        $baseFraisStripe = $montantFraisStripe ?? $montantBrut;
+        $fraisStripe = round($baseFraisStripe * self::STRIPE_FEE_RATE + self::STRIPE_FEE_FIXED, 2);
         $montantConducteur = max(round($montantBrut - $commissionHaloGari - $fraisStripe, 2), 0);
 
         return [
@@ -258,9 +265,14 @@ class PaiementService
                 $this->eventLogger->log($paiement, 'paiement_annule', 'Paiement annulé', 'Le paiement enregistré a été annulé avant confirmation.');
             } elseif ($paymentIntent->status === 'succeeded') {
                 $this->assertReservationNotAlreadyTransferred($reservation);
+                $montantRembourse = (float) $paiement->getMontant();
                 $this->creerRemboursementStripe($intentId);
                 $paiement->setStatut('rembourse');
-                $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Le paiement confirmé a été remboursé.');
+                $paiement->setMontantRembourse(number_format($montantRembourse, 2, '.', ''));
+                $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Le paiement confirmé a été remboursé.', null, [
+                    'montant' => $montantRembourse,
+                    'pourcentage' => 100,
+                ]);
             }
 
             $this->em->flush();
@@ -279,7 +291,12 @@ class PaiementService
 
         $paiement = $this->em->getRepository(Paiement::class)->findOneBy(['paymentIntentId' => $intentId]);
         if ($paiement) {
-            $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Remboursement demandé depuis l’administration.');
+            $montantRembourse = (float) $paiement->getMontant();
+            $paiement->setMontantRembourse(number_format($montantRembourse, 2, '.', ''));
+            $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Remboursement demandé depuis l’administration.', null, [
+                'montant' => $montantRembourse,
+                'pourcentage' => 100,
+            ]);
         }
     }
 
@@ -305,6 +322,7 @@ class PaiementService
 
         $this->creerRemboursementStripe($intentId, $amount);
 
+        $paiement->addMontantRembourse($montantRembourse);
         $paiement->setStatut($pourcentage >= 100 ? 'rembourse' : 'rembourse_partiel');
         $this->eventLogger->log(
             $paiement,
@@ -345,6 +363,8 @@ class PaiementService
             $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
 
             $this->creerRemboursementStripe($intentId, (int) round($montantRembourse * 100));
+            $paiement->addMontantRembourse($montantRembourse);
+            $paiement->setStatut($pourcentage >= 100 ? 'rembourse' : 'rembourse_partiel');
             $this->eventLogger->log($paiement, 'remboursement_politique', 'Remboursement selon la politique HaloGari', sprintf('Remboursement de %d %% appliqué.', $pourcentage), null, [
                 'pourcentage' => $pourcentage,
                 'montant' => $montantRembourse,

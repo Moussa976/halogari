@@ -502,24 +502,26 @@ class UserController extends AbstractController
             }
 
             $montant = (float) $paiement->getMontant();
+            $montantDisponible = $paiement->getMontantDisponible();
             if ($reservation->getPassager() === $user) {
                 $paiementsReservations[] = $paiement;
                 if ($paiement->getStatut() === 'rembourse') {
                     $totalRembourse += $montant;
                 } elseif ($paiement->getStatut() === 'rembourse_partiel') {
                     $totalRembourse += $this->getMontantRemboursePartiel($paiement);
+                    $totalReserve += $montantDisponible;
                 } elseif ($paiement->getStatut() === 'capture') {
-                    $totalReserve += $montant;
+                    $totalReserve += $montantDisponible;
                 }
             }
 
             if ($reservation->getTrajet()->getConducteur() === $user) {
                 $paiementsGains[] = $paiement;
-                $repartition = PaiementService::calculerRepartition($montant);
+                $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
                 $gainConducteur = $repartition['montantConducteur'];
                 if ($reservation->getCommissions()->count() > 0) {
                     $totalGainsVerses += $gainConducteur;
-                } elseif ($paiement->getStatut() === 'capture') {
+                } elseif (in_array($paiement->getStatut(), ['capture', 'rembourse_partiel'], true)) {
                     $totalGainsAVerser += $gainConducteur;
                 }
             }
@@ -538,6 +540,10 @@ class UserController extends AbstractController
 
     private function getMontantRemboursePartiel(\App\Entity\Paiement $paiement): float
     {
+        if ((float) $paiement->getMontantRembourse() > 0) {
+            return (float) $paiement->getMontantRembourse();
+        }
+
         foreach ($paiement->getEvenements() as $evenement) {
             if (!in_array($evenement->getType(), ['remboursement_partiel', 'remboursement_politique'], true)) {
                 continue;
