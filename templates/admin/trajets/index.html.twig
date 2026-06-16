@@ -179,21 +179,30 @@
               </div>
 
               <div class="border rounded p-3 mb-4">
-                <h6>Actions de suivi</h6>
+                <h6>Que faire pour ce trajet ?</h6>
+                <p class="small text-muted mb-3">
+                  Choisissez seulement si vous avez vérifié le dossier. En cas de problème, bloquez le versement avec un litige.
+                </p>
                 <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'valide' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
                   <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
                   <input type="hidden" name="note" value="Trajet validé depuis la page admin.">
-                  <button class="btn btn-sm btn-success" onclick="return confirm('Valider ce trajet ?')">Valider</button>
+                  <button class="btn btn-sm btn-success" title="Le trajet s’est bien passé : le versement conducteur pourra être traité." onclick="return confirm('Confirmer que le trajet s’est bien passé ?')">
+                    Trajet OK
+                  </button>
                 </form>
                 <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'litige' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
                   <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
                   <input type="hidden" name="note" value="Litige ouvert depuis la page admin.">
-                  <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Placer ce trajet en litige ?')">Ouvrir un litige</button>
+                  <button class="btn btn-sm btn-outline-danger" title="Il y a un problème à vérifier : le versement conducteur est bloqué." onclick="return confirm('Ouvrir un litige et bloquer le versement conducteur ?')">
+                    Problème à vérifier
+                  </button>
                 </form>
                 <form method="post" action="{{ path('admin_trajet_suivi', { id: trajet.id, statut: 'auto' }) }}" class="d-inline-flex flex-wrap gap-2 mb-2">
                   <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_suivi_' ~ trajet.id) }}">
                   <input type="hidden" name="note" value="Retour au suivi automatique.">
-                  <button class="btn btn-sm btn-outline-secondary">Suivi automatique</button>
+                  <button class="btn btn-sm btn-outline-secondary" title="Annule votre décision manuelle : HaloGari se base à nouveau sur l’heure du trajet.">
+                    Laisser HaloGari décider
+                  </button>
                 </form>
                 {% if trajet.statusNote %}
                   <div class="small text-muted mt-2">{{ trajet.statusNote }}</div>
