@@ -173,6 +173,9 @@ class PaiementService
             throw new \RuntimeException('Réservation introuvable pour ce paiement.');
         }
 
+        $this->assertReservationNotAlreadyTransferred($reservation);
+        $this->assertTrajetTermineAvantVersement($reservation);
+
         if (count($reservation->getCommissions()) > 0) {
             throw new \RuntimeException('Ce paiement a déjà été traité pour reversement.');
         }
@@ -240,6 +243,7 @@ class PaiementService
                 $paymentIntent->cancel();
                 $paiement->setStatut('annule');
             } elseif ($paymentIntent->status === 'succeeded') {
+                $this->assertReservationNotAlreadyTransferred($reservation);
                 Refund::create([
                     'payment_intent' => $intentId,
                 ]);
@@ -269,6 +273,8 @@ class PaiementService
         if (!$intentId || $paiement->getStatut() !== 'capture') {
             return;
         }
+
+        $this->assertReservationNotAlreadyTransferred($reservation);
 
         $pourcentage = 0;
         $trajet = $reservation->getTrajet();
@@ -300,5 +306,29 @@ class PaiementService
         }
 
         $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+    }
+
+    private function assertReservationNotAlreadyTransferred(Reservation $reservation): void
+    {
+        if ($reservation->getCommissions()->count() > 0) {
+            throw new \RuntimeException('Le versement conducteur a déjà été effectué. Le remboursement doit être traité manuellement depuis Stripe et l’administration HaloGari.');
+        }
+    }
+
+    private function assertTrajetTermineAvantVersement(Reservation $reservation): void
+    {
+        $trajet = $reservation->getTrajet();
+        if (!$trajet || !$trajet->getDateTrajet() || !$trajet->getHeureTrajet()) {
+            throw new \RuntimeException('Impossible de vérifier la fin du trajet avant le versement conducteur.');
+        }
+
+        $depart = new \DateTimeImmutable(
+            $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')
+        );
+        $finEstimee = $depart->modify('+3 hours');
+
+        if ($finEstimee > new \DateTimeImmutable()) {
+            throw new \RuntimeException('Le versement conducteur sera disponible après la fin estimée du trajet.');
+        }
     }
 }

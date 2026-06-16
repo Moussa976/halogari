@@ -90,6 +90,11 @@
     {% for paiement in paiements %}
       {% set reservation = paiement.reservation %}
       {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
+      {% set trajetTermine = false %}
+      {% if reservation and reservation.trajet %}
+        {% set departTrajet = reservation.trajet.dateTrajet|date('Y-m-d') ~ ' ' ~ reservation.trajet.heureTrajet|date('H:i:s') %}
+        {% set trajetTermine = date(departTrajet)|date_modify('+3 hours') <= date() %}
+      {% endif %}
       {% set repartitionCommission = max((paiement.montant * 0.12)|round(2, 'common'), 0.50) %}
       {% set repartitionFraisStripe = ((paiement.montant * 0.015) + 0.25)|round(2, 'common') %}
       {% set repartitionConducteur = max(paiement.montant - repartitionCommission - repartitionFraisStripe, 0) %}
@@ -178,10 +183,14 @@
                   </form>
                 {% elseif paiement.statut == 'capture' %}
                   {% if not dejaVerse %}
-                    <form method="post" action="{{ path('admin_paiement_transfer', {id: paiement.id}) }}">
-                      <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_transfer_' ~ paiement.id) }}">
-                      <button class="btn btn-success" onclick="return confirm('Verser la part conducteur maintenant ?')">Verser conducteur</button>
-                    </form>
+                    {% if trajetTermine %}
+                      <form method="post" action="{{ path('admin_paiement_transfer', {id: paiement.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_transfer_' ~ paiement.id) }}">
+                        <button class="btn btn-success" onclick="return confirm('Verser la part conducteur maintenant ?')">Verser conducteur</button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted small align-self-center">Versement disponible après la fin estimée du trajet.</span>
+                    {% endif %}
                   {% endif %}
                   <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">

@@ -110,7 +110,9 @@ class WebhookController extends AbstractController
                             $reservation->getTrajet()->getPlacesDisponibles() + $reservation->getPlaces()
                         );
                     }
-                    $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement annulé par Stripe.');
+                    if ($reservation->getStatut() !== 'annulee' || !$reservation->getCanceledBy()) {
+                        $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement annulé par Stripe.');
+                    }
                     $em->flush();
                     $this->notifier->envoyerEchecPaiement($reservation);
                 }
@@ -119,7 +121,9 @@ class WebhookController extends AbstractController
             case 'charge.refunded':
                 if ($paiement && $paiement->getStatut() !== 'rembourse') {
                     $paiement->setStatut('rembourse');
-                    $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement remboursé par Stripe.');
+                    if ($reservation->getStatut() !== 'annulee' || !$reservation->getCanceledBy()) {
+                        $reservation->markCanceled(Reservation::CANCELED_BY_SYSTEME, 'Paiement remboursé par Stripe.');
+                    }
                     $em->flush();
                     $this->notifier->envoyerRemboursementEffectue($reservation);
                 }

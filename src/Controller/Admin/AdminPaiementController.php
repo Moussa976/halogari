@@ -101,6 +101,11 @@ class AdminPaiementController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'refund');
         try {
+            $reservation = $paiement->getReservation();
+            if ($reservation && $reservation->getCommissions()->count() > 0) {
+                throw new \RuntimeException('Le versement conducteur a déjà été effectué. Le remboursement doit être traité manuellement depuis Stripe et l’administration HaloGari.');
+            }
+
             $paiementService->rembourserPaiement($paiement->getPaymentIntentId());
             $paiement->setStatut('rembourse');
             $this->getDoctrine()->getManager()->flush();
