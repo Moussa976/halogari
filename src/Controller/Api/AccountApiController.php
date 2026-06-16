@@ -139,7 +139,7 @@ class AccountApiController extends AbstractController
                 if ($paiement->getStatut() === 'rembourse') {
                     $summary['totalRembourse'] += $montant;
                 } elseif ($paiement->getStatut() === 'rembourse_partiel') {
-                    $summary['totalRembourse'] += (float) $paiement->getMontantRembourse();
+                    $summary['totalRembourse'] += $paiement->getMontantRembourseEffectif();
                     $summary['totalReserve'] += $montantDisponible;
                 } elseif ($paiement->getStatut() === 'capture') {
                     $summary['totalReserve'] += $montantDisponible;
@@ -412,7 +412,7 @@ class AccountApiController extends AbstractController
             'role' => $role,
             'statut' => $paiement->getStatut(),
             'montant' => $montant,
-            'montantRembourse' => (float) $paiement->getMontantRembourse(),
+            'montantRembourse' => $paiement->getMontantRembourseEffectif(),
             'montantDisponible' => $montantDisponible,
             'gainConducteur' => $repartition['montantConducteur'],
             'commissionHaloGari' => $repartition['commissionHaloGari'],

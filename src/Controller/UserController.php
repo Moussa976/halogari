@@ -508,7 +508,7 @@ class UserController extends AbstractController
                 if ($paiement->getStatut() === 'rembourse') {
                     $totalRembourse += $montant;
                 } elseif ($paiement->getStatut() === 'rembourse_partiel') {
-                    $totalRembourse += $this->getMontantRemboursePartiel($paiement);
+                    $totalRembourse += $paiement->getMontantRembourseEffectif();
                     $totalReserve += $montantDisponible;
                 } elseif ($paiement->getStatut() === 'capture') {
                     $totalReserve += $montantDisponible;
@@ -536,26 +536,6 @@ class UserController extends AbstractController
             'totalGainsAVerser' => $totalGainsAVerser,
             'totalGainsVerses' => $totalGainsVerses,
         ]);
-    }
-
-    private function getMontantRemboursePartiel(\App\Entity\Paiement $paiement): float
-    {
-        if ((float) $paiement->getMontantRembourse() > 0) {
-            return (float) $paiement->getMontantRembourse();
-        }
-
-        foreach ($paiement->getEvenements() as $evenement) {
-            if (!in_array($evenement->getType(), ['remboursement_partiel', 'remboursement_politique'], true)) {
-                continue;
-            }
-
-            $metadata = $evenement->getMetadata();
-            if (isset($metadata['montant'])) {
-                return (float) $metadata['montant'];
-            }
-        }
-
-        return 0.0;
     }
 
 

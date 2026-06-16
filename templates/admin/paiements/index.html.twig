@@ -196,8 +196,8 @@
                   <div class="border rounded p-3 h-100">
                     <div class="text-muted small">Montant</div>
                     <strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong>
-                    {% if paiement.montantRembourse > 0 %}
-                      <div class="small text-muted">Remboursé : {{ paiement.montantRembourse|number_format(2, ',', ' ') }} €</div>
+                    {% if paiement.montantRembourseEffectif > 0 %}
+                      <div class="small text-muted">Remboursé : {{ paiement.montantRembourseEffectif|number_format(2, ',', ' ') }} €</div>
                       <div class="small text-muted">Restant : {{ montantRestant|number_format(2, ',', ' ') }} €</div>
                     {% endif %}
                   </div>

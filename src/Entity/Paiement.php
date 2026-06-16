@@ -220,6 +220,26 @@ class Paiement
 
     public function getMontantDisponible(): float
     {
-        return max(round((float) $this->montant - (float) $this->montantRembourse, 2), 0.0);
+        return max(round((float) $this->montant - $this->getMontantRembourseEffectif(), 2), 0.0);
+    }
+
+    public function getMontantRembourseEffectif(): float
+    {
+        $montantEvenements = 0.0;
+
+        foreach ($this->getEvenements() as $evenement) {
+            if (!in_array($evenement->getType(), ['remboursement_partiel', 'remboursement_politique', 'remboursement_total'], true)) {
+                continue;
+            }
+
+            $metadata = $evenement->getMetadata();
+            if (isset($metadata['montant'])) {
+                $montantEvenements += (float) $metadata['montant'];
+            }
+        }
+
+        $montant = max((float) $this->montantRembourse, $montantEvenements);
+
+        return min(round($montant, 2), (float) $this->montant);
     }
 }

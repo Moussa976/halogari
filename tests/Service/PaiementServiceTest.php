@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\Reservation;
 use App\Entity\Paiement;
+use App\Entity\PaiementEvenement;
 use App\Entity\Trajet;
 use App\Service\PaiementService;
 use PHPUnit\Framework\TestCase;
@@ -73,5 +74,38 @@ class PaiementServiceTest extends TestCase
         self::assertSame(0.72, $repartition['commissionHaloGari']);
         self::assertSame(0.43, $repartition['fraisStripe']);
         self::assertSame(4.85, $repartition['montantConducteur']);
+    }
+
+    public function testMontantRembourseEffectifNeDoublePasChampEtEvenementIdentiques(): void
+    {
+        $paiement = new Paiement();
+        $paiement->setMontant('12.00');
+        $paiement->setMontantRembourse('6.00');
+
+        $event = new PaiementEvenement();
+        $event->setType('remboursement_partiel');
+        $event->setTitre('Remboursement partiel');
+        $event->setMetadata(['montant' => 6.0]);
+        $paiement->addEvenement($event);
+
+        self::assertSame(6.0, $paiement->getMontantRembourseEffectif());
+        self::assertSame(6.0, $paiement->getMontantDisponible());
+    }
+
+    public function testMontantRembourseEffectifAdditionneLesAnciensEvenements(): void
+    {
+        $paiement = new Paiement();
+        $paiement->setMontant('12.00');
+
+        foreach (['remboursement_politique', 'remboursement_partiel'] as $type) {
+            $event = new PaiementEvenement();
+            $event->setType($type);
+            $event->setTitre('Remboursement');
+            $event->setMetadata(['montant' => 6.0]);
+            $paiement->addEvenement($event);
+        }
+
+        self::assertSame(12.0, $paiement->getMontantRembourseEffectif());
+        self::assertSame(0.0, $paiement->getMontantDisponible());
     }
 }

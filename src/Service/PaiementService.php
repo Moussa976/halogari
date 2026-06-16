@@ -265,10 +265,13 @@ class PaiementService
                 $this->eventLogger->log($paiement, 'paiement_annule', 'Paiement annulé', 'Le paiement enregistré a été annulé avant confirmation.');
             } elseif ($paymentIntent->status === 'succeeded') {
                 $this->assertReservationNotAlreadyTransferred($reservation);
-                $montantRembourse = (float) $paiement->getMontant();
-                $this->creerRemboursementStripe($intentId);
+                $montantRembourse = $paiement->getMontantDisponible();
+                if ($montantRembourse <= 0) {
+                    return;
+                }
+                $this->creerRemboursementStripe($intentId, (int) round($montantRembourse * 100));
                 $paiement->setStatut('rembourse');
-                $paiement->setMontantRembourse(number_format($montantRembourse, 2, '.', ''));
+                $paiement->addMontantRembourse($montantRembourse);
                 $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Le paiement confirmé a été remboursé.', null, [
                     'montant' => $montantRembourse,
                     'pourcentage' => 100,
@@ -287,16 +290,19 @@ class PaiementService
 
     public function rembourserPaiement(string $intentId): void
     {
-        $this->creerRemboursementStripe($intentId);
-
         $paiement = $this->em->getRepository(Paiement::class)->findOneBy(['paymentIntentId' => $intentId]);
         if ($paiement) {
-            $montantRembourse = (float) $paiement->getMontant();
-            $paiement->setMontantRembourse(number_format($montantRembourse, 2, '.', ''));
+            $montantRembourse = $paiement->getMontantDisponible();
+            if ($montantRembourse <= 0) {
+                return;
+            }
+            $this->creerRemboursementStripe($intentId, (int) round($montantRembourse * 100));
+            $paiement->addMontantRembourse($montantRembourse);
             $this->eventLogger->log($paiement, 'remboursement_total', 'Remboursement total', 'Remboursement demandé depuis l’administration.', null, [
                 'montant' => $montantRembourse,
                 'pourcentage' => 100,
             ]);
+            $this->em->flush();
         }
     }
 
@@ -317,8 +323,15 @@ class PaiementService
         }
 
         $montantTotal = (float) $paiement->getMontant();
-        $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
-        $amount = $pourcentage >= 100 ? null : (int) round($montantRembourse * 100);
+        $montantDejaRembourse = $paiement->getMontantRembourseEffectif();
+        $montantCibleRembourse = round($montantTotal * ($pourcentage / 100), 2);
+        $montantRembourse = round($montantCibleRembourse - $montantDejaRembourse, 2);
+
+        if ($montantRembourse <= 0) {
+            throw new \RuntimeException(sprintf('Ce paiement a déjà été remboursé à hauteur de %d %% ou plus.', $pourcentage));
+        }
+
+        $amount = (int) round($montantRembourse * 100);
 
         $this->creerRemboursementStripe($intentId, $amount);
 
@@ -360,7 +373,17 @@ class PaiementService
 
         if ($pourcentage > 0) {
             $montantTotal = (float) $paiement->getMontant();
-            $montantRembourse = round($montantTotal * ($pourcentage / 100), 2);
+            $montantDejaRembourse = $paiement->getMontantRembourseEffectif();
+            $montantCibleRembourse = round($montantTotal * ($pourcentage / 100), 2);
+            $montantRembourse = round($montantCibleRembourse - $montantDejaRembourse, 2);
+
+            if ($montantRembourse <= 0) {
+                $this->eventLogger->log($paiement, 'remboursement_deja_effectue', 'Remboursement déjà effectué', sprintf('Le remboursement de %d %% était déjà enregistré.', $pourcentage), null, [
+                    'pourcentage' => $pourcentage,
+                    'montantDejaRembourse' => $montantDejaRembourse,
+                ]);
+                return;
+            }
 
             $this->creerRemboursementStripe($intentId, (int) round($montantRembourse * 100));
             $paiement->addMontantRembourse($montantRembourse);
