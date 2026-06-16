@@ -165,6 +165,9 @@ class ReservationApiController extends AbstractController
         $paiement = $reservation->getPaiement();
         if ($paiement && $paiement->getStatut() === 'capture') {
             $paiementService->rembourserSelonPolitique($reservation, false);
+        } elseif ($paiement && $paiement->getStatut() === 'autorise') {
+            $paiementService->annulerPaiement($reservation);
+            $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         } else {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }

@@ -33,6 +33,16 @@ class Commission
     private $fraisStripe;
 
     /**
+     * @ORM\Column(type="decimal", precision=10, scale=2, options={"default": "0.00"})
+     */
+    private $commissionHaloGari = '0.00';
+
+    /**
+     * @ORM\Column(type="decimal", precision=10, scale=2, options={"default": "0.00"})
+     */
+    private $montantConducteur = '0.00';
+
+    /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
      */
     private $montantNet;
@@ -84,6 +94,30 @@ class Commission
     public function setFraisStripe(string $fraisStripe): self
     {
         $this->fraisStripe = $fraisStripe;
+
+        return $this;
+    }
+
+    public function getCommissionHaloGari(): ?string
+    {
+        return $this->commissionHaloGari;
+    }
+
+    public function setCommissionHaloGari(string $commissionHaloGari): self
+    {
+        $this->commissionHaloGari = $commissionHaloGari;
+
+        return $this;
+    }
+
+    public function getMontantConducteur(): ?string
+    {
+        return $this->montantConducteur;
+    }
+
+    public function setMontantConducteur(string $montantConducteur): self
+    {
+        $this->montantConducteur = $montantConducteur;
 
         return $this;
     }

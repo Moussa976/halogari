@@ -44,7 +44,10 @@ class PaiementController extends AbstractController
             // Le formulaire reste disponible si Stripe n'est pas joignable ici.
         }
 
-        if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'capture') {
+        if (
+            $reservation->getPaiement()
+            && in_array($reservation->getPaiement()->getStatut(), ['autorise', 'capture'], true)
+        ) {
             return $this->redirectToRoute('paiement_confirmation', ['id' => $reservation->getId()]);
         }
 
@@ -76,7 +79,7 @@ class PaiementController extends AbstractController
     }
 
     /**
-     * Affiche la confirmation après paiement capturé.
+     * Affiche la confirmation après autorisation ou capture du paiement.
      *
      * @Route("/user/paiement/confirmation/{id}", name="paiement_confirmation", methods={"GET"})
      * @IsGranted("ROLE_USER")
@@ -103,13 +106,14 @@ class PaiementController extends AbstractController
         }
 
         $paiement = $reservation->getPaiement();
-        if (!$paiement || $paiement->getStatut() !== 'capture') {
-            $this->addFlash('warning', "Le paiement est en cours de confirmation. Si votre banque l'a validé, HaloGari mettra votre réservation à jour dans quelques secondes.");
+        if (!$paiement || !in_array($paiement->getStatut(), ['autorise', 'capture'], true)) {
+            $this->addFlash('warning', "Le paiement est en cours d'autorisation. Si votre banque l'a validé, HaloGari mettra votre réservation à jour dans quelques secondes.");
             return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
         }
 
         return $this->render('paiement/confirmation.html.twig', [
             'reservation' => $reservation,
+            'paiement' => $paiement,
         ]);
     }
 }

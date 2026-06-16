@@ -45,7 +45,7 @@
 {% set trajetPasse = trajetTimestamp < nowTimestamp %}
 {% set peutPayer = reservation.statut == 'acceptee' and (reservation.paiement is null or reservation.paiement.paymentIntentId is null or reservation.paiement.statut == 'en_attente') %}
 {% set peutAnnuler = reservation.statut in ['en_attente', 'acceptee'] and not trajetPasse %}
-{% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['capture'] %}
+{% set paiementEngage = reservation.paiement and reservation.paiement.statut in ['autorise', 'capture'] %}
 
 {% set dejaNote = false %}
 {% set maNote = null %}
@@ -125,11 +125,16 @@
             </p>
           </div>
         </div>
-        <div class="reservation-timeline__item {{ statutPaiement in ['capture'] ? 'is-done' : (peutPayer ? 'is-current' : 'is-muted') }}">
+        <div class="reservation-timeline__item {{ statutPaiement in ['autorise', 'capture'] ? 'is-done' : (peutPayer ? 'is-current' : 'is-muted') }}">
           <span><i class="bi {{ paymentIcons[statutPaiement]|default('bi-credit-card') }}"></i></span>
           <div>
             <strong>Paiement</strong>
-            <p>{{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}</p>
+            <p>
+              {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}
+              {% if statutPaiement == 'autorise' %}
+                · capture prévue plus tard
+              {% endif %}
+            </p>
           </div>
         </div>
       </div>
@@ -138,7 +143,7 @@
         {% if peutPayer %}
           <a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success">
             <i class="bi bi-credit-card-2-front"></i>
-            Payer maintenant
+            Autoriser le paiement
           </a>
         {% endif %}
 
@@ -166,7 +171,7 @@
       {% if peutPayer %}
         <div class="reservation-note">
           <i class="bi bi-exclamation-circle-fill"></i>
-          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : payez rapidement pour confirmer votre place et éviter une annulation avant le départ.</p>
+          <p><strong>Paiement attendu.</strong> Le conducteur a accepté votre demande : autorisez rapidement le paiement pour confirmer votre place et éviter une annulation avant le départ.</p>
         </div>
       {% endif %}
 

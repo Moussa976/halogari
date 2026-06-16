@@ -58,6 +58,14 @@ class PaiementApiController extends AbstractController
             ]);
         }
 
+        if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'autorise') {
+            return $this->json([
+                'message' => 'Paiement deja autorise.',
+                'status' => 'autorise',
+                'paymentUrl' => $this->generateUrl('paiement_confirmation', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+            ]);
+        }
+
         if ($reservation->getStatut() !== 'acceptee') {
             return $this->json(['message' => 'Le paiement sera disponible apres acceptation du conducteur.'], JsonResponse::HTTP_BAD_REQUEST);
         }
@@ -71,7 +79,7 @@ class PaiementApiController extends AbstractController
         }
 
         return $this->json([
-            'message' => 'Paiement initialise.',
+            'message' => 'Autorisation de paiement initialisee.',
             'clientSecret' => $clientSecret,
             'stripePublicKey' => (string) ($_ENV['STRIPE_PUBLIC_KEY'] ?? ''),
             'amount' => (float) $reservation->getPrixTotal(),

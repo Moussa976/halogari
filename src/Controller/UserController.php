@@ -512,8 +512,8 @@ class UserController extends AbstractController
 
             if ($reservation->getTrajet()->getConducteur() === $user) {
                 $paiementsGains[] = $paiement;
-                $commissionHaloGari = max(round($montant * 0.12, 2), 0.50);
-                $gainConducteur = max(round($montant - $commissionHaloGari, 2), 0);
+                $repartition = PaiementService::calculerRepartition($montant);
+                $gainConducteur = $repartition['montantConducteur'];
                 if ($reservation->getCommissions()->count() > 0) {
                     $totalGainsVerses += $gainConducteur;
                 } elseif ($paiement->getStatut() === 'capture') {
@@ -672,6 +672,9 @@ class UserController extends AbstractController
         $paiementReservation = $reservation->getPaiement();
         if ($paiementReservation && $paiementReservation->getStatut() === 'capture') {
             $paiement->rembourserSelonPolitique($reservation, false);
+        } elseif ($paiementReservation && $paiementReservation->getStatut() === 'autorise') {
+            $paiement->annulerPaiement($reservation);
+            $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         } else {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }

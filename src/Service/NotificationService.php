@@ -133,8 +133,8 @@ class NotificationService
     }
 
     /**
-     * Envoie un e-mail au passager pour confirmer que son paiement a été validé.
-     * Le débit est capturé par Stripe quand le passager confirme sa carte.
+     * Envoie un e-mail au passager pour confirmer que son paiement a été autorisé.
+     * La capture est traitée plus tard par HaloGari.
      *
      * @param Reservation $reservation La réservation dont le paiement a été autorisé
      */
@@ -145,7 +145,7 @@ class NotificationService
         $email = (new Email())
             ->from('moussa@halogari.yt')
             ->to($passager->getEmail())
-            ->subject('Paiement validé - Réservation HaloGari')
+            ->subject('Paiement autorisé - Réservation HaloGari')
             ->html($this->twig->render('emails/paiement_confirme.html.twig', [
                 'reservation' => $reservation
             ]))

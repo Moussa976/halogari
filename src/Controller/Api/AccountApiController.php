@@ -17,6 +17,7 @@ use App\Service\AdminNotificationMailer;
 use App\Service\ApiTokenService;
 use App\Service\DocumentStorage;
 use App\Service\DocumentVerificationService;
+use App\Service\PaiementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -393,16 +394,16 @@ class AccountApiController extends AbstractController
     {
         $reservation = $paiement->getReservation();
         $montant = (float) $paiement->getMontant();
-        $commissionHaloGari = max(round($montant * 0.12, 2), 0.50);
-        $gainConducteur = max(round($montant - $commissionHaloGari, 2), 0);
+        $repartition = PaiementService::calculerRepartition($montant);
 
         return [
             'id' => $paiement->getId(),
             'role' => $role,
             'statut' => $paiement->getStatut(),
             'montant' => $montant,
-            'gainConducteur' => $gainConducteur,
-            'commissionHaloGari' => $commissionHaloGari,
+            'gainConducteur' => $repartition['montantConducteur'],
+            'commissionHaloGari' => $repartition['commissionHaloGari'],
+            'fraisStripe' => $repartition['fraisStripe'],
             'verse' => $reservation ? $reservation->getCommissions()->count() > 0 : false,
             'createdAt' => $paiement->getCreatedAt() ? $paiement->getCreatedAt()->format(\DateTimeInterface::ATOM) : null,
             'passager' => $reservation && $reservation->getPassager() ? [

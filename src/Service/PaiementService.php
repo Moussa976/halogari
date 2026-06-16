@@ -13,6 +13,11 @@ use Stripe\Transfer;
 
 class PaiementService
 {
+    private const COMMISSION_RATE = 0.12;
+    private const COMMISSION_MINIMUM = 0.50;
+    private const STRIPE_FEE_RATE = 0.015;
+    private const STRIPE_FEE_FIXED = 0.25;
+
     private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
@@ -28,7 +33,7 @@ class PaiementService
 
     /**
      * Prépare le paiement après acceptation conducteur.
-     * Stripe capture le montant quand le passager confirme sa carte.
+     * Stripe autorise le montant, puis HaloGari le capture plus tard.
      */
     public function autoriserPaiement(Reservation $reservation): string
     {
@@ -48,6 +53,12 @@ class PaiementService
             if ($intent->status === 'succeeded') {
                 $this->synchroniserPaiementStripe($reservation);
                 throw new \RuntimeException('Ce paiement est déjà confirmé.');
+            }
+
+            if ($intent->status === 'requires_capture') {
+                $paiement->setStatut('autorise');
+                $this->em->flush();
+                throw new \RuntimeException('Ce paiement est déjà autorisé.');
             }
 
             if ($intent->status === 'canceled') {
@@ -74,7 +85,7 @@ class PaiementService
             'amount' => intval($montant * 100),
             'currency' => 'eur',
             'payment_method_types' => ['card'],
-            'capture_method' => 'automatic',
+            'capture_method' => 'manual',
             'metadata' => [
                 'reservation_id' => $reservation->getId(),
                 'trajet' => $trajet->getDepart() . ' -> ' . $trajet->getArrivee(),
@@ -86,13 +97,15 @@ class PaiementService
     }
 
     /**
-     * Ancien point d'entrée admin conservé pour les anciens paiements en capture manuelle.
+     * Point d'entrée admin : capture un paiement autorisé.
      */
     public function capturerPaiement(string $intentId): void
     {
         $intent = PaymentIntent::retrieve($intentId);
         if ($intent->status === 'requires_capture') {
             $intent->capture();
+        } elseif ($intent->status !== 'succeeded') {
+            throw new \RuntimeException('Ce paiement ne peut pas être capturé dans son état actuel.');
         }
 
         $paiement = $this->em->getRepository(Paiement::class)->findOneBy([
@@ -169,14 +182,10 @@ class PaiementService
             throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lié.");
         }
 
-        $montantBrut = (float) $paiement->getMontant();
-        $commissionHaloGari = max(round($montantBrut * 0.12, 2), 0.50);
-        $fraisStripe = round($montantBrut * 0.014 + 0.25, 2);
-        $montantConducteur = max(round($montantBrut - $commissionHaloGari, 2), 0);
-        $commissionNette = round($commissionHaloGari - $fraisStripe, 2);
+        $repartition = self::calculerRepartition((float) $paiement->getMontant());
 
         Transfer::create([
-            'amount' => intval($montantConducteur * 100),
+            'amount' => intval($repartition['montantConducteur'] * 100),
             'currency' => 'eur',
             'destination' => $conducteur->getStripeAccountId(),
             'metadata' => [
@@ -187,12 +196,31 @@ class PaiementService
 
         $commission = new Commission();
         $commission->setReservation($reservation);
-        $commission->setMontantBrut((string) $montantBrut);
-        $commission->setFraisStripe((string) $fraisStripe);
-        $commission->setMontantNet((string) $commissionNette);
+        $commission->setMontantBrut((string) $repartition['montantBrut']);
+        $commission->setFraisStripe((string) $repartition['fraisStripe']);
+        $commission->setCommissionHaloGari((string) $repartition['commissionHaloGari']);
+        $commission->setMontantConducteur((string) $repartition['montantConducteur']);
+        $commission->setMontantNet((string) $repartition['commissionHaloGari']);
 
         $this->em->persist($commission);
         $this->em->flush();
+    }
+
+    /**
+     * @return array{montantBrut: float, commissionHaloGari: float, fraisStripe: float, montantConducteur: float}
+     */
+    public static function calculerRepartition(float $montantBrut): array
+    {
+        $commissionHaloGari = max(round($montantBrut * self::COMMISSION_RATE, 2), self::COMMISSION_MINIMUM);
+        $fraisStripe = round($montantBrut * self::STRIPE_FEE_RATE + self::STRIPE_FEE_FIXED, 2);
+        $montantConducteur = max(round($montantBrut - $commissionHaloGari - $fraisStripe, 2), 0);
+
+        return [
+            'montantBrut' => round($montantBrut, 2),
+            'commissionHaloGari' => $commissionHaloGari,
+            'fraisStripe' => $fraisStripe,
+            'montantConducteur' => $montantConducteur,
+        ];
     }
 
     public function annulerPaiement(Reservation $reservation): void

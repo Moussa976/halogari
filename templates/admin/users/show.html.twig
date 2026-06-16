@@ -25,7 +25,8 @@
   {% for paiement in paiementsRecus %}
     {% set commission = paiement.reservation.commissions[0] ?? null %}
     {% if commission %}
-      {% set totalRecuConducteur = totalRecuConducteur + (commission.montantBrut - commission.montantNet - commission.fraisStripe) %}
+      {% set montantConducteur = commission.montantConducteur and commission.montantConducteur > 0 ? commission.montantConducteur : (commission.montantBrut - commission.montantNet - commission.fraisStripe) %}
+      {% set totalRecuConducteur = totalRecuConducteur + montantConducteur %}
     {% endif %}
   {% endfor %}
   {% set rib = user.getDocumentByType('rib') ?: user.getDocumentByType('RIB') %}
@@ -463,7 +464,8 @@
                         <td>{{ paiement.montant|number_format(2, ',', ' ') }} €</td>
                         <td>
                           {% if commission %}
-                            {{ (commission.montantBrut - commission.montantNet - commission.fraisStripe)|number_format(2, ',', ' ') }} €
+                            {% set montantConducteur = commission.montantConducteur and commission.montantConducteur > 0 ? commission.montantConducteur : (commission.montantBrut - commission.montantNet - commission.fraisStripe) %}
+                            {{ montantConducteur|number_format(2, ',', ' ') }} €
                           {% else %}
                             <span class="text-muted">-</span>
                           {% endif %}
