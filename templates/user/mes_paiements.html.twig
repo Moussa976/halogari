@@ -26,9 +26,10 @@
     <div class="app-panel__header">
       <div>
         <h2>Historique</h2>
-        <p>Les paiements passent par Stripe. HaloGari protège l’argent jusqu’au bon moment.</p>
+        <p>HaloGari protège l’argent jusqu’au bon moment.</p>
       </div>
-      <span class="badge bg-light text-dark border">{{ paiements|length }} opération{{ paiements|length > 1 ? 's' : '' }}</span>
+      {% set visiblePaymentsCount = paiementsReservations|length + paiementsGains|length %}
+      <span class="badge bg-light text-dark border">{{ visiblePaymentsCount }} opération{{ visiblePaymentsCount > 1 ? 's' : '' }}</span>
     </div>
 
     <ul class="nav nav-tabs mb-4" id="paymentTabs" role="tablist">
@@ -148,7 +149,8 @@
                       <a href="{{ path('app_profile', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }}</a>
                     </td>
                     <td data-label="Montant reçu">
-                      <strong>{{ commissionVersement.montantConducteur|number_format(2, ',', ' ') }} €</strong>
+                      <strong>{{ commissionVersement.montantConducteur|number_format(2, ',', ' ') }} €</strong><br>
+                      <small class="text-muted">Trajet {{ commissionVersement.montantBrut|number_format(2, ',', ' ') }} € · Frais {{ commissionVersement.fraisStripe|number_format(2, ',', ' ') }} € · HaloGari {{ commissionVersement.commissionHaloGari|number_format(2, ',', ' ') }} €</small>
                     </td>
                   </tr>
                 {% endfor %}
