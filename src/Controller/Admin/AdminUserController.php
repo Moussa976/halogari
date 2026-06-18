@@ -253,9 +253,9 @@ class AdminUserController extends AbstractController
         $this->assertValidUserToken($user, $request, 'stripe_delete');
 
         try {
-            $stripeConnectService->supprimerCompteStripe($user);
+            $message = $stripeConnectService->supprimerCompteStripe($user);
             $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_connect_delete', $user);
-            $this->addFlash('success', '🚫 Compte Stripe supprimé avec succès.');
+            $this->addFlash('success', $message);
         } catch (\Exception $e) {
             $this->addFlash('error', 'Erreur lors de la suppression du compte Stripe : ' . $e->getMessage());
         }

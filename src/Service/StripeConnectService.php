@@ -206,15 +206,17 @@ class StripeConnectService
     /*
      * Supprimer compte stripe
      */
-    public function supprimerCompteStripe(User $user): void
+    public function supprimerCompteStripe(User $user): string
     {
         if (!$user->getStripeAccountId()) {
             throw new \RuntimeException("Aucun compte Stripe associé à cet utilisateur.");
         }
 
+        $stripeAccountId = $user->getStripeAccountId();
+
         try {
             // 1. Récupère le compte existant
-            $account = \Stripe\Account::retrieve($user->getStripeAccountId());
+            $account = \Stripe\Account::retrieve($stripeAccountId);
 
             // 2. Supprime via l'objet
             $account->delete();
@@ -222,6 +224,18 @@ class StripeConnectService
             // 3. Nettoie la base
             $user->setStripeAccountId(null);
             $this->em->flush();
+            return 'Compte Stripe supprimé avec succès.';
+        } catch (InvalidRequestException $e) {
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'Only Stripe Connect platforms') || str_contains($message, 'No such account')) {
+                $user->setStripeAccountId(null);
+                $this->em->flush();
+
+                return sprintf('Compte Stripe délié de HaloGari. L’ancien identifiant %s n’est pas utilisable avec la clé Stripe actuelle.', $stripeAccountId);
+            }
+
+            throw new \RuntimeException("Erreur Stripe : " . $message);
         } catch (\Exception $e) {
             throw new \RuntimeException("Erreur Stripe : " . $e->getMessage());
         }
