@@ -110,15 +110,9 @@
 
       <div class="tab-pane fade" id="earned-pane" role="tabpanel" aria-labelledby="earned-tab" tabindex="0">
         <div class="row g-3 mb-4">
-          <div class="col-md-6">
+          <div class="col-12">
             <div class="border rounded p-3 h-100">
-              <span class="text-muted d-block">À verser</span>
-              <strong class="fs-4">{{ totalGainsAVerser|number_format(2, ',', ' ') }} €</strong>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="border rounded p-3 h-100">
-              <span class="text-muted d-block">Déjà versé</span>
+              <span class="text-muted d-block">Argent reçu</span>
               <strong class="fs-4">{{ totalGainsVerses|number_format(2, ',', ' ') }} €</strong>
             </div>
           </div>
@@ -126,7 +120,7 @@
 
         {% if paiementsGains is empty %}
           <div class="alert alert-info mb-0">
-            Aucun gain conducteur pour le moment.
+            Aucun argent versé pour le moment.
           </div>
         {% else %}
           <div class="table-responsive">
@@ -136,42 +130,25 @@
                   <th>Date</th>
                   <th>Trajet</th>
                   <th>Passager</th>
-                  <th>Gain conducteur</th>
-                  <th>Statut</th>
+                  <th>Montant reçu</th>
                 </tr>
               </thead>
               <tbody>
                 {% for paiement in paiementsGains %}
                   {% set reservation = paiement.reservation %}
                   {% set trajet = reservation.trajet %}
-                  {% set montantRestant = paiement.montantDisponible %}
-                  {% set dejaVerse = reservation.commissions|length > 0 %}
-                  {% set commissionVersement = dejaVerse ? reservation.commissions[0] : null %}
-                  {% set commissionHaloGari = commissionVersement ? commissionVersement.commissionHaloGari : (montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0) %}
-                  {% set fraisStripe = commissionVersement ? commissionVersement.fraisStripe : (montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0) %}
-                  {% set gainConducteur = commissionVersement ? commissionVersement.montantConducteur : max(montantRestant - commissionHaloGari - fraisStripe, 0) %}
-                  {% set baseRepartition = commissionVersement ? commissionVersement.montantBrut : montantRestant %}
+                  {% set commissionVersement = reservation.commissions[0] %}
                   <tr>
                     <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
                     <td data-label="Trajet">
                       <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
                       <small class="text-muted">{{ trajet.dateTrajet|date_fr('d F Y') }} à {{ trajet.heureTrajet|date('H:i') }}</small>
                     </td>
-                    <td data-label="Passager">{{ reservation.passager.prenom }}</td>
-                    <td data-label="Gain conducteur">
-                      <strong>{{ gainConducteur|number_format(2, ',', ' ') }} €</strong><br>
-                      <small class="text-muted">{{ commissionVersement ? 'Montant versé' : 'Estimation' }} · Trajet {{ baseRepartition|number_format(2, ',', ' ') }} € · HaloGari {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Stripe {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
+                    <td data-label="Passager">
+                      <a href="{{ path('app_profile', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }}</a>
                     </td>
-                    <td data-label="Statut">
-                      {% if dejaVerse %}
-                        <span class="badge bg-success">Versé</span>
-                      {% elseif paiement.statut == 'capture' %}
-                        <span class="badge bg-warning text-dark">À verser</span>
-                      {% elseif paiement.statut in ['rembourse', 'rembourse_partiel'] %}
-                        <span class="badge bg-info text-dark">{{ paiementLabels[paiement.statut]|default('Remboursé') }}</span>
-                      {% else %}
-                        <span class="badge bg-secondary">{{ paiementLabels[paiement.statut]|default(paiement.statut) }}</span>
-                      {% endif %}
+                    <td data-label="Montant reçu">
+                      <strong>{{ commissionVersement.montantConducteur|number_format(2, ',', ' ') }} €</strong>
                     </td>
                   </tr>
                 {% endfor %}

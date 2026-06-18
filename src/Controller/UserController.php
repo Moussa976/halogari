@@ -492,7 +492,6 @@ class UserController extends AbstractController
         $paiementsGains = [];
         $totalReserve = 0.0;
         $totalRembourse = 0.0;
-        $totalGainsAVerser = 0.0;
         $totalGainsVerses = 0.0;
 
         foreach ($paiements as $paiement) {
@@ -516,15 +515,11 @@ class UserController extends AbstractController
             }
 
             if ($reservation->getTrajet()->getConducteur() === $user) {
-                $paiementsGains[] = $paiement;
                 if ($reservation->getCommissions()->count() > 0) {
+                    $paiementsGains[] = $paiement;
                     $commission = $reservation->getCommissions()->first();
                     $gainConducteur = $commission ? (float) $commission->getMontantConducteur() : 0.0;
                     $totalGainsVerses += $gainConducteur;
-                } elseif (in_array($paiement->getStatut(), ['capture', 'rembourse_partiel'], true)) {
-                    $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
-                    $gainConducteur = $repartition['montantConducteur'];
-                    $totalGainsAVerser += $gainConducteur;
                 }
             }
         }
@@ -535,7 +530,6 @@ class UserController extends AbstractController
             'paiementsGains' => $paiementsGains,
             'totalReserve' => $totalReserve,
             'totalRembourse' => $totalRembourse,
-            'totalGainsAVerser' => $totalGainsAVerser,
             'totalGainsVerses' => $totalGainsVerses,
         ]);
     }
