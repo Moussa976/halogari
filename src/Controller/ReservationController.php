@@ -143,7 +143,7 @@ class ReservationController extends AbstractController
 
         $notifier->demanderValidationReservation($reservation);
 
-        $this->addFlash('success', "Réservation confirmée pour $places place(s).");
+        $this->addFlash('success', "Votre demande a été envoyée pour $places place(s).");
 
         return $this->render('reservation/reservation_confirmation.html.twig', [
             'reservation' => $reservation
@@ -176,7 +176,7 @@ class ReservationController extends AbstractController
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            $this->addFlash('info', 'Cette réservation a déjà été traitée.');
+            $this->addFlash('info', 'Vous avez déjà répondu à cette demande.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
@@ -196,7 +196,7 @@ class ReservationController extends AbstractController
         $em->flush();
 
         // 📩 Notification au passager
-        $this->addFlash('success', 'Réservation acceptée. Le passager a été notifié et doit payer rapidement pour confirmer sa place.');
+        $this->addFlash('success', 'Demande acceptée. Le passager peut maintenant payer sa place.');
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
@@ -222,7 +222,7 @@ class ReservationController extends AbstractController
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            $this->addFlash('info', 'Cette réservation a déjà été traitée.');
+            $this->addFlash('info', 'Vous avez déjà répondu à cette demande.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
@@ -232,7 +232,7 @@ class ReservationController extends AbstractController
         $reservation->setStatut('refusee');
         $em->flush();
 
-        $this->addFlash('success', 'Réservation refusée.');
+        $this->addFlash('success', 'Demande refusée.');
         $notifier->envoyerConfirmationReservation($reservation, 'refusee');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
@@ -290,7 +290,7 @@ class ReservationController extends AbstractController
         $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
 
-        $this->addFlash('info', 'Votre réservation a été annulée.');
+        $this->addFlash('info', 'Votre réservation est annulée.');
         return $this->redirectToRoute('app_mes_reservations');
     }
 

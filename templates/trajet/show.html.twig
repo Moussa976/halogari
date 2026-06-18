@@ -55,7 +55,7 @@
 			<h1>{{ trajet.depart }}
 				<i class="bi bi-arrow-right-short"></i>
 				{{ trajet.arrivee }}</h1>
-			<p>Envoyez votre demande au conducteur. Vous paierez uniquement après son acceptation.</p>
+			<p>Demandez une place. Vous paierez seulement si le conducteur accepte.</p>
 		</header>
 
 		<div
@@ -106,7 +106,7 @@
 								<div class="ride-show-map-shell">
 									<div class="ride-show-map-label">
 										<i class="bi bi-map"></i>
-										Itinéraire estimé
+										Itinéraire
 									</div>
 									<div class="card-body shadow-sm" id="map"></div>
 								</div>
@@ -143,17 +143,17 @@
 							<div>
 								<span>1</span>
 								<strong>Demande envoyée</strong>
-								<small>Le conducteur reçoit votre réservation.</small>
+								<small>Le conducteur reçoit votre demande.</small>
 							</div>
 							<div>
 								<span>2</span>
-								<strong>Acceptation</strong>
+								<strong>Réponse</strong>
 								<small>Vous payez seulement si le conducteur accepte.</small>
 							</div>
 							<div>
 								<span>3</span>
-								<strong>Trajet confirmé</strong>
-								<small>Vous voyagez ensemble, simplement.</small>
+								<strong>Place confirmée</strong>
+								<small>Vous pouvez préparer le trajet.</small>
 							</div>
 						</div>
 					</div>
@@ -202,7 +202,7 @@
 						<h2 class="ride-booking-card__title">{{ totalReservation|number_format(2, ',', '.') }}
 							€</h2>
 						<p class="ride-booking-card__subtitle">{{ passengerLabel }}
-							· paiement après acceptation</p>
+							· paiement si le conducteur accepte</p>
 
 					</div>
 
@@ -366,7 +366,7 @@ const submitter = e.submitter || form.querySelector('[data-loading-button]');
 Swal.fire({
 icon: 'question',
 title: 'Envoyer la demande ?',
-html: `Vous demandez <strong>${passengerLabel}</strong> pour <strong>${total} €</strong>.<br>Le paiement se fera après acceptation du conducteur.`,
+html: `Vous demandez <strong>${passengerLabel}</strong> pour <strong>${total} €</strong>.<br>Vous paierez si le conducteur accepte.`,
 showCancelButton: true,
 confirmButtonText: 'Envoyer la demande',
 cancelButtonText: 'Annuler',

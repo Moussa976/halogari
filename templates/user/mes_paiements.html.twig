@@ -17,7 +17,7 @@
   <div class="container">
     <p class="app-kicker">Portefeuille</p>
     <h1>Mes paiements</h1>
-    <p>Suivez séparément vos paiements enregistrés, confirmés et les gains de vos trajets conducteur.</p>
+    <p>Retrouvez ce que vous avez payé et ce que vous gagnez comme conducteur.</p>
   </div>
 </section>
 
@@ -26,7 +26,7 @@
     <div class="app-panel__header">
       <div>
         <h2>Historique</h2>
-        <p>Les paiements sont sécurisés par Stripe. HaloGari conserve le paiement puis traite remboursements et reversements selon les règles du trajet.</p>
+        <p>Les paiements passent par Stripe. HaloGari protège l’argent jusqu’au bon moment.</p>
       </div>
       <span class="badge bg-light text-dark border">{{ paiements|length }} opération{{ paiements|length > 1 ? 's' : '' }}</span>
     </div>
@@ -51,7 +51,7 @@
         <div class="row g-3 mb-4">
           <div class="col-md-6">
             <div class="border rounded p-3 h-100">
-              <span class="text-muted d-block">Total confirmé</span>
+              <span class="text-muted d-block">Total payé</span>
               <strong class="fs-4">{{ totalReserve|number_format(2, ',', ' ') }} €</strong>
             </div>
           </div>
@@ -65,7 +65,7 @@
 
         {% if paiementsReservations is empty %}
           <div class="alert alert-info mb-0">
-            Aucun paiement côté réservation pour le moment.
+            Aucun paiement pour vos réservations pour le moment.
           </div>
         {% else %}
           <div class="table-responsive">
@@ -160,7 +160,7 @@
                     <td data-label="Passager">{{ reservation.passager.prenom }}</td>
                     <td data-label="Gain conducteur">
                       <strong>{{ gainConducteur|number_format(2, ',', ' ') }} €</strong><br>
-                      <small class="text-muted">{{ commissionVersement ? 'Réel' : 'Estimé' }} · Base {{ baseRepartition|number_format(2, ',', ' ') }} € · Commission {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Frais {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
+                      <small class="text-muted">{{ commissionVersement ? 'Montant versé' : 'Estimation' }} · Trajet {{ baseRepartition|number_format(2, ',', ' ') }} € · HaloGari {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Stripe {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
                     </td>
                     <td data-label="Statut">
                       {% if dejaVerse %}
@@ -187,8 +187,8 @@
     <span class="app-panel__icon"><i class="bi bi-shield-check"></i></span>
     <h2>À savoir</h2>
     <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Les paiements enregistrés ou confirmés sont dans l'onglet passager</span>
-      <span><i class="bi bi-check-circle-fill"></i> Les gains conducteur restent en attente jusqu'au reversement</span>
+      <span><i class="bi bi-check-circle-fill"></i> Vos paiements de passager sont dans l’onglet réservations</span>
+      <span><i class="bi bi-check-circle-fill"></i> Vos gains conducteur arrivent après validation du trajet</span>
       <span><i class="bi bi-check-circle-fill"></i> Les remboursements suivent la politique HaloGari</span>
     </div>
     <a class="btn btn-outline-primary w-100 mt-3" href="{{ path('app_conditionsutisation') }}#remboursement">

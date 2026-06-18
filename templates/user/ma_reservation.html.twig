@@ -21,7 +21,7 @@
 
 {% set paymentLabels = {
   'autorise': 'Paiement enregistré',
-  'capture': 'Paiement confirmé',
+  'capture': 'Payé',
   'annule': 'Annulé',
   'rembourse_partiel': 'Remboursé partiellement',
   'rembourse': 'Remboursé',
@@ -121,7 +121,7 @@
         <div class="reservation-timeline__item {{ reservation.statut in ['acceptee', 'payee'] ? 'is-done' : (reservation.statut == 'en_attente' ? 'is-current' : 'is-muted') }}">
           <span><i class="bi bi-person-check-fill"></i></span>
           <div>
-            <strong>Validation conducteur</strong>
+            <strong>Réponse du conducteur</strong>
             <p>
               {% if reservation.statut == 'en_attente' %}
                 En attente de réponse.
@@ -130,7 +130,7 @@
               {% elseif reservation.statut == 'annulee' %}
                 {{ reservationLabel }}.
               {% else %}
-                Le conducteur a accepté la réservation.
+                Le conducteur a accepté votre demande.
               {% endif %}
             </p>
           </div>
@@ -254,7 +254,7 @@
             <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
             <div>
               <h2>Passagers</h2>
-              <p>Les personnes confirmées sur ce trajet.</p>
+              <p>Autres passagers sur ce trajet.</p>
             </div>
           </div>
 
@@ -269,7 +269,7 @@
               {% endfor %}
             </div>
           {% else %}
-            <p class="mb-0 text-muted">Vous êtes le seul passager confirmé pour l’instant.</p>
+            <p class="mb-0 text-muted">Pour l’instant, vous êtes le seul passager.</p>
           {% endif %}
         </article>
       {% endif %}

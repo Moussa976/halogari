@@ -14,7 +14,7 @@
 {% set paymentLabels = {
   'en_attente': 'Paiement à venir',
   'autorise': 'Paiement enregistré',
-  'capture': 'Paiement confirmé',
+  'capture': 'Payé',
   'rembourse_partiel': 'Remboursé partiellement',
   'rembourse': 'Remboursé',
   'echoue': 'Échoué',
@@ -33,7 +33,7 @@
   <div class="container">
     <p class="app-kicker">Conducteur</p>
     <h1>{{ trajet.depart }} → {{ trajet.arrivee }}</h1>
-    <p>Suivez les réservations reçues, contactez vos passagers et gardez le contrôle du trajet.</p>
+    <p>Gérez les demandes, les passagers et les paiements de ce trajet.</p>
   </div>
 </section>
 
@@ -98,7 +98,7 @@
           <span class="app-panel__icon"><i class="bi bi-chat-left-text-fill"></i></span>
           <div>
             <h2>Description</h2>
-            <p>Ce que les passagers voient avant de réserver.</p>
+            <p>Ce texte aide les passagers à décider.</p>
           </div>
         </div>
         {% if trajet.description %}
@@ -133,20 +133,20 @@
           <span class="app-panel__icon"><i class="bi bi-cash-coin"></i></span>
           <div>
             <h2>Revenus</h2>
-            <p>Suivi des paiements liés au trajet.</p>
+            <p>Montants liés à ce trajet.</p>
           </div>
         </div>
         <dl class="reservation-info-list">
           <div>
-            <dt>Enregistré</dt>
+            <dt>À confirmer</dt>
             <dd>{{ totalAutorise|number_format(2, ',', ' ') }} €</dd>
           </div>
           <div>
-            <dt>Confirmé</dt>
+            <dt>Payé</dt>
             <dd>{{ totalConfirme|number_format(2, ',', ' ') }} €</dd>
           </div>
           <div>
-            <dt>Passagers confirmés</dt>
+            <dt>Passagers acceptés</dt>
             <dd>{{ confirmedReservations|length }}</dd>
           </div>
         </dl>
@@ -157,7 +157,7 @@
           <span class="app-panel__icon"><i class="bi bi-person-badge-fill"></i></span>
           <div>
             <h2>Conducteur</h2>
-            <p>Votre profil affiché aux passagers.</p>
+            <p>Ce profil est visible par les passagers.</p>
           </div>
         </div>
         <div class="reservation-driver-card__identity">
@@ -175,8 +175,8 @@
     <div class="app-panel__header">
       <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
       <div>
-        <h2>Réservations reçues</h2>
-        <p>Acceptez, refusez ou contactez les passagers depuis un seul endroit.</p>
+        <h2>Demandes reçues</h2>
+        <p>Acceptez, refusez ou contactez les passagers.</p>
       </div>
     </div>
 
@@ -258,7 +258,7 @@
         {% endfor %}
       </div>
     {% else %}
-      <div class="alert alert-info mb-0">Aucune réservation pour ce trajet pour le moment.</div>
+      <div class="alert alert-info mb-0">Aucune demande pour ce trajet pour le moment.</div>
     {% endif %}
   </article>
 </section>

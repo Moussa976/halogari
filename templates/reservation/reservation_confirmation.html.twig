@@ -8,7 +8,7 @@
   <div class="container">
     <p class="app-kicker">Demande envoyée</p>
     <h1>Réservation enregistrée</h1>
-    <p>Votre demande est partie chez le conducteur. Vous serez prévenu dès qu’il aura répondu.</p>
+    <p>Votre demande a été envoyée. Vous serez prévenu dès que le conducteur répond.</p>
   </div>
 </section>
 
@@ -21,8 +21,8 @@
     <div class="reservation-confirmation__intro">
       <h2>Merci {{ app.user.prenom }}, c’est bien enregistré.</h2>
       <p>
-        Votre réservation est en attente de validation. Si le conducteur accepte,
-        vous pourrez ensuite finaliser le paiement sécurisé depuis votre espace.
+        Votre demande est en attente. Si le conducteur accepte,
+        vous pourrez ensuite payer votre place depuis votre espace.
       </p>
     </div>
 
@@ -68,7 +68,7 @@
     <div class="reservation-next-steps">
       <div class="reservation-next-step is-active">
         <span><i class="bi bi-1-circle-fill"></i></span>
-        <p>Le conducteur reçoit votre demande.</p>
+        <p>Le conducteur voit votre demande.</p>
       </div>
       <div class="reservation-next-step">
         <span><i class="bi bi-2-circle"></i></span>
@@ -76,7 +76,7 @@
       </div>
       <div class="reservation-next-step">
         <span><i class="bi bi-3-circle"></i></span>
-        <p>Si la réservation est acceptée, enregistrez le paiement pour confirmer votre place.</p>
+        <p>Si le conducteur accepte, payez pour confirmer votre place.</p>
       </div>
     </div>
 

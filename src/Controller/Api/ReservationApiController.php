@@ -110,7 +110,7 @@ class ReservationApiController extends AbstractController
         $notifier->demanderValidationReservation($reservation);
 
         return $this->json([
-            'message' => 'Reservation creee. Le conducteur doit encore la valider.',
+            'message' => 'Demande envoyée. Le conducteur doit répondre.',
             'data' => $this->reservationPayload($reservation),
         ], JsonResponse::HTTP_CREATED);
     }
