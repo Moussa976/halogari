@@ -517,11 +517,13 @@ class UserController extends AbstractController
 
             if ($reservation->getTrajet()->getConducteur() === $user) {
                 $paiementsGains[] = $paiement;
-                $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
-                $gainConducteur = $repartition['montantConducteur'];
                 if ($reservation->getCommissions()->count() > 0) {
+                    $commission = $reservation->getCommissions()->first();
+                    $gainConducteur = $commission ? (float) $commission->getMontantConducteur() : 0.0;
                     $totalGainsVerses += $gainConducteur;
                 } elseif (in_array($paiement->getStatut(), ['capture', 'rembourse_partiel'], true)) {
+                    $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
+                    $gainConducteur = $repartition['montantConducteur'];
                     $totalGainsAVerser += $gainConducteur;
                 }
             }

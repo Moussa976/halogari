@@ -145,10 +145,12 @@
                   {% set reservation = paiement.reservation %}
                   {% set trajet = reservation.trajet %}
                   {% set montantRestant = paiement.montantDisponible %}
-                  {% set commissionHaloGari = montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0 %}
-                  {% set fraisStripe = montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0 %}
-                  {% set gainConducteur = max(montantRestant - commissionHaloGari - fraisStripe, 0) %}
                   {% set dejaVerse = reservation.commissions|length > 0 %}
+                  {% set commissionVersement = dejaVerse ? reservation.commissions[0] : null %}
+                  {% set commissionHaloGari = commissionVersement ? commissionVersement.commissionHaloGari : (montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0) %}
+                  {% set fraisStripe = commissionVersement ? commissionVersement.fraisStripe : (montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0) %}
+                  {% set gainConducteur = commissionVersement ? commissionVersement.montantConducteur : max(montantRestant - commissionHaloGari - fraisStripe, 0) %}
+                  {% set baseRepartition = commissionVersement ? commissionVersement.montantBrut : montantRestant %}
                   <tr>
                     <td data-label="Date">{{ paiement.createdAt ? paiement.createdAt|date_conversation : '-' }}</td>
                     <td data-label="Trajet">
@@ -158,7 +160,7 @@
                     <td data-label="Passager">{{ reservation.passager.prenom }}</td>
                     <td data-label="Gain conducteur">
                       <strong>{{ gainConducteur|number_format(2, ',', ' ') }} €</strong><br>
-                      <small class="text-muted">Base {{ montantRestant|number_format(2, ',', ' ') }} € · Commission {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Frais {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
+                      <small class="text-muted">{{ commissionVersement ? 'Réel' : 'Estimé' }} · Base {{ baseRepartition|number_format(2, ',', ' ') }} € · Commission {{ commissionHaloGari|number_format(2, ',', ' ') }} € · Frais {{ fraisStripe|number_format(2, ',', ' ') }} €</small>
                     </td>
                     <td data-label="Statut">
                       {% if dejaVerse %}

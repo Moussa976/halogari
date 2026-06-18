@@ -405,7 +405,14 @@ class AccountApiController extends AbstractController
         $reservation = $paiement->getReservation();
         $montant = (float) $paiement->getMontant();
         $montantDisponible = $paiement->getMontantDisponible();
-        $repartition = PaiementService::calculerRepartition($montantDisponible, $montant);
+        $commission = $reservation && $reservation->getCommissions()->count() > 0
+            ? $reservation->getCommissions()->first()
+            : null;
+        $repartition = $commission ? [
+            'montantConducteur' => (float) $commission->getMontantConducteur(),
+            'commissionHaloGari' => (float) $commission->getCommissionHaloGari(),
+            'fraisStripe' => (float) $commission->getFraisStripe(),
+        ] : PaiementService::calculerRepartition($montantDisponible, $montant);
 
         return [
             'id' => $paiement->getId(),
@@ -417,7 +424,8 @@ class AccountApiController extends AbstractController
             'gainConducteur' => $repartition['montantConducteur'],
             'commissionHaloGari' => $repartition['commissionHaloGari'],
             'fraisStripe' => $repartition['fraisStripe'],
-            'verse' => $reservation ? $reservation->getCommissions()->count() > 0 : false,
+            'verse' => (bool) $commission,
+            'repartitionEstimee' => !$commission,
             'createdAt' => $paiement->getCreatedAt() ? $paiement->getCreatedAt()->format(\DateTimeInterface::ATOM) : null,
             'passager' => $reservation && $reservation->getPassager() ? [
                 'id' => $reservation->getPassager()->getId(),
