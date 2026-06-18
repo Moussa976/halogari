@@ -9,6 +9,7 @@ use App\Entity\Trajet;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Account;
+use Stripe\Charge;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Refund;
@@ -206,18 +207,24 @@ class PaiementService
             throw new \RuntimeException('Aucun montant disponible pour le versement conducteur.');
         }
 
-        $repartition = self::calculerRepartition($montantDisponible, (float) $paiement->getMontant());
+        $fraisStripeReels = $this->getFraisStripeReels($paiement);
+        $repartition = self::calculerRepartition($montantDisponible, (float) $paiement->getMontant(), $fraisStripeReels);
+        $metadata = [
+            'reservation_id' => (string) $reservation->getId(),
+            'paiement_id' => (string) $paiement->getId(),
+            'montant_disponible' => (string) $montantDisponible,
+        ];
+
+        if ($fraisStripeReels !== null) {
+            $metadata['frais_stripe_reels'] = (string) $fraisStripeReels;
+        }
 
         try {
             Transfer::create([
                 'amount' => (int) round($repartition['montantConducteur'] * 100),
                 'currency' => 'eur',
                 'destination' => $conducteur->getStripeAccountId(),
-                'metadata' => [
-                    'reservation_id' => $reservation->getId(),
-                    'paiement_id' => $paiement->getId(),
-                    'montant_disponible' => $montantDisponible,
-                ],
+                'metadata' => $metadata,
             ]);
         } catch (InvalidRequestException $exception) {
             throw $this->creerErreurStripeConnect($paiement, $conducteur, $conducteur->getStripeAccountId(), $exception);
@@ -239,11 +246,11 @@ class PaiementService
     /**
      * @return array{montantBrut: float, commissionHaloGari: float, fraisStripe: float, montantConducteur: float}
      */
-    public static function calculerRepartition(float $montantBrut, ?float $montantFraisStripe = null): array
+    public static function calculerRepartition(float $montantBrut, ?float $montantFraisStripe = null, ?float $fraisStripeReels = null): array
     {
         $commissionHaloGari = max(round($montantBrut * self::COMMISSION_RATE, 2), self::COMMISSION_MINIMUM);
         $baseFraisStripe = $montantFraisStripe ?? $montantBrut;
-        $fraisStripe = round($baseFraisStripe * self::STRIPE_FEE_RATE + self::STRIPE_FEE_FIXED, 2);
+        $fraisStripe = $fraisStripeReels !== null ? round($fraisStripeReels, 2) : round($baseFraisStripe * self::STRIPE_FEE_RATE + self::STRIPE_FEE_FIXED, 2);
         $montantConducteur = max(round($montantBrut - $commissionHaloGari - $fraisStripe, 2), 0);
 
         return [
@@ -555,5 +562,42 @@ class PaiementService
         $this->em->flush();
 
         return new \RuntimeException('Stripe a refusé le versement conducteur : ' . $message, 0, $exception);
+    }
+
+    private function getFraisStripeReels(Paiement $paiement): ?float
+    {
+        if (!$paiement->getPaymentIntentId()) {
+            return null;
+        }
+
+        try {
+            $intent = PaymentIntent::retrieve($paiement->getPaymentIntentId());
+            $charge = $intent->latest_charge ?? null;
+
+            if (!$charge) {
+                return null;
+            }
+
+            if (is_string($charge)) {
+                $charge = Charge::retrieve($charge);
+            }
+
+            $balanceTransaction = $charge->balance_transaction ?? null;
+            if (!$balanceTransaction) {
+                return null;
+            }
+
+            if (is_string($balanceTransaction)) {
+                $balanceTransaction = \Stripe\BalanceTransaction::retrieve($balanceTransaction);
+            }
+
+            if (!isset($balanceTransaction->fee)) {
+                return null;
+            }
+
+            return round(((int) $balanceTransaction->fee) / 100, 2);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

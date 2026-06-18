@@ -30,6 +30,16 @@ class PaiementServiceTest extends TestCase
         self::assertSame(1.22, $repartition['montantConducteur']);
     }
 
+    public function testRepartitionUtiliseLesFraisStripeReels(): void
+    {
+        $repartition = PaiementService::calculerRepartition(12.0, 12.0, 0.64);
+
+        self::assertSame(12.0, $repartition['montantBrut']);
+        self::assertSame(1.44, $repartition['commissionHaloGari']);
+        self::assertSame(0.64, $repartition['fraisStripe']);
+        self::assertSame(9.92, $repartition['montantConducteur']);
+    }
+
     public function testRemboursementConducteurAnnuleToujoursTotal(): void
     {
         $now = new \DateTimeImmutable('2026-06-16 10:00:00');

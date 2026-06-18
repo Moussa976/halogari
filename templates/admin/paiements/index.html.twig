@@ -150,11 +150,13 @@
       {% set reservation = paiement.reservation %}
       {% set trajet = reservation ? reservation.trajet : null %}
       {% set dejaVerse = reservation and reservation.commissions|length > 0 %}
+      {% set commissionVersement = dejaVerse ? reservation.commissions[0] : null %}
       {% set trajetTermine = trajet and trajet.pretPourVersement %}
       {% set montantRestant = paiement.montantDisponible %}
-      {% set repartitionCommission = montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0 %}
-      {% set repartitionFraisStripe = montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0 %}
-      {% set repartitionConducteur = max(montantRestant - repartitionCommission - repartitionFraisStripe, 0) %}
+      {% set repartitionBase = commissionVersement ? commissionVersement.montantBrut : montantRestant %}
+      {% set repartitionCommission = commissionVersement ? commissionVersement.commissionHaloGari : (montantRestant > 0 ? max((montantRestant * 0.12)|round(2, 'common'), 0.50) : 0) %}
+      {% set repartitionFraisStripe = commissionVersement ? commissionVersement.fraisStripe : (montantRestant > 0 ? ((paiement.montant * 0.015) + 0.25)|round(2, 'common') : 0) %}
+      {% set repartitionConducteur = commissionVersement ? commissionVersement.montantConducteur : max(montantRestant - repartitionCommission - repartitionFraisStripe, 0) %}
       {% set remboursementPourcentage = null %}
       {% set remboursementMessage = null %}
       {% if reservation and trajet and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
@@ -231,18 +233,18 @@
               {% endif %}
 
               <div class="border rounded p-3 mb-3">
-                <h6>Répartition prévue</h6>
+                <h6>{{ commissionVersement ? 'Répartition enregistrée' : 'Répartition prévue' }}</h6>
                 <div class="row g-3">
                   <div class="col-md-3">
                     <div class="small text-muted">Base après remboursement</div>
-                    <strong>{{ montantRestant|number_format(2, ',', ' ') }} €</strong>
+                    <strong>{{ repartitionBase|number_format(2, ',', ' ') }} €</strong>
                   </div>
                   <div class="col-md-3">
                     <div class="small text-muted">Commission HaloGari</div>
                     <strong>{{ repartitionCommission|number_format(2, ',', ' ') }} €</strong>
                   </div>
                   <div class="col-md-3">
-                    <div class="small text-muted">Frais estimés</div>
+                    <div class="small text-muted">{{ commissionVersement ? 'Frais Stripe' : 'Frais estimés' }}</div>
                     <strong>{{ repartitionFraisStripe|number_format(2, ',', ' ') }} €</strong>
                   </div>
                   <div class="col-md-3">
