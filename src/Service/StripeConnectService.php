@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Stripe\Exception\InvalidRequestException;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
 use Stripe\Token;
 use Stripe\Account;
@@ -89,7 +89,7 @@ class StripeConnectService
                 'verification_document' => $account->individual->verification->document->front ?? null,
 
             ];
-        } catch (InvalidRequestException $e) {
+        } catch (ApiErrorException $e) {
             $message = $e->getMessage();
 
             if (str_contains($message, 'Only Stripe Connect platforms')) {
@@ -225,7 +225,7 @@ class StripeConnectService
             $user->setStripeAccountId(null);
             $this->em->flush();
             return 'Compte Stripe supprimé avec succès.';
-        } catch (InvalidRequestException $e) {
+        } catch (ApiErrorException $e) {
             $message = $e->getMessage();
 
             if (str_contains($message, 'Only Stripe Connect platforms') || str_contains($message, 'No such account')) {
