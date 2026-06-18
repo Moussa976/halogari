@@ -23,8 +23,7 @@
     <div class="app-panel__header">
       <span class="app-panel__icon"><i class="bi bi-sliders"></i></span>
       <div>
-        <h2>Recherche</h2>
-        <p>Ajustez votre trajet.</p>
+        <h2>Modifier</h2>
       </div>
     </div>
 
@@ -62,12 +61,12 @@
       <ul class="nav nav-pills app-tabs mb-4" id="resultTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="trajets-exacts-tab" data-bs-toggle="tab" data-bs-target="#trajets-exacts" type="button" role="tab">
-            <i class="bi bi-car-front"></i> Exact · {{ trajets|length }}
+            <i class="bi bi-car-front"></i> Directs · {{ trajets|length }}
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="trajets-autres-tab" data-bs-toggle="tab" data-bs-target="#trajets-autres" type="button" role="tab">
-            <i class="bi bi-signpost"></i> Autres départs · {{ autresTrajets|length }}
+            <i class="bi bi-signpost"></i> Proches · {{ autresTrajets|length }}
           </button>
         </li>
       </ul>

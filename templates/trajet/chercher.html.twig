@@ -7,7 +7,7 @@
   <div class="container">
     <p class="app-kicker">Recherche</p>
     <h1>Où voulez-vous aller aujourd'hui ?</h1>
-    <p>Une recherche claire, rapide et lisible sur téléphone comme sur ordinateur.</p>
+    <p>Indiquez votre départ, votre arrivée et la date.</p>
   </div>
 </section>
 
@@ -16,27 +16,24 @@
     <div class="app-panel__header">
       <span class="app-panel__icon"><i class="bi bi-search"></i></span>
       <div>
-        <h2>Trouver un trajet</h2>
-        <p>Choisissez vos villages, la date et le nombre de places.</p>
+        <h2>Votre trajet</h2>
       </div>
     </div>
 
     <div class="form-floating">
-      <input id="select_departure" class="form-control villages" name="select_departure" placeholder="Village de départ" required>
-      <label for="select_departure">Village de départ</label>
+      <input id="select_departure" class="form-control villages" name="select_departure" placeholder="Départ" required>
+      <label for="select_departure">Départ</label>
     </div>
-    <div class="field-hint">Commencez à écrire le nom du village, puis choisissez dans la liste.</div>
 
     <div class="form-floating">
-      <input id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Village d'arrivée" required>
-      <label for="select_arrival">Village d'arrivée</label>
+      <input id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Arrivée" required>
+      <label for="select_arrival">Arrivée</label>
     </div>
-    <div class="field-hint">Essayez aussi un village proche si vous ne trouvez pas de trajet direct.</div>
 
     <div class="app-form-row">
       <div class="form-floating">
         <input type="text" id="date" class="form-control dateDepart" name="date_trajet" placeholder="jj/mm/aaaa" required>
-        <label for="date">Date du trajet</label>
+        <label for="date">Date</label>
       </div>
 
       <div class="form-floating">
@@ -48,22 +45,20 @@
         <label for="places">Passagers</label>
       </div>
     </div>
-    <div class="field-hint">La recherche affiche les trajets exacts et les départs proches quand c'est possible.</div>
 
     <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">
       <i class="bi bi-arrow-right-circle"></i>
-      Rechercher maintenant
+      Rechercher
     </button>
   </form>
 
   <aside class="app-panel app-tips-panel">
     <span class="app-panel__icon"><i class="bi bi-stars"></i></span>
-    <h2>Conseil HaloGari</h2>
-    <p>Pour avoir plus de choix, essayez aussi les villages proches du départ. L'app vous montrera bientôt des alternatives intelligentes.</p>
+    <h2>Bon à savoir</h2>
+    <p>Si aucun trajet direct n’est disponible, essayez un village proche.</p>
     <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Prix visible avant réservation</span>
-      <span><i class="bi bi-check-circle-fill"></i> Conducteur contacté dans l'app</span>
-      <span><i class="bi bi-check-circle-fill"></i> Notifications importantes</span>
+      <span><i class="bi bi-check-circle-fill"></i> Prix visible avant de réserver</span>
+      <span><i class="bi bi-check-circle-fill"></i> Paiement après acceptation</span>
     </div>
   </aside>
 </section>
