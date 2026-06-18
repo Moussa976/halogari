@@ -6,7 +6,9 @@ use App\Entity\Commission;
 use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\Trajet;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\Account;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\PaymentIntent;
 use Stripe\Refund;
@@ -197,6 +199,8 @@ class PaiementService
             throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lié.");
         }
 
+        $this->assertCompteStripeConnectPret($paiement, $conducteur, $conducteur->getStripeAccountId());
+
         $montantDisponible = $paiement->getMontantDisponible();
         if ($montantDisponible <= 0) {
             throw new \RuntimeException('Aucun montant disponible pour le versement conducteur.');
@@ -204,16 +208,20 @@ class PaiementService
 
         $repartition = self::calculerRepartition($montantDisponible, (float) $paiement->getMontant());
 
-        Transfer::create([
-            'amount' => (int) round($repartition['montantConducteur'] * 100),
-            'currency' => 'eur',
-            'destination' => $conducteur->getStripeAccountId(),
-            'metadata' => [
-                'reservation_id' => $reservation->getId(),
-                'paiement_id' => $paiement->getId(),
-                'montant_disponible' => $montantDisponible,
-            ],
-        ]);
+        try {
+            Transfer::create([
+                'amount' => (int) round($repartition['montantConducteur'] * 100),
+                'currency' => 'eur',
+                'destination' => $conducteur->getStripeAccountId(),
+                'metadata' => [
+                    'reservation_id' => $reservation->getId(),
+                    'paiement_id' => $paiement->getId(),
+                    'montant_disponible' => $montantDisponible,
+                ],
+            ]);
+        } catch (InvalidRequestException $exception) {
+            throw $this->creerErreurStripeConnect($paiement, $conducteur, $conducteur->getStripeAccountId(), $exception);
+        }
 
         $commission = new Commission();
         $commission->setReservation($reservation);
@@ -487,5 +495,65 @@ class PaiementService
         if (!$trajet->isPretPourVersement()) {
             throw new \RuntimeException('Le versement conducteur sera disponible après la fin du trajet ou après validation admin.');
         }
+    }
+
+    private function assertCompteStripeConnectPret(Paiement $paiement, User $conducteur, string $stripeAccountId): void
+    {
+        try {
+            $account = Account::retrieve($stripeAccountId);
+        } catch (InvalidRequestException $exception) {
+            throw $this->creerErreurStripeConnect($paiement, $conducteur, $stripeAccountId, $exception);
+        }
+
+        $transfersCapability = $account->capabilities->transfers ?? null;
+        if ($transfersCapability && $transfersCapability !== 'active') {
+            $this->eventLogger->log($paiement, 'stripe_connect_bloque', 'Versement conducteur bloqué', 'Le compte Stripe Connect du conducteur n’a pas encore la capacité de recevoir des virements.', null, [
+                'stripeAccountId' => $stripeAccountId,
+                'transfersCapability' => $transfersCapability,
+            ]);
+            $this->em->flush();
+
+            throw new \RuntimeException('Le compte Stripe Connect du conducteur existe, mais il n’est pas encore validé pour recevoir un versement. Complétez ses informations Stripe avant de relancer.');
+        }
+
+        if (empty($account->payouts_enabled)) {
+            $this->eventLogger->log($paiement, 'stripe_connect_bloque', 'Versement conducteur bloqué', 'Les paiements sortants Stripe du conducteur ne sont pas encore activés.', null, [
+                'stripeAccountId' => $stripeAccountId,
+            ]);
+            $this->em->flush();
+
+            throw new \RuntimeException('Le compte Stripe Connect du conducteur existe, mais ses paiements sortants ne sont pas encore activés par Stripe. Complétez ses informations Stripe avant de relancer.');
+        }
+    }
+
+    private function creerErreurStripeConnect(Paiement $paiement, User $conducteur, ?string $stripeAccountId, InvalidRequestException $exception): \RuntimeException
+    {
+        $message = $exception->getMessage();
+
+        if (str_contains($message, 'Only Stripe Connect platforms')) {
+            $this->eventLogger->log($paiement, 'stripe_connect_configuration', 'Configuration Stripe Connect requise', 'La clé Stripe actuelle n’appartient pas à une plateforme Stripe Connect.', null, [
+                'stripeAccountId' => $stripeAccountId,
+            ]);
+            $this->em->flush();
+
+            return new \RuntimeException('Stripe Connect n’est pas activé ou pas configuré sur le compte Stripe utilisé par HaloGari. Activez Stripe Connect dans le dashboard Stripe, puis recréez ou vérifiez le compte conducteur avant de relancer le versement.', 0, $exception);
+        }
+
+        if (str_contains($message, 'No such destination') || str_contains($message, 'No such account')) {
+            $conducteur->setStripeAccountId(null);
+            $this->eventLogger->log($paiement, 'stripe_connect_invalide', 'Compte Stripe Connect invalide', 'Stripe ne reconnaît plus le compte Connect du conducteur. L’identifiant a été retiré du profil pour pouvoir le recréer proprement.', null, [
+                'stripeAccountId' => $stripeAccountId,
+            ]);
+            $this->em->flush();
+
+            return new \RuntimeException('Stripe ne retrouve pas le compte Connect du conducteur avec la clé actuelle. Le compte a été retiré de sa fiche admin : recréez-le avec le RIB validé, puis relancez le versement.', 0, $exception);
+        }
+
+        $this->eventLogger->log($paiement, 'stripe_connect_erreur', 'Versement conducteur refusé par Stripe', $message, null, [
+            'stripeAccountId' => $stripeAccountId,
+        ]);
+        $this->em->flush();
+
+        return new \RuntimeException('Stripe a refusé le versement conducteur : ' . $message, 0, $exception);
     }
 }

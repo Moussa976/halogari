@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\Exception\InvalidRequestException;
 use Stripe\Stripe;
 use Stripe\Token;
 use Stripe\Account;
@@ -88,8 +89,24 @@ class StripeConnectService
                 'verification_document' => $account->individual->verification->document->front ?? null,
 
             ];
+        } catch (InvalidRequestException $e) {
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'Only Stripe Connect platforms')) {
+                $message = 'Stripe Connect n’est pas activé ou pas configuré sur le compte Stripe utilisé par HaloGari.';
+            } elseif (str_contains($message, 'No such account')) {
+                $message = 'Stripe ne retrouve pas ce compte Connect avec la clé actuelle.';
+            }
+
+            return [
+                'invalid' => true,
+                'error' => $message,
+            ];
         } catch (\Exception $e) {
-            return null; // ou logger l'erreur
+            return [
+                'invalid' => true,
+                'error' => 'Impossible de vérifier le compte Stripe Connect actuellement.',
+            ];
         }
     }
 

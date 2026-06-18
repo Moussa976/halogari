@@ -118,7 +118,7 @@
                   <span class="badge {{ user.hasVerifiedIdentity ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedIdentity ? 'Identité validée' : 'Identité non validée' }}</span>
                   <span class="badge {{ user.hasVerifiedRib ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedRib ? 'RIB validé' : 'RIB non validé' }}</span>
                   <span class="badge {{ user.canPublishRide ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.canPublishRide ? 'Publication autorisée' : 'Publication bloquée' }}</span>
-                  <span class="badge {{ user.stripeAccountId ? 'bg-success' : 'bg-secondary' }}">{{ user.stripeAccountId ? 'Stripe connecté' : 'Stripe absent' }}</span>
+                  <span class="badge {{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'bg-warning text-dark' : 'bg-success') : 'bg-secondary' }}">{{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'Stripe à vérifier' : 'Stripe connecté') : 'Stripe absent' }}</span>
                 </div>
                 {% if not user.isVerified %}
                   <form class="mt-3" method="post" action="{{ path('admin_user_resend_confirmation', { id: user.id }) }}">
@@ -224,11 +224,14 @@
           <div class="card-header">Compte Stripe Connect</div>
           <div class="card-body">
             {% if user.stripeAccountId %}
-              <div class="alert alert-success">
-                Compte Stripe Connect créé.
+              <div class="alert {{ stripeStatus.invalid|default(false) ? 'alert-warning' : 'alert-success' }}">
+                {{ stripeStatus.invalid|default(false) ? 'Compte Stripe Connect à vérifier.' : 'Compte Stripe Connect créé.' }}
                 <div class="small text-break mt-1">ID : {{ user.stripeAccountId }}</div>
+                {% if stripeStatus.invalid|default(false) %}
+                  <div class="small mt-2">{{ stripeStatus.error }}</div>
+                {% endif %}
               </div>
-              {% if stripeStatus %}
+              {% if stripeStatus and not stripeStatus.invalid|default(false) %}
                 <dl class="row small mb-3">
                   <dt class="col-7">Email</dt><dd class="col-5 text-end">{{ stripeStatus.email ?: '-' }}</dd>
                   <dt class="col-7">Type</dt><dd class="col-5 text-end">{{ stripeStatus.type ?: '-' }}</dd>
