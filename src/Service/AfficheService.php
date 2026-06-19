@@ -110,48 +110,55 @@ class AfficheService
     {
         $this->drawRoundedPanel($image, 58, 132, 964, 236, 34, '#ffffff', '#dfe9dd', 2);
 
-        $this->insertMarker($image, $this->departureMarkerPath, 130, 302, 58);
-        $this->insertMarker($image, $this->arrivalMarkerPath, 950, 302, 58);
-        $this->drawArrow($image, 470, 266, 610, 266);
+        $this->drawRouteLabel($image, 298, 166, 'DÉPART', $this->departureMarkerPath);
+        $this->drawRouteLabel($image, 782, 166, 'ARRIVÉE', $this->arrivalMarkerPath);
+        $this->drawDoubleChevron($image, 500, 252, 580, 252);
 
-        $this->drawRoadSign($image, 168, 166, 300, 112, 'DÉPART', $depart, 'right');
-        $this->drawRoadSign($image, 612, 166, 300, 112, 'ARRIVÉE', $arrivee, 'left');
+        $this->drawRoadSign($image, 68, 202, 395, 78, $depart);
+        $this->drawRoadSign($image, 617, 202, 395, 78, $arrivee);
     }
 
-    private function drawRoadSign($image, int $x, int $y, int $width, int $height, string $label, string $text, string $direction): void
+    private function drawRouteLabel($image, int $x, int $y, string $label, string $markerPath): void
     {
         $core = $image->getCore();
-        $shadow = $this->allocateColor($core, '#163b25', 88);
-        $green = $this->allocateColor($core, '#257542');
-        $greenDark = $this->allocateColor($core, '#174f2d');
-        $orange = $this->allocateColor($core, '#f58220');
+        $glow = $this->allocateColor($core, '#b7f3cf', 72);
+
+        imagefilledellipse($core, $x + 16, $y - 10, 220, 42, $glow);
+        $this->insertMarker($image, $markerPath, $x - 84, $y + 4, 28, false);
+        $this->writeCentered($image, $label, $x + 24, $y, 26, '#f26522');
+    }
+
+    private function drawRoadSign($image, int $x, int $y, int $width, int $height, string $text): void
+    {
+        $core = $image->getCore();
+        $shadow = $this->allocateColor($core, '#163b25', 70);
+        $outer = $this->allocateColor($core, '#343a37');
+        $red = $this->allocateColor($core, '#e21b14');
+        $white = $this->allocateColor($core, '#ffffff');
         $post = $this->allocateColor($core, '#cfd8cf');
 
-        imagefilledrectangle($core, $x + (int) ($width / 2) - 8, $y + $height - 2, $x + (int) ($width / 2) + 8, $y + $height + 62, $post);
+        imagefilledrectangle($core, $x + (int) ($width / 2) - 9, $y - 28, $x + (int) ($width / 2) + 9, $y + $height + 52, $post);
+        imagefilledrectangle($core, $x + (int) ($width / 2) - 14, $y - 30, $x + (int) ($width / 2) + 14, $y - 16, $this->allocateColor($core, '#9ba29d'));
 
-        $points = $direction === 'right'
-            ? [$x, $y + 10, $x + $width - 44, $y + 10, $x + $width, $y + (int) ($height / 2), $x + $width - 44, $y + $height - 10, $x, $y + $height - 10]
-            : [$x + 44, $y + 10, $x + $width, $y + 10, $x + $width, $y + $height - 10, $x + 44, $y + $height - 10, $x, $y + (int) ($height / 2)];
+        $this->filledRoundedRectangle($core, $x + 8, $y + 8, $x + $width + 8, $y + $height + 8, 20, $shadow);
+        $this->filledRoundedRectangle($core, $x, $y, $x + $width, $y + $height, 20, $outer);
+        $this->filledRoundedRectangle($core, $x + 5, $y + 5, $x + $width - 5, $y + $height - 5, 16, $red);
+        $this->filledRoundedRectangle($core, $x + 14, $y + 14, $x + $width - 14, $y + $height - 14, 10, $white);
 
-        $shadowPoints = [];
-        for ($i = 0, $count = count($points); $i < $count; $i += 2) {
-            $shadowPoints[] = $points[$i] + 7;
-            $shadowPoints[] = $points[$i + 1] + 7;
-        }
+        $this->writeBoxText($image, $text, $x + 28, $y + 13, $width - 56, $height - 26, 34, '#245c36');
+    }
 
-        imagefilledpolygon($core, $shadowPoints, $shadow);
-        imagefilledpolygon($core, $points, $greenDark);
+    private function drawDoubleChevron($image, int $x1, int $y1, int $x2, int $y2): void
+    {
+        $core = $image->getCore();
+        $orange = $this->allocateColor($core, '#f58220');
 
-        $innerX = $direction === 'right' ? $x + 10 : $x + 52;
-        $innerWidth = $width - 62;
-        $this->filledRoundedRectangle($core, $innerX, $y + 20, $innerX + $innerWidth, $y + $height - 20, 16, $green);
-
-        $labelX = $innerX + (int) ($innerWidth / 2);
-        $this->writeCentered($image, $label, $labelX, $y + 42, 18, '#ffd166');
-        $this->writeBoxText($image, $text, $innerX + 12, $y + 49, $innerWidth - 24, 46, 34, '#ffffff');
-
-        imagesetthickness($core, 3);
-        imageline($core, $innerX + 20, $y + $height - 22, $innerX + $innerWidth - 20, $y + $height - 22, $orange);
+        imagesetthickness($core, 8);
+        imageline($core, $x1, $y1, $x2 - 42, $y2, $orange);
+        imageline($core, $x2 - 46, $y2 - 24, $x2 - 20, $y2, $orange);
+        imageline($core, $x2 - 46, $y2 + 24, $x2 - 20, $y2, $orange);
+        imageline($core, $x2 - 18, $y2 - 24, $x2 + 8, $y2, $orange);
+        imageline($core, $x2 - 18, $y2 + 24, $x2 + 8, $y2, $orange);
         imagesetthickness($core, 1);
     }
 
@@ -209,7 +216,7 @@ class AfficheService
         imagefilledellipse($core, $x, $y - 18, 16, 16, $white);
     }
 
-    private function insertMarker($image, string $path, int $centerX, int $bottomY, int $width): void
+    private function insertMarker($image, string $path, int $centerX, int $bottomY, int $width, bool $withOutline = true): void
     {
         if (!is_file($path)) {
             return;
@@ -220,19 +227,22 @@ class AfficheService
             $constraint->upsize();
         });
 
-        $core = $image->getCore();
         $markerHeight = $marker->height();
         $top = $bottomY - $markerHeight;
-        $shadow = $this->allocateColor($core, '#163b25', 88);
-        $outline = $this->allocateColor(
-            $core,
-            $path === $this->departureMarkerPath ? '#f58220' : '#18b94d'
-        );
 
-        imagefilledellipse($core, $centerX + 4, $top + (int) ($markerHeight * 0.36) + 5, $width + 20, $width + 20, $shadow);
-        imagefilledpolygon($core, [$centerX - 16, $bottomY - 26, $centerX + 16, $bottomY - 26, $centerX, $bottomY + 5], $shadow);
-        imagefilledellipse($core, $centerX, $top + (int) ($markerHeight * 0.36), $width + 18, $width + 18, $outline);
-        imagefilledpolygon($core, [$centerX - 14, $bottomY - 28, $centerX + 14, $bottomY - 28, $centerX, $bottomY + 3], $outline);
+        if ($withOutline) {
+            $core = $image->getCore();
+            $shadow = $this->allocateColor($core, '#163b25', 88);
+            $outline = $this->allocateColor(
+                $core,
+                $path === $this->departureMarkerPath ? '#f58220' : '#18b94d'
+            );
+
+            imagefilledellipse($core, $centerX + 4, $top + (int) ($markerHeight * 0.36) + 5, $width + 20, $width + 20, $shadow);
+            imagefilledpolygon($core, [$centerX - 16, $bottomY - 26, $centerX + 16, $bottomY - 26, $centerX, $bottomY + 5], $shadow);
+            imagefilledellipse($core, $centerX, $top + (int) ($markerHeight * 0.36), $width + 18, $width + 18, $outline);
+            imagefilledpolygon($core, [$centerX - 14, $bottomY - 28, $centerX + 14, $bottomY - 28, $centerX, $bottomY + 3], $outline);
+        }
 
         $image->insert(
             $marker,
