@@ -1,0 +1,89 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Paramètres | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Paramètres</h1>
+        <p class="text-muted mb-0">Configuration réservée au superadmin.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 col-xl-8">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="h5 mb-1">Publication Facebook</h2>
+            <p class="text-muted mb-0">Ces informations servent à publier automatiquement les affiches de trajets sur la Page HaloGari.</p>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_facebook') }}">
+
+              <div class="mb-3">
+                <label for="facebook_page_id" class="form-label">ID de la Page Facebook</label>
+                <input
+                  type="text"
+                  id="facebook_page_id"
+                  name="facebook_page_id"
+                  class="form-control"
+                  value="{{ facebookPageId }}"
+                  placeholder="1202754536249735"
+                  required
+                >
+              </div>
+
+              <div class="mb-3">
+                <label for="facebook_page_access_token" class="form-label">Token d'accès de la Page</label>
+                <input
+                  type="password"
+                  id="facebook_page_access_token"
+                  name="facebook_page_access_token"
+                  class="form-control"
+                  placeholder="{{ hasFacebookToken ? 'Laisser vide pour conserver le token actuel' : 'Coller le token de Page' }}"
+                  autocomplete="off"
+                >
+                <div class="form-text">
+                  Token actuel : <strong>{{ facebookTokenMasked }}</strong>. Le token complet n'est jamais affiché.
+                </div>
+              </div>
+
+              <div class="form-check form-switch mb-4">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="facebook_auto_post"
+                  name="facebook_auto_post"
+                  value="1"
+                  {% if facebookAutoPost %}checked{% endif %}
+                >
+                <label class="form-check-label" for="facebook_auto_post">Publier automatiquement les nouveaux trajets sur Facebook</label>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="https://www.facebook.com/profile.php?id={{ facebookPageId }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">Ouvrir la Page</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-4">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="h5 mb-0">À garder en tête</h2>
+          </div>
+          <div class="card-body text-muted">
+            <p>Collez uniquement un token de Page Facebook, pas un token utilisateur.</p>
+            <p>Si Facebook refuse une publication, régénérez un token avec <code>pages_read_engagement</code> et <code>pages_manage_posts</code>.</p>
+            <p class="mb-0">Commencez avec la publication automatique désactivée tant que les tests ne sont pas terminés.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

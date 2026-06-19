@@ -84,6 +84,7 @@ class AdminAuditLogger
             'payment_cancel' => 'Annulation paiement',
             'payment_refund' => 'Remboursement paiement',
             'ride_status_update' => 'Mise à jour du suivi trajet',
+            'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
         ];
 
         return $labels[$action] ?? ucfirst(str_replace('_', ' ', $action));

@@ -66,6 +66,13 @@
 			</li>
 
 			{% if is_granted('ROLE_SUPER_ADMIN') %}
+				<li class="sidebar-item {% if route == 'admin_settings' %}active{% endif %}">
+					<a class="sidebar-link" href="{{ path('admin_settings') }}">
+						<i class="align-middle" data-feather="settings"></i>
+						<span class="align-middle">Paramètres</span>
+					</a>
+				</li>
+
 				<li class="sidebar-item {% if route == 'admin_audit_logs' %}active{% endif %}">
 					<a class="sidebar-link" href="{{ path('admin_audit_logs') }}">
 						<i class="align-middle" data-feather="activity"></i>
