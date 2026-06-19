@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
       locale: "fr",
       allowInput: true,
       dateFormat: "d/m/Y",
+      defaultDate: input.value || (input.dataset.defaultToday === "true" ? "today" : null),
       minDate: "today",
       appendTo: getCalendarParent(input),
       onReady: function () {

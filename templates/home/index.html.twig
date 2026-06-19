@@ -52,7 +52,7 @@
 
       <div class="quick-search__row">
         <div class="form-floating">
-          <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" placeholder="jj/mm/aaaa" required>
+          <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" value="{{ 'now'|date('d/m/Y') }}" placeholder="jj/mm/aaaa" data-default-today="true" required>
           <label for="date_trajet">Date</label>
         </div>
 
