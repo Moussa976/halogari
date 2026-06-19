@@ -53,7 +53,7 @@ class AfficheService
         $this->writeCentered($image, $prix . ' €', 876, 900, 30, '#f26522');
 
         if ($conducteur !== '') {
-            $this->writeBoxText($image, $conducteur, 438, 990, 350, 52, 28, '#245c36');
+            $this->writeBoxText($image, $conducteur, 440, 1000, 350, 44, 28, '#245c36');
         }
 
         $fileName = 'trajet_' . ($trajet->getId() ?: 'preview') . '_' . uniqid() . '.jpg';
@@ -74,7 +74,10 @@ class AfficheService
         $prenom = method_exists($conducteur, 'getPrenom') ? (string) $conducteur->getPrenom() : '';
         $nom = method_exists($conducteur, 'getNom') ? (string) $conducteur->getNom() : '';
 
-        return trim($prenom . ' ' . mb_substr($nom, 0, 1));
+        $nomCourt = $nom !== '' ? mb_substr($nom, 0, 1) . '.' : '';
+        $nomAffiche = trim($prenom . ' ' . $nomCourt);
+
+        return $nomAffiche !== '' ? $nomAffiche : 'Conducteur';
     }
 
     private function insertMayotteSilhouette($image): void

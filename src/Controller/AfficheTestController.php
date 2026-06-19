@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Trajet;
+use App\Entity\User;
 use App\Service\AfficheService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,11 @@ class AfficheTestController extends AbstractController
         $trajet->setHeureTrajet(new \DateTime($request->query->get('heure', '14:00')));
         $trajet->setPlacesDisponibles((int) $request->query->get('places', 3));
         $trajet->setPrix((string) $request->query->get('prix', '6.00'));
+
+        $conducteur = new User();
+        $conducteur->setPrenom($request->query->get('chauffeur', 'Moussa'));
+        $conducteur->setNom($request->query->get('nom', 'Tata'));
+        $trajet->setConducteur($conducteur);
 
         $imagePath = $afficheService->generate($trajet);
 
