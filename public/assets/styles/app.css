@@ -906,28 +906,30 @@ textarea.form-control.app-message-textarea {
     content: "";
     position: absolute;
     left: .02em;
-    right: .18em;
-    bottom: .015em;
+    right: auto;
+    bottom: -.045em;
     z-index: -1;
-    height: .16em;
-    border-radius: 999px 44% 999px 38%;
-    background: linear-gradient(90deg, rgba(255, 189, 89, .95), rgba(238, 121, 17, .9) 48%, rgba(60, 168, 96, .9));
-    filter: drop-shadow(0 5px 8px rgba(238, 121, 17, .12));
-    opacity: .72;
-    transform: scaleX(.16) rotate(-1deg);
+    width: min(4.8em, 68%);
+    height: .08em;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 189, 89, .95), rgba(238, 121, 17, .72) 56%, rgba(60, 168, 96, .58));
+    filter: drop-shadow(0 4px 7px rgba(238, 121, 17, .08));
+    opacity: .55;
+    transform: scaleX(.24);
     transform-origin: left center;
     animation: hgMarkerSwipe .72s cubic-bezier(.2, .8, .2, 1) .12s forwards;
 }
 
 .app-page-header h1::after {
-    background: linear-gradient(90deg, rgba(255, 189, 89, .98), rgba(255, 255, 255, .72) 58%, rgba(60, 168, 96, .88));
-    opacity: .62;
+    background: linear-gradient(90deg, rgba(255, 189, 89, .92), rgba(255, 255, 255, .58) 62%, rgba(60, 168, 96, .56));
+    opacity: .46;
 }
 
 .app-section-heading h2::after {
-    bottom: .01em;
-    height: .13em;
-    opacity: .5;
+    bottom: -.035em;
+    width: min(3.8em, 52%);
+    height: .07em;
+    opacity: .36;
 }
 
 .app-page-header p:not(.app-kicker) {
