@@ -11,6 +11,7 @@ class AfficheService
     private string $outputDir;
     private ImageManager $manager;
     private string $fontPath;
+    private string $templatePath;
     private string $logoPath;
     private string $silhouettePath;
     private string $departureMarkerPath;
@@ -19,6 +20,7 @@ class AfficheService
     public function __construct(string $projectDir)
     {
         $this->outputDir = $projectDir . '/public/uploads/affiches';
+        $this->templatePath = $projectDir . '/public/images/affiche_trajet_template.png';
         $this->logoPath = $projectDir . '/public/images/logo.png';
         $this->silhouettePath = $projectDir . '/public/images/mayotte_silhouette_orange_poster.png';
         $this->departureMarkerPath = $projectDir . '/public/images/marker_depart_25_41.png';
@@ -33,31 +35,46 @@ class AfficheService
 
     public function generate(Trajet $trajet): string
     {
-        $image = $this->manager->canvas(1080, 1350, '#edf6ef');
-        $this->drawNaturalPattern($image);
-        $this->insertMayotteSilhouette($image);
+        $image = $this->manager->make($this->templatePath)->resize(1080, 1350);
 
         Carbon::setLocale('fr');
         $dateTrajet = Carbon::parse($trajet->getDateTrajet())->translatedFormat('d F Y');
         $heure = $trajet->getHeureTrajet()->format('H:i');
         $places = (int) $trajet->getPlacesDisponibles();
         $prix = number_format((float) $trajet->getPrix(), 2, ',', ' ');
+        $conducteur = $this->driverName($trajet);
 
-        $this->writeCentered($image, 'Nouveau trajet disponible', 540, 74, 42, '#f26522');
-        $this->drawRoutePanel($image, (string) $trajet->getDepart(), (string) $trajet->getArrivee());
+        $this->writeBoxText($image, (string) $trajet->getDepart(), 92, 214, 330, 54, 34, '#245c36');
+        $this->writeBoxText($image, (string) $trajet->getArrivee(), 658, 214, 330, 54, 34, '#245c36');
 
-        $this->drawInfoCard($image, 54, 745, 'date', 'DATE', $dateTrajet, $heure);
-        $this->drawInfoCard($image, 390, 745, 'people', 'PLACES', sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 'disponible' . ($places > 1 ? 's' : ''));
-        $this->drawInfoCard($image, 726, 745, 'price', 'PRIX', $prix . ' €', 'par place');
+        $this->writeCentered($image, $dateTrajet, 204, 900, 30, '#f26522');
+        $this->writeCentered($image, $heure, 204, 946, 24, '#245c36');
+        $this->writeCentered($image, sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 540, 900, 30, '#f26522');
+        $this->writeCentered($image, $prix . ' €', 876, 900, 30, '#f26522');
 
-        $this->insertLogo($image);
-        $this->writeCentered($image, 'Réservez sur halogari.yt', 540, 1280, 30, '#245c36');
+        if ($conducteur !== '') {
+            $this->writeBoxText($image, $conducteur, 438, 990, 350, 52, 28, '#245c36');
+        }
 
         $fileName = 'trajet_' . ($trajet->getId() ?: 'preview') . '_' . uniqid() . '.jpg';
         $path = $this->outputDir . '/' . $fileName;
         $image->save($path, 88);
 
         return '/uploads/affiches/' . $fileName;
+    }
+
+    private function driverName(Trajet $trajet): string
+    {
+        $conducteur = $trajet->getConducteur();
+
+        if (!$conducteur) {
+            return '';
+        }
+
+        $prenom = method_exists($conducteur, 'getPrenom') ? (string) $conducteur->getPrenom() : '';
+        $nom = method_exists($conducteur, 'getNom') ? (string) $conducteur->getNom() : '';
+
+        return trim($prenom . ' ' . mb_substr($nom, 0, 1));
     }
 
     private function insertMayotteSilhouette($image): void
