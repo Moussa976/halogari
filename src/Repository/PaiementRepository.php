@@ -39,6 +39,61 @@ class PaiementRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Paiement[]
+     */
+    public function findAdminActionRequired(int $limit = 5): array
+    {
+        $paiements = $this->createQueryBuilder('p')
+            ->leftJoin('p.reservation', 'r')
+            ->addSelect('r')
+            ->leftJoin('r.trajet', 't')
+            ->addSelect('t')
+            ->leftJoin('r.commissions', 'c')
+            ->addSelect('c')
+            ->andWhere('p.statut = :statut')
+            ->setParameter('statut', 'capture')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $aTraiter = array_values(array_filter($paiements, [$this, 'requiresAdminAction']));
+
+        return array_slice($aTraiter, 0, $limit);
+    }
+
+    public function countAdminActionRequired(): int
+    {
+        return count($this->findAdminActionRequired(PHP_INT_MAX));
+    }
+
+    private function requiresAdminAction(Paiement $paiement): bool
+    {
+        if ($paiement->getStatut() !== 'capture' || $paiement->getMontantDisponible() <= 0) {
+            return false;
+        }
+
+        $reservation = $paiement->getReservation();
+        if (!$reservation) {
+            return true;
+        }
+
+        if ($reservation->getCommissions()->count() > 0) {
+            return false;
+        }
+
+        if ($reservation->getStatut() === 'annulee') {
+            return true;
+        }
+
+        $trajet = $reservation->getTrajet();
+        if (!$trajet) {
+            return true;
+        }
+
+        return $trajet->isPretPourVersement() || $trajet->getStatutOperationnel() === 'litige';
+    }
+
 //    /**
 //     * @return Paiement[] Returns an array of Paiement objects
 //     */

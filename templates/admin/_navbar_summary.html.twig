@@ -34,8 +34,8 @@
         <div class="row g-0 align-items-center">
           <div class="col-2"><i class="text-success" data-feather="dollar-sign"></i></div>
           <div class="col-10">
-            <div class="text-dark">{{ capturedPayments|length }} paiement{{ capturedPayments|length > 1 ? 's' : '' }} confirmé{{ capturedPayments|length > 1 ? 's' : '' }}</div>
-            <div class="text-muted small mt-1">À contrôler avant versement conducteur.</div>
+            <div class="text-dark">{{ paymentActionCount }} paiement{{ paymentActionCount > 1 ? 's' : '' }} à traiter</div>
+            <div class="text-muted small mt-1">Remboursement, litige ou versement conducteur disponible.</div>
           </div>
         </div>
       </a>

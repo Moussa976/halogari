@@ -18,13 +18,15 @@ class AdminNavbarController extends AbstractController
     ): Response {
         $pendingReservations = $reservationRepository->findBy(['statut' => 'en_attente'], ['createdAt' => 'DESC'], 5);
         $pendingDocuments = $documentRepository->findBy(['status' => Document::STATUS_PENDING], ['dateDocument' => 'DESC'], 5);
-        $capturedPayments = $paiementRepository->findBy(['statut' => 'capture'], ['createdAt' => 'DESC'], 5);
+        $paymentActions = $paiementRepository->findAdminActionRequired(5);
+        $paymentActionCount = $paiementRepository->countAdminActionRequired();
 
         return $this->render('admin/_navbar_summary.html.twig', [
             'pendingReservations' => $pendingReservations,
             'pendingDocuments' => $pendingDocuments,
-            'capturedPayments' => $capturedPayments,
-            'pendingCount' => count($pendingReservations) + count($pendingDocuments) + count($capturedPayments),
+            'paymentActions' => $paymentActions,
+            'paymentActionCount' => $paymentActionCount,
+            'pendingCount' => count($pendingReservations) + count($pendingDocuments) + $paymentActionCount,
         ]);
     }
 }
