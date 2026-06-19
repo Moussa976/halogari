@@ -63,23 +63,23 @@ class AfficheService
         }
 
         $silhouette = $this->manager->make($this->silhouettePath)
-            ->resize(820, null, function ($constraint) {
+            ->resize(980, null, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
 
         $this->removeWhiteBackground($silhouette);
-        $silhouette->opacity(24);
+        $silhouette->opacity(30);
 
-        $image->insert($silhouette, 'top-left', 130, 285);
+        $image->insert($silhouette, 'top-left', 150, 330);
 
         $core = $image->getCore();
         $orange = $this->allocateColor($core, '#f26522', 24);
         $green = $this->allocateColor($core, '#18b94d', 18);
 
-        $this->drawPolyline($core, [[250, 700], [385, 630], [500, 555], [635, 480], [800, 405]], $orange, 13);
-        imagefilledellipse($core, 250, 700, 28, 28, $orange);
-        imagefilledellipse($core, 800, 405, 28, 28, $green);
+        $this->drawPolyline($core, [[255, 700], [390, 630], [520, 555], [670, 470], [835, 380]], $orange, 13);
+        imagefilledellipse($core, 255, 700, 28, 28, $orange);
+        imagefilledellipse($core, 835, 380, 28, 28, $green);
         imagesetthickness($core, 1);
     }
 
