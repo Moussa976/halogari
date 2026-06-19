@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Trajet;
 use App\Service\AfficheService;
-use App\Service\MetaService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -14,39 +14,23 @@ class AfficheTestController extends AbstractController
     /**
      * @Route("/affiche/test", name="affiche_test", methods={"GET"})
      */
-    public function testAffiche(AfficheService $afficheService, MetaService $publisher): Response
+    public function testAffiche(Request $request, AfficheService $afficheService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $trajet = new Trajet();
-        $trajet->setDepart('Mamoudzou');
-        $trajet->setArrivee('Dembéni');
-        $trajet->setDateTrajet(new \DateTime('+2 days'));
-        $trajet->setHeureTrajet(new \DateTime('14:00'));
-        $trajet->setPlacesDisponibles(3);
-        $trajet->setPrix(2.5);
+        $trajet->setDepart($request->query->get('depart', 'M\'Tsahara'));
+        $trajet->setArrivee($request->query->get('arrivee', 'Mamoudzou'));
+        $trajet->setDateTrajet(new \DateTime($request->query->get('date', '+2 days')));
+        $trajet->setHeureTrajet(new \DateTime($request->query->get('heure', '14:00')));
+        $trajet->setPlacesDisponibles((int) $request->query->get('places', 3));
+        $trajet->setPrix((string) $request->query->get('prix', '6.00'));
 
-        $imagePath = $afficheService->generate($trajet); // ex: /uploads/affiches/trajet_xxx.png
-        $fullPath = $this->getParameter('kernel.project_dir') . '/public' . $imagePath;
-
-        if (!file_exists($fullPath)) {
-            throw $this->createNotFoundException('Image introuvable.');
-        }
-
-        $caption = sprintf(
-            "🚗 Nouveau trajet disponible ! %s → %s le %s à %s\n💺 %d places disponibles – %.2f €/place",
-            $trajet->getDepart(),
-            $trajet->getArrivee(),
-            $trajet->getDateTrajet()->format('d/m/Y'),
-            $trajet->getHeureTrajet()->format('H:i'),
-            $trajet->getPlacesDisponibles(),
-            $trajet->getPrix()
-        );
-
-        $publisher->publierSurFacebook($fullPath, $caption);
+        $imagePath = $afficheService->generate($trajet);
 
         return $this->render('affiche_test/result.html.twig', [
             'imagePath' => $imagePath,
+            'trajet' => $trajet,
         ]);
     }
 }

@@ -1,10 +1,32 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Test Affiche{% endblock %}
+{% block title %}HaloGari | Test affiche{% endblock %}
 
 {% block body %}
-<div class="container text-center pt-5">
-    <h1>Affiche générée</h1>
-    <img src="{{ imagePath }}" alt="Affiche générée" class="img-fluid mt-3 rounded shadow">
-</div>
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Prévisualisation</p>
+    <h1>Affiche de trajet</h1>
+    <p>Cette page génère une affiche de test sans publier sur Facebook.</p>
+  </div>
+</section>
+
+<section class="container py-4">
+  <div class="app-panel text-center">
+    <p class="text-muted mb-3">
+      {{ trajet.depart }} → {{ trajet.arrivee }} ·
+      {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }} ·
+      {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} ·
+      {{ trajet.prix|number_format(2, ',', ' ') }} €/place
+    </p>
+
+    <img src="{{ imagePath }}" alt="Affiche générée pour le trajet {{ trajet.depart }} vers {{ trajet.arrivee }}" class="img-fluid rounded shadow" style="max-width: 720px;">
+
+    <div class="mt-3">
+      <a class="btn btn-outline-success btn-sm" href="{{ imagePath }}" target="_blank" rel="noopener">
+        Ouvrir l'image
+      </a>
+    </div>
+  </div>
+</section>
 {% endblock %}
