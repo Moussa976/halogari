@@ -29,7 +29,7 @@ class PlatformSettingRepository extends ServiceEntityRepository
 
         if (!$setting) {
             $setting = (new PlatformSetting())->setName($name);
-            $this->_em->persist($setting);
+            $this->getEntityManager()->persist($setting);
         }
 
         $setting->setValue($value);

@@ -6,12 +6,13 @@ use App\Message\TrajetPublieMessage;
 use App\Repository\TrajetRepository;
 use App\Service\AfficheService;
 use App\Service\MetaService;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class TrajetPublieMessageHandler implements MessageHandlerInterface
 {
@@ -19,6 +20,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
     private MailerInterface $mailer;
     private AfficheService $afficheService;
     private MetaService $metaService;
+    private EntityManagerInterface $em;
     private ParameterBagInterface $params;
     private LoggerInterface $logger;
 
@@ -27,6 +29,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
         MailerInterface $mailer,
         AfficheService $afficheService,
         MetaService $metaService,
+        EntityManagerInterface $em,
         ParameterBagInterface $params,
         LoggerInterface $logger
     ) {
@@ -34,6 +37,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
         $this->mailer = $mailer;
         $this->afficheService = $afficheService;
         $this->metaService = $metaService;
+        $this->em = $em;
         $this->params = $params;
         $this->logger = $logger;
     }
@@ -62,12 +66,21 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
         $this->mailer->send($email);
 
+        if (!$this->metaService->isAutoPostEnabled() || $trajet->getFacebookPostId()) {
+            return;
+        }
+
         $imagePath = $this->afficheService->generate($trajet);
         $localPath = $projectDir . '/public' . $imagePath;
 
         try {
-            $this->metaService->publierSurFacebook($localPath, $this->buildCaption($trajet));
+            $postId = $this->metaService->publierSurFacebook($localPath, $this->buildCaption($trajet));
+            $trajet->markFacebookPublished($postId);
+            $this->em->flush();
         } catch (\Throwable $exception) {
+            $trajet->markFacebookPublicationFailed($exception->getMessage());
+            $this->em->flush();
+
             $this->logger->warning('Publication Facebook impossible pour le trajet publié.', [
                 'trajetId' => $trajet->getId(),
                 'exception' => $exception,

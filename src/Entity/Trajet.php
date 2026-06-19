@@ -123,6 +123,21 @@ class Trajet
     private $statusNote;
 
     /**
+     * @ORM\Column(type="string", length=120, nullable=true)
+     */
+    private $facebookPostId;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $facebookPostedAt;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $facebookPostError;
+
+    /**
      * @ORM\PrePersist
      */
     public function setCreatedAtValue(): void
@@ -441,6 +456,58 @@ class Trajet
     public function setStatusNote(?string $statusNote): self
     {
         $this->statusNote = $statusNote;
+
+        return $this;
+    }
+
+    public function getFacebookPostId(): ?string
+    {
+        return $this->facebookPostId;
+    }
+
+    public function setFacebookPostId(?string $facebookPostId): self
+    {
+        $this->facebookPostId = $facebookPostId;
+
+        return $this;
+    }
+
+    public function getFacebookPostedAt(): ?\DateTimeInterface
+    {
+        return $this->facebookPostedAt;
+    }
+
+    public function setFacebookPostedAt(?\DateTimeInterface $facebookPostedAt): self
+    {
+        $this->facebookPostedAt = $facebookPostedAt;
+
+        return $this;
+    }
+
+    public function getFacebookPostError(): ?string
+    {
+        return $this->facebookPostError;
+    }
+
+    public function setFacebookPostError(?string $facebookPostError): self
+    {
+        $this->facebookPostError = $facebookPostError;
+
+        return $this;
+    }
+
+    public function markFacebookPublished(string $postId): self
+    {
+        $this->facebookPostId = $postId;
+        $this->facebookPostedAt = new \DateTime();
+        $this->facebookPostError = null;
+
+        return $this;
+    }
+
+    public function markFacebookPublicationFailed(string $message): self
+    {
+        $this->facebookPostError = mb_substr($message, 0, 1000);
 
         return $this;
     }

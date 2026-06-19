@@ -14,51 +14,126 @@
     </div>
 
     <div class="card">
+      <div class="card-header d-flex flex-column flex-lg-row justify-content-between gap-2">
+        <div>
+          <strong>Journal des actions</strong>
+          <div class="small text-muted">Suppression réservée au superadmin.</div>
+        </div>
+        <form
+          method="post"
+          action="{{ path('admin_audit_logs_delete_all') }}"
+          onsubmit="return confirm('Supprimer tout l’historique admin ? Cette action est définitive.');"
+        >
+          <input type="hidden" name="_token" value="{{ csrf_token('admin_audit_logs_delete_all') }}">
+          <button class="btn btn-sm btn-outline-danger" {% if logs is empty %}disabled{% endif %}>
+            Tout supprimer
+          </button>
+        </form>
+      </div>
+
       <div class="card-body table-responsive">
-        <table class="table table-hover align-middle js-admin-table">
-          <thead class="table-light">
-            <tr>
-              <th>Date</th>
-              <th>Admin</th>
-              <th>Action</th>
-              <th>Cible</th>
-              <th>IP</th>
-              <th>Détails</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for log in logs %}
+        <form method="post" action="{{ path('admin_audit_logs_delete_selected') }}" id="audit-delete-form">
+          <input type="hidden" name="_token" value="{{ csrf_token('admin_audit_logs_delete_selected') }}">
+
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <button
+              class="btn btn-sm btn-danger"
+              id="audit-delete-selected"
+              disabled
+              onclick="return confirm('Supprimer les éléments sélectionnés ?');"
+            >
+              Supprimer la sélection
+            </button>
+            <span class="small text-muted" id="audit-selection-count">Aucun élément sélectionné</span>
+          </div>
+
+          <table class="table table-hover align-middle js-admin-table">
+            <thead class="table-light">
               <tr>
-                <td>{{ log.createdAt|date('d/m/Y H:i') }}</td>
-                <td>
-                  {% if log.actor %}
-                    <div class="d-flex align-items-center gap-2">
-                      {{ avatar.formatSimple(log.actor, 34, 0, 1) }}
-                      <a href="{{ path('admin_user_show', { id: log.actor.id }) }}">{{ log.actor.prenom }} {{ log.actor.nom }}</a>
-                    </div>
-                  {% else %}
-                    <span class="text-muted">Compte supprimé</span>
-                  {% endif %}
-                </td>
-                <td><span class="badge bg-light text-dark border">{{ log.action }}</span></td>
-                <td>
-                  {% if log.targetUser %}
-                    <a href="{{ path('admin_user_show', { id: log.targetUser.id }) }}">{{ log.targetUser.prenom }} {{ log.targetUser.nom }}</a>
-                  {% else %}
-                    <span class="text-muted">-</span>
-                  {% endif %}
-                </td>
-                <td>{{ log.ipAddress ?: '-' }}</td>
-                <td class="text-truncate" style="max-width: 340px;">{{ log.details ?: '-' }}</td>
+                <th style="width: 44px;">
+                  <input type="checkbox" class="form-check-input" id="audit-check-all" title="Tout cocher">
+                </th>
+                <th>Date</th>
+                <th>Admin</th>
+                <th>Action</th>
+                <th>Cible</th>
+                <th>IP</th>
+                <th>Détails</th>
               </tr>
-            {% else %}
-              <tr>
-                <td colspan="6" class="text-center text-muted">Aucun événement enregistré.</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+                <tr>
+                  <td>
+                    <input type="checkbox" class="form-check-input audit-log-checkbox" name="logs[]" value="{{ log.id }}" aria-label="Sélectionner l’événement #{{ log.id }}">
+                  </td>
+                  <td>{{ log.createdAt|date('d/m/Y H:i') }}</td>
+                  <td>
+                    {% if log.actor %}
+                      <div class="d-flex align-items-center gap-2">
+                        {{ avatar.formatSimple(log.actor, 34, 0, 1) }}
+                        <a href="{{ path('admin_user_show', { id: log.actor.id }) }}">{{ log.actor.prenom }} {{ log.actor.nom }}</a>
+                      </div>
+                    {% else %}
+                      <span class="text-muted">Compte supprimé</span>
+                    {% endif %}
+                  </td>
+                  <td><span class="badge bg-light text-dark border">{{ log.action }}</span></td>
+                  <td>
+                    {% if log.targetUser %}
+                      <a href="{{ path('admin_user_show', { id: log.targetUser.id }) }}">{{ log.targetUser.prenom }} {{ log.targetUser.nom }}</a>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ log.ipAddress ?: '-' }}</td>
+                  <td class="text-truncate" style="max-width: 340px;">{{ log.details ?: '-' }}</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="7" class="text-center text-muted">Aucun événement enregistré.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </form>
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const checkAll = document.getElementById('audit-check-all');
+      const checkboxes = Array.from(document.querySelectorAll('.audit-log-checkbox'));
+      const deleteButton = document.getElementById('audit-delete-selected');
+      const counter = document.getElementById('audit-selection-count');
+
+      if (!checkAll || !deleteButton || !counter) {
+        return;
+      }
+
+      const refreshState = () => {
+        const checked = checkboxes.filter((checkbox) => checkbox.checked).length;
+        deleteButton.disabled = checked === 0;
+        counter.textContent = checked === 0
+          ? 'Aucun élément sélectionné'
+          : `${checked} élément${checked > 1 ? 's' : ''} sélectionné${checked > 1 ? 's' : ''}`;
+        checkAll.checked = checked > 0 && checked === checkboxes.length;
+        checkAll.indeterminate = checked > 0 && checked < checkboxes.length;
+      };
+
+      checkAll.addEventListener('change', () => {
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = checkAll.checked;
+        });
+        refreshState();
+      });
+
+      checkboxes.forEach((checkbox) => checkbox.addEventListener('change', refreshState));
+      refreshState();
+    });
+  </script>
 {% endblock %}

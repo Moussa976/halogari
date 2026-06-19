@@ -2,26 +2,37 @@
 
 namespace App\Service;
 
+use App\Repository\PlatformSettingRepository;
 use Symfony\Component\Mime\Part\DataPart;
 use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MetaService
 {
-    private HttpClientInterface $client;
-    private string $pageId;
-    private string $accessToken;
+    private const FACEBOOK_PAGE_ID = 'facebook.page_id';
+    private const FACEBOOK_PAGE_ACCESS_TOKEN = 'facebook.page_access_token';
+    private const FACEBOOK_AUTO_POST = 'facebook.auto_post';
 
-    public function __construct(HttpClientInterface $client, string $pageId, string $accessToken)
+    private HttpClientInterface $client;
+    private PlatformSettingRepository $settings;
+
+    public function __construct(HttpClientInterface $client, PlatformSettingRepository $settings)
     {
         $this->client = $client;
-        $this->pageId = $pageId;
-        $this->accessToken = $accessToken;
+        $this->settings = $settings;
     }
 
-    public function publierSurFacebook(string $localImagePath, string $caption): void
+    public function isAutoPostEnabled(): bool
     {
-        if (!$this->pageId || !$this->accessToken) {
+        return $this->settings->getValue(self::FACEBOOK_AUTO_POST, '0') === '1';
+    }
+
+    public function publierSurFacebook(string $localImagePath, string $caption): string
+    {
+        $pageId = (string) $this->settings->getValue(self::FACEBOOK_PAGE_ID, '');
+        $accessToken = (string) $this->settings->getValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, '');
+
+        if ($pageId === '' || $accessToken === '') {
             throw new \RuntimeException('La configuration Facebook est incomplète.');
         }
 
@@ -34,26 +45,40 @@ class MetaService
             throw new \RuntimeException(sprintf('Impossible d’ouvrir l’image Facebook : %s', $localImagePath));
         }
 
-        $formData = new FormDataPart([
-            'caption' => $caption,
-            'source' => new DataPart($file, basename($localImagePath)),
-        ]);
+        try {
+            $formData = new FormDataPart([
+                'caption' => $caption,
+                'source' => new DataPart($file, basename($localImagePath)),
+                'published' => 'true',
+            ]);
 
-        $response = $this->client->request('POST', "https://graph.facebook.com/v19.0/{$this->pageId}/photos", [
-            'headers' => $formData->getPreparedHeaders()->toArray(),
-            'body' => $formData->bodyToIterable(),
-            'query' => [
-                'access_token' => $this->accessToken,
-            ],
-        ]);
+            $response = $this->client->request('POST', "https://graph.facebook.com/v25.0/{$pageId}/photos", [
+                'headers' => $formData->getPreparedHeaders()->toArray(),
+                'body' => $formData->bodyToIterable(),
+                'query' => [
+                    'access_token' => $accessToken,
+                ],
+            ]);
 
-        $statusCode = $response->getStatusCode();
-        if ($statusCode >= 400) {
-            throw new \RuntimeException(sprintf(
-                'Facebook a refusé la publication (%d) : %s',
-                $statusCode,
-                $response->getContent(false)
-            ));
+            $statusCode = $response->getStatusCode();
+            $content = $response->toArray(false);
+
+            if ($statusCode >= 400 || isset($content['error'])) {
+                throw new \RuntimeException(sprintf(
+                    'Facebook a refusé la publication (%d) : %s',
+                    $statusCode,
+                    json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                ));
+            }
+
+            $postId = (string) ($content['post_id'] ?? $content['id'] ?? '');
+            if ($postId === '') {
+                throw new \RuntimeException('Facebook n’a pas renvoyé d’identifiant de publication.');
+            }
+
+            return $postId;
+        } finally {
+            fclose($file);
         }
     }
 }

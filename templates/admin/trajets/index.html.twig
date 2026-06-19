@@ -58,6 +58,7 @@
               <th>Places</th>
               <th>Prix</th>
               <th>Statut</th>
+              <th>Facebook</th>
               <th>Passagers</th>
               <th>Actions</th>
             </tr>
@@ -102,6 +103,19 @@
                   <span class="badge bg-{{ trajetClasses[statutOperationnel]|default('secondary') }}">{{ trajetLabels[statutOperationnel]|default(statutOperationnel) }}</span>
                 </td>
                 <td>
+                  {% if trajet.facebookPostId %}
+                    <span class="badge bg-success">Publié</span>
+                    {% if trajet.facebookPostedAt %}
+                      <div class="small text-muted">{{ trajet.facebookPostedAt|date('d/m/Y H:i') }}</div>
+                    {% endif %}
+                  {% elseif trajet.facebookPostError %}
+                    <span class="badge bg-danger">Erreur</span>
+                    <div class="small text-muted text-truncate" style="max-width: 180px;">{{ trajet.facebookPostError }}</div>
+                  {% else %}
+                    <span class="badge bg-light text-dark border">Non publié</span>
+                  {% endif %}
+                </td>
+                <td>
                   <strong>{{ trajet.reservations|length }}</strong>
                   <div class="small text-muted">{{ activeReservations|length }} active{{ activeReservations|length > 1 ? 's' : '' }}, {{ paidReservations|length }} payée{{ paidReservations|length > 1 ? 's' : '' }}</div>
                 </td>
@@ -113,7 +127,7 @@
               </tr>
             {% else %}
               <tr>
-                <td colspan="9" class="text-center text-muted">Aucun trajet.</td>
+                <td colspan="10" class="text-center text-muted">Aucun trajet.</td>
               </tr>
             {% endfor %}
           </tbody>
