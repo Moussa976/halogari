@@ -13,12 +13,16 @@ class AfficheService
     private string $fontPath;
     private string $logoPath;
     private string $silhouettePath;
+    private string $departureMarkerPath;
+    private string $arrivalMarkerPath;
 
     public function __construct(string $projectDir)
     {
         $this->outputDir = $projectDir . '/public/uploads/affiches';
         $this->logoPath = $projectDir . '/public/images/logo.png';
-        $this->silhouettePath = $projectDir . '/public/images/mayotte_silhouette_orange.png';
+        $this->silhouettePath = $projectDir . '/public/images/mayotte_silhouette_orange_poster.png';
+        $this->departureMarkerPath = $projectDir . '/public/images/marker_depart_25_41.png';
+        $this->arrivalMarkerPath = $projectDir . '/public/images/marker_arrivee_25_41.png';
         $this->fontPath = $projectDir . '/public/fonts/OpenSans-Bold.ttf';
         $this->manager = new ImageManager(['driver' => 'gd']);
 
@@ -62,51 +66,25 @@ class AfficheService
             return;
         }
 
-        $silhouette = $this->manager->make($this->silhouettePath)
-            ->resize(980, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+        $silhouette = $this->manager->make($this->silhouettePath);
 
-        $this->removeWhiteBackground($silhouette);
-        $silhouette->opacity(30);
+        $silhouette->opacity(56);
 
-        $image->insert($silhouette, 'top-left', 150, 330);
+        $image->insert(
+            $silhouette,
+            'top-left',
+            (int) ((1080 - $silhouette->width()) / 2),
+            312
+        );
 
         $core = $image->getCore();
         $orange = $this->allocateColor($core, '#f26522', 24);
         $green = $this->allocateColor($core, '#18b94d', 18);
 
-        $this->drawPolyline($core, [[255, 700], [390, 630], [520, 555], [670, 470], [835, 380]], $orange, 13);
-        imagefilledellipse($core, 255, 700, 28, 28, $orange);
-        imagefilledellipse($core, 835, 380, 28, 28, $green);
+        $this->drawPolyline($core, [[300, 690], [420, 628], [540, 560], [660, 490], [790, 430]], $orange, 13);
+        $this->insertMarker($image, $this->departureMarkerPath, 300, 694, 42);
+        $this->insertMarker($image, $this->arrivalMarkerPath, 790, 434, 42);
         imagesetthickness($core, 1);
-    }
-
-    private function removeWhiteBackground($image): void
-    {
-        $core = $image->getCore();
-        imagealphablending($core, false);
-        imagesavealpha($core, true);
-
-        $transparent = imagecolorallocatealpha($core, 255, 255, 255, 127);
-        $width = imagesx($core);
-        $height = imagesy($core);
-
-        for ($y = 0; $y < $height; ++$y) {
-            for ($x = 0; $x < $width; ++$x) {
-                $rgba = imagecolorat($core, $x, $y);
-                $red = ($rgba >> 16) & 0xFF;
-                $green = ($rgba >> 8) & 0xFF;
-                $blue = $rgba & 0xFF;
-
-                if ($red > 238 && $green > 238 && $blue > 238) {
-                    imagesetpixel($core, $x, $y, $transparent);
-                }
-            }
-        }
-
-        imagealphablending($core, true);
     }
 
     private function drawNaturalPattern($image): void
@@ -132,14 +110,49 @@ class AfficheService
     {
         $this->drawRoundedPanel($image, 58, 132, 964, 236, 34, '#ffffff', '#dfe9dd', 2);
 
-        $this->writeCentered($image, 'DÉPART', 300, 194, 22, '#f26522');
-        $this->writeCentered($image, 'ARRIVÉE', 780, 194, 22, '#f26522');
-        $this->drawPinIcon($image, 130, 266, '#f26522');
-        $this->drawPinIcon($image, 950, 266, '#18b94d');
+        $this->insertMarker($image, $this->departureMarkerPath, 130, 302, 58);
+        $this->insertMarker($image, $this->arrivalMarkerPath, 950, 302, 58);
         $this->drawArrow($image, 470, 266, 610, 266);
 
-        $this->writeBoxText($image, $depart, 155, 228, 290, 78, 42, '#245c36');
-        $this->writeBoxText($image, $arrivee, 635, 228, 290, 78, 42, '#245c36');
+        $this->drawRoadSign($image, 168, 166, 300, 112, 'DÉPART', $depart, 'right');
+        $this->drawRoadSign($image, 612, 166, 300, 112, 'ARRIVÉE', $arrivee, 'left');
+    }
+
+    private function drawRoadSign($image, int $x, int $y, int $width, int $height, string $label, string $text, string $direction): void
+    {
+        $core = $image->getCore();
+        $shadow = $this->allocateColor($core, '#163b25', 88);
+        $green = $this->allocateColor($core, '#257542');
+        $greenDark = $this->allocateColor($core, '#174f2d');
+        $orange = $this->allocateColor($core, '#f58220');
+        $post = $this->allocateColor($core, '#cfd8cf');
+
+        imagefilledrectangle($core, $x + (int) ($width / 2) - 8, $y + $height - 2, $x + (int) ($width / 2) + 8, $y + $height + 62, $post);
+
+        $points = $direction === 'right'
+            ? [$x, $y + 10, $x + $width - 44, $y + 10, $x + $width, $y + (int) ($height / 2), $x + $width - 44, $y + $height - 10, $x, $y + $height - 10]
+            : [$x + 44, $y + 10, $x + $width, $y + 10, $x + $width, $y + $height - 10, $x + 44, $y + $height - 10, $x, $y + (int) ($height / 2)];
+
+        $shadowPoints = [];
+        for ($i = 0, $count = count($points); $i < $count; $i += 2) {
+            $shadowPoints[] = $points[$i] + 7;
+            $shadowPoints[] = $points[$i + 1] + 7;
+        }
+
+        imagefilledpolygon($core, $shadowPoints, $shadow);
+        imagefilledpolygon($core, $points, $greenDark);
+
+        $innerX = $direction === 'right' ? $x + 10 : $x + 52;
+        $innerWidth = $width - 62;
+        $this->filledRoundedRectangle($core, $innerX, $y + 20, $innerX + $innerWidth, $y + $height - 20, 16, $green);
+
+        $labelX = $innerX + (int) ($innerWidth / 2);
+        $this->writeCentered($image, $label, $labelX, $y + 42, 18, '#ffd166');
+        $this->writeBoxText($image, $text, $innerX + 12, $y + 49, $innerWidth - 24, 46, 34, '#ffffff');
+
+        imagesetthickness($core, 3);
+        imageline($core, $innerX + 20, $y + $height - 22, $innerX + $innerWidth - 20, $y + $height - 22, $orange);
+        imagesetthickness($core, 1);
     }
 
     private function drawInfoCard($image, int $x, int $y, string $icon, string $label, string $main, string $sub): void
@@ -194,6 +207,39 @@ class AfficheService
         imagefilledellipse($core, $x, $y - 18, 46, 46, $fill);
         imagefilledpolygon($core, [$x - 15, $y - 2, $x + 15, $y - 2, $x, $y + 34], $fill);
         imagefilledellipse($core, $x, $y - 18, 16, 16, $white);
+    }
+
+    private function insertMarker($image, string $path, int $centerX, int $bottomY, int $width): void
+    {
+        if (!is_file($path)) {
+            return;
+        }
+
+        $marker = $this->manager->make($path)->resize($width, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+
+        $core = $image->getCore();
+        $markerHeight = $marker->height();
+        $top = $bottomY - $markerHeight;
+        $shadow = $this->allocateColor($core, '#163b25', 88);
+        $outline = $this->allocateColor(
+            $core,
+            $path === $this->departureMarkerPath ? '#f58220' : '#18b94d'
+        );
+
+        imagefilledellipse($core, $centerX + 4, $top + (int) ($markerHeight * 0.36) + 5, $width + 20, $width + 20, $shadow);
+        imagefilledpolygon($core, [$centerX - 16, $bottomY - 26, $centerX + 16, $bottomY - 26, $centerX, $bottomY + 5], $shadow);
+        imagefilledellipse($core, $centerX, $top + (int) ($markerHeight * 0.36), $width + 18, $width + 18, $outline);
+        imagefilledpolygon($core, [$centerX - 14, $bottomY - 28, $centerX + 14, $bottomY - 28, $centerX, $bottomY + 3], $outline);
+
+        $image->insert(
+            $marker,
+            'top-left',
+            $centerX - (int) ($marker->width() / 2),
+            $top
+        );
     }
 
     private function drawArrow($image, int $x1, int $y1, int $x2, int $y2): void
