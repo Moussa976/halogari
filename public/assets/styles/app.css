@@ -948,6 +948,17 @@ textarea.form-control.app-message-textarea {
     padding-bottom: 4rem;
 }
 
+.search-page-layout {
+    display: flex;
+    justify-content: center;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.search-page-form {
+    width: min(100%, 620px);
+}
+
 .hg-account-section {
     padding-top: clamp(1.75rem, 3vw, 3rem);
     padding-bottom: clamp(4rem, 7vw, 6rem);

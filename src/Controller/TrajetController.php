@@ -7,6 +7,7 @@ use App\Entity\Reservation;
 use App\Form\NoteConducteurType;
 use App\Message\TrajetPublieMessage;
 use App\Repository\UserRepository;
+use App\Service\NotificationService;
 use App\Service\StripeConnectService;
 use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
@@ -279,7 +280,8 @@ class TrajetController extends AbstractController
         TrajetRepository $trajetRepo,
         UserRepository $userRepo,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        NotificationService $notificationService
     ): Response {
         $conducteur = $this->getUser();
         $trajet = $trajetRepo->find($trajetId);
@@ -327,6 +329,12 @@ class TrajetController extends AbstractController
             $em->persist($note);
             $em->flush();
 
+            try {
+                $notificationService->envoyerNouvelAvis($note);
+            } catch (\Throwable $exception) {
+                $this->addFlash('warning', 'La note est enregistrée, mais l’e-mail n’a pas pu être envoyé.');
+            }
+
             $this->addFlash('success', 'Note enregistrée pour ' . $passager->getPrenom() . '.');
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajetId]);
         }
@@ -345,7 +353,8 @@ class TrajetController extends AbstractController
         int $id,
         TrajetRepository $trajetRepo,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        NotificationService $notificationService
     ): Response {
         $trajet = $trajetRepo->find($id);
         $user = $this->getUser();
@@ -383,6 +392,12 @@ class TrajetController extends AbstractController
 
             $em->persist($note);
             $em->flush();
+
+            try {
+                $notificationService->envoyerNouvelAvis($note);
+            } catch (\Throwable $exception) {
+                $this->addFlash('warning', 'Votre avis est enregistré, mais l’e-mail n’a pas pu être envoyé.');
+            }
 
             $this->addFlash('success', 'Merci pour votre avis !');
             return $this->redirectToRoute('app_mes_reservations');

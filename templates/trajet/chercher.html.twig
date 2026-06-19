@@ -11,55 +11,61 @@
   </div>
 </section>
 
-<section class="container app-page-grid">
-  <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="app-panel app-panel--form">
-    <div class="app-panel__header">
-      <span class="app-panel__icon"><i class="bi bi-search"></i></span>
-      <div>
-        <h2>Votre trajet</h2>
+<section class="container search-page-layout">
+  <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="quick-search search-page-form" aria-label="Recherche rapide">
+    <div class="ride-scene" aria-hidden="true">
+      <div class="ride-scene__sign ride-scene__sign--start">Départ</div>
+      <div class="ride-scene__road"></div>
+      <div class="ride-scene__group ride-scene__group--start">
+        <span></span><span></span>
       </div>
+      <div class="ride-scene__van">
+        <i class="bi bi-car-front-fill"></i>
+        <div class="ride-scene__passengers">
+          <span></span><span></span>
+        </div>
+      </div>
+      <div class="ride-scene__group ride-scene__group--arrival">
+        <span></span><span></span>
+      </div>
+      <div class="ride-scene__sign ride-scene__sign--end">Arrivée</div>
+    </div>
+
+    <div class="quick-search__title">
+      <strong>Où allez-vous ?</strong>
+      <span>Recherche rapide</span>
     </div>
 
     <div class="form-floating">
-      <input id="select_departure" class="form-control villages" name="select_departure" placeholder="Départ" required>
+      <input id="select_departure" class="form-control villages" name="select_departure" placeholder="Village de départ" required>
       <label for="select_departure">Départ</label>
     </div>
 
     <div class="form-floating">
-      <input id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Arrivée" required>
+      <input id="select_arrival" name="select_arrival" class="form-control villages" placeholder="Village d'arrivée" required>
       <label for="select_arrival">Arrivée</label>
     </div>
 
-    <div class="app-form-row">
+    <div class="quick-search__row">
       <div class="form-floating">
-        <input type="text" id="date" class="form-control dateDepart" name="date_trajet" placeholder="jj/mm/aaaa" required>
-        <label for="date">Date</label>
+        <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" placeholder="jj/mm/aaaa" required>
+        <label for="date_trajet">Date</label>
       </div>
 
       <div class="form-floating">
-        <select class="form-select" id="places" name="places_min" required>
+        <select class="form-select" id="places_min" name="places_min" required>
           {% for i in 1..8 %}
-            <option value="{{ i }}">{{ i }}</option>
+            <option value="{{ i }}" {{ i == 1 ? 'selected' : '' }}>{{ i }}</option>
           {% endfor %}
         </select>
-        <label for="places">Passagers</label>
+        <label for="places_min">Places</label>
       </div>
     </div>
 
     <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">
       <i class="bi bi-arrow-right-circle"></i>
-      Rechercher
+      Voir les trajets
     </button>
   </form>
-
-  <aside class="app-panel app-tips-panel">
-    <span class="app-panel__icon"><i class="bi bi-stars"></i></span>
-    <h2>Bon à savoir</h2>
-    <p>Si aucun trajet direct n’est disponible, essayez un village proche.</p>
-    <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> Prix visible avant de réserver</span>
-      <span><i class="bi bi-check-circle-fill"></i> Paiement après acceptation</span>
-    </div>
-  </aside>
 </section>
 {% endblock %}

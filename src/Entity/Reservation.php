@@ -85,6 +85,16 @@ class Reservation
      */
     private $cancellationReason;
 
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $passengerRatingReminderSentAt;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $driverRatingReminderSentAt;
+
     public function __construct()
     {
         $this->commissions = new ArrayCollection();
@@ -203,6 +213,30 @@ class Reservation
     public function setCancellationReason(?string $cancellationReason): self
     {
         $this->cancellationReason = $cancellationReason;
+
+        return $this;
+    }
+
+    public function getPassengerRatingReminderSentAt(): ?\DateTimeImmutable
+    {
+        return $this->passengerRatingReminderSentAt;
+    }
+
+    public function setPassengerRatingReminderSentAt(?\DateTimeImmutable $passengerRatingReminderSentAt): self
+    {
+        $this->passengerRatingReminderSentAt = $passengerRatingReminderSentAt;
+
+        return $this;
+    }
+
+    public function getDriverRatingReminderSentAt(): ?\DateTimeImmutable
+    {
+        return $this->driverRatingReminderSentAt;
+    }
+
+    public function setDriverRatingReminderSentAt(?\DateTimeImmutable $driverRatingReminderSentAt): self
+    {
+        $this->driverRatingReminderSentAt = $driverRatingReminderSentAt;
 
         return $this;
     }

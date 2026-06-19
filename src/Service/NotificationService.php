@@ -3,10 +3,12 @@
 namespace App\Service;
 
 use App\Entity\Notification;
+use App\Entity\Notes;
 use App\Entity\Reservation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 
 class NotificationService
@@ -15,17 +17,20 @@ class NotificationService
     private Environment $twig;
     private EntityManagerInterface $em;
     private AdminNotificationMailer $adminNotificationMailer;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         MailerInterface $mailer,
         Environment $twig,
         EntityManagerInterface $em,
-        AdminNotificationMailer $adminNotificationMailer
+        AdminNotificationMailer $adminNotificationMailer,
+        UrlGeneratorInterface $urlGenerator
     ) {
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->em = $em;
         $this->adminNotificationMailer = $adminNotificationMailer;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function envoyerConfirmationReservation(Reservation $reservation, string $etat): void
@@ -204,6 +209,114 @@ class NotificationService
                 $reservation->getTrajet()->getArrivee()
             ),
             '/admin/paiements'
+        );
+    }
+
+    public function envoyerNouvelAvis(Notes $note): void
+    {
+        $destinataire = $note->getNotePour();
+        $auteur = $note->getNoteur();
+        $trajet = $note->getTrajet();
+
+        if (!$destinataire || !$auteur || !$trajet || !$destinataire->getEmail()) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_profilePublic', [
+            'id' => $auteur->getId(),
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $email = (new Email())
+            ->from('moussa@halogari.yt')
+            ->to($destinataire->getEmail())
+            ->subject('Vous avez reçu un avis sur HaloGari')
+            ->html($this->twig->render('emails/nouvel_avis.html.twig', [
+                'note' => $note,
+                'url' => $url,
+            ]))
+            ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
+
+        $this->mailer->send($email);
+
+        $this->createNotification(
+            $destinataire,
+            'avis',
+            'Nouvel avis reçu',
+            sprintf('%s vous a laissé une note après le trajet %s → %s.', $auteur->getPrenom(), $trajet->getDepart(), $trajet->getArrivee()),
+            $this->urlGenerator->generate('app_profilePublic', ['id' => $destinataire->getId()])
+        );
+    }
+
+    public function demanderAvisPassager(Reservation $reservation): void
+    {
+        $passager = $reservation->getPassager();
+        $trajet = $reservation->getTrajet();
+
+        if (!$passager || !$trajet || !$passager->getEmail()) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_noter_conducteur', [
+            'id' => $trajet->getId(),
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $email = (new Email())
+            ->from('moussa@halogari.yt')
+            ->to($passager->getEmail())
+            ->subject('Comment s’est passé votre trajet ?')
+            ->html($this->twig->render('emails/demande_avis_passager.html.twig', [
+                'reservation' => $reservation,
+                'url' => $url,
+            ]))
+            ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
+
+        $this->mailer->send($email);
+
+        $this->createNotification(
+            $passager,
+            'avis',
+            'Donnez votre avis',
+            sprintf('Votre trajet %s → %s est terminé. Vous pouvez noter le conducteur.', $trajet->getDepart(), $trajet->getArrivee()),
+            $this->urlGenerator->generate('app_noter_conducteur', ['id' => $trajet->getId()])
+        );
+    }
+
+    public function demanderAvisConducteur(Reservation $reservation): void
+    {
+        $passager = $reservation->getPassager();
+        $trajet = $reservation->getTrajet();
+        $conducteur = $trajet ? $trajet->getConducteur() : null;
+
+        if (!$passager || !$trajet || !$conducteur || !$conducteur->getEmail()) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_noter_passager', [
+            'trajetId' => $trajet->getId(),
+            'passagerId' => $passager->getId(),
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $email = (new Email())
+            ->from('moussa@halogari.yt')
+            ->to($conducteur->getEmail())
+            ->subject('Pensez à noter votre passager')
+            ->html($this->twig->render('emails/demande_avis_conducteur.html.twig', [
+                'reservation' => $reservation,
+                'url' => $url,
+            ]))
+            ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
+
+        $this->mailer->send($email);
+
+        $this->createNotification(
+            $conducteur,
+            'avis',
+            'Notez votre passager',
+            sprintf('Le trajet %s → %s est terminé. Vous pouvez noter %s.', $trajet->getDepart(), $trajet->getArrivee(), $passager->getPrenom()),
+            $this->urlGenerator->generate('app_noter_passager', [
+                'trajetId' => $trajet->getId(),
+                'passagerId' => $passager->getId(),
+            ])
         );
     }
 
