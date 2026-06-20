@@ -3499,31 +3499,31 @@ textarea.form-control.app-message-textarea {
 
 .hg-helpbot__trigger {
     display: grid;
-    width: 48px;
-    height: 52px;
+    width: 30px;
+    height: 44px;
     place-items: center;
-    padding: 0 0 0 .1rem;
+    padding: 0;
     border: 0;
-    border-radius: 15px 0 0 15px;
+    border-radius: 16px 0 0 16px;
     color: #fff;
     background: linear-gradient(135deg, var(--hg-green), #111f18);
-    box-shadow: -10px 14px 34px rgba(23, 33, 27, .2);
+    box-shadow: -8px 12px 26px rgba(23, 33, 27, .2);
     font-weight: 900;
-    transition: transform .18s ease, box-shadow .18s ease;
+    transition: width .18s ease, transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 .hg-helpbot__trigger-tip {
     position: absolute;
-    right: calc(100% + .7rem);
+    right: calc(100% + .55rem);
     top: 50%;
     white-space: nowrap;
-    padding: .58rem .78rem;
+    padding: .42rem .62rem;
     border: 1px solid rgba(255, 255, 255, .72);
     border-radius: 999px;
     color: var(--hg-green);
     background: rgba(255, 255, 255, .96);
-    box-shadow: 0 14px 34px rgba(23, 33, 27, .16);
-    font-size: .88rem;
+    box-shadow: 0 12px 28px rgba(23, 33, 27, .14);
+    font-size: .78rem;
     font-weight: 900;
     opacity: 0;
     pointer-events: none;
@@ -3546,8 +3546,9 @@ textarea.form-control.app-message-textarea {
 
 .hg-helpbot__trigger:hover,
 .hg-helpbot__trigger:focus-visible {
+    width: 48px;
     transform: translateX(-4px);
-    box-shadow: -14px 18px 44px rgba(23, 33, 27, .28);
+    box-shadow: -12px 16px 36px rgba(23, 33, 27, .27);
 }
 
 .hg-helpbot__trigger:hover .hg-helpbot__trigger-tip,
@@ -3558,13 +3559,21 @@ textarea.form-control.app-message-textarea {
 
 .hg-helpbot__trigger-icon {
     display: inline-grid;
-    width: 36px;
-    height: 36px;
+    width: 22px;
+    height: 22px;
     place-items: center;
     border-radius: 50%;
     color: var(--hg-green);
     background: #fff;
-    font-size: 1.15rem;
+    font-size: .78rem;
+    transition: width .18s ease, height .18s ease, font-size .18s ease;
+}
+
+.hg-helpbot__trigger:hover .hg-helpbot__trigger-icon,
+.hg-helpbot__trigger:focus-visible .hg-helpbot__trigger-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
 }
 
 .hg-helpbot__panel {
