@@ -51,13 +51,12 @@ class MetaService
                 'source' => new DataPart($file, basename($localImagePath)),
                 'published' => 'true',
             ]);
+            $headers = $formData->getPreparedHeaders()->toArray();
+            $headers['Authorization'] = 'Bearer ' . $accessToken;
 
             $response = $this->client->request('POST', "https://graph.facebook.com/v25.0/{$pageId}/photos", [
-                'headers' => $formData->getPreparedHeaders()->toArray(),
+                'headers' => $headers,
                 'body' => $formData->bodyToIterable(),
-                'query' => [
-                    'access_token' => $accessToken,
-                ],
             ]);
 
             $statusCode = $response->getStatusCode();

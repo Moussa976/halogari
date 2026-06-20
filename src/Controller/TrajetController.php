@@ -52,6 +52,11 @@ class TrajetController extends AbstractController
         }
 
         if ($depart && $arrivee && $dateRecherche) {
+            if ($this->isSearchDatePast($dateRecherche)) {
+                $this->addFlash('error', 'Choisissez une date à partir d’aujourd’hui pour chercher un trajet.');
+                return $this->redirectToRoute('app_chercher');
+            }
+
             return $this->redirectToRoute('app_chercherResultats', [
                 'depart' => $depart,
                 'arrivee' => $arrivee,
@@ -72,6 +77,11 @@ class TrajetController extends AbstractController
         Carbon::setLocale('fr');
         if (!\DateTimeImmutable::createFromFormat('Y-m-d', $date)) {
             $this->addFlash('error', 'La date de recherche est invalide. Choisissez une date avec le calendrier.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        if ($this->isSearchDatePast($date)) {
+            $this->addFlash('error', 'Ce trajet est déjà passé. Choisissez une date à partir d’aujourd’hui.');
             return $this->redirectToRoute('app_chercher');
         }
 
@@ -466,6 +476,16 @@ class TrajetController extends AbstractController
         }
 
         return null;
+    }
+
+    private function isSearchDatePast(string $date): bool
+    {
+        $searchedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        if (!$searchedDate) {
+            return true;
+        }
+
+        return $searchedDate < new \DateTimeImmutable('today');
     }
 }
 

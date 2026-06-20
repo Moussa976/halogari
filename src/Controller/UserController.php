@@ -670,19 +670,28 @@ class UserController extends AbstractController
             return $this->redirectToRoute('app_mes_reservations');
         }
 
+        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
+
         $paiementReservation = $reservation->getPaiement();
-        if ($paiementReservation && $paiementReservation->getStatut() === 'capture') {
-            $paiement->rembourserSelonPolitique($reservation, false);
-        } elseif ($paiementReservation && $paiementReservation->getStatut() === 'autorise') {
-            $paiement->annulerPaiement($reservation);
-            $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
-        } else {
+        $placesRestored = false;
+
+        try {
+            if ($paiementReservation && $paiementReservation->getStatut() === 'capture') {
+                $paiement->rembourserSelonPolitique($reservation, false);
+                $placesRestored = true;
+            } elseif ($paiementReservation && $paiementReservation->getStatut() === 'autorise') {
+                $paiement->annulerPaiement($reservation);
+                $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+                $placesRestored = true;
+            }
+        } catch (\Throwable $exception) {
+            $this->addFlash('warning', "Votre réservation est annulée. Le remboursement n'a pas pu être finalisé automatiquement : HaloGari va le vérifier.");
+        }
+
+        if (!$placesRestored) {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
 
-        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
-
-        // 💸 Remboursement partiel ou total → à gérer dans l'étape B
         $em->flush();
 
         $this->addFlash('info', 'Réservation annulée.');

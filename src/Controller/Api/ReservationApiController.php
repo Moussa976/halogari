@@ -165,17 +165,27 @@ class ReservationApiController extends AbstractController
             return $this->json(['message' => 'Ce trajet est deja passe.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
+        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
+
         $paiement = $reservation->getPaiement();
-        if ($paiement && $paiement->getStatut() === 'capture') {
-            $paiementService->rembourserSelonPolitique($reservation, false);
-        } elseif ($paiement && $paiement->getStatut() === 'autorise') {
-            $paiementService->annulerPaiement($reservation);
-            $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
-        } else {
+        $placesRestored = false;
+
+        try {
+            if ($paiement && $paiement->getStatut() === 'capture') {
+                $paiementService->rembourserSelonPolitique($reservation, false);
+                $placesRestored = true;
+            } elseif ($paiement && $paiement->getStatut() === 'autorise') {
+                $paiementService->annulerPaiement($reservation);
+                $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
+                $placesRestored = true;
+            }
+        } catch (\Throwable $exception) {
+        }
+
+        if (!$placesRestored) {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
 
-        $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
 
         return $this->json([
