@@ -14,6 +14,7 @@ class AfficheService
     private string $templatePath;
     private string $logoPath;
     private string $silhouettePath;
+    private string $routeCardPath;
     private string $departureMarkerPath;
     private string $arrivalMarkerPath;
 
@@ -21,8 +22,9 @@ class AfficheService
     {
         $this->outputDir = $projectDir . '/public/uploads/affiches';
         $this->templatePath = $projectDir . '/public/images/affiche_trajet_template.png';
-        $this->logoPath = $projectDir . '/public/images/logo.png';
+        $this->logoPath = $projectDir . '/public/images/logo/halogari-mascot-logo.png';
         $this->silhouettePath = $projectDir . '/public/images/mayotte_silhouette_orange_poster.png';
+        $this->routeCardPath = $projectDir . '/public/images/mayotte-route-card.png';
         $this->departureMarkerPath = $projectDir . '/public/images/marker_depart_25_41.png';
         $this->arrivalMarkerPath = $projectDir . '/public/images/marker_arrivee_25_41.png';
         $this->fontPath = $projectDir . '/public/fonts/OpenSans-Bold.ttf';
@@ -35,7 +37,7 @@ class AfficheService
 
     public function generate(Trajet $trajet): string
     {
-        $image = $this->manager->make($this->templatePath)->resize(1080, 1350);
+        $image = $this->manager->canvas(1080, 1350, '#eef8f1');
 
         Carbon::setLocale('fr');
         $dateTrajet = Carbon::parse($trajet->getDateTrajet())->translatedFormat('d F Y');
@@ -44,17 +46,18 @@ class AfficheService
         $prix = number_format((float) $trajet->getPrix(), 2, ',', ' ');
         $conducteur = $this->driverName($trajet);
 
-        $this->writeBoxText($image, (string) $trajet->getDepart(), 92, 214, 330, 54, 34, '#245c36');
-        $this->writeBoxText($image, (string) $trajet->getArrivee(), 658, 214, 330, 54, 34, '#245c36');
+        $this->drawNaturalPattern($image);
+        $this->writeCentered($image, 'Nouveau trajet disponible', 540, 62, 42, '#f26522');
+        $this->drawRoutePanel($image, (string) $trajet->getDepart(), (string) $trajet->getArrivee());
+        $this->insertMayotteRouteCard($image);
 
-        $this->writeCentered($image, $dateTrajet, 204, 900, 30, '#f26522');
-        $this->writeCentered($image, $heure, 204, 946, 24, '#245c36');
-        $this->writeCentered($image, sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 540, 900, 30, '#f26522');
-        $this->writeCentered($image, $prix . ' €', 876, 900, 30, '#f26522');
+        $this->drawInfoCard($image, 55, 745, 'date', 'DATE', $dateTrajet, $heure);
+        $this->drawInfoCard($image, 390, 745, 'people', 'PLACES', sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 'disponibles');
+        $this->drawInfoCard($image, 725, 745, 'price', 'PRIX', $prix . ' €', 'par place');
 
-        if ($conducteur !== '') {
-            $this->writeBoxText($image, $conducteur, 440, 1000, 350, 44, 28, '#245c36');
-        }
+        $this->writeProposedBy($image, $conducteur);
+        $this->insertLogo($image);
+        $this->writeCentered($image, 'Réservez sur halogari.yt', 540, 1264, 32, '#245c36');
 
         $fileName = 'trajet_' . ($trajet->getId() ?: 'preview') . '_' . uniqid() . '.jpg';
         $path = $this->outputDir . '/' . $fileName;
@@ -78,6 +81,32 @@ class AfficheService
         $nomAffiche = trim($prenom . ' ' . $nomCourt);
 
         return $nomAffiche !== '' ? $nomAffiche : 'Conducteur';
+    }
+
+    private function insertMayotteRouteCard($image): void
+    {
+        if (!is_file($this->routeCardPath)) {
+            return;
+        }
+
+        $map = $this->manager->make($this->routeCardPath)->resize(470, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+
+        $image->insert($map, 'top-left', 305, 326);
+    }
+
+    private function writeProposedBy($image, string $name): void
+    {
+        if ($name === '') {
+            return;
+        }
+        $core = $image->getCore();
+        $glow = $this->allocateColor($core, '#c4f4d8', 46);
+
+        imagefilledellipse($core, 540, 1016, 560, 74, $glow);
+        $this->writeCentered($image, 'PROPOSÉ PAR : ' . $name, 540, 1028, 24, '#f26522');
     }
 
     private function insertMayotteSilhouette($image): void
