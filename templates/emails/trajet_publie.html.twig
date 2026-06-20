@@ -2,77 +2,53 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Trajet publie - HaloGari</title>
+    <title>Votre trajet est en ligne - HaloGari</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
-    <table width="100%" style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 6px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+<body style="margin: 0; padding: 28px; background-color: #f6f8f4; font-family: Arial, sans-serif; color: #22352a;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 620px; margin: auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
         <tr>
-            <td style="text-align: center;">
-                <img src="cid:logo_halogari" alt="HaloGari" style="height: 60px; margin-bottom: 10px;">
-                <h2 style="color: #ff6f00; margin: 0;">Votre trajet est en ligne</h2>
+            <td style="padding: 28px 28px 10px; text-align: center;">
+                <img src="cid:logo_halogari" alt="HaloGari" style="width: 170px; height: auto; margin-bottom: 14px;">
+                <h1 style="margin: 0; color: #ff6f00; font-size: 26px;">Votre trajet est en ligne</h1>
             </td>
         </tr>
         <tr>
-            <td style="padding-top: 15px; color: #333333;">
-                <p>Bonjour {{ user.prenom|default('') }},</p>
-                <p>Votre trajet a bien ete publie sur HaloGari.</p>
-                <p style="margin: 16px 0; padding: 12px; background: #fff5eb; border-radius: 6px;">
-                    <strong>{{ trajet.depart }} -> {{ trajet.arrivee }}</strong><br>
-                    Le {{ trajet.dateTrajet|date('d/m/Y') }} a {{ trajet.heureTrajet|date('H:i') }}<br>
-                    {{ trajet.placesDisponibles }} place(s) disponible(s) - {{ trajet.prix|number_format(2, ',', ' ') }} EUR/place
-                </p>
-                <p>Merci pour votre confiance.</p>
-                <p style="margin-top: 24px; font-size: 13px; color: #777777;">
-                    Message automatique - merci de ne pas y repondre.
-                </p>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Confirmation de publication de trajet</title>
-</head>
-<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px; color: #333;">
-
-    <!-- Logo seul, centré au-dessus -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="cid:logo_halogari" alt="HaloGari" style="width: 180px; height: auto;">
-    </div>
-
-    <!-- Contenu principal -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-        <tr>
-            <td style="padding: 30px; text-align: center;">
-                <h1 style="color: #ff6f00; margin-bottom: 20px;">Trajet publié avec succès !</h1>
-                <p style="font-size: 16px;">
-                    Bonjour {{ user.prenom }},<br><br>
-                    Votre trajet entre <strong>{{ trajet.depart }}</strong> et <strong>{{ trajet.arrivee }}</strong>
-                    prévu le <strong>{{ trajet.dateTrajet|date('d/m/Y') }}</strong> à <strong>{{ trajet.heureTrajet|date('H:i') }}</strong>
-                    a bien été publié sur la plateforme ✅
+            <td style="padding: 18px 32px 32px;">
+                <p style="font-size: 16px; margin: 0 0 16px;">Bonjour {{ user.prenom|default('') }},</p>
+                <p style="font-size: 16px; line-height: 1.5; margin: 0 0 18px;">
+                    Votre trajet est bien publié sur HaloGari. Il est maintenant visible par les passagers.
                 </p>
 
-                <p style="font-size: 15px; color: #555; margin-top: 20px;">
-                    Il est maintenant visible pour les passagers.
+                <div style="background: #fff5eb; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                    <p style="margin: 0 0 8px; font-size: 18px; font-weight: bold; color: #245c36;">
+                        {{ trajet.depart }} → {{ trajet.arrivee }}
+                    </p>
+                    <p style="margin: 0; line-height: 1.5;">
+                        {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}<br>
+                        {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} disponible{{ trajet.placesDisponibles > 1 ? 's' : '' }} ·
+                        {{ trajet.prix|number_format(2, ',', ' ') }} €/place
+                    </p>
+                </div>
+
+                <p style="font-size: 15px; line-height: 1.5; margin: 0 0 24px;">
                     Vous pouvez consulter ou modifier ce trajet depuis votre espace personnel.
                 </p>
 
-                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <div style="text-align: center; margin: 26px 0;">
+                    <a href="{{ absolute_url(path('app_user_trajet', { id: trajet.id })) }}" style="display: inline-block; background: #ff6f00; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">
+                        Voir mon trajet
+                    </a>
+                </div>
 
-                <p style="font-size: 14px; color: #999;">
-                    Merci d'utiliser HaloGari 🚗<br>
-                    L'équipe HaloGari
+                <p style="margin: 24px 0 0; font-size: 13px; color: #7b877d; text-align: center;">
+                    Message automatique · merci de ne pas y répondre.
                 </p>
             </td>
         </tr>
     </table>
 
-    <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: 20px;">
-        © {{ "now"|date("Y") }} HaloGari — Ensemble, on roule à Mayotte.
+    <p style="text-align: center; font-size: 13px; color: #9aa49d; margin-top: 18px;">
+        © {{ "now"|date("Y") }} HaloGari · Ensemble, on roule à Mayotte.
     </p>
-
 </body>
 </html>

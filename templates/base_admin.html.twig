@@ -165,13 +165,79 @@
 			}
 			@media (max-width: 767.98px) {
 				.admin-table-tools {
-					grid-template-columns: minmax(0, 1fr) auto;
+					grid-template-columns: 1fr;
 					gap: .45rem;
 					padding: .6rem;
+					margin: .25rem 0 0;
+					border: 1px solid #dee2e6;
+					border-radius: .5rem;
 				}
 				.admin-table-tools .btn {
-					padding-right: .65rem;
-					padding-left: .65rem;
+					width: 100%;
+				}
+				.admin-table-wrapper {
+					overflow: visible;
+				}
+				.js-admin-table {
+					min-width: 0 !important;
+					border-collapse: separate;
+					border-spacing: 0 .75rem;
+				}
+				.js-admin-table thead {
+					display: none;
+				}
+				.js-admin-table tbody,
+				.js-admin-table tr,
+				.js-admin-table td {
+					display: block;
+					width: 100%;
+				}
+				.js-admin-table tr {
+					padding: .35rem .75rem;
+					border: 1px solid #dee2e6;
+					border-radius: .75rem;
+					background: #fff;
+					box-shadow: 0 8px 20px rgba(0, 0, 0, .04);
+				}
+				.js-admin-table tr[hidden] {
+					display: none !important;
+				}
+				.js-admin-table td {
+					display: grid;
+					grid-template-columns: minmax(92px, 38%) minmax(0, 1fr);
+					gap: .75rem;
+					align-items: center;
+					padding: .55rem 0 !important;
+					border: 0 !important;
+					border-bottom: 1px solid #edf0f2 !important;
+					white-space: normal;
+					word-break: break-word;
+				}
+				.js-admin-table td:last-child {
+					border-bottom: 0 !important;
+				}
+				.js-admin-table td::before {
+					content: attr(data-label);
+					color: #6c757d;
+					font-size: .78rem;
+					font-weight: 700;
+					text-transform: uppercase;
+					letter-spacing: .02em;
+				}
+				.js-admin-table td[data-label=""],
+				.js-admin-table td[data-label="Actions"] {
+					grid-template-columns: 1fr;
+				}
+				.js-admin-table td[data-label=""]::before,
+				.js-admin-table td[data-label="Actions"]::before {
+					display: none;
+				}
+				.js-admin-table td .btn,
+				.js-admin-table td form {
+					max-width: 100%;
+				}
+				.js-admin-table td .btn {
+					white-space: normal;
 				}
 				.admin-dashboard-chart {
 					height: 260px;
@@ -239,6 +305,7 @@
 
 						table.dataset.enhanced = '1';
 						const wrapper = table.closest('.table-responsive') || table.parentElement;
+						wrapper.classList.add('admin-table-wrapper');
 						const tools = document.createElement('div');
 						tools.className = 'admin-table-tools';
 						tools.innerHTML = `
@@ -260,6 +327,12 @@
 						const resetButton = tools.querySelector('button');
 						const rows = Array.from(body.rows).filter(row => row.cells.length === headers.length);
 						const originalRows = rows.slice();
+						rows.forEach(row => {
+							Array.from(row.cells).forEach((cell, columnIndex) => {
+								const label = headers[columnIndex]?.textContent.trim() || '';
+								cell.dataset.label = label;
+							});
+						});
 						const normalize = value => (value || '').toString().toLocaleLowerCase('fr-FR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 						const getCellText = (row, columnIndex) => row.cells[columnIndex]?.textContent.trim() || '';
 						const asSortableValue = value => {
