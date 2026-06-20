@@ -6,8 +6,6 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
-use Stripe\Token;
-use Stripe\Account;
 
 class StripeConnectService
 {
@@ -20,54 +18,13 @@ class StripeConnectService
     }
 
     /**
-     * Crée un compte Stripe Connect Custom si l'utilisateur n'en a pas encore.
-     * @param User $user
+     * Le compte Connect doit être créé depuis l'admin, avec l'IBAN du conducteur.
      */
     public function creerCompteSiBesoin(User $user): void
     {
-        if ($user->getStripeAccountId()) {
-            return; // Déjà créé
+        if (!$user->getStripeAccountId()) {
+            throw new \RuntimeException("Le compte Stripe Connect doit être créé depuis l'administration avec l'IBAN du conducteur.");
         }
-
-        // Création du token avec infos personnelles (obligatoire en France)
-        $token = Token::create([
-            'account' => [
-                'business_type' => 'individual',
-                'individual' => [
-                    'first_name' => $user->getPrenom(),
-                    'last_name' => $user->getNom(),
-                    'email' => $user->getEmail(),
-                    'dob' => [
-                        'day' => (int) $user->getDateNaissance()->format('d'),
-                        'month' => (int) $user->getDateNaissance()->format('m'),
-                        'year' => (int) $user->getDateNaissance()->format('Y'),
-                    ],
-                    'address' => [
-                        'line1' => '1 rue fictive',
-                        'city' => 'Mamoudzou',
-                        'postal_code' => '97600',
-                        'country' => 'FR',
-                    ],
-                ],
-                'tos_shown_and_accepted' => true,
-            ]
-        ]);
-
-        // Création du compte Connect avec ce token
-        $account = Account::create([
-            'type' => 'custom',
-            'country' => 'FR',
-            'email' => $user->getEmail(),
-            'account_token' => $token->id,
-            'capabilities' => [
-                'transfers' => ['requested' => true],
-                'card_payments' => ['requested' => true],
-            ],
-        ]);
-
-        // Enregistrement en base
-        $user->setStripeAccountId($account->id);
-        $this->em->flush();
     }
 
     // Vérification du statut account
@@ -130,7 +87,7 @@ class StripeConnectService
             throw new \RuntimeException("L'utilisateur a déjà un compte Stripe.");
         }
 
-        // ✅ Formatage du téléphone au format E.164
+        // Formatage du téléphone au format E.164
         $telephone = preg_replace('/\s+/', '', $telephone); // Supprimer les espaces
         if (preg_match('/^0(639|692|693)/', $telephone)) {
             $telephone = '+262' . substr($telephone, 1); // Mayotte ou Réunion
@@ -200,8 +157,6 @@ class StripeConnectService
         $user->setStripeAccountId($account->id);
         $this->em->flush();
     }
-
-
 
     /*
      * Supprimer compte stripe
@@ -273,9 +228,4 @@ class StripeConnectService
             'account_token' => $accountToken->id,
         ]);
     }
-
-
-
-
-
 }

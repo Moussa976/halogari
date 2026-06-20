@@ -10,7 +10,6 @@ use App\Message\TrajetPublieMessage;
 use App\Repository\TrajetAlertRepository;
 use App\Repository\UserRepository;
 use App\Service\NotificationService;
-use App\Service\StripeConnectService;
 use App\Service\TrajetAnnulationService;
 use Carbon\Carbon;
 use App\Entity\Trajet;
@@ -204,7 +203,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, StripeConnectService $stripeConnect, MessageBusInterface $bus): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MessageBusInterface $bus): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -231,8 +230,6 @@ class TrajetController extends AbstractController
                 $this->addFlash('error', 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.');
                 return $this->redirectToRoute('app_documents');
             }
-
-            $stripeConnect->creerCompteSiBesoin($user);
 
             $dateInput = $this->normalizeSearchDate((string) $request->request->get('date'));
             $heureInput = (string) $request->request->get('heure');
