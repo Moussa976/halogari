@@ -37,7 +37,7 @@ class AfficheService
 
     public function generate(Trajet $trajet): string
     {
-        $image = $this->manager->canvas(1080, 1350, '#eef8f1');
+        $image = $this->manager->make($this->templatePath)->resize(1080, 1350);
 
         Carbon::setLocale('fr');
         $dateTrajet = Carbon::parse($trajet->getDateTrajet())->translatedFormat('d F Y');
@@ -46,18 +46,17 @@ class AfficheService
         $prix = number_format((float) $trajet->getPrix(), 2, ',', ' ');
         $conducteur = $this->driverName($trajet);
 
-        $this->drawNaturalPattern($image);
-        $this->writeCentered($image, 'Nouveau trajet disponible', 540, 62, 42, '#f26522');
-        $this->drawRoutePanel($image, (string) $trajet->getDepart(), (string) $trajet->getArrivee());
-        $this->insertMayotteRouteCard($image);
+        $this->writeBoxText($image, (string) $trajet->getDepart(), 92, 214, 330, 54, 34, '#245c36');
+        $this->writeBoxText($image, (string) $trajet->getArrivee(), 658, 214, 330, 54, 34, '#245c36');
 
-        $this->drawInfoCard($image, 55, 745, 'date', 'DATE', $dateTrajet, $heure);
-        $this->drawInfoCard($image, 390, 745, 'people', 'PLACES', sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 'disponibles');
-        $this->drawInfoCard($image, 725, 745, 'price', 'PRIX', $prix . ' €', 'par place');
+        $this->writeCentered($image, $dateTrajet, 204, 900, 30, '#f26522');
+        $this->writeCentered($image, $heure, 204, 946, 24, '#245c36');
+        $this->writeCentered($image, sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 540, 900, 30, '#f26522');
+        $this->writeCentered($image, $prix . ' €', 876, 900, 30, '#f26522');
 
-        $this->writeProposedBy($image, $conducteur);
-        $this->insertLogo($image);
-        $this->writeCentered($image, 'Réservez sur halogari.yt', 540, 1264, 32, '#245c36');
+        if ($conducteur !== '') {
+            $this->writeBoxText($image, $conducteur, 440, 1000, 350, 44, 28, '#245c36');
+        }
 
         $fileName = 'trajet_' . ($trajet->getId() ?: 'preview') . '_' . uniqid() . '.jpg';
         $path = $this->outputDir . '/' . $fileName;
