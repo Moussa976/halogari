@@ -46,7 +46,7 @@ class AfficheService
         $prix = number_format((float) $trajet->getPrix(), 2, ',', ' ');
         $conducteur = $this->driverName($trajet);
 
-        $this->writeFieldValue($image, (string) $trajet->getDepart(), 258, 846, 660, 42, '#245c36');
+        $this->writeFieldValue($image, (string) $trajet->getDepart(), 258, 846, 660, 42, '#f26522');
         $this->writeFieldValue($image, (string) $trajet->getArrivee(), 258, 962, 660, 42, '#245c36');
         $this->writeFieldValue($image, $dateTrajet . ' à ' . $heure, 258, 1090, 660, 38, '#f26522');
         $this->writeFieldValue($image, sprintf('%d %s disponible%s', $places, $places > 1 ? 'places' : 'place', $places > 1 ? 's' : ''), 258, 1218, 660, 38, '#245c36');
