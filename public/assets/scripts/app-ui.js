@@ -373,6 +373,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setOpen(panel?.hidden !== false);
         });
 
+        document.querySelectorAll('[data-helpbot-mobile-open]').forEach((button) => {
+            button.addEventListener('click', () => {
+                window.setTimeout(() => setOpen(true), 180);
+            });
+        });
+
         closeButton?.addEventListener('click', () => setOpen(false));
 
         tabs.forEach((tab) => {

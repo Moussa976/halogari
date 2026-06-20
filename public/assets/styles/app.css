@@ -3956,15 +3956,7 @@ textarea.form-control.app-message-textarea {
     }
 
     .hg-helpbot__trigger {
-        width: 46px;
-        height: 50px;
-        border-radius: 14px 0 0 14px;
-    }
-
-    .hg-helpbot__trigger-icon {
-        width: 34px;
-        height: 34px;
-        font-size: 1.08rem;
+        display: none;
     }
 
     .hg-helpbot__panel {
