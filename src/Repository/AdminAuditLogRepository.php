@@ -15,4 +15,21 @@ class AdminAuditLogRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AdminAuditLog::class);
     }
+
+    /**
+     * @return AdminAuditLog[]
+     */
+    public function findPendingDigest(\DateTimeImmutable $since, \DateTimeImmutable $until, int $limit = 500): array
+    {
+        return $this->createQueryBuilder('l')
+            ->where('l.digestSentAt IS NULL')
+            ->andWhere('l.createdAt >= :since')
+            ->andWhere('l.createdAt <= :until')
+            ->setParameter('since', $since)
+            ->setParameter('until', $until)
+            ->orderBy('l.createdAt', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

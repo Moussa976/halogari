@@ -61,4 +61,8 @@ services:
             $documentsDirectory: '%documents_directory%'
             $legacyDocumentsDirectory: '%legacy_documents_directory%'
 
+    App\Command\SendAdminAuditDigestCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
 

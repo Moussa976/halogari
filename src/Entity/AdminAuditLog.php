@@ -44,6 +44,9 @@ class AdminAuditLog
     /** @ORM\Column(type="datetime_immutable") */
     private $createdAt;
 
+    /** @ORM\Column(type="datetime_immutable", nullable=true) */
+    private $digestSentAt;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -134,6 +137,18 @@ class AdminAuditLog
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getDigestSentAt(): ?\DateTimeImmutable
+    {
+        return $this->digestSentAt;
+    }
+
+    public function setDigestSentAt(?\DateTimeImmutable $digestSentAt): self
+    {
+        $this->digestSentAt = $digestSentAt;
 
         return $this;
     }

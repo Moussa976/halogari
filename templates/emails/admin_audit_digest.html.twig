@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résumé admin HaloGari</title>
+</head>
+<body style="font-family: Arial, sans-serif; background: #f5f7f5; color: #1f2a24; padding: 20px;">
+    <div style="max-width: 760px; margin: 0 auto; background: #ffffff; border-radius: 10px; padding: 28px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <img src="cid:logo_halogari" alt="HaloGari" style="width: 150px; height: auto;">
+        </div>
+
+        <h1 style="margin: 0 0 8px; color: #245c36;">Résumé hebdomadaire admin</h1>
+        <p style="margin: 0 0 24px; color: #65736b;">
+            Du {{ since|date('d/m/Y H:i') }} au {{ until|date('d/m/Y H:i') }}.
+        </p>
+
+        <h2 style="font-size: 18px;">Vue d’ensemble</h2>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse; margin-bottom: 24px;">
+            {% for label, total in summary %}
+                <tr>
+                    <td style="border-bottom: 1px solid #e5ebe7;">{{ label }}</td>
+                    <td style="border-bottom: 1px solid #e5ebe7; text-align: right;"><strong>{{ total }}</strong></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <h2 style="font-size: 18px;">Dernières actions</h2>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th align="left" style="border-bottom: 2px solid #245c36;">Date</th>
+                    <th align="left" style="border-bottom: 2px solid #245c36;">Action</th>
+                    <th align="left" style="border-bottom: 2px solid #245c36;">Admin</th>
+                    <th align="left" style="border-bottom: 2px solid #245c36;">Cible</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td style="border-bottom: 1px solid #e5ebe7;">{{ row.log.createdAt|date('d/m H:i') }}</td>
+                        <td style="border-bottom: 1px solid #e5ebe7;">{{ row.label }}</td>
+                        <td style="border-bottom: 1px solid #e5ebe7;">{{ row.actor }}</td>
+                        <td style="border-bottom: 1px solid #e5ebe7;">{{ row.target }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p style="margin-top: 24px; color: #65736b; font-size: 13px;">
+            L’historique complet reste disponible dans l’espace admin HaloGari.
+        </p>
+    </div>
+</body>
+</html>
