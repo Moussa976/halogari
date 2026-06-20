@@ -27,12 +27,23 @@ class AdminUserController extends AbstractController
      * Affiche la liste des utilisateurs
      * @Route("/admin/utilisateurs", name="admin_users", methods={"GET"})
      */
-    public function index(UserRepository $userRepository): Response
+    public function index(UserRepository $userRepository, Request $request): Response
     {
         $users = $userRepository->findAll();
+        $status = (string) $request->query->get('status', 'all');
+        $disabledUsers = array_values(array_filter($users, static fn(User $user): bool => $user->isDisabled()));
+
+        if ($status === 'disabled') {
+            $users = $disabledUsers;
+        } elseif ($status === 'active') {
+            $users = array_values(array_filter($users, static fn(User $user): bool => !$user->isDisabled()));
+        }
 
         return $this->render('admin/users/index.html.twig', [
             'users' => $users,
+            'status' => $status,
+            'totalUsers' => count($userRepository->findAll()),
+            'disabledUsersCount' => count($disabledUsers),
         ]);
     }
 
@@ -179,6 +190,30 @@ class AdminUserController extends AbstractController
         $this->addFlash('success', 'Le compte a été supprimé (anonymisé) avec succès.');
 
         return $this->redirectToRoute('admin_users');
+    }
+
+    /**
+     * @Route("/admin/utilisateurs/{id}/reactiver", name="admin_user_reactivate", methods={"POST"})
+     */
+    public function reactivate(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
+    {
+        $this->assertValidUserToken($user, $request, 'reactivate');
+
+        if (!$user->isDisabled()) {
+            $this->addFlash('info', 'Ce compte est déjà actif.');
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+        }
+
+        $user->setDisabledAt(null);
+        $user->setScheduledDeletionAt(null);
+        $user->setDisabledReason(null);
+
+        $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'admin_user_reactivate', $user);
+
+        $this->addFlash('success', 'Le compte a été réactivé. L’utilisateur peut se reconnecter.');
+
+        return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
     }
 
     /**

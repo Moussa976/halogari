@@ -129,6 +129,18 @@
                     {% if user.scheduledDeletionAt %}
                       Suppression programmée le {{ user.scheduledDeletionAt|date('d/m/Y H:i') }}.
                     {% endif %}
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                      <form method="post" action="{{ path('admin_user_reactivate', {id: user.id}) }}" onsubmit="return confirm('Réactiver ce compte ? L’utilisateur pourra se reconnecter.');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_reactivate_' ~ user.id) }}">
+                        <button class="btn btn-success btn-sm">
+                          <i class="bi bi-arrow-counterclockwise"></i>
+                          Réactiver le compte
+                        </button>
+                      </form>
+                      <a href="{{ path('admin_users', {status: 'disabled'}) }}" class="btn btn-outline-danger btn-sm">
+                        Voir les comptes désactivés
+                      </a>
+                    </div>
                   </div>
                 {% endif %}
                 {% if not user.isVerified %}
