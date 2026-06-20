@@ -77,18 +77,12 @@
         <a href="{{ path('app_mes_paiements') }}" class="{{ currentRoute == 'app_mes_paiements' ? 'is-active' : '' }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}" class="{{ currentRoute == 'app_documents' ? 'is-active' : '' }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
         <a href="{{ path('app_parametres') }}" class="{{ currentRoute == 'app_parametres' ? 'is-active' : '' }}"><i class="bi bi-gear"></i> Paramètres</a>
-        <button type="button" class="app-drawer__help" data-helpbot-mobile-open data-bs-dismiss="offcanvas">
-          <i class="bi bi-robot"></i> Aide
-        </button>
         <a href="{{ path('app_logout') }}" class="app-drawer__logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
       {% else %}
         <button type="button" data-bs-toggle="modal" data-bs-target="#modalConnexion" data-bs-dismiss="offcanvas">
           <i class="bi bi-box-arrow-in-right"></i> Se connecter
         </button>
         <a href="{{ path('app_securite') }}" class="{{ currentRoute == 'app_securite' ? 'is-active' : '' }}"><i class="bi bi-shield-check"></i> Sécurité</a>
-        <button type="button" class="app-drawer__help" data-helpbot-mobile-open data-bs-dismiss="offcanvas">
-          <i class="bi bi-robot"></i> Aide
-        </button>
       {% endif %}
 
       <button class="installAppBtn d-none" type="button"><i class="bi bi-download"></i> Installer HaloGari</button>

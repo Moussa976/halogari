@@ -214,17 +214,18 @@ body.app-shell::before {
     background: var(--hg-green);
 }
 
-.app-drawer__actions .app-drawer__help {
-    color: var(--hg-green);
-    border-color: rgba(36, 92, 54, .18);
-    background: rgba(36, 92, 54, .07);
-}
-
-.app-drawer__actions .app-drawer__help:hover,
-.app-drawer__actions .app-drawer__help:focus-visible {
+.app-drawer__actions .installAppBtn {
     color: #fff;
     border-color: transparent;
-    background: var(--hg-green);
+    background: linear-gradient(135deg, var(--hg-orange), #ff9f2f);
+    box-shadow: 0 12px 28px rgba(238, 121, 17, .18);
+}
+
+.app-drawer__actions .installAppBtn:hover,
+.app-drawer__actions .installAppBtn:focus-visible {
+    color: #fff;
+    background: linear-gradient(135deg, #f36f0b, var(--hg-orange));
+    box-shadow: 0 16px 34px rgba(238, 121, 17, .24);
 }
 
 .app-drawer__actions .app-drawer__logout {
