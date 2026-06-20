@@ -61,7 +61,8 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
         $user = $trajet->getConducteur();
         $projectDir = $this->params->get('kernel.project_dir');
 
-        $email = (new TemplatedEmail())
+        try {
+            $email = (new TemplatedEmail())
             ->from(new Address('moussa@halogari.yt', 'HaloGari'))
             ->to($user->getEmail())
             ->subject('Votre trajet a été publié')
@@ -72,7 +73,14 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
             ])
             ->embedFromPath($projectDir . '/public/images/logo.png', 'logo_halogari');
 
-        $this->mailer->send($email);
+            $this->mailer->send($email);
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Email de publication de trajet non envoye.', [
+                'trajetId' => $trajet->getId(),
+                'userId' => $user->getId(),
+                'exception' => $exception,
+            ]);
+        }
         $this->notifyMatchingAlerts($trajet, $projectDir);
 
         if (!$this->metaService->isAutoPostEnabled() || $trajet->getFacebookPostId()) {
@@ -136,6 +144,14 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
     {
         $alerts = $this->alertRepository->findMatchingForTrajet($trajet);
         if (!$alerts) {
+            $this->logger->info('Aucune alerte trajet correspondante.', [
+                'trajetId' => $trajet->getId(),
+                'depart' => $trajet->getDepart(),
+                'arrivee' => $trajet->getArrivee(),
+                'date' => $trajet->getDateTrajet()?->format('Y-m-d'),
+                'places' => $trajet->getPlacesDisponibles(),
+            ]);
+
             return;
         }
 
@@ -168,6 +184,11 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
                 $this->mailer->send($email);
                 $alert->markNotified($trajet);
+                $this->logger->info('Alerte trajet envoyee.', [
+                    'trajetId' => $trajet->getId(),
+                    'alertId' => $alert->getId(),
+                    'userId' => $user->getId(),
+                ]);
             } catch (\Throwable $exception) {
                 $this->logger->warning('Alerte trajet non envoyee.', [
                     'trajetId' => $trajet->getId(),

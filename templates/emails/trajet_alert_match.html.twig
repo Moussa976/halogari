@@ -14,14 +14,13 @@
 
         <p>Bonjour {{ user.prenom ?: 'à vous' }},</p>
 
-        <p>
-            Un trajet correspondant à votre alerte vient d’être publié sur HaloGari.
-        </p>
+        <p>Un trajet correspondant à votre alerte vient d’être publié sur HaloGari.</p>
 
         <div style="background: #fff4e8; border-radius: 8px; padding: 16px; margin: 22px 0;">
             <strong style="font-size: 18px;">{{ trajet.depart }} → {{ trajet.arrivee }}</strong><br>
             {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}<br>
-            {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} disponible{{ trajet.placesDisponibles > 1 ? 's' : '' }} · {{ trajet.prix|number_format(2, ',', ' ') }} €/place
+            {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} disponible{{ trajet.placesDisponibles > 1 ? 's' : '' }}
+            · {{ trajet.prix|number_format(2, ',', ' ') }} €/place
         </div>
 
         <p style="text-align: center; margin: 28px 0;">
