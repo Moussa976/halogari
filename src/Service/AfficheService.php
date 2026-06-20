@@ -21,8 +21,8 @@ class AfficheService
     public function __construct(string $projectDir)
     {
         $this->outputDir = $projectDir . '/public/uploads/affiches';
-        $this->templatePath = $projectDir . '/public/images/affiche_trajet_template.png';
-        $this->logoPath = $projectDir . '/public/images/logo/halogari-mascot-logo.png';
+        $this->templatePath = $projectDir . '/public/images/affiche_trajet_template_v2.png';
+        $this->logoPath = $projectDir . '/public/images/logo/logo-787x298.png';
         $this->silhouettePath = $projectDir . '/public/images/mayotte_silhouette_orange_poster.png';
         $this->routeCardPath = $projectDir . '/public/images/mayotte-route-card.png';
         $this->departureMarkerPath = $projectDir . '/public/images/marker_depart_25_41.png';
@@ -37,7 +37,7 @@ class AfficheService
 
     public function generate(Trajet $trajet): string
     {
-        $image = $this->manager->make($this->templatePath)->resize(1080, 1350);
+        $image = $this->manager->make($this->templatePath)->resize(1080, 1620);
 
         Carbon::setLocale('fr');
         $dateTrajet = Carbon::parse($trajet->getDateTrajet())->translatedFormat('d F Y');
@@ -46,16 +46,14 @@ class AfficheService
         $prix = number_format((float) $trajet->getPrix(), 2, ',', ' ');
         $conducteur = $this->driverName($trajet);
 
-        $this->writeBoxText($image, (string) $trajet->getDepart(), 92, 214, 330, 54, 34, '#245c36');
-        $this->writeBoxText($image, (string) $trajet->getArrivee(), 658, 214, 330, 54, 34, '#245c36');
-
-        $this->writeCentered($image, $dateTrajet, 204, 900, 30, '#f26522');
-        $this->writeCentered($image, $heure, 204, 946, 24, '#245c36');
-        $this->writeCentered($image, sprintf('%d %s', $places, $places > 1 ? 'places' : 'place'), 540, 900, 30, '#f26522');
-        $this->writeCentered($image, $prix . ' €', 876, 900, 30, '#f26522');
+        $this->writeFieldValue($image, (string) $trajet->getDepart(), 258, 846, 660, 42, '#245c36');
+        $this->writeFieldValue($image, (string) $trajet->getArrivee(), 258, 962, 660, 42, '#245c36');
+        $this->writeFieldValue($image, $dateTrajet . ' à ' . $heure, 258, 1090, 660, 38, '#f26522');
+        $this->writeFieldValue($image, sprintf('%d %s disponible%s', $places, $places > 1 ? 'places' : 'place', $places > 1 ? 's' : ''), 258, 1218, 660, 38, '#245c36');
+        $this->writeFieldValue($image, $prix . ' € par place', 258, 1348, 660, 38, '#f26522');
 
         if ($conducteur !== '') {
-            $this->writeBoxText($image, $conducteur, 440, 1000, 350, 44, 28, '#245c36');
+            $this->writeFieldValue($image, $conducteur, 258, 1442, 660, 38, '#245c36');
         }
 
         $fileName = 'trajet_' . ($trajet->getId() ?: 'preview') . '_' . uniqid() . '.jpg';
@@ -391,6 +389,23 @@ class AfficheService
             $font->size($size);
             $font->color($color);
             $font->align('center');
+        });
+    }
+
+    private function writeFieldValue($image, string $text, int $x, int $y, int $width, int $maxSize, string $color): void
+    {
+        $text = trim($text);
+        $size = $maxSize;
+
+        while ($size >= 20 && $this->textWidth($text, $size) > $width) {
+            --$size;
+        }
+
+        $image->text($text, $x, $y, function ($font) use ($size, $color) {
+            $font->file($this->fontPath);
+            $font->size($size);
+            $font->color($color);
+            $font->align('left');
         });
     }
 

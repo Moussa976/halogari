@@ -2,7 +2,7 @@
 <nav class="navbar fixed-top navbar-expand-lg app-navbar">
   <div class="container">
     <a class="navbar-brand app-brand" href="{{ path('app_home') }}">
-      <img src="{{ asset('images/logo.png') }}" alt="HaloGari">
+      <img src="{{ asset('images/logo/logo-787x298.png') }}" alt="HaloGari">
     </a>
 
     <div class="d-none d-lg-flex align-items-center gap-2 ms-auto">
@@ -62,7 +62,7 @@
 <div class="offcanvas offcanvas-end app-drawer" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
   <div class="offcanvas-header">
     <div id="offcanvasRightLabel">
-      <img src="{{ asset('images/logo.png') }}" alt="HaloGari" class="app-drawer__logo">
+      <img src="{{ asset('images/logo/logo-787x298.png') }}" alt="HaloGari" class="app-drawer__logo">
       <p class="mb-0 mt-2">{{ app.user ? 'Bonjour ' ~ app.user.prenom : 'Bienvenue sur HaloGari' }}</p>
     </div>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>

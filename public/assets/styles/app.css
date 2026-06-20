@@ -2306,7 +2306,7 @@ textarea.form-control.app-message-textarea {
     border-radius: 8px;
     background:
         linear-gradient(rgba(255, 255, 255, .82), rgba(255, 255, 255, .82)),
-        url('../images/logo.png') center/170px auto no-repeat;
+        url('../images/logo/logo-787x298.png') center/170px auto no-repeat;
 }
 
 .hg-message {

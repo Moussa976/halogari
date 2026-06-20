@@ -1,11 +1,12 @@
 // Cache app-shell for better offline resilience.
-const CACHE_NAME = 'halogari-cache-v3';
+const CACHE_NAME = 'halogari-cache-v4';
 const urlsToCache = [
   '/',
   '/css/style.css',
   '/assets/styles/app.css',
   '/manifest.json',
-  '/images/logo.png',
+  '/images/logo/logo-787x298.png',
+  '/images/icons/favicon.ico',
   '/images/icons/icon-192x192.png',
   '/images/icons/icon-512x512.png',
 ];
@@ -63,7 +64,7 @@ self.addEventListener('push', function(event) {
 
   const options = {
     body: data.body || 'Notification HaloGari',
-    icon: '/images/logo.png',
+    icon: '/images/icons/logo430x430.png',
     badge: '/images/icons/icon-192x192.png'
   };
 
