@@ -63,9 +63,11 @@ class TrajetRepository extends ServiceEntityRepository
         $now = new \DateTime();
 
         return $this->createQueryBuilder('t')
+            ->innerJoin('t.conducteur', 'c')
             ->where('t.dateTrajet >= :today')
             ->andWhere('t.placesDisponibles > 0')
             ->andWhere('t.annule IS NULL OR t.annule = false')
+            ->andWhere('c.disabledAt IS NULL')
             ->setParameter('today', $now->setTime(0, 0, 0))
             ->orderBy('t.dateTrajet', 'ASC')
             ->addOrderBy('t.heureTrajet', 'ASC')
@@ -84,12 +86,14 @@ class TrajetRepository extends ServiceEntityRepository
         $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
 
         return $this->createQueryBuilder('t')
+            ->innerJoin('t.conducteur', 'c')
             ->where('LOWER(t.depart) = LOWER(:depart)')
             ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
             ->andWhere('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('t.placesDisponibles >= :places')
             ->andWhere('t.annule IS NULL OR t.annule = false')
+            ->andWhere('c.disabledAt IS NULL')
             ->setParameter('depart', $depart)
             ->setParameter('arrivee', $arrivee)
             ->setParameter('places', $places)

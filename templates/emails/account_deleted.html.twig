@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Compte supprimé - HaloGari</title>
+    <title>Suppression demandée - HaloGari</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px; color: #333;">
     <div style="text-align: center; margin-bottom: 20px;">
@@ -15,14 +15,15 @@
                 <h2 style="color: #245c36;">Bonjour {{ prenom ?: 'à vous' }},</h2>
 
                 <p>
-                    Nous vous confirmons que votre compte HaloGari a été supprimé et anonymisé le
-                    <strong>{{ deletedAt|date_conversation }}</strong>.
+                    Nous vous confirmons que votre compte HaloGari a été désactivé le
+                    <strong>{{ disabledAt|date_conversation }}</strong>.
                 </p>
 
                 <p>
-                    Les informations personnelles directes ne sont plus visibles sur la plateforme.
-                    Certains éléments liés aux trajets, réservations, paiements ou messages peuvent être conservés
-                    sous forme anonymisée afin de respecter nos obligations de sécurité, de preuve et de comptabilité.
+                    La suppression définitive est programmée le
+                    <strong>{{ scheduledDeletionAt|date_conversation }}</strong>.
+                    Pendant ce délai de 15 jours, le compte reste bloqué afin de protéger vos trajets,
+                    réservations, paiements et messages en cas d'erreur ou de demande frauduleuse.
                 </p>
 
                 <p>

@@ -27,7 +27,12 @@ class ParametresController extends AbstractController
      */
     public function parametres(): Response
     {
-        return $this->render('user/parametres.html.twig');
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->render('user/parametres.html.twig', [
+            'identityFieldsLocked' => !$user->canEditIdentityFields(),
+        ]);
     }
 
     /**
@@ -104,19 +109,24 @@ class ParametresController extends AbstractController
             return $this->redirectToRoute('app_parametres');
         }
 
-        $user->setPrenom($request->request->get('prenom'));
-        $user->setNom($request->request->get('nom'));
-        $dateNaissance = $this->parseFrenchDate((string) $request->request->get('dateNaissance'));
-        if (!$dateNaissance) {
-            $this->addFlash('error', 'La date de naissance doit être au format jj/mm/aaaa.');
-            return $this->redirectToRoute('app_parametres');
-        }
+        if ($user->canEditIdentityFields()) {
+            $user->setPrenom(trim((string) $request->request->get('prenom')));
+            $user->setNom(trim((string) $request->request->get('nom')));
+            $dateNaissance = $this->parseFrenchDate((string) $request->request->get('dateNaissance'));
+            if (!$dateNaissance) {
+                $this->addFlash('error', 'La date de naissance doit être au format jj/mm/aaaa.');
+                return $this->redirectToRoute('app_parametres');
+            }
 
-        $user->setDateNaissance($dateNaissance);
+            $user->setDateNaissance($dateNaissance);
+        }
         $user->setTelephone($request->request->get('telephone'));
 
         $em->flush();
-        $this->addFlash('success', 'Informations mises à jour avec succès.');
+        $this->addFlash('success', $user->canEditIdentityFields()
+            ? 'Informations mises à jour avec succès.'
+            : 'Téléphone mis à jour. Votre identité est verrouillée depuis la validation de votre pièce d’identité.'
+        );
 
         return $this->redirectToRoute('app_parametres');
     }
@@ -253,11 +263,6 @@ class ParametresController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$this->isCsrfTokenValid('parametres_document', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
-        }
-
         if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
             return $this->redirectToRoute('app_parametres');
@@ -271,31 +276,31 @@ class ParametresController extends AbstractController
 
         $email = $user->getEmail();
         $prenom = $user->getPrenom();
-        $deletedAt = new \DateTimeImmutable();
+        $disabledAt = new \DateTimeImmutable();
 
-        $user->anonymiser();
+        $user->requestAccountDeletion($disabledAt);
         $em->flush();
 
         try {
             $message = (new TemplatedEmail())
                 ->from(new Address('moussa@halogari.yt', 'HaloGari'))
                 ->to($email)
-                ->subject('Confirmation de suppression de votre compte HaloGari')
+                ->subject('Demande de suppression de votre compte HaloGari')
                 ->htmlTemplate('emails/account_deleted.html.twig')
                 ->context([
                     'prenom' => $prenom,
-                    'deletedAt' => $deletedAt,
+                    'disabledAt' => $disabledAt,
+                    'scheduledDeletionAt' => $user->getScheduledDeletionAt(),
                 ])
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari');
 
             $mailer->send($message);
         } catch (\Throwable $exception) {
-            // Le compte est déjà anonymisé : on évite de bloquer la suppression si l'e-mail échoue.
+            // Le compte est déjà désactivé : on évite de bloquer la demande si l'e-mail échoue.
         }
 
         $tokenStorage->setToken(null);
         $request->getSession()->invalidate();
-        $this->addFlash('info', 'Votre compte a été supprimé. Un e-mail de confirmation vous a été envoyé.');
 
         return $this->redirectToRoute('app_home');
     }

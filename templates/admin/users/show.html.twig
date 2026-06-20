@@ -60,6 +60,9 @@
                 {% else %}
                   <span class="badge bg-warning text-dark">Profil incomplet</span>
                 {% endif %}
+                {% if user.isDisabled %}
+                  <span class="badge bg-danger">Compte désactivé</span>
+                {% endif %}
                 {% for role in user.roles %}
                   <span class="badge bg-light text-dark border">{{ role }}</span>
                 {% endfor %}
@@ -120,6 +123,14 @@
                   <span class="badge {{ user.canPublishRide ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.canPublishRide ? 'Publication autorisée' : 'Publication bloquée' }}</span>
                   <span class="badge {{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'bg-warning text-dark' : 'bg-success') : 'bg-secondary' }}">{{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'Stripe à vérifier' : 'Stripe connecté') : 'Stripe absent' }}</span>
                 </div>
+                {% if user.isDisabled %}
+                  <div class="alert alert-danger mt-3 mb-0">
+                    Compte désactivé depuis le {{ user.disabledAt|date('d/m/Y H:i') }}.
+                    {% if user.scheduledDeletionAt %}
+                      Suppression programmée le {{ user.scheduledDeletionAt|date('d/m/Y H:i') }}.
+                    {% endif %}
+                  </div>
+                {% endif %}
                 {% if not user.isVerified %}
                   <form class="mt-3" method="post" action="{{ path('admin_user_resend_confirmation', { id: user.id }) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_user_resend_confirmation_' ~ user.id) }}">

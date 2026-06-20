@@ -93,6 +93,12 @@ class AuthApiController extends AbstractController
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
+        if ($user->isDisabled()) {
+            return $this->json([
+                'message' => 'Ce compte est désactivé. Contactez HaloGari si vous pensez qu’il s’agit d’une erreur.',
+            ], JsonResponse::HTTP_FORBIDDEN);
+        }
+
         return $this->json([
             'token' => $tokenService->create($user),
             'user' => $this->userPayload($user),
@@ -135,11 +141,13 @@ class AuthApiController extends AbstractController
             return $this->json(['message' => 'Corps JSON invalide.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        if (array_key_exists('prenom', $payload)) {
-            $user->setPrenom(trim((string) $payload['prenom']));
-        }
-        if (array_key_exists('nom', $payload)) {
-            $user->setNom(trim((string) $payload['nom']));
+        if ($user->canEditIdentityFields()) {
+            if (array_key_exists('prenom', $payload)) {
+                $user->setPrenom(trim((string) $payload['prenom']));
+            }
+            if (array_key_exists('nom', $payload)) {
+                $user->setNom(trim((string) $payload['nom']));
+            }
         }
         if (array_key_exists('telephone', $payload)) {
             $user->setTelephone(trim((string) $payload['telephone']));
@@ -171,7 +179,12 @@ class AuthApiController extends AbstractController
             return null;
         }
 
-        return $userRepository->find($payload['uid']);
+        $user = $userRepository->find($payload['uid']);
+        if ($user instanceof User && $user->isDisabled()) {
+            return null;
+        }
+
+        return $user;
     }
 
     /**

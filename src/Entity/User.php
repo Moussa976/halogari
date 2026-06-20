@@ -144,6 +144,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $preferences = [];
 
     /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $disabledAt;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $scheduledDeletionAt;
+
+    /**
+     * @ORM\Column(type="string", length=60, nullable=true)
+     */
+    private $disabledReason;
+
+    /**
      * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user", orphanRemoval=true)
      */
     private $notifications;
@@ -644,6 +659,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->hasVerifiedIdentity() && $this->hasVerifiedRib();
     }
 
+    public function canEditIdentityFields(): bool
+    {
+        return !$this->hasVerifiedIdentity();
+    }
+
     private function hasApprovedDocumentByTypes(array $types): bool
     {
         $allowed = array_map(static fn(string $type): string => strtolower(trim($type)), $types);
@@ -662,7 +682,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false; // à remplacer plus tard par vraie vérif
     }
 
-    // Compte supprimé ! 
+    public function getDisabledAt(): ?\DateTimeImmutable
+    {
+        return $this->disabledAt;
+    }
+
+    public function setDisabledAt(?\DateTimeImmutable $disabledAt): self
+    {
+        $this->disabledAt = $disabledAt;
+        return $this;
+    }
+
+    public function getScheduledDeletionAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledDeletionAt;
+    }
+
+    public function setScheduledDeletionAt(?\DateTimeImmutable $scheduledDeletionAt): self
+    {
+        $this->scheduledDeletionAt = $scheduledDeletionAt;
+        return $this;
+    }
+
+    public function getDisabledReason(): ?string
+    {
+        return $this->disabledReason;
+    }
+
+    public function setDisabledReason(?string $disabledReason): self
+    {
+        $this->disabledReason = $disabledReason ? mb_substr($disabledReason, 0, 60) : null;
+        return $this;
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabledAt !== null;
+    }
+
+    public function requestAccountDeletion(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $requestedAt ??= new \DateTimeImmutable();
+
+        $this->disabledAt = $requestedAt;
+        $this->scheduledDeletionAt = $requestedAt->modify('+15 days');
+        $this->disabledReason = 'suppression_demandee';
+
+        return $this;
+    }
+
     public function anonymiser(): void
     {
         $this->setNom('');

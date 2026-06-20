@@ -99,12 +99,14 @@ class TrajetController extends AbstractController
         $endOfDay = $dateObj->setTime(23, 59, 59);
 
         $autresTrajets = $trajetRepository->createQueryBuilder('t')
+            ->innerJoin('t.conducteur', 'c')
             ->where('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
             ->andWhere('LOWER(t.depart) != LOWER(:depart)')
             ->andWhere('t.placesDisponibles >= :places')
             ->andWhere('t.annule IS NULL OR t.annule = false')
+            ->andWhere('c.disabledAt IS NULL')
             ->setParameters([
                 'startOfDay' => $startOfDay,
                 'endOfDay' => $endOfDay,

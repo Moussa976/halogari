@@ -104,6 +104,11 @@ class PaiementApiController extends AbstractController
             return null;
         }
 
-        return $userRepository->find($payload['uid']);
+        $user = $userRepository->find($payload['uid']);
+        if ($user instanceof User && $user->isDisabled()) {
+            return null;
+        }
+
+        return $user;
     }
 }
