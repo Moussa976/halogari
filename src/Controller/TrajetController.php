@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Notes;
 use App\Entity\Reservation;
+use App\Entity\TrajetAlert;
 use App\Form\NoteConducteurType;
 use App\Message\TrajetPublieMessage;
+use App\Repository\TrajetAlertRepository;
 use App\Repository\UserRepository;
 use App\Service\NotificationService;
 use App\Service\StripeConnectService;
@@ -137,6 +139,65 @@ class TrajetController extends AbstractController
             'trajets' => $trajets,
             'autresTrajets' => $autresTrajets,
             'villages' => $villes,
+        ]);
+    }
+
+    /**
+     * @Route("/chercher/alerte", name="app_trajet_alert_create", methods={"POST"})
+     */
+    public function createAlert(Request $request, EntityManagerInterface $em, TrajetAlertRepository $alertRepository): Response
+    {
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $this->addFlash('error', 'Connectez-vous pour recevoir une alerte par e-mail.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$this->isCsrfTokenValid('trajet_alert_create', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        $depart = trim((string) $request->request->get('depart'));
+        $arrivee = trim((string) $request->request->get('arrivee'));
+        $date = (string) $request->request->get('date');
+        $places = max(1, min((int) $request->request->get('places', 1), 8));
+        $dateTrajet = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+
+        if ($depart === '' || $arrivee === '' || !$dateTrajet || $this->isSearchDatePast($date)) {
+            $this->addFlash('error', 'Impossible de créer l’alerte avec cette recherche.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        $duplicate = $alertRepository->findActiveDuplicate($this->getUser(), $depart, $arrivee, $dateTrajet, $places);
+        if ($duplicate) {
+            $this->addFlash('info', 'Vous avez déjà une alerte active pour cette recherche.');
+            return $this->redirectToRoute('app_chercherResultats', [
+                'depart' => $depart,
+                'arrivee' => $arrivee,
+                'date' => $date,
+                'heure' => 'any',
+                'places' => $places,
+            ]);
+        }
+
+        $alert = (new TrajetAlert())
+            ->setUser($this->getUser())
+            ->setDepart($depart)
+            ->setArrivee($arrivee)
+            ->setDateTrajet($dateTrajet)
+            ->setPlaces($places);
+
+        $em->persist($alert);
+        $em->flush();
+
+        $this->addFlash('success', 'Alerte créée. Vous recevrez un e-mail si un trajet correspondant est publié.');
+
+        return $this->redirectToRoute('app_chercherResultats', [
+            'depart' => $depart,
+            'arrivee' => $arrivee,
+            'date' => $date,
+            'heure' => 'any',
+            'places' => $places,
         ]);
     }
 

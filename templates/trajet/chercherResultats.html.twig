@@ -57,6 +57,36 @@
   </aside>
 
   <section class="app-results-main">
+    {% if trajets|length == 0 %}
+      <article class="app-panel mb-4">
+        <div class="app-panel__header">
+          <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
+          <div>
+            <h2>Être alerté</h2>
+            <p>Aucun trajet direct pour cette recherche. Recevez un e-mail dès qu’un conducteur publie ce trajet.</p>
+          </div>
+        </div>
+        {% if app.user %}
+          <form method="post" action="{{ path('app_trajet_alert_create') }}" class="d-flex flex-column flex-sm-row gap-2">
+            <input type="hidden" name="_token" value="{{ csrf_token('trajet_alert_create') }}">
+            <input type="hidden" name="depart" value="{{ depart }}">
+            <input type="hidden" name="arrivee" value="{{ arrivee }}">
+            <input type="hidden" name="date" value="{{ dateTrajet }}">
+            <input type="hidden" name="places" value="{{ places }}">
+            <button type="submit" class="btn btn-orange" data-loading-button data-loading-label="Création">
+              <i class="bi bi-bell-fill"></i>
+              Me prévenir par e-mail
+            </button>
+          </form>
+        {% else %}
+          <a href="{{ path('app_login') }}" class="btn btn-orange">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Se connecter pour créer une alerte
+          </a>
+        {% endif %}
+      </article>
+    {% endif %}
+
     {% if hasResults %}
       <ul class="nav nav-pills app-tabs mb-4" id="resultTabs" role="tablist">
         <li class="nav-item" role="presentation">

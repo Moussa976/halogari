@@ -3,6 +3,7 @@
 namespace App\MessageHandler;
 
 use App\Message\TrajetPublieMessage;
+use App\Repository\TrajetAlertRepository;
 use App\Repository\TrajetRepository;
 use App\Service\AfficheService;
 use App\Service\MetaService;
@@ -13,33 +14,40 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class TrajetPublieMessageHandler implements MessageHandlerInterface
 {
     private TrajetRepository $trajetRepository;
+    private TrajetAlertRepository $alertRepository;
     private MailerInterface $mailer;
     private AfficheService $afficheService;
     private MetaService $metaService;
     private EntityManagerInterface $em;
     private ParameterBagInterface $params;
     private LoggerInterface $logger;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         TrajetRepository $trajetRepository,
+        TrajetAlertRepository $alertRepository,
         MailerInterface $mailer,
         AfficheService $afficheService,
         MetaService $metaService,
         EntityManagerInterface $em,
         ParameterBagInterface $params,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        UrlGeneratorInterface $urlGenerator
     ) {
         $this->trajetRepository = $trajetRepository;
+        $this->alertRepository = $alertRepository;
         $this->mailer = $mailer;
         $this->afficheService = $afficheService;
         $this->metaService = $metaService;
         $this->em = $em;
         $this->params = $params;
         $this->logger = $logger;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function __invoke(TrajetPublieMessage $message): void
@@ -65,6 +73,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
             ->embedFromPath($projectDir . '/public/images/logo.png', 'logo_halogari');
 
         $this->mailer->send($email);
+        $this->notifyMatchingAlerts($trajet, $projectDir);
 
         if (!$this->metaService->isAutoPostEnabled() || $trajet->getFacebookPostId()) {
             return;
@@ -121,5 +130,53 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
             number_format((float) $trajet->getPrix(), 2, ',', ' '),
             $url
         );
+    }
+
+    private function notifyMatchingAlerts($trajet, string $projectDir): void
+    {
+        $alerts = $this->alertRepository->findMatchingForTrajet($trajet);
+        if (!$alerts) {
+            return;
+        }
+
+        $url = $this->urlGenerator->generate('app_trajet_show', [
+            'id' => $trajet->getId(),
+            'ledepart' => $trajet->getDepart(),
+            'larrive' => $trajet->getArrivee(),
+            'nbPlaceReservee' => 1,
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        foreach ($alerts as $alert) {
+            $user = $alert->getUser();
+            if (!$user || !$user->getEmail()) {
+                continue;
+            }
+
+            try {
+                $email = (new TemplatedEmail())
+                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->to($user->getEmail())
+                    ->subject('Un trajet que vous attendiez est disponible')
+                    ->htmlTemplate('emails/trajet_alert_match.html.twig')
+                    ->context([
+                        'user' => $user,
+                        'trajet' => $trajet,
+                        'alert' => $alert,
+                        'trajetUrl' => $url,
+                    ])
+                    ->embedFromPath($projectDir . '/public/images/logo.png', 'logo_halogari');
+
+                $this->mailer->send($email);
+                $alert->markNotified($trajet);
+            } catch (\Throwable $exception) {
+                $this->logger->warning('Alerte trajet non envoyee.', [
+                    'trajetId' => $trajet->getId(),
+                    'alertId' => $alert->getId(),
+                    'exception' => $exception,
+                ]);
+            }
+        }
+
+        $this->em->flush();
     }
 }
