@@ -109,7 +109,7 @@
             <select class="form-select" id="type_doc" name="type_doc" required>
               <option value="">Sélectionner</option>
               <option value="identite">Justificatif d'identité</option>
-              <option value="RIB">RIB</option>
+              <option value="rib">RIB</option>
               <option value="Autre">Autre</option>
             </select>
             <label for="type_doc">Type de document</label>
@@ -118,6 +118,12 @@
           <div id="autre_doc_container" class="form-floating d-none mb-3">
             <input type="text" id="autre_doc" name="autre_doc" class="form-control" placeholder="Type de document">
             <label for="autre_doc">Précisez le type</label>
+          </div>
+
+          <div id="rib_iban_container" class="form-floating d-none mb-3">
+            <input type="text" id="rib_iban" name="rib_iban" class="form-control" placeholder="FR76..." inputmode="text" autocomplete="off">
+            <label for="rib_iban">IBAN du RIB</label>
+            <div class="form-text">Saisissez l’IBAN visible sur le RIB. Il sera vérifié par l’administration.</div>
           </div>
 
           <div class="mb-3">
@@ -144,16 +150,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const select = document.getElementById('type_doc');
   const autreContainer = document.getElementById('autre_doc_container');
   const autreInput = document.getElementById('autre_doc');
+  const ribIbanContainer = document.getElementById('rib_iban_container');
+  const ribIbanInput = document.getElementById('rib_iban');
   const form = document.getElementById('form-documents');
 
   select?.addEventListener('change', function () {
     const isOther = this.value === 'Autre';
+    const isRib = this.value === 'rib';
+
     autreContainer?.classList.toggle('d-none', !isOther);
     if (isOther) {
       autreInput?.setAttribute('required', 'required');
     } else {
       autreInput?.removeAttribute('required');
       if (autreInput) autreInput.value = '';
+    }
+
+    ribIbanContainer?.classList.toggle('d-none', !isRib);
+    if (isRib) {
+      ribIbanInput?.setAttribute('required', 'required');
+    } else {
+      ribIbanInput?.removeAttribute('required');
+      if (ribIbanInput) ribIbanInput.value = '';
     }
   });
 
@@ -165,6 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
         icon: 'warning',
         title: 'Champ requis',
         text: 'Merci de préciser le type de document si vous choisissez Autre.',
+        confirmButtonText: 'OK'
+      });
+    }
+
+    if (select?.value === 'rib' && ribIbanInput?.value.trim() === '') {
+      event.preventDefault();
+      ribIbanInput.focus();
+      Swal.fire({
+        icon: 'warning',
+        title: 'IBAN requis',
+        text: 'Merci de saisir l’IBAN indiqué sur votre RIB.',
         confirmButtonText: 'OK'
       });
     }

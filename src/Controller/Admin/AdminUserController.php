@@ -252,7 +252,7 @@ class AdminUserController extends AbstractController
 
         // Récupération des données POST
         $nomComplet = $request->request->get('nom_complet');
-        $iban = $request->request->get('iban');
+        $iban = strtoupper(preg_replace('/\s+/', '', (string) $request->request->get('iban')));
         $telephone = $request->request->get('telephone');
         $siteWeb = $request->request->get('site_web');
         $secteur = $request->request->get('secteur');
@@ -263,6 +263,11 @@ class AdminUserController extends AbstractController
             'postal_code' => $request->request->get('postal_code'),
             'country' => $request->request->get('country'),
         ];
+
+        if (!$iban) {
+            $this->addFlash('error', 'IBAN obligatoire pour créer le compte Stripe Connect.');
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+        }
 
         try {
             $stripeService->creerCompteAvecRIB($user, $adresse, $iban, $nomComplet, $telephone, $secteur, $siteWeb);

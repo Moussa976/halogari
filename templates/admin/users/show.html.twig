@@ -31,7 +31,8 @@
   {% endfor %}
   {% set rib = user.getDocumentByType('rib') ?: user.getDocumentByType('RIB') %}
   {% set identite = user.getDocumentByType('identite') %}
-  {% set canCreateStripe = rib and identite and rib.status == 'approved' and identite.status == 'approved' %}
+  {% set ribHasIban = rib and rib.ribIban %}
+  {% set canCreateStripe = rib and identite and rib.status == 'approved' and identite.status == 'approved' and ribHasIban %}
 
   <div class="container-fluid px-1">
     <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
@@ -216,6 +217,7 @@
                       <th>ID</th>
                       <th>Type</th>
                       <th>Fichier</th>
+                      <th>IBAN</th>
                       <th>Statut</th>
                       <th>Date</th>
                       <th>Action</th>
@@ -227,6 +229,17 @@
                         <td>#{{ doc.id }}</td>
                         <td>{{ doc.typeDocument|replace({'_': ' ', '-': ' '})|title }}</td>
                         <td class="text-truncate" style="max-width: 210px;">{{ doc.filenameDocument }}</td>
+                        <td>
+                          {% if doc.typeDocument|lower == 'rib' %}
+                            {% if doc.ribIban %}
+                              <span class="small text-break">{{ doc.ribIban }}</span>
+                            {% else %}
+                              <span class="badge bg-warning text-dark">IBAN manquant</span>
+                            {% endif %}
+                          {% else %}
+                            <span class="text-muted">-</span>
+                          {% endif %}
+                        </td>
                         <td><span class="badge bg-{{ documentClasses[doc.status]|default('secondary') }}">{{ documentLabels[doc.status]|default(doc.status) }}</span></td>
                         <td>{{ doc.dateDocument|date('d/m/Y H:i') }}</td>
                         <td>
@@ -276,6 +289,8 @@
             {% elseif canCreateStripe %}
               <div class="alert alert-success">Les documents requis sont validés. Vous pouvez créer le compte Stripe Connect.</div>
               <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalStripe">Créer le compte Stripe Connect</button>
+            {% elseif rib and identite and rib.status == 'approved' and identite.status == 'approved' and not ribHasIban %}
+              <div class="alert alert-warning mb-0">Le RIB est validé, mais aucun IBAN n’est enregistré. Demandez au conducteur d’envoyer à nouveau son RIB avec l’IBAN saisi.</div>
             {% else %}
               <div class="alert alert-warning mb-0">Le compte Stripe ne peut pas encore être créé : identité et RIB doivent être validés.</div>
             {% endif %}
@@ -535,6 +550,9 @@
                 {% if doc.rejectionReason %}
                   <div class="small text-danger mt-2">{{ doc.rejectionReason }}</div>
                 {% endif %}
+                {% if doc.typeDocument|lower == 'rib' and doc.ribIban %}
+                  <div class="small text-muted mt-2">IBAN saisi : <strong>{{ doc.ribIban }}</strong></div>
+                {% endif %}
               </div>
               {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
                 <img src="{{ fileUrl }}" alt="Document #{{ doc.id }}" class="img-fluid rounded border w-100" style="max-height: 72vh; object-fit: contain; background: #f8f9fa;">
@@ -625,7 +643,7 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">IBAN</label>
-                    <input type="text" name="iban" required class="form-control" placeholder="FR76...">
+                    <input type="text" name="iban" required class="form-control" placeholder="FR76..." value="{{ rib.ribIban }}">
                   </div>
                 </div>
               </div>

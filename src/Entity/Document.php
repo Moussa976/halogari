@@ -93,6 +93,12 @@ class Document
      */
     private $reviewedBy;
 
+    /**
+     * IBAN saisi par le conducteur lors de l'envoi du RIB.
+     * @ORM\Column(type="string", length=34, nullable=true)
+     */
+    private $ribIban;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -235,6 +241,17 @@ class Document
     public function setReviewedBy(?User $reviewedBy): self
     {
         $this->reviewedBy = $reviewedBy;
+        return $this;
+    }
+
+    public function getRibIban(): ?string
+    {
+        return $this->ribIban;
+    }
+
+    public function setRibIban(?string $ribIban): self
+    {
+        $this->ribIban = $ribIban ? strtoupper(preg_replace('/\s+/', '', $ribIban)) : null;
         return $this;
     }
 }

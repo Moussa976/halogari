@@ -304,6 +304,17 @@ class UserController extends AbstractController
 
             // Déterminer le type réel
             $finalType = ($type === 'Autre' && !empty($autreType)) ? $autreType : $type;
+            $finalType = strtolower(trim((string) $finalType)) === 'rib' ? 'rib' : $finalType;
+            $ribIban = null;
+
+            if ($finalType === 'rib') {
+                $ribIban = strtoupper(preg_replace('/\s+/', '', (string) $request->request->get('rib_iban')));
+
+                if (!$this->isValidIban($ribIban)) {
+                    $this->addFlash('error', 'Merci de saisir un IBAN valide pour votre RIB.');
+                    return $this->redirectToRoute('app_documents');
+                }
+            }
 
             // Vérification du type MIME
             $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -346,6 +357,7 @@ class UserController extends AbstractController
                 $document->setDateDocument(new \DateTime());
                 $document->setUser($user);
                 $document->setStatus(Document::STATUS_PENDING);
+                $document->setRibIban($ribIban);
 
                 $em->persist($document);
                 $em->flush();
@@ -390,6 +402,27 @@ class UserController extends AbstractController
         );
 
         @file_put_contents($this->getParameter('kernel.logs_dir') . '/document_upload_error.log', $line, FILE_APPEND);
+    }
+
+    private function isValidIban(string $iban): bool
+    {
+        if (!preg_match('/^[A-Z]{2}[0-9A-Z]{13,32}$/', $iban)) {
+            return false;
+        }
+
+        $rearranged = substr($iban, 4) . substr($iban, 0, 4);
+        $numeric = '';
+
+        foreach (str_split($rearranged) as $char) {
+            $numeric .= ctype_alpha($char) ? (string) (ord($char) - 55) : $char;
+        }
+
+        $checksum = 0;
+        foreach (str_split($numeric) as $digit) {
+            $checksum = ($checksum * 10 + (int) $digit) % 97;
+        }
+
+        return $checksum === 1;
     }
 
     /**
