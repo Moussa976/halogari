@@ -1838,10 +1838,12 @@ textarea.form-control.app-message-textarea {
     align-items: center;
     justify-content: space-between;
     gap: .85rem;
+    width: 100%;
     margin-bottom: 1rem;
 }
 
 .ride-detail-toolbar .reservation-back-link {
+    flex: 0 1 auto;
     margin-bottom: 0;
 }
 
@@ -1851,6 +1853,7 @@ textarea.form-control.app-message-textarea {
     justify-content: center;
     gap: .45rem;
     flex: 0 0 auto;
+    margin-left: auto;
     min-height: 42px;
     padding: .58rem .95rem;
     border: 1px solid rgba(36, 92, 54, .24);
