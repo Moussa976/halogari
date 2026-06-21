@@ -288,7 +288,9 @@ class TrajetController extends AbstractController
             $bus->dispatch(new TrajetPublieMessage($trajet->getId()));
             $this->addFlash('success', 'Votre trajet a bien été publié !');
 
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('app_user_trajet', [
+                'id' => $trajet->getId(),
+            ]);
         }
 
         return $this->render('trajet/publier.html.twig', [

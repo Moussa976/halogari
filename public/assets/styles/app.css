@@ -1867,6 +1867,25 @@ textarea.form-control.app-message-textarea {
     margin-top: 1.2rem;
 }
 
+.ride-detail--has-reservations {
+    display: flex;
+    flex-direction: column;
+}
+
+.ride-detail--has-reservations .reservation-back-link {
+    order: 0;
+}
+
+.ride-detail--has-reservations .ride-reservations-panel {
+    order: 1;
+    margin-top: 0;
+    margin-bottom: 1.2rem;
+}
+
+.ride-detail--has-reservations .ride-detail-layout {
+    order: 2;
+}
+
 .ride-reservation-list {
     display: grid;
     gap: .85rem;

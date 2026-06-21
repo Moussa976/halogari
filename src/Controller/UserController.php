@@ -14,6 +14,7 @@ use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Service\AdminNotificationMailer;
+use App\Service\AfficheService;
 use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
 use App\Service\DocumentStorage;
@@ -637,6 +638,31 @@ class UserController extends AbstractController
             'enCours' => $enCours,
             'ladateTrajet' => $ladateTrajet
         ]);
+    }
+
+    /**
+     * @Route("/user/trajet/{id}/affiche", name="app_user_trajet_affiche", methods={"GET"})
+     */
+    public function downloadTrajetAffiche(int $id, TrajetRepository $trajetRepository, AfficheService $afficheService): BinaryFileResponse
+    {
+        $trajet = $trajetRepository->find($id);
+        if (!$trajet) {
+            throw $this->createNotFoundException('Trajet introuvable.');
+        }
+
+        if ($trajet->getConducteur() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à télécharger cette affiche.");
+        }
+
+        $relativePath = $afficheService->generate($trajet);
+        $absolutePath = $this->getParameter('kernel.project_dir') . '/public' . $relativePath;
+        $fileName = sprintf('affiche-halogari-trajet-%d.jpg', $trajet->getId());
+
+        $response = new BinaryFileResponse($absolutePath);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName);
+        $response->deleteFileAfterSend(true);
+
+        return $response;
     }
 
     /**
