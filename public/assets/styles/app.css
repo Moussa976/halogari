@@ -4225,10 +4225,52 @@ textarea.form-control.app-message-textarea {
         justify-content: stretch;
     }
 
+    .ride-reservation-card {
+        gap: .7rem;
+        padding: .75rem;
+    }
+
+    .ride-reservation-card__user {
+        align-items: center;
+    }
+
+    .ride-reservation-card__badges {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .45rem;
+        justify-content: stretch;
+    }
+
+    .ride-reservation-card__badges .reservation-status {
+        width: 100%;
+        min-height: 34px;
+        padding: .42rem .55rem;
+        font-size: .78rem;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.15;
+    }
+
+    .ride-reservation-card__actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .5rem;
+    }
+
     .ride-cancel-form .btn,
     .ride-reservation-card__actions .btn,
     .ride-reservation-card__actions form {
         width: 100%;
+    }
+
+    .ride-reservation-card__actions .btn {
+        min-height: 36px;
+        justify-content: center;
+        padding-inline: .55rem;
+        font-size: .82rem;
+    }
+
+    .ride-reservation-card__actions form {
+        display: contents;
     }
 
     .reservation-timeline__item,
