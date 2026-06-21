@@ -1833,6 +1833,43 @@ textarea.form-control.app-message-textarea {
     align-items: start;
 }
 
+.ride-detail-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .85rem;
+    margin-bottom: 1rem;
+}
+
+.ride-detail-toolbar .reservation-back-link {
+    margin-bottom: 0;
+}
+
+.ride-detail-toolbar__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(36, 92, 54, .22);
+    border-radius: 999px;
+    color: var(--hg-green-2);
+    background: rgba(255, 255, 255, .82);
+    box-shadow: 0 12px 26px rgba(23, 33, 27, .08);
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.ride-detail-toolbar__icon:hover,
+.ride-detail-toolbar__icon:focus-visible {
+    color: var(--hg-green-2);
+    border-color: rgba(36, 92, 54, .38);
+    background: #fff;
+    box-shadow: 0 16px 32px rgba(23, 33, 27, .12);
+    transform: translateY(-1px);
+}
+
 .ride-detail-main,
 .ride-detail-side {
     display: grid;
@@ -1872,7 +1909,7 @@ textarea.form-control.app-message-textarea {
     flex-direction: column;
 }
 
-.ride-detail--has-reservations .reservation-back-link {
+.ride-detail--has-reservations .ride-detail-toolbar {
     order: 0;
 }
 

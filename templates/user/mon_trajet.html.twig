@@ -38,10 +38,15 @@
 </section>
 
 <section class="container hg-account-section ride-detail {{ reservations|length > 0 ? 'ride-detail--has-reservations' : '' }}">
-  <a href="{{ path('app_mes_trajets') }}" class="reservation-back-link">
-    <i class="bi bi-arrow-left"></i>
-    Voir mes trajets
-  </a>
+  <div class="ride-detail-toolbar">
+    <a href="{{ path('app_mes_trajets') }}" class="reservation-back-link">
+      <i class="bi bi-arrow-left"></i>
+      Voir mes trajets
+    </a>
+    <a href="{{ path('app_user_trajet_affiche', { id: trajet.id }) }}" class="ride-detail-toolbar__icon" title="Télécharger l’affiche" aria-label="Télécharger l’affiche">
+      <i class="bi bi-download"></i>
+    </a>
+  </div>
 
   <div class="ride-detail-layout">
     <article class="app-panel ride-detail-main">
@@ -72,13 +77,6 @@
             Ouvert
           </span>
         {% endif %}
-      </div>
-
-      <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
-        <a href="{{ path('app_user_trajet_affiche', { id: trajet.id }) }}" class="btn btn-outline-primary btn-sm">
-          <i class="bi bi-download"></i>
-          Télécharger l’affiche
-        </a>
       </div>
 
       <div class="reservation-stats ride-detail-stats">
