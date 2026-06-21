@@ -20,12 +20,20 @@
       {% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
       {% set trajetHeure = trajet.heureTrajet|date("H:i") %}
       {% set estPasse = (trajetDate == nowDate and trajetHeure < nowTime) %}
+      {% set placesInsuffisantes = trajet.placesDisponibles < places %}
+      {% set estComplet = trajet.placesDisponibles <= 0 %}
+      {% set estIndisponible = estPasse or placesInsuffisantes %}
       {% set prixEntier = trajet.prix|number_format(2, '.', '')|split('.')[0] %}
       {% set prixDecimal = trajet.prix|number_format(2, '.', '')|split('.')[1] %}
 
-      <a href="{% if not estPasse %}{{ path('app_trajet_show', { id: trajet.id, ledepart: trajet.depart, larrive: trajet.arrivee, nbPlaceReservee: places }) }}{% else %}#{% endif %}"
-         class="ride-card listtrajet {% if estPasse %}trajet-passe is-disabled{% endif %}"
-         data-loading-button
+      <a href="{% if not estIndisponible %}{{ path('app_trajet_show', { id: trajet.id, ledepart: trajet.depart, larrive: trajet.arrivee, nbPlaceReservee: places }) }}{% else %}#{% endif %}"
+         class="ride-card listtrajet {% if estIndisponible %}trajet-indisponible is-disabled{% endif %} {% if estPasse %}trajet-passe{% endif %}"
+         {% if not estIndisponible %}data-loading-button{% endif %}
+         {% if estIndisponible %}
+           aria-disabled="true"
+           data-disabled-title="{% if estPasse %}Trajet déjà commencé{% elseif estComplet %}Trajet complet{% else %}Places insuffisantes{% endif %}"
+           data-disabled-message="{% if estPasse %}Ce trajet a déjà débuté aujourd’hui et ne peut plus être réservé.{% elseif estComplet %}Toutes les places ont déjà été réservées.{% else %}Il ne reste que {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} pour ce trajet.{% endif %}"
+         {% endif %}
          data-trajet-id="{{ trajet.id }}">
         <div class="ride-card__time">
           <strong>{{ trajet.heureTrajet|date('H:i') }}</strong>
@@ -41,10 +49,18 @@
           <span>{{ trajet.depart }}</span>
           <i class="bi bi-arrow-right"></i>
           <span>{{ trajet.arrivee }}</span>
-          <small>
-            {{ trajet.placesDisponibles }}
-            {{ trajet.placesDisponibles < 2 ? 'place disponible' : 'places disponibles' }}
-          </small>
+          {% if estComplet %}
+            <small class="ride-card__availability ride-card__availability--full">Complet</small>
+          {% elseif placesInsuffisantes %}
+            <small class="ride-card__availability ride-card__availability--limited">
+              {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} restante{{ trajet.placesDisponibles > 1 ? 's' : '' }}
+            </small>
+          {% else %}
+            <small class="ride-card__availability">
+              {{ trajet.placesDisponibles }}
+              {{ trajet.placesDisponibles < 2 ? 'place disponible' : 'places disponibles' }}
+            </small>
+          {% endif %}
         </div>
 
         <div class="ride-card__price">
@@ -54,6 +70,11 @@
 
         {% if estPasse %}
           <span class="ride-card__badge">Déjà passé</span>
+        {% endif %}
+        {% if not estPasse and estComplet %}
+          <span class="ride-card__badge ride-card__badge--full">Complet</span>
+        {% elseif not estPasse and placesInsuffisantes %}
+          <span class="ride-card__badge ride-card__badge--limited">Pas assez de places</span>
         {% endif %}
       </a>
     {% endfor %}

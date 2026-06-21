@@ -4,6 +4,9 @@
 
 {% block body %}
 {% set hasResults = trajets|length > 0 or autresTrajets|length > 0 %}
+{% set nowDate = "now"|date("Y-m-d") %}
+{% set nowTime = "now"|date("H:i") %}
+{% set hasDirectReservable = trajets|filter(t => t.placesDisponibles >= places and (t.dateTrajet|date("Y-m-d") != nowDate or t.heureTrajet|date("H:i") >= nowTime))|length > 0 %}
 
 <section class="app-page-header app-page-header--compact">
   <div class="container">
@@ -57,13 +60,13 @@
   </aside>
 
   <section class="app-results-main">
-    {% if trajets|length == 0 %}
+    {% if not hasDirectReservable %}
       <article class="app-panel mb-4">
         <div class="app-panel__header">
           <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
           <div>
             <h2>Être alerté</h2>
-            <p>Aucun trajet direct pour cette recherche. Recevez un e-mail dès qu’un conducteur publie ce trajet.</p>
+            <p>Aucun trajet direct réservable pour cette recherche. Recevez un e-mail dès qu’un conducteur publie un trajet avec assez de places.</p>
           </div>
         </div>
         {% if app.user %}
@@ -157,13 +160,13 @@
 {% block javascripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.trajet-passe').forEach(function (el) {
+    document.querySelectorAll('.trajet-indisponible').forEach(function (el) {
       el.addEventListener('click', function (e) {
         e.preventDefault();
         Swal.fire({
           icon: 'info',
-          title: 'Trajet déjà commencé',
-          text: "Ce trajet a déjà débuté aujourd'hui et ne peut plus être réservé.",
+          title: el.dataset.disabledTitle || 'Trajet indisponible',
+          text: el.dataset.disabledMessage || 'Ce trajet ne peut plus être réservé.',
           confirmButtonText: 'Ok',
           confirmButtonColor: '#ee7911'
         });

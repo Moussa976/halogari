@@ -27,6 +27,7 @@
 	{% set trajetDate = trajet.dateTrajet|date("Y-m-d") %}
 	{% set trajetHeure = trajet.heureTrajet|date("H:i") %}
 	{% set isPassed = (trajetDate == nowDate and trajetHeure < nowTime) %}
+	{% set isFullyBooked = trajet.placesDisponibles < nbPlaceReservee %}
 	<div class="container mt-3 py-5">
 		<div class="ride-show-actions">
 			<a href="{{ path('app_chercherResultats', {
@@ -51,11 +52,11 @@
 		</div>
 
 		<header class="ride-show-heading">
-			<p class="app-kicker">Trajet disponible</p>
+			<p class="app-kicker">{{ isFullyBooked ? 'Trajet complet' : 'Trajet disponible' }}</p>
 			<h1>{{ trajet.depart }}
 				<i class="bi bi-arrow-right-short"></i>
 				{{ trajet.arrivee }}</h1>
-			<p>Demandez une place. Vous paierez seulement si le conducteur accepte.</p>
+			<p>{{ isFullyBooked ? 'Ce trajet reste visible, mais il n’a plus assez de places pour votre recherche.' : 'Demandez une place. Vous paierez seulement si le conducteur accepte.' }}</p>
 		</header>
 
 		<div
@@ -220,9 +221,11 @@
 
 							{% if app.user %}
 								{% if app.user.id != trajet.conducteur.id %}
-									<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+									<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed or isFullyBooked %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
 										{% if isPassed %}
 											Trajet terminé
+										{% elseif isFullyBooked %}
+											Complet
 										{% else %}
 											Réserver
 										{% endif %}
@@ -239,9 +242,11 @@
 									</a>
 								{% endif %}
 							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 									{% if isPassed %}
 										Trajet terminé
+									{% elseif isFullyBooked %}
+										Complet
 									{% else %}
 										Réserver
 									{% endif %}
@@ -267,9 +272,11 @@
 
 				{% if app.user %}
 					{% if app.user.id != trajet.conducteur.id %}
-						<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
+						<button type="submit" class="btn btn-orange w-100" data-loading-button data-loading-label="Réservation" {% if isPassed or isFullyBooked %} disabled style="opacity:0.6; cursor: not-allowed;" {% endif %}>
 							{% if isPassed %}
 								Trajet terminé
+							{% elseif isFullyBooked %}
+								Complet
 							{% else %}
 								Réserver
 							{% endif %}
@@ -286,9 +293,11 @@
 						</a>
 					{% endif %}
 				{% else %}
-					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 						{% if isPassed %}
 							Trajet terminé
+						{% elseif isFullyBooked %}
+							Complet
 						{% else %}
 							Réserver
 						{% endif %}

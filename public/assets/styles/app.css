@@ -3005,6 +3005,14 @@ textarea.form-control.app-message-textarea {
 
 .ride-card.is-disabled {
     opacity: .58;
+    cursor: not-allowed;
+    filter: grayscale(.35);
+}
+
+.ride-card.is-disabled:hover {
+    border-color: var(--hg-line);
+    box-shadow: 0 18px 48px rgba(23, 33, 27, .1);
+    transform: none;
 }
 
 .ride-card__badge {
@@ -3017,6 +3025,17 @@ textarea.form-control.app-message-textarea {
     padding: .25rem .55rem;
     font-size: .7rem;
     font-weight: 800;
+}
+
+.ride-card__badge--full,
+.ride-card__badge--limited {
+    background: #4f5b55;
+}
+
+.ride-card__availability--full,
+.ride-card__availability--limited {
+    color: #4f5b55 !important;
+    background: rgba(79, 91, 85, .12) !important;
 }
 
 .empty-state {

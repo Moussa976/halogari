@@ -91,7 +91,8 @@ class TrajetController extends AbstractController
             return $this->redirectToRoute('app_chercher');
         }
 
-        $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $places);
+        $placesDemandees = (int) $places;
+        $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $placesDemandees);
         $dateFr = Carbon::createFromFormat('Y-m-d', $date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
         $dateObj = new \DateTimeImmutable($date);
@@ -105,17 +106,18 @@ class TrajetController extends AbstractController
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
             ->andWhere('LOWER(t.depart) != LOWER(:depart)')
-            ->andWhere('t.placesDisponibles >= :places')
             ->andWhere('t.annule IS NULL OR t.annule = false')
             ->andWhere('c.disabledAt IS NULL')
+            ->addSelect('CASE WHEN t.placesDisponibles >= :places THEN 0 ELSE 1 END AS HIDDEN availabilityRank')
             ->setParameters([
                 'startOfDay' => $startOfDay,
                 'endOfDay' => $endOfDay,
                 'arrivee' => $arrivee,
                 'depart' => $depart,
-                'places' => (int) $places,
+                'places' => $placesDemandees,
             ])
-            ->orderBy('t.heureTrajet', 'ASC')
+            ->orderBy('availabilityRank', 'ASC')
+            ->addOrderBy('t.heureTrajet', 'ASC')
             ->getQuery()
             ->getResult();
 
@@ -134,7 +136,7 @@ class TrajetController extends AbstractController
             'dateTrajet' => $date,
             'dateTrajetInput' => $dateObj->format('d/m/Y'),
             'heure' => $heure,
-            'places' => $places,
+            'places' => $placesDemandees,
             'trajets' => $trajets,
             'autresTrajets' => $autresTrajets,
             'villages' => $villes,
