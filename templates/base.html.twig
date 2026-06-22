@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% set currentRoute = app.request.attributes.get('_route')|default('') %}
+  {% set isPreprodHost = app.request.host starts with 'preprod.' %}
   {% set isPrivateSeoRoute =
     currentRoute starts with 'admin_'
     or currentRoute starts with 'api_'
@@ -26,7 +27,7 @@
     {% endblock %}
   </title>
   <meta name="description" content="{% block meta_description %}HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.{% endblock %}">
-  <meta name="robots" content="{% block meta_robots %}{{ isPrivateSeoRoute ? 'noindex, nofollow' : 'index, follow' }}{% endblock %}">
+  <meta name="robots" content="{% block meta_robots %}{{ isPrivateSeoRoute ? 'noindex, nofollow' : (isPreprodHost ? 'noindex, follow' : 'index, follow') }}{% endblock %}">
   <link rel="canonical" href="{% block canonical_url %}{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}{% endblock %}">
   <meta property="og:site_name" content="HaloGari">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
