@@ -1,7 +1,7 @@
 {
   "name": "HaloGari",
   "short_name": "HaloGari",
-  "description": "Covoiturage local a Mayotte. Simple, sur et efficace.",
+  "description": "Covoiturage local à Mayotte. Simple, sûr et efficace.",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#32623d",

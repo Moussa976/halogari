@@ -7,6 +7,11 @@
 	{{ trajet.arrivee }}
 {% endblock %}
 
+{% block meta_description %}Trajet HaloGari de {{ trajet.depart }} à {{ trajet.arrivee }} le {{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}. Consultez les places, le prix et les informations du conducteur.{% endblock %}
+{% block meta_robots %}noindex, follow{% endblock %}
+{% block og_title %}Trajet HaloGari : {{ trajet.depart }} vers {{ trajet.arrivee }}{% endblock %}
+{% block og_description %}{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }} · {{ trajet.placesDisponibles }} place{{ trajet.placesDisponibles > 1 ? 's' : '' }} disponible{{ trajet.placesDisponibles > 1 ? 's' : '' }} · {{ trajet.prix|number_format(2, ',', ' ') }} €/place{% endblock %}
+
 {% block stylesheets %}
 	<style>
 		#reservation-sticky.fixed {

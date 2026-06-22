@@ -4,10 +4,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% set currentRoute = app.request.attributes.get('_route')|default('') %}
+  {% set isPrivateSeoRoute =
+    currentRoute starts with 'admin_'
+    or currentRoute starts with 'api_'
+    or currentRoute starts with 'app_user_'
+    or currentRoute starts with 'app_mes'
+    or currentRoute starts with 'app_conversation'
+    or currentRoute starts with 'api_conversation_'
+    or currentRoute starts with 'app_notifications'
+    or currentRoute starts with 'app_paiement'
+    or currentRoute starts with 'app_parametres'
+    or currentRoute starts with 'app_document'
+    or currentRoute starts with 'app_verify_email'
+    or currentRoute starts with 'app_reservation'
+    or currentRoute starts with 'app_noter'
+    or currentRoute in ['app_login', 'app_register', 'registration_confirmation', 'app_publier', 'app_chercherResultats', 'app_trajet_show', 'trajet_annuler', 'affiche_test', 'app_test_carte', 'app_message', 'notification_voir', 'paiement_form', 'paiement_confirmation', 'app_mesreservation', 'reservation_accepter', 'reservation_refuser', 'reservation_annuler_legacy', 'app_user', 'app_profile', 'app_compte', 'app_documents', 'reservation_annuler', 'app_user_resend_confirmation', 'push_test_user']
+  %}
   <title>
     {% block title %}HaloGari | Covoiturage à Mayotte
     {% endblock %}
   </title>
+  <meta name="description" content="{% block meta_description %}HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.{% endblock %}">
+  <meta name="robots" content="{% block meta_robots %}{{ isPrivateSeoRoute ? 'noindex, nofollow' : 'index, follow' }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical_url %}{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}{% endblock %}">
+  <meta property="og:site_name" content="HaloGari">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ block('title')|striptags|trim }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ block('meta_description')|striptags|trim }}{% endblock %}">
+  <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}">
+  <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/logo/logo-787x298.png')) }}{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ block('og_title')|striptags|trim }}">
+  <meta name="twitter:description" content="{{ block('og_description')|striptags|trim }}">
+  <meta name="twitter:image" content="{{ block('og_image')|striptags|trim }}">
 
   {% include 'partials/bootstrap-link.html.twig' %}
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">

@@ -1,5 +1,8 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}HaloGari | Covoiturage à Mayotte{% endblock %}
+{% block meta_description %}Cherchez ou publiez un trajet de covoiturage à Mayotte avec HaloGari. Une solution locale pour partager les places, réduire les coûts et voyager plus sereinement.{% endblock %}
+
 {% set trajetsFallback = [
   { depart: 'Koungou', arrivee: 'Mamoudzou', total: 4 },
   { depart: 'Chirongui', arrivee: 'Sada', total: 2 },
@@ -136,4 +139,28 @@
     </a>
   </div>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "HaloGari",
+      "url": "{{ absolute_url(path('app_home')) }}",
+      "logo": "{{ absolute_url(asset('images/logo/logo-787x298.png')) }}",
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61591126017246"
+      ]
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "HaloGari",
+      "url": "{{ absolute_url(path('app_home')) }}"
+    }
+  </script>
 {% endblock %}

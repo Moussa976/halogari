@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}HaloGari | FAQ{% endblock %}
+{% block meta_description %}Questions fréquentes HaloGari : chercher un trajet, réserver, publier, vérifier son profil, installer l’application, payer et demander de l’aide.{% endblock %}
 
 {% block body %}
 <section class="app-page-header app-page-header--compact">
@@ -86,4 +87,40 @@
     </a>
   </aside>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Comment chercher un trajet ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Indiquez le village de départ, le village d'arrivée, la date et le nombre de places souhaitées."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment réserver une place ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ouvrez un trajet, choisissez le nombre de places, puis envoyez votre demande au conducteur."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Les paiements sont-ils sécurisés ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui. Les paiements sont gérés via Stripe et HaloGari ne stocke pas les numéros complets de carte bancaire."
+          }
+        }
+      ]
+    }
+  </script>
 {% endblock %}
