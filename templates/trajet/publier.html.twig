@@ -129,9 +129,14 @@
 					<strong>Avant de publier :</strong> vous devez ajouter et faire valider votre RIB et votre pièce d'identité.
 					<a href="{{ path('app_documents') }}" class="alert-link">Ajouter mes documents</a>.
 				</div>
+			{% elseif postalAddressReady is defined and not postalAddressReady %}
+				<div class="alert alert-warning">
+					<strong>Avant de publier :</strong> complétez votre adresse postale dans vos paramètres.
+					<a href="{{ path('app_parametres') }}" class="alert-link">Compléter mon adresse</a>.
+				</div>
 			{% else %}
 				<div class="alert alert-success">
-					Vos documents obligatoires sont en place. Vous pouvez publier votre trajet.
+					Votre dossier conducteur est prêt. Vous pouvez publier votre trajet.
 				</div>
 			{% endif %}
 

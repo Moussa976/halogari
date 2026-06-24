@@ -132,6 +132,49 @@ class ParametresController extends AbstractController
     }
 
     /**
+     * @Route("/user/parametres/adresse-postale", name="app_postal_address_update", methods={"POST"})
+     */
+    public function updatePostalAddress(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('parametres_postal_address', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $line1 = trim((string) $request->request->get('postalAddressLine1'));
+        $line2 = trim((string) $request->request->get('postalAddressLine2'));
+        $postalCode = trim((string) $request->request->get('postalCode'));
+        $city = trim((string) $request->request->get('postalCity'));
+        $country = trim((string) $request->request->get('postalCountry', 'Mayotte'));
+
+        if ($line1 === '' || $postalCode === '' || $city === '') {
+            $this->addFlash('error', 'Merci de compléter l’adresse, le code postal et la ville.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        if (!preg_match('/^[0-9A-Za-z -]{3,20}$/', $postalCode)) {
+            $this->addFlash('error', 'Le code postal semble invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $user
+            ->setPostalAddressLine1($line1)
+            ->setPostalAddressLine2($line2 ?: null)
+            ->setPostalCode($postalCode)
+            ->setPostalCity($city)
+            ->setPostalCountry($country ?: 'Mayotte');
+
+        $em->flush();
+
+        $this->addFlash('success', 'Adresse postale enregistrée.');
+
+        return $this->redirectToRoute('app_parametres');
+    }
+
+    /**
      * @Route("/user/parametres/password", name="app_password_update", methods={"POST"})
      */
     public function updatePassword(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response

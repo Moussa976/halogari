@@ -216,9 +216,15 @@ class TrajetController extends AbstractController
         $user = $this->getUser();
         $rib = $this->findDocumentByTypes($user, ['rib']);
         $identite = $this->findDocumentByTypes($user, ['identite', 'piece_identite', 'piece-identite']);
-        $documentsReady = $user->canPublishRide();
+        $postalAddressReady = $user->hasPostalAddress();
+        $documentsReady = $user->hasVerifiedIdentity() && $user->hasVerifiedRib();
 
         if ($request->isMethod('POST')) {
+
+            if (!$postalAddressReady) {
+                $this->addFlash('error', 'Complétez votre adresse postale dans les paramètres avant de publier un trajet.');
+                return $this->redirectToRoute('app_parametres');
+            }
 
             if (!$rib || !$identite) {
                 if (!$rib)
@@ -297,6 +303,7 @@ class TrajetController extends AbstractController
 
         return $this->render('trajet/publier.html.twig', [
             'documentsReady' => (bool) $documentsReady,
+            'postalAddressReady' => (bool) $postalAddressReady,
         ]);
     }
 

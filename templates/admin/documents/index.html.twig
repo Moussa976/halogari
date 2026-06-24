@@ -126,9 +126,9 @@
               </div>
 
               {% if ext in ['jpg', 'jpeg', 'png', 'webp'] %}
-                <img src="{{ fileUrl }}" alt="Document #{{ document.id }}" class="img-fluid rounded border w-100" style="max-height: 72vh; object-fit: contain; background: #f8f9fa;">
+                <img data-document-src="{{ fileUrl }}" alt="Document #{{ document.id }}" class="img-fluid rounded border w-100 js-document-preview" style="max-height: 72vh; object-fit: contain; background: #f8f9fa;">
               {% elseif ext == 'pdf' %}
-                <iframe src="{{ fileUrl }}" class="w-100 border rounded" style="min-height: 70vh;"></iframe>
+                <iframe data-document-src="{{ fileUrl }}" class="w-100 border rounded js-document-preview" style="min-height: 70vh;"></iframe>
               {% else %}
                 <div class="alert alert-info">
                   Aperçu non disponible pour ce format.
@@ -169,4 +169,21 @@
       </div>
     {% endfor %}
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.modal[id^="document-modal-"]').forEach((modal) => {
+        modal.addEventListener('shown.bs.modal', () => {
+          modal.querySelectorAll('.js-document-preview[data-document-src]').forEach((preview) => {
+            if (!preview.getAttribute('src')) {
+              preview.setAttribute('src', preview.dataset.documentSrc);
+            }
+          });
+        }, { once: true });
+      });
+    });
+  </script>
 {% endblock %}

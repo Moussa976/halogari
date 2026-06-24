@@ -50,6 +50,13 @@
 				</a>
 			</li>
 
+			<li class="sidebar-item {% if route == 'admin_stripe_connect_accounts' %}active{% endif %}">
+				<a class="sidebar-link" href="{{ path('admin_stripe_connect_accounts') }}">
+					<i class="align-middle" data-feather="credit-card"></i>
+					<span class="align-middle">Comptes Stripe</span>
+				</a>
+			</li>
+
 			<li class="sidebar-item {% if route == 'admin_litiges_remboursements' %}active{% endif %}">
 				<a class="sidebar-link" href="{{ path('admin_litiges_remboursements') }}">
 					<i class="align-middle" data-feather="alert-triangle"></i>

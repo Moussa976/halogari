@@ -139,6 +139,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $stripeAccountId;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $postalAddressLine1;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $postalAddressLine2;
+
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $postalCode;
+
+    /**
+     * @ORM\Column(type="string", length=120, nullable=true)
+     */
+    private $postalCity;
+
+    /**
+     * @ORM\Column(type="string", length=80, nullable=true)
+     */
+    private $postalCountry;
+
+    /**
      * @ORM\Column(type="json", nullable=true)
      */
     private $preferences = [];
@@ -656,7 +681,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function canPublishRide(): bool
     {
-        return $this->hasVerifiedIdentity() && $this->hasVerifiedRib();
+        return $this->hasVerifiedIdentity() && $this->hasVerifiedRib() && $this->hasPostalAddress();
+    }
+
+    public function hasPostalAddress(): bool
+    {
+        return trim((string) $this->postalAddressLine1) !== ''
+            && trim((string) $this->postalCode) !== ''
+            && trim((string) $this->postalCity) !== '';
     }
 
     public function canEditIdentityFields(): bool
@@ -752,6 +784,61 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStripeAccountId(?string $stripeAccountId): self
     {
         $this->stripeAccountId = $stripeAccountId;
+        return $this;
+    }
+
+    public function getPostalAddressLine1(): ?string
+    {
+        return $this->postalAddressLine1;
+    }
+
+    public function setPostalAddressLine1(?string $postalAddressLine1): self
+    {
+        $this->postalAddressLine1 = $postalAddressLine1 ? mb_substr(trim($postalAddressLine1), 0, 255) : null;
+        return $this;
+    }
+
+    public function getPostalAddressLine2(): ?string
+    {
+        return $this->postalAddressLine2;
+    }
+
+    public function setPostalAddressLine2(?string $postalAddressLine2): self
+    {
+        $this->postalAddressLine2 = $postalAddressLine2 ? mb_substr(trim($postalAddressLine2), 0, 255) : null;
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): self
+    {
+        $this->postalCode = $postalCode ? mb_substr(trim($postalCode), 0, 20) : null;
+        return $this;
+    }
+
+    public function getPostalCity(): ?string
+    {
+        return $this->postalCity;
+    }
+
+    public function setPostalCity(?string $postalCity): self
+    {
+        $this->postalCity = $postalCity ? mb_substr(trim($postalCity), 0, 120) : null;
+        return $this;
+    }
+
+    public function getPostalCountry(): ?string
+    {
+        return $this->postalCountry;
+    }
+
+    public function setPostalCountry(?string $postalCountry): self
+    {
+        $this->postalCountry = $postalCountry ? mb_substr(trim($postalCountry), 0, 80) : null;
         return $this;
     }
 

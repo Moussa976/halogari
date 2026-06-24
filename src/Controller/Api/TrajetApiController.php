@@ -121,6 +121,12 @@ class TrajetApiController extends AbstractController
             return $this->json(['message' => 'Connexion requise pour publier un trajet.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
+        if (!$user->hasPostalAddress()) {
+            return $this->json([
+                'message' => 'Complétez votre adresse postale avant de publier un trajet.',
+            ], JsonResponse::HTTP_FORBIDDEN);
+        }
+
         if (!$user->canPublishRide()) {
             return $this->json([
                 'message' => 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.',

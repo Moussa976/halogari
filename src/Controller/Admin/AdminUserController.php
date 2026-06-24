@@ -108,6 +108,12 @@ class AdminUserController extends AbstractController
         $user->setPrenom($request->request->get('prenom'));
         $user->setEmail($request->request->get('email'));
         $user->setTelephone($request->request->get('telephone'));
+        $user
+            ->setPostalAddressLine1($request->request->get('postalAddressLine1'))
+            ->setPostalAddressLine2($request->request->get('postalAddressLine2'))
+            ->setPostalCode($request->request->get('postalCode'))
+            ->setPostalCity($request->request->get('postalCity'))
+            ->setPostalCountry($request->request->get('postalCountry') ?: 'Mayotte');
 
         // 🔴 Suppression photo si demandé
         if ($request->get('remove_photo') && $user->getPhoto()) {

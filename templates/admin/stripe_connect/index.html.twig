@@ -1,0 +1,83 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Comptes Stripe conducteurs | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Comptes Stripe conducteurs</h1>
+        <p class="text-muted mb-0">Suivez les comptes Connect, les documents et les adresses postales des conducteurs.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge bg-success align-self-start">{{ connectedCount }} connecté{{ connectedCount > 1 ? 's' : '' }}</span>
+        <span class="badge bg-warning text-dark align-self-start">{{ missingAddressCount }} adresse{{ missingAddressCount > 1 ? 's' : '' }} à compléter</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body table-responsive">
+        <table class="table table-hover align-middle js-admin-table">
+          <thead class="table-light">
+            <tr>
+              <th>Conducteur</th>
+              <th>Compte Stripe</th>
+              <th>Dossier</th>
+              <th>Adresse postale</th>
+              <th>Trajets</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    {{ avatar.formatSimple(user, 42, 0, 1) }}
+                    <div class="min-w-0">
+                      <a class="fw-semibold" href="{{ path('admin_user_show', { id: user.id }) }}">{{ user.prenom }} {{ user.nom }}</a>
+                      <div class="small text-muted text-truncate" style="max-width: 220px;">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {% if user.stripeAccountId %}
+                    <span class="badge bg-success">Connecté</span>
+                    <div class="small text-muted text-break mt-1">{{ user.stripeAccountId }}</div>
+                  {% else %}
+                    <span class="badge bg-secondary">Absent</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    <span class="badge {{ user.hasVerifiedIdentity ? 'bg-success' : 'bg-warning text-dark' }}">Identité</span>
+                    <span class="badge {{ user.hasVerifiedRib ? 'bg-success' : 'bg-warning text-dark' }}">RIB</span>
+                  </div>
+                </td>
+                <td>
+                  {% if user.hasPostalAddress %}
+                    <span class="badge bg-success">Complète</span>
+                    <div class="small text-muted mt-1">
+                      {{ user.postalCode }} {{ user.postalCity }}
+                    </div>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">À compléter</span>
+                  {% endif %}
+                </td>
+                <td>{{ user.trajets|length }}</td>
+                <td>
+                  <a href="{{ path('admin_user_show', { id: user.id }) }}" class="btn btn-sm btn-outline-primary">Voir la fiche</a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">Aucun conducteur à afficher.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

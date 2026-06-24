@@ -111,6 +111,52 @@
     <article class="app-panel">
       <div class="app-panel__header">
         <div>
+          <h2>Adresse postale</h2>
+          <p>Elle est nécessaire pour compléter votre dossier conducteur avant de publier un trajet.</p>
+        </div>
+        <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
+      </div>
+
+      {% if app.user.hasPostalAddress %}
+        <div class="alert alert-success mb-3">
+          Adresse enregistrée. Vous pourrez publier dès que vos documents seront validés.
+        </div>
+      {% endif %}
+
+      <form method="POST" action="{{ path('app_postal_address_update') }}" class="hg-form-grid">
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_postal_address') }}">
+        <div class="form-floating hg-form-full">
+          <input type="text" name="postalAddressLine1" id="postalAddressLine1" class="form-control" value="{{ app.user.postalAddressLine1 }}" placeholder="Adresse" autocomplete="address-line1" required>
+          <label for="postalAddressLine1">Adresse</label>
+        </div>
+        <div class="form-floating hg-form-full">
+          <input type="text" name="postalAddressLine2" id="postalAddressLine2" class="form-control" value="{{ app.user.postalAddressLine2 }}" placeholder="Complément d’adresse" autocomplete="address-line2">
+          <label for="postalAddressLine2">Complément d’adresse</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="postalCode" id="postalCode" class="form-control" value="{{ app.user.postalCode }}" placeholder="Code postal" autocomplete="postal-code" required>
+          <label for="postalCode">Code postal</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="postalCity" id="postalCity" class="form-control" value="{{ app.user.postalCity }}" placeholder="Ville" autocomplete="address-level2" required>
+          <label for="postalCity">Ville</label>
+        </div>
+        <div class="form-floating hg-form-full">
+          <input type="text" name="postalCountry" id="postalCountry" class="form-control" value="{{ app.user.postalCountry ?: 'Mayotte' }}" placeholder="Pays ou territoire" autocomplete="country-name" required>
+          <label for="postalCountry">Pays ou territoire</label>
+        </div>
+        <div class="hg-form-actions">
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-check-circle-fill"></i>
+            Enregistrer l’adresse
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="app-panel">
+      <div class="app-panel__header">
+        <div>
           <h2>Sécurité du compte</h2>
           <p>Utilisez un mot de passe unique, difficile à deviner, avec lettres, chiffres et caractère spécial.</p>
         </div>

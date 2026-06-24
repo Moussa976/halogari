@@ -121,6 +121,7 @@
                   <span class="badge {{ user.isVerified ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.isVerified ? 'Email vérifié' : 'Email à confirmer' }}</span>
                   <span class="badge {{ user.hasVerifiedIdentity ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedIdentity ? 'Identité validée' : 'Identité non validée' }}</span>
                   <span class="badge {{ user.hasVerifiedRib ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedRib ? 'RIB validé' : 'RIB non validé' }}</span>
+                  <span class="badge {{ user.hasPostalAddress ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.hasPostalAddress ? 'Adresse complète' : 'Adresse à compléter' }}</span>
                   <span class="badge {{ user.canPublishRide ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.canPublishRide ? 'Publication autorisée' : 'Publication bloquée' }}</span>
                   <span class="badge {{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'bg-warning text-dark' : 'bg-success') : 'bg-secondary' }}">{{ user.stripeAccountId ? (stripeStatus.invalid|default(false) ? 'Stripe à vérifier' : 'Stripe connecté') : 'Stripe absent' }}</span>
                 </div>
@@ -178,6 +179,31 @@
             <div class="col-md-6">
               <label class="form-label fw-bold">Téléphone</label>
               <input type="text" name="telephone" class="form-control" value="{{ user.telephone }}">
+            </div>
+            <div class="col-12">
+              <hr>
+              <h2 class="h5 mb-1">Adresse postale</h2>
+              <p class="text-muted small mb-0">À compléter pour autoriser la publication de trajets.</p>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Adresse</label>
+              <input type="text" name="postalAddressLine1" class="form-control" value="{{ user.postalAddressLine1 }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Complément</label>
+              <input type="text" name="postalAddressLine2" class="form-control" value="{{ user.postalAddressLine2 }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">Code postal</label>
+              <input type="text" name="postalCode" class="form-control" value="{{ user.postalCode }}">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-bold">Ville</label>
+              <input type="text" name="postalCity" class="form-control" value="{{ user.postalCity }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Pays ou territoire</label>
+              <input type="text" name="postalCountry" class="form-control" value="{{ user.postalCountry ?: 'Mayotte' }}">
             </div>
             <div class="col-md-8">
               <label class="form-label fw-bold">Photo de profil</label>
