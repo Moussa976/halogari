@@ -432,6 +432,61 @@
 					});
 				});
 			</script>
+			<script>
+				document.addEventListener('DOMContentLoaded', () => {
+					const form = document.querySelector('[data-admin-global-search]');
+					const input = document.getElementById('adminGlobalSearch');
+					if (!form || !input) {
+						return;
+					}
+
+					const destinations = [
+						{ terms: ['tableau', 'bord', 'dashboard', 'accueil admin'], url: '{{ path('admin_dashboard') }}' },
+						{ terms: ['trajet', 'trajets'], url: '{{ path('admin_trajets') }}' },
+						{ terms: ['reservation', 'réservation', 'reservations', 'réservations', 'demande'], url: '{{ path('admin_reservations') }}' },
+						{ terms: ['utilisateur', 'utilisateurs', 'compte', 'client'], url: '{{ path('admin_users') }}' },
+						{ terms: ['superadmin', 'superadmins'], url: '{{ path('admin_users', { role: 'superadmin' }) }}' },
+						{ terms: ['admin', 'admins'], url: '{{ path('admin_users', { role: 'admin' }) }}' },
+						{ terms: ['document', 'documents', 'rib', 'identite', 'identité'], url: '{{ path('admin_documents') }}' },
+						{ terms: ['paiement', 'paiements', 'versement'], url: '{{ path('admin_paiements') }}' },
+						{ terms: ['stripe', 'connect', 'compte stripe', 'comptes stripe'], url: '{{ path('admin_stripe_connect_accounts') }}' },
+						{ terms: ['litige', 'litiges', 'remboursement', 'remboursements'], url: '{{ path('admin_litiges_remboursements') }}' },
+						{ terms: ['note', 'notes', 'avis'], url: '{{ path('admin_notes') }}' },
+						{ terms: ['aide', 'help', 'mode emploi'], url: '{{ path('admin_help') }}' },
+						{% if is_granted('ROLE_SUPER_ADMIN') %}
+							{ terms: ['parametre', 'paramètre', 'parametres', 'paramètres', 'configuration'], url: '{{ path('admin_settings') }}' },
+							{ terms: ['facebook', 'meta'], url: '{{ path('admin_settings') }}#settings-facebook' },
+							{ terms: ['production', 'prod', 'sauvegarde', 'backup'], url: '{{ path('admin_settings') }}#settings-production' },
+							{ terms: ['historique', 'audit', 'journal'], url: '{{ path('admin_audit_logs') }}' },
+						{% endif %}
+					];
+
+					const normalize = value => (value || '').toString().toLocaleLowerCase('fr-FR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+					form.addEventListener('submit', (event) => {
+						event.preventDefault();
+						const query = normalize(input.value);
+						if (!query) {
+							input.focus();
+							return;
+						}
+
+						const destination = destinations.find(item => item.terms.some(term => normalize(term).includes(query) || query.includes(normalize(term))));
+						if (destination) {
+							window.location.href = destination.url;
+							return;
+						}
+
+						Swal.fire({
+							icon: 'info',
+							title: 'Recherche admin',
+							text: 'Aucune page admin ne correspond à cette recherche.',
+							timer: 2500,
+							showConfirmButton: false
+						});
+					});
+				});
+			</script>
 
 			{% for type, messages in app.flashes %}
 				{% for message in messages %}

@@ -1,0 +1,75 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Aide admin | HaloGari{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Aide admin</h1>
+        <p class="text-muted mb-0">Repères rapides pour gérer HaloGari sans chercher partout.</p>
+      </div>
+      <a href="{{ path('admin_settings') }}" class="btn btn-outline-primary btn-sm">Paramètres</a>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Suivi quotidien</h2>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <a class="list-group-item px-0" href="{{ path('admin_dashboard') }}">
+                <strong>Tableau de bord</strong>
+                <div class="small text-muted">Vue générale : inscriptions, trajets, documents et paiements récents.</div>
+              </a>
+              <a class="list-group-item px-0" href="{{ path('admin_documents') }}">
+                <strong>Documents</strong>
+                <div class="small text-muted">Ouvrir une pièce, vérifier un RIB ou une identité, valider ou refuser.</div>
+              </a>
+              <a class="list-group-item px-0" href="{{ path('admin_paiements') }}">
+                <strong>Paiements</strong>
+                <div class="small text-muted">Voir les paiements confirmés, remboursements et versements conducteurs.</div>
+              </a>
+              <a class="list-group-item px-0" href="{{ path('admin_litiges_remboursements') }}">
+                <strong>Litiges et remboursements</strong>
+                <div class="small text-muted">Traiter les cas à contrôler manuellement.</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Gestion plateforme</h2>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              <a class="list-group-item px-0" href="{{ path('admin_users') }}">
+                <strong>Utilisateurs</strong>
+                <div class="small text-muted">Filtrer superadmins, admins, utilisateurs, comptes actifs ou désactivés.</div>
+              </a>
+              <a class="list-group-item px-0" href="{{ path('admin_stripe_connect_accounts') }}">
+                <strong>Comptes Stripe</strong>
+                <div class="small text-muted">Voir les conducteurs avec compte Connect, documents et adresse postale.</div>
+              </a>
+              <a class="list-group-item px-0" href="{{ path('admin_notes') }}">
+                <strong>Notes</strong>
+                <div class="small text-muted">Consulter les avis. Le superadmin peut supprimer une note problématique.</div>
+              </a>
+              {% if is_granted('ROLE_SUPER_ADMIN') %}
+                <a class="list-group-item px-0" href="{{ path('admin_settings') }}">
+                  <strong>Paramètres</strong>
+                  <div class="small text-muted">Clés Stripe, Facebook, checklist production et sauvegardes.</div>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -7,6 +7,7 @@
 		</a>
 
 		<ul class="sidebar-nav">
+			<li class="sidebar-header">Pilotage</li>
 
 			<li class="sidebar-item {% if route == 'admin_dashboard' %}active{% endif %}">
 				<a class="sidebar-link" href="{{ path('admin_dashboard') }}">
@@ -14,6 +15,8 @@
 					<span class="align-middle">Tableau de bord</span>
 				</a>
 			</li>
+
+			<li class="sidebar-header">Gestion</li>
 
 			<li class="sidebar-item {% if route == 'admin_trajets' %}active{% endif %}">
 				<a class="sidebar-link" href="{{ path('admin_trajets') }}">
@@ -42,6 +45,8 @@
 					<span class="align-middle">Documents</span>
 				</a>
 			</li>
+
+			<li class="sidebar-header">Finance et qualité</li>
 
 			<li class="sidebar-item {% if route == 'admin_paiements' %}active{% endif %}">
 				<a class="sidebar-link" href="{{ path('admin_paiements') }}">
@@ -72,7 +77,15 @@
 				</a>
 			</li>
 
+			<li class="sidebar-item {% if route == 'admin_help' %}active{% endif %}">
+				<a class="sidebar-link" href="{{ path('admin_help') }}">
+					<i class="align-middle" data-feather="help-circle"></i>
+					<span class="align-middle">Aide admin</span>
+				</a>
+			</li>
+
 			{% if is_granted('ROLE_SUPER_ADMIN') %}
+				<li class="sidebar-header">Superadmin</li>
 				<li class="sidebar-item {% if route == 'admin_settings' %}active{% endif %}">
 					<a class="sidebar-link" href="{{ path('admin_settings') }}">
 						<i class="align-middle" data-feather="settings"></i>

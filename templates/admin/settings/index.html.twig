@@ -7,16 +7,29 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
         <h1 class="h3 mb-1">Paramètres</h1>
-        <p class="text-muted mb-0">Configuration réservée au superadmin.</p>
+        <p class="text-muted mb-0">Réglages sensibles de la plateforme. À modifier seulement quand c’est nécessaire.</p>
       </div>
+      <a href="{{ path('admin_help') }}" class="btn btn-outline-secondary btn-sm">Aide admin</a>
+    </div>
+
+    <div class="alert alert-light border mb-4">
+      <strong>Repère rapide :</strong> Stripe sert aux paiements, Facebook aux publications automatiques, Production à la préparation du passage en ligne, et Sauvegarde aux commandes de secours.
+    </div>
+
+    <div class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
+      <a class="nav-link active" href="#settings-stripe">Stripe</a>
+      <a class="nav-link" href="#settings-facebook">Facebook</a>
+      <a class="nav-link" href="#settings-production">Production</a>
+      <a class="nav-link" href="#settings-backup">Sauvegarde</a>
+      <a class="nav-link" href="#settings-checks">Contrôles</a>
     </div>
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
-        <div class="card mb-4">
+        <div class="card mb-4" id="settings-stripe">
           <div class="card-header">
-            <h2 class="h5 mb-1">Stripe</h2>
-            <p class="text-muted mb-0">Clés utilisées pour les paiements et les webhooks. Les secrets complets ne sont jamais affichés.</p>
+            <h2 class="h5 mb-1">Paiements Stripe</h2>
+            <p class="text-muted mb-0">Clés utilisées pour encaisser, autoriser les paiements et recevoir les webhooks. Les secrets complets ne sont jamais affichés.</p>
           </div>
           <div class="card-body">
             <form method="post">
@@ -50,7 +63,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="settings-facebook">
           <div class="card-header">
             <h2 class="h5 mb-1">Publication Facebook</h2>
             <p class="text-muted mb-0">Ces informations servent à publier automatiquement les affiches de trajets sur la Page HaloGari.</p>
@@ -111,9 +124,10 @@
       </div>
 
       <div class="col-12 col-xl-4">
-        <div class="card mb-4">
+        <div class="card mb-4" id="settings-production">
           <div class="card-header">
-            <h2 class="h5 mb-0">Production</h2>
+            <h2 class="h5 mb-1">Préparation production</h2>
+            <p class="text-muted mb-0">URL publique, e-mail support et validation manuelle avant mise en ligne.</p>
           </div>
           <div class="card-body">
             <form method="post" class="mb-4">
@@ -148,7 +162,7 @@
           </div>
         </div>
 
-        <div class="card mb-4">
+        <div class="card mb-4" id="settings-checks">
           <div class="card-header">
             <h2 class="h5 mb-0">État production</h2>
           </div>
@@ -170,7 +184,7 @@
           </div>
         </div>
 
-        <div class="card mb-4">
+        <div class="card mb-4" id="settings-backup">
           <div class="card-header">
             <h2 class="h5 mb-0">Sauvegarde</h2>
           </div>

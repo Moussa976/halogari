@@ -4,6 +4,35 @@
 	</a>
 
 	<div class="navbar-collapse collapse">
+		<form class="d-none d-md-flex ms-3 flex-grow-1 admin-global-search" data-admin-global-search>
+			<label class="visually-hidden" for="adminGlobalSearch">Rechercher dans l’admin</label>
+			<div class="input-group input-group-sm" style="max-width: 420px;">
+				<span class="input-group-text"><i data-feather="search"></i></span>
+				<input id="adminGlobalSearch" class="form-control" type="search" placeholder="Rechercher : utilisateur, paiement, document..." autocomplete="off" list="adminGlobalSearchOptions">
+				<button class="btn btn-outline-secondary" type="submit">Ouvrir</button>
+			</div>
+			<datalist id="adminGlobalSearchOptions">
+				<option value="Tableau de bord"></option>
+				<option value="Trajets"></option>
+				<option value="Réservations"></option>
+				<option value="Utilisateurs"></option>
+				<option value="Superadmins"></option>
+				<option value="Admins"></option>
+				<option value="Documents"></option>
+				<option value="Paiements"></option>
+				<option value="Comptes Stripe"></option>
+				<option value="Litiges"></option>
+				<option value="Remboursements"></option>
+				<option value="Notes"></option>
+				<option value="Aide admin"></option>
+				{% if is_granted('ROLE_SUPER_ADMIN') %}
+					<option value="Paramètres"></option>
+					<option value="Facebook"></option>
+					<option value="Production"></option>
+					<option value="Historique"></option>
+				{% endif %}
+			</datalist>
+		</form>
 		<ul class="navbar-nav navbar-align">
 			{{ render(controller('App\\Controller\\Admin\\AdminNavbarController::summary')) }}
 
