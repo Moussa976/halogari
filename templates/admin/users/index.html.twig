@@ -26,6 +26,24 @@
       </a>
     </div>
 
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <a href="{{ path('admin_users', {status: status}) }}" class="btn btn-sm {{ role == 'all' ? 'btn-dark' : 'btn-outline-dark' }}">
+        Tous les rôles
+      </a>
+      <a href="{{ path('admin_users', {status: status, role: 'superadmin'}) }}" class="btn btn-sm {{ role == 'superadmin' ? 'btn-danger' : 'btn-outline-danger' }}">
+        Superadmins
+        <span class="badge bg-light text-dark ms-1">{{ superAdminUsersCount }}</span>
+      </a>
+      <a href="{{ path('admin_users', {status: status, role: 'admin'}) }}" class="btn btn-sm {{ role == 'admin' ? 'btn-warning' : 'btn-outline-warning' }}">
+        Admins
+        <span class="badge bg-light text-dark ms-1">{{ adminUsersCount }}</span>
+      </a>
+      <a href="{{ path('admin_users', {status: status, role: 'user'}) }}" class="btn btn-sm {{ role == 'user' ? 'btn-success' : 'btn-outline-success' }}">
+        Utilisateurs
+        <span class="badge bg-light text-dark ms-1">{{ regularUsersCount }}</span>
+      </a>
+    </div>
+
     <div class="card">
       <div class="card-body table-responsive">
         <table class="table table-hover align-middle js-admin-table">
@@ -81,9 +99,13 @@
                   {% endif %}
                 </td>
                 <td>
-                  {% for role in user.roles %}
-                    <span class="badge bg-light text-dark border">{{ role }}</span>
-                  {% endfor %}
+                  {% if 'ROLE_SUPER_ADMIN' in user.roles %}
+                    <span class="badge bg-danger">Superadmin</span>
+                  {% elseif 'ROLE_ADMIN' in user.roles %}
+                    <span class="badge bg-warning text-dark">Admin</span>
+                  {% else %}
+                    <span class="badge bg-success">Utilisateur</span>
+                  {% endif %}
                 </td>
                 <td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '-' }}</td>
                 <td>

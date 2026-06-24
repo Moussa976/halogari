@@ -31,7 +31,11 @@ class AdminUserController extends AbstractController
     {
         $users = $userRepository->findAll();
         $status = (string) $request->query->get('status', 'all');
+        $role = (string) $request->query->get('role', 'all');
         $disabledUsers = array_values(array_filter($users, static fn(User $user): bool => $user->isDisabled()));
+        $superAdminUsers = array_values(array_filter($users, static fn(User $user): bool => in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
+        $adminUsers = array_values(array_filter($users, static fn(User $user): bool => in_array('ROLE_ADMIN', $user->getRoles(), true) && !in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
+        $regularUsers = array_values(array_filter($users, static fn(User $user): bool => !in_array('ROLE_ADMIN', $user->getRoles(), true) && !in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
 
         if ($status === 'disabled') {
             $users = $disabledUsers;
@@ -39,11 +43,23 @@ class AdminUserController extends AbstractController
             $users = array_values(array_filter($users, static fn(User $user): bool => !$user->isDisabled()));
         }
 
+        if ($role === 'superadmin') {
+            $users = array_values(array_filter($users, static fn(User $user): bool => in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
+        } elseif ($role === 'admin') {
+            $users = array_values(array_filter($users, static fn(User $user): bool => in_array('ROLE_ADMIN', $user->getRoles(), true) && !in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
+        } elseif ($role === 'user') {
+            $users = array_values(array_filter($users, static fn(User $user): bool => !in_array('ROLE_ADMIN', $user->getRoles(), true) && !in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)));
+        }
+
         return $this->render('admin/users/index.html.twig', [
             'users' => $users,
             'status' => $status,
+            'role' => $role,
             'totalUsers' => count($userRepository->findAll()),
             'disabledUsersCount' => count($disabledUsers),
+            'superAdminUsersCount' => count($superAdminUsers),
+            'adminUsersCount' => count($adminUsers),
+            'regularUsersCount' => count($regularUsers),
         ]);
     }
 

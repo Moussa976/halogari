@@ -25,6 +25,9 @@
               <th>Trajet</th>
               <th>Commentaire</th>
               <th>Date</th>
+              {% if is_granted('ROLE_SUPER_ADMIN') %}
+                <th>Action</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody>
@@ -67,10 +70,20 @@
                 </td>
                 <td class="text-truncate" style="max-width: 340px;">{{ note.commentaire ?: '-' }}</td>
                 <td>{{ note.createdAt|date('d/m/Y H:i') }}</td>
+                {% if is_granted('ROLE_SUPER_ADMIN') %}
+                  <td>
+                    <form method="post" action="{{ path('admin_note_delete', { id: note.id }) }}" onsubmit="return confirm('Supprimer définitivement cette note ? Cette action est réservée au superadmin.');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('admin_note_delete_' ~ note.id) }}">
+                      <button class="btn btn-sm btn-outline-danger">
+                        Supprimer
+                      </button>
+                    </form>
+                  </td>
+                {% endif %}
               </tr>
             {% else %}
               <tr>
-                <td colspan="7" class="text-center text-muted">Aucune note.</td>
+                <td colspan="{{ is_granted('ROLE_SUPER_ADMIN') ? 8 : 7 }}" class="text-center text-muted">Aucune note.</td>
               </tr>
             {% endfor %}
           </tbody>
