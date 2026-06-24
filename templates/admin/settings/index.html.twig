@@ -11,8 +11,45 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
       <div class="col-12 col-xl-8">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-1">Stripe</h2>
+            <p class="text-muted mb-0">Clés utilisées pour les paiements et les webhooks. Les secrets complets ne sont jamais affichés.</p>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              <input type="hidden" name="settings_section" value="stripe">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_stripe') }}">
+
+              <div class="alert alert-{{ stripeMode == 'Mode live' ? 'success' : 'warning' }} mb-3">
+                Mode détecté : <strong>{{ stripeMode }}</strong>
+              </div>
+
+              <div class="mb-3">
+                <label for="stripe_public_key" class="form-label">Clé publique Stripe</label>
+                <input type="password" id="stripe_public_key" name="stripe_public_key" class="form-control" placeholder="{{ hasStripePublicKey ? 'Laisser vide pour conserver la clé actuelle' : 'pk_test_ ou pk_live_' }}" autocomplete="off">
+                <div class="form-text">Clé actuelle : <strong>{{ stripePublicKeyMasked }}</strong></div>
+              </div>
+
+              <div class="mb-3">
+                <label for="stripe_secret_key" class="form-label">Clé secrète Stripe</label>
+                <input type="password" id="stripe_secret_key" name="stripe_secret_key" class="form-control" placeholder="{{ hasStripeSecretKey ? 'Laisser vide pour conserver la clé actuelle' : 'sk_test_ ou sk_live_' }}" autocomplete="off">
+                <div class="form-text">Clé actuelle : <strong>{{ stripeSecretKeyMasked }}</strong></div>
+              </div>
+
+              <div class="mb-4">
+                <label for="stripe_webhook_secret" class="form-label">Secret webhook Stripe</label>
+                <input type="password" id="stripe_webhook_secret" name="stripe_webhook_secret" class="form-control" placeholder="{{ hasStripeWebhookSecret ? 'Laisser vide pour conserver le secret actuel' : 'whsec_...' }}" autocomplete="off">
+                <div class="form-text">Secret actuel : <strong>{{ stripeWebhookSecretMasked }}</strong></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enregistrer Stripe</button>
+            </form>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <h2 class="h5 mb-1">Publication Facebook</h2>
@@ -20,6 +57,7 @@
           </div>
           <div class="card-body">
             <form method="post">
+              <input type="hidden" name="settings_section" value="facebook">
               <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_facebook') }}">
 
               <div class="mb-3">
@@ -73,6 +111,78 @@
       </div>
 
       <div class="col-12 col-xl-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Production</h2>
+          </div>
+          <div class="card-body">
+            <form method="post" class="mb-4">
+              <input type="hidden" name="settings_section" value="production">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_production') }}">
+
+              <div class="mb-3">
+                <label for="production_public_url" class="form-label">URL publique</label>
+                <input type="url" id="production_public_url" name="production_public_url" class="form-control" value="{{ productionPublicUrl }}">
+              </div>
+
+              <div class="mb-3">
+                <label for="production_support_email" class="form-label">E-mail support</label>
+                <input type="email" id="production_support_email" name="production_support_email" class="form-control" value="{{ productionSupportEmail }}">
+              </div>
+
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="mark_database_backup" name="mark_database_backup" value="1">
+                <label class="form-check-label" for="mark_database_backup">J’ai fait une sauvegarde BDD et fichiers</label>
+              </div>
+
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="confirm_prelaunch" name="confirm_prelaunch" value="1">
+                <label class="form-check-label" for="confirm_prelaunch">Checklist production relue</label>
+              </div>
+
+              <button type="submit" class="btn btn-outline-primary w-100">Enregistrer production</button>
+            </form>
+
+            <p class="small text-muted mb-1">Dernière sauvegarde déclarée : <strong>{{ databaseBackupLastAt ?: 'Jamais' }}</strong></p>
+            <p class="small text-muted mb-0">Dernière validation : <strong>{{ prelaunchConfirmedAt ?: 'Jamais' }}</strong></p>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">État production</h2>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              {% for check in productionChecks %}
+                <div class="list-group-item px-0">
+                  <div class="d-flex justify-content-between gap-2">
+                    <strong>{{ check.label }}</strong>
+                    <span class="badge {{ check.ok ? 'bg-success' : 'bg-warning text-dark' }}">{{ check.ok ? 'OK' : 'À vérifier' }}</span>
+                  </div>
+                  <div class="small text-muted">{{ check.value }}</div>
+                  {% if not check.ok %}
+                    <div class="small text-danger">{{ check.help }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Sauvegarde</h2>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Commandes repères à adapter sur le serveur avant production.</p>
+            {% for label, command in backupCommands %}
+              <label class="form-label small text-muted">{{ label }}</label>
+              <pre class="bg-light border rounded p-2 small"><code>{{ command }}</code></pre>
+            {% endfor %}
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <h2 class="h5 mb-0">À garder en tête</h2>

@@ -6,6 +6,7 @@ use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use App\Service\PaiementEventLogger;
+use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
@@ -20,11 +21,11 @@ class WebhookController extends AbstractController
     private LoggerInterface $logger;
     private string $webhookSecret;
 
-    public function __construct(NotificationService $notifier, LoggerInterface $logger, string $stripeWebhookSecret)
+    public function __construct(NotificationService $notifier, LoggerInterface $logger, StripeConfigService $stripeConfig)
     {
         $this->notifier = $notifier;
         $this->logger = $logger;
-        $this->webhookSecret = $stripeWebhookSecret;
+        $this->webhookSecret = $stripeConfig->webhookSecret();
     }
 
     /**

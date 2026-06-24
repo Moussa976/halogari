@@ -38,6 +38,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/affiche/test, roles: ROLE_ADMIN }
+        - { path: ^/test-carte, roles: ROLE_ADMIN }
         - { path: ^/push/test, roles: ROLE_ADMIN }
         - { path: ^/user, roles: ROLE_USER }
 

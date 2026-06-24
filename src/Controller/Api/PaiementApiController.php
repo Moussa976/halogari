@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use App\Service\ApiTokenService;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +31,8 @@ class PaiementApiController extends AbstractController
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
         PaiementService $paiementService,
-        NotificationService $notificationService
+        NotificationService $notificationService,
+        StripeConfigService $stripeConfig
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -81,7 +83,7 @@ class PaiementApiController extends AbstractController
         return $this->json([
             'message' => 'Enregistrement du paiement initialise.',
             'clientSecret' => $clientSecret,
-            'stripePublicKey' => (string) ($_ENV['STRIPE_PUBLIC_KEY'] ?? ''),
+            'stripePublicKey' => $stripeConfig->publicKey(),
             'amount' => (float) $reservation->getPrixTotal(),
             'paymentUrl' => $this->generateUrl('paiement_form', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
         ]);

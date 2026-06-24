@@ -10,11 +10,13 @@ use Stripe\Stripe;
 class StripeConnectService
 {
     private EntityManagerInterface $em;
+    private StripeConfigService $stripeConfig;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, StripeConfigService $stripeConfig)
     {
         $this->em = $em;
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        $this->stripeConfig = $stripeConfig;
+        Stripe::setApiKey($stripeConfig->secretKey());
     }
 
     /**
@@ -202,7 +204,7 @@ class StripeConnectService
             throw new \RuntimeException("Ce compte n'a pas encore de compte Stripe.");
         }
 
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+        Stripe::setApiKey($this->stripeConfig->secretKey());
 
         // 1. Upload du fichier d'identité
         $fichier = \Stripe\File::create([

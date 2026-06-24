@@ -26,12 +26,12 @@ class PaiementService
     private EntityManagerInterface $em;
     private PaiementEventLogger $eventLogger;
 
-    public function __construct(EntityManagerInterface $em, PaiementEventLogger $eventLogger)
+    public function __construct(EntityManagerInterface $em, PaiementEventLogger $eventLogger, StripeConfigService $stripeConfig)
     {
         $this->em = $em;
         $this->eventLogger = $eventLogger;
 
-        $secretKey = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+        $secretKey = $stripeConfig->secretKey();
         if (!$secretKey) {
             throw new \RuntimeException('STRIPE_SECRET_KEY est manquante.');
         }

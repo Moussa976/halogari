@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,6 +24,7 @@ class PaiementController extends AbstractController
         int $id,
         ReservationRepository $repo,
         PaiementService $paiementService,
+        StripeConfigService $stripeConfig,
         EntityManagerInterface $em,
         NotificationService $notificationService
     ): Response {
@@ -56,7 +58,7 @@ class PaiementController extends AbstractController
             return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
         }
 
-        $stripePublicKey = $_ENV['STRIPE_PUBLIC_KEY'] ?? '';
+        $stripePublicKey = $stripeConfig->publicKey();
         if ($stripePublicKey === '') {
             $this->addFlash('error', 'La configuration Stripe est incomplète. Le paiement est temporairement indisponible.');
             return $this->redirectToRoute('app_user_reservation', ['id' => $reservation->getId()]);
