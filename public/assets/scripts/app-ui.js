@@ -224,6 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.HaloGariSetButtonLoading = setButtonLoading;
     window.HaloGariResetButtonLoading = resetButtonLoading;
 
+    const resetPageLoadingStates = () => {
+        document.querySelectorAll('[data-loading-button].is-loading').forEach(resetButtonLoading);
+    };
+
+    window.HaloGariResetPageLoadingStates = resetPageLoadingStates;
+    window.addEventListener('pageshow', resetPageLoadingStates);
+
     document.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', (event) => {
             if (
