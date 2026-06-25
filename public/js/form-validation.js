@@ -41,6 +41,16 @@
     alert(options.text || options.title || "Veuillez vérifier le formulaire.");
   }
 
+  function resetLoadingButtons(form) {
+    if (typeof window.HaloGariResetButtonLoading !== "function") {
+      return;
+    }
+
+    form.querySelectorAll("[data-loading-button].is-loading").forEach((button) => {
+      window.HaloGariResetButtonLoading(button);
+    });
+  }
+
   function firstValue(form, selectors) {
     const field = form.querySelector(selectors);
     return String(field?.value || "").trim();
@@ -71,6 +81,7 @@
 
     if (depart && arrivee && depart === arrivee) {
       event.preventDefault();
+      resetLoadingButtons(form);
       showAlert({
         icon: "warning",
         title: "Villages identiques",
@@ -83,6 +94,7 @@
     const dateTrajet = String(dateField?.value || "").trim();
     if (dateField && !dateTrajet) {
       event.preventDefault();
+      resetLoadingButtons(form);
       showAlert({
         icon: "warning",
         title: "Date manquante",
@@ -93,6 +105,7 @@
 
     if (hasError) {
       event.preventDefault();
+      resetLoadingButtons(form);
       showAlert({
         icon: "error",
         title: "Village à vérifier",

@@ -178,11 +178,61 @@ document.addEventListener('DOMContentLoaded', () => {
         button.innerHTML = `<span class="hg-btn-spinner" aria-hidden="true"></span><span>${label}</span>`;
     };
 
+    const resetButtonLoading = (button) => {
+        if (!button || !button.classList.contains('is-loading')) {
+            return;
+        }
+
+        button.classList.remove('is-loading');
+        button.removeAttribute('aria-busy');
+
+        if (button.dataset.loadingHtml) {
+            button.innerHTML = button.dataset.loadingHtml;
+            delete button.dataset.loadingHtml;
+        }
+
+        if (button.tagName === 'BUTTON') {
+            button.disabled = false;
+        } else {
+            button.removeAttribute('aria-disabled');
+        }
+    };
+
+    const hasInvalidVillage = (form) => {
+        const villages = [...form.querySelectorAll('.villages')];
+        if (!villages.length || !window.HaloGariVillages || typeof window.HaloGariVillages.isValid !== 'function') {
+            return false;
+        }
+
+        const loadedValues = typeof window.HaloGariVillages.values === 'function' ? window.HaloGariVillages.values() : [];
+        if (!loadedValues.length) {
+            return false;
+        }
+
+        return villages.some((field) => !window.HaloGariVillages.isValid(field.value));
+    };
+
+    const hasSameVillageRoute = (form) => {
+        const departure = form.querySelector("[name='select_departure'], [name='departure']");
+        const arrival = form.querySelector("[name='select_arrival'], [name='arrival']");
+        const departureValue = String(departure?.value || '').trim();
+        const arrivalValue = String(arrival?.value || '').trim();
+
+        return departureValue !== '' && arrivalValue !== '' && departureValue === arrivalValue;
+    };
+
     window.HaloGariSetButtonLoading = setButtonLoading;
+    window.HaloGariResetButtonLoading = resetButtonLoading;
 
     document.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', (event) => {
-            if (event.defaultPrevented || form.matches('[data-loading-defer]') || !form.checkValidity()) {
+            if (
+                event.defaultPrevented ||
+                form.matches('[data-loading-defer]') ||
+                !form.checkValidity() ||
+                hasInvalidVillage(form) ||
+                hasSameVillageRoute(form)
+            ) {
                 return;
             }
 
