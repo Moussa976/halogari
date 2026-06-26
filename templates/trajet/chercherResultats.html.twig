@@ -65,30 +65,30 @@
 
   <section class="app-results-main">
     {% if not hasDirectReservable %}
-      <article class="app-panel mb-4">
-        <div class="app-panel__header">
-          <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
+      <article class="app-panel app-alert-strip mb-4">
+        <div class="app-panel__header app-alert-strip__content">
+          <span class="app-panel__icon app-alert-strip__icon"><i class="bi bi-bell-fill"></i></span>
           <div>
             <h2>Être alerté</h2>
-            <p>Aucun trajet direct réservable pour cette recherche. Recevez un e-mail dès qu’un conducteur publie un trajet avec assez de places.</p>
+            <p>Aucun trajet direct réservable. Recevez un e-mail dès qu’un trajet avec assez de places est publié.</p>
           </div>
         </div>
         {% if app.user %}
-          <form method="post" action="{{ path('app_trajet_alert_create') }}" class="d-flex flex-column flex-sm-row gap-2">
+          <form method="post" action="{{ path('app_trajet_alert_create') }}" class="app-alert-strip__action">
             <input type="hidden" name="_token" value="{{ csrf_token('trajet_alert_create') }}">
             <input type="hidden" name="depart" value="{{ depart }}">
             <input type="hidden" name="arrivee" value="{{ arrivee }}">
             <input type="hidden" name="date" value="{{ dateTrajet }}">
             <input type="hidden" name="places" value="{{ places }}">
-            <button type="submit" class="btn btn-orange" data-loading-button data-loading-label="Création">
+            <button type="submit" class="btn btn-orange btn-sm" data-loading-button data-loading-label="Création">
               <i class="bi bi-bell-fill"></i>
-              Me prévenir par e-mail
+              Me prévenir
             </button>
           </form>
         {% else %}
-          <a href="{{ path('app_login') }}" class="btn btn-orange">
+          <a href="{{ path('app_login') }}" class="btn btn-orange btn-sm app-alert-strip__action">
             <i class="bi bi-box-arrow-in-right"></i>
-            Se connecter pour créer une alerte
+            Se connecter
           </a>
         {% endif %}
       </article>
