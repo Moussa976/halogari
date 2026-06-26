@@ -105,9 +105,10 @@ class TrajetAlertRepository extends ServiceEntityRepository
             'ü' => 'u',
             'ý' => 'y',
             'ÿ' => 'y',
-            '’' => "'",
-            '`' => "'",
-            '´' => "'",
+            "'" => '',
+            '’' => '',
+            '`' => '',
+            '´' => '',
         ]);
         $name = preg_replace('/[^a-z0-9]+/', ' ', $name) ?? $name;
 

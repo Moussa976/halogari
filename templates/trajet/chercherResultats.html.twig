@@ -59,7 +59,10 @@
         </select>
         <label for="floatingSelectGridD">Passagers</label>
       </div>
-      <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">Relancer</button>
+      <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">
+        <i class="bi bi-search"></i>
+        Relancer
+      </button>
     </form>
   </aside>
 
@@ -69,11 +72,23 @@
         <div class="app-panel__header app-alert-strip__content">
           <span class="app-panel__icon app-alert-strip__icon"><i class="bi bi-bell-fill"></i></span>
           <div>
-            <h2>Être alerté</h2>
-            <p>Aucun trajet direct réservable. Recevez un e-mail dès qu’un trajet avec assez de places est publié.</p>
+            <h2>{{ activeAlert is defined and activeAlert ? 'Alerte activée' : 'Être alerté' }}</h2>
+            <p>{{ activeAlert is defined and activeAlert ? 'On vous prévient par e-mail dès qu’un trajet correspond.' : 'Aucun trajet direct réservable. Recevez un e-mail dès qu’un trajet avec assez de places est publié.' }}</p>
           </div>
         </div>
-        {% if app.user %}
+        {% if app.user and activeAlert is defined and activeAlert %}
+          <form method="post" action="{{ path('app_trajet_alert_cancel', { id: activeAlert.id }) }}" class="app-alert-strip__action">
+            <input type="hidden" name="_token" value="{{ csrf_token('trajet_alert_cancel_' ~ activeAlert.id) }}">
+            <input type="hidden" name="depart" value="{{ depart }}">
+            <input type="hidden" name="arrivee" value="{{ arrivee }}">
+            <input type="hidden" name="date" value="{{ dateTrajet }}">
+            <input type="hidden" name="places" value="{{ places }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" data-loading-button data-loading-label="Annulation">
+              <i class="bi bi-bell-slash"></i>
+              Ne plus être alerté
+            </button>
+          </form>
+        {% elseif app.user %}
           <form method="post" action="{{ path('app_trajet_alert_create') }}" class="app-alert-strip__action">
             <input type="hidden" name="_token" value="{{ csrf_token('trajet_alert_create') }}">
             <input type="hidden" name="depart" value="{{ depart }}">
@@ -155,7 +170,10 @@
             <label for="floatingSelectGrid">Places</label>
           </div>
         </div>
-        <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">Rechercher</button>
+        <button type="submit" class="btn btn-orange btn-lg w-100" data-loading-button data-loading-label="Recherche">
+          <i class="bi bi-search"></i>
+          Rechercher
+        </button>
     </form>
   </div>
 </div>

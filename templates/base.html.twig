@@ -69,8 +69,11 @@
   {% for type, messages in app.flashes %}
     {% for message in messages %}
       <script>
+      (() => {
         const type = "{{ type }}";
+        const message = "{{ message|e('js') }}";
         const icons = ['success', 'error', 'warning', 'info', 'question'];
+        const timer = message.startsWith('Alerte créée.') ? 5000 : (['error', 'warning'].includes(type) ? 10000 : 3000);
 
         Swal.fire({
           icon: icons.includes(type) ? type : 'info',
@@ -81,10 +84,11 @@
             info: "Information",
             question: "Question"
           }[type] || "Message",
-          text: "{{ message|e('js') }}",
-          timer: ['error', 'warning'].includes(type) ? 10000 : 3000,
+          text: message,
+          timer,
           showConfirmButton: false
         });
+      })();
       </script>
     {% endfor %}
   {% endfor %}

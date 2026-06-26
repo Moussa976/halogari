@@ -74,7 +74,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats", methods={"GET"})
      */
-    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository, VillageCatalog $villageCatalog): Response
+    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository, VillageCatalog $villageCatalog, TrajetAlertRepository $alertRepository): Response
     {
         Carbon::setLocale('fr');
         if (!\DateTimeImmutable::createFromFormat('Y-m-d', $date)) {
@@ -99,6 +99,9 @@ class TrajetController extends AbstractController
         $dateFr = Carbon::createFromFormat('Y-m-d', $date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
         $dateObj = new \DateTimeImmutable($date);
+        $activeAlert = $this->getUser()
+            ? $alertRepository->findActiveDuplicate($this->getUser(), $depart, $arrivee, $dateObj, $placesDemandees)
+            : null;
 
         $startOfDay = $dateObj->setTime(0, 0, 0);
         $endOfDay = $dateObj->setTime(23, 59, 59);
@@ -143,6 +146,7 @@ class TrajetController extends AbstractController
             'trajets' => $trajets,
             'autresTrajets' => $autresTrajets,
             'villages' => $villes,
+            'activeAlert' => $activeAlert,
         ]);
     }
 
@@ -202,6 +206,40 @@ class TrajetController extends AbstractController
             'date' => $date,
             'heure' => 'any',
             'places' => $places,
+        ]);
+    }
+
+    /**
+     * @Route("/chercher/alerte/{id}/annuler", name="app_trajet_alert_cancel", methods={"POST"})
+     */
+    public function cancelAlert(int $id, Request $request, EntityManagerInterface $em, TrajetAlertRepository $alertRepository): Response
+    {
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            $this->addFlash('error', 'Connectez-vous pour gérer vos alertes.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $alert = $alertRepository->find($id);
+        if (!$alert || $alert->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Vous n'avez pas accès à cette alerte.");
+        }
+
+        if (!$this->isCsrfTokenValid('trajet_alert_cancel_' . $alert->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
+            return $this->redirectToRoute('app_chercher');
+        }
+
+        $alert->setActive(false);
+        $em->flush();
+
+        $this->addFlash('success', 'Alerte désactivée.');
+
+        return $this->redirectToRoute('app_chercherResultats', [
+            'depart' => (string) $request->request->get('depart', $alert->getDepart()),
+            'arrivee' => (string) $request->request->get('arrivee', $alert->getArrivee()),
+            'date' => (string) $request->request->get('date', $alert->getDateTrajet()?->format('Y-m-d')),
+            'heure' => 'any',
+            'places' => (string) $request->request->get('places', $alert->getPlaces()),
         ]);
     }
 
