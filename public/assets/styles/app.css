@@ -1001,6 +1001,16 @@ textarea.form-control.app-message-textarea {
     margin-bottom: .9rem;
 }
 
+.app-panel__header > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.app-panel__header > .btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
 .app-panel__header h2,
 .app-panel h2 {
     margin: 0;
@@ -1013,18 +1023,36 @@ textarea.form-control.app-message-textarea {
 .app-panel p {
     margin: .2rem 0 0;
     color: var(--hg-muted);
+    font-size: .9rem;
+    line-height: 1.35;
 }
 
 .app-panel__icon {
     display: inline-flex;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
     align-items: center;
     justify-content: center;
     border-radius: 8px;
     color: #fff;
     background: linear-gradient(135deg, var(--hg-green), #4aa763);
-    box-shadow: 0 12px 26px rgba(36, 92, 54, .22);
+    font-size: 1rem;
+    box-shadow: 0 8px 18px rgba(36, 92, 54, .18);
+}
+
+.app-panel > .app-panel__icon:first-child {
+    float: left;
+    margin: 0 .85rem .35rem 0;
+}
+
+.app-panel > .app-panel__icon:first-child + h2 {
+    padding-top: .15rem;
+    margin-bottom: .9rem;
+}
+
+.app-panel > .app-panel__icon:first-child + h2 + * {
+    clear: both;
 }
 
 .settings-page .app-panel__header {
@@ -1033,13 +1061,8 @@ textarea.form-control.app-message-textarea {
     gap: .85rem;
 }
 
-.settings-page .app-panel__header > div {
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
 .settings-page .app-panel__header p {
-    font-size: .9rem;
+    font-size: .86rem;
     line-height: 1.35;
 }
 
