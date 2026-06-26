@@ -1028,7 +1028,7 @@ textarea.form-control.app-message-textarea {
 }
 
 .settings-page .app-panel__header {
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: .85rem;
 }
@@ -1043,7 +1043,6 @@ textarea.form-control.app-message-textarea {
 }
 
 .settings-page .app-panel__icon {
-    order: 2;
     width: 36px;
     height: 36px;
     flex: 0 0 36px;
@@ -1051,6 +1050,23 @@ textarea.form-control.app-message-textarea {
     border-radius: 8px;
     font-size: .95rem;
     box-shadow: 0 8px 18px rgba(36, 92, 54, .18);
+}
+
+.settings-page .app-panel__header > .btn {
+    flex: 0 0 auto;
+}
+
+.settings-page .app-tips-panel .app-panel__header {
+    margin-bottom: 1rem;
+}
+
+.settings-page .app-tips-panel > h2 {
+    font-size: 1.15rem;
+}
+
+.settings-page .app-tips-panel > p {
+    font-size: .88rem;
+    line-height: 1.35;
 }
 
 .hg-list-card {

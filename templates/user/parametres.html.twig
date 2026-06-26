@@ -19,6 +19,7 @@
           <h2>Photo de profil</h2>
           <p>Une photo claire aide les conducteurs et les passagers à se reconnaître plus facilement.</p>
         </div>
+        <span class="app-panel__icon"><i class="bi bi-camera-fill"></i></span>
       </div>
 
       <form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}" class="hg-form-grid">
@@ -67,6 +68,7 @@
           <h2>Informations personnelles</h2>
           <p>Ces informations servent à sécuriser les réservations et à améliorer la confiance entre utilisateurs.</p>
         </div>
+        <span class="app-panel__icon"><i class="bi bi-person-lines-fill"></i></span>
       </div>
 
       <form method="POST" action="{{ path('app_infos_update') }}" class="hg-form-grid">
@@ -219,6 +221,7 @@
           <h2>Documents</h2>
           <p>Ajoutez les documents utiles à la vérification de votre profil et à l'activation des paiements.</p>
         </div>
+        <span class="app-panel__icon"><i class="bi bi-folder2-open"></i></span>
         <a class="btn btn-outline-primary btn-sm" href="{{ path('app_documents') }}">
           <i class="bi bi-folder2-open"></i>
           Voir mes documents
@@ -256,8 +259,12 @@
   </div>
 
   <aside class="app-panel app-tips-panel">
-    <span class="app-panel__icon"><i class="bi bi-person-check-fill"></i></span>
-    <h2>Compte de confiance</h2>
+    <div class="app-panel__header">
+      <div>
+        <h2>Compte de confiance</h2>
+      </div>
+      <span class="app-panel__icon"><i class="bi bi-person-check-fill"></i></span>
+    </div>
     <div class="tip-list">
       <span><i class="bi bi-check-circle-fill"></i> E-mail vérifié</span>
       <span><i class="bi bi-check-circle-fill"></i> Photo lisible</span>
@@ -268,7 +275,7 @@
     <hr>
 
     <h2>Zone sensible</h2>
-    <p>La suppression désactive votre compte pendant 15 jours. Pendant ce délai, vous ne pourrez plus vous connecter et HaloGari pourra intervenir en cas d’erreur ou d’abus.</p>
+    <p>Votre compte sera désactivé pendant 15 jours avant suppression définitive.</p>
     <form method="POST" action="{{ path('app_account_delete') }}">
       <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
       <div class="form-floating mb-3">
@@ -277,7 +284,7 @@
       </div>
       <button type="submit" class="btn btn-outline-danger w-100 delete-confirm" data-message="Désactiver votre compte HaloGari ? La suppression définitive sera programmée dans 15 jours.">
         <i class="bi bi-trash3-fill"></i>
-        Demander la suppression
+        Supprimer
       </button>
     </form>
   </aside>
