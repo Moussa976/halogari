@@ -48,7 +48,7 @@ class TrajetRepository extends ServiceEntityRepository
             FROM reservation r
             JOIN trajet t ON r.trajet_id = t.id
             JOIN `user` u ON t.conducteur_id = u.id
-            WHERE t.date_trajet >= :today
+            WHERE t.date_trajet = :today
               AND (t.annule IS NULL OR t.annule = 0)
               AND u.disabled_at IS NULL
             GROUP BY t.depart, t.arrivee

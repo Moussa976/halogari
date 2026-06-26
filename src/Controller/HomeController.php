@@ -14,8 +14,12 @@ class HomeController extends AbstractController
      */
     public function index(TrajetSearchService $trajetSearch): Response
     {
+        $today = new \DateTimeImmutable('today');
+
         return $this->render('home/index.html.twig', [
             'popularTrajets' => $trajetSearch->popularRoutes(),
+            'todaySearchDate' => $today->format('Y-m-d'),
+            'todayDisplayDate' => $today->format('d/m/Y'),
         ]);
     }
 

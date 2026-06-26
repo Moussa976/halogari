@@ -55,7 +55,7 @@
 
       <div class="quick-search__row">
         <div class="form-floating">
-          <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" value="{{ 'now'|date('d/m/Y') }}" placeholder="jj/mm/aaaa" data-default-today="true" required>
+          <input type="text" id="date_trajet" class="form-control dateDepart" name="date_trajet" value="{{ todayDisplayDate }}" placeholder="jj/mm/aaaa" data-default-today="true" required>
           <label for="date_trajet">Date</label>
         </div>
 
@@ -113,7 +113,7 @@
 
     <div class="route-list">
       {% for trajet in trajetsAffiches|slice(0, 3) %}
-        <a class="route-item" href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart|url_encode ~ '&select_arrival=' ~ trajet.arrivee|url_encode ~ '&date_trajet=' ~ 'now'|date('Y-m-d') }}">
+        <a class="route-item" href="{{ path('app_chercher') ~ '?select_departure=' ~ trajet.depart|url_encode ~ '&select_arrival=' ~ trajet.arrivee|url_encode ~ '&date_trajet=' ~ todaySearchDate ~ '&places_min=1' }}">
           <span class="route-item__icon"><i class="bi bi-signpost-2"></i></span>
           <span>
             <strong>{{ trajet.depart }} vers {{ trajet.arrivee }}</strong>
