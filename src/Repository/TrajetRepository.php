@@ -47,12 +47,18 @@ class TrajetRepository extends ServiceEntityRepository
             SELECT t.depart, t.arrivee, COUNT(r.id) AS total
             FROM reservation r
             JOIN trajet t ON r.trajet_id = t.id
+            JOIN `user` u ON t.conducteur_id = u.id
+            WHERE t.date_trajet >= :today
+              AND (t.annule IS NULL OR t.annule = 0)
+              AND u.disabled_at IS NULL
             GROUP BY t.depart, t.arrivee
             ORDER BY total DESC
             LIMIT 3
         ';
 
-        return $conn->prepare($sql)->executeQuery()->fetchAllAssociative();
+        return $conn->prepare($sql)->executeQuery([
+            'today' => (new \DateTimeImmutable('today'))->format('Y-m-d'),
+        ])->fetchAllAssociative();
     }
 
     /**

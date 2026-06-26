@@ -20,7 +20,11 @@ function checkNotifications() {
       });
     });
 
-  fetch('/user/notifications/list')
+  fetch('/user/notifications/list', {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
     .then(res => res.text())
     .then(html => {
       const container = document.querySelector('#notifDropdownMenu');

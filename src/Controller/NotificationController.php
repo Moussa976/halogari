@@ -7,6 +7,7 @@ use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -73,8 +74,12 @@ class NotificationController extends AbstractController
     /**
      * @Route("/user/notifications/list", name="api_notifications_list", methods={"GET"})
      */
-    public function listPartial(NotificationRepository $repo): Response
+    public function listPartial(Request $request, NotificationRepository $repo): Response
     {
+        if (!$request->isXmlHttpRequest()) {
+            return $this->redirectToRoute('app_notifications');
+        }
+
         $user = $this->getUser();
         if (!$user) {
             throw $this->createAccessDeniedException();
