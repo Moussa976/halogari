@@ -101,7 +101,7 @@
             </button>
           </form>
         {% else %}
-          <a href="{{ path('app_login') }}" class="btn btn-orange btn-sm app-alert-strip__action">
+          <a href="{{ path('app_login', { next: app.request.requestUri }) }}" class="btn btn-orange btn-sm app-alert-strip__action">
             <i class="bi bi-box-arrow-in-right"></i>
             Se connecter
           </a>

@@ -21,7 +21,7 @@
       {{ avatar.formatSimple(app.user, 30) }}
     </button>
   {% else %}
-    <a href="{{ path('app_login') }}" class="{{ app.request.attributes.get('_route') == 'app_login' ? 'active' : '' }}">
+    <a href="{{ path('app_login', { next: app.request.requestUri }) }}" class="{{ app.request.attributes.get('_route') == 'app_login' ? 'active' : '' }}">
       <i class="bi bi-person-fill"></i>
       <span>Connexion</span>
     </a>

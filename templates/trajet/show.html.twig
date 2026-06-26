@@ -247,7 +247,7 @@
 									</a>
 								{% endif %}
 							{% else %}
-								<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+								<a href="{{ path('app_login', { next: app.request.requestUri }) }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 									{% if isPassed %}
 										Trajet terminé
 									{% elseif isFullyBooked %}
@@ -298,7 +298,7 @@
 						</a>
 					{% endif %}
 				{% else %}
-					<a href="{{ path('app_login') }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
+					<a href="{{ path('app_login', { next: app.request.requestUri }) }}" class="btn btn-orange w-100" data-loading-button data-loading-label="Connexion" {% if isPassed or isFullyBooked %} style="opacity:0.6; pointer-events: none;" {% endif %}>
 						{% if isPassed %}
 							Trajet terminé
 						{% elseif isFullyBooked %}
@@ -605,7 +605,7 @@ showCancelButton: true,
 cancelButtonText: 'Annuler'
 }).then(result => {
 if (result.isConfirmed) {
-window.location.href = "{{ path('app_login') }}";
+window.location.href = "{{ path('app_login', { next: app.request.requestUri }) }}";
 }
 });
 });

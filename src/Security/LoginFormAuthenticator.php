@@ -35,8 +35,12 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function authenticate(Request $request): Passport
     {
         $email = $request->request->get('email', '');
+        $targetPath = $this->safeTargetPath((string) $request->request->get('_target_path', ''));
 
         $request->getSession()->set(Security::LAST_USERNAME, $email);
+        if ($targetPath) {
+            $request->getSession()->set('_security.main.target_path', $targetPath);
+        }
 
         return new Passport(
             new UserBadge($email),
@@ -72,5 +76,19 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+
+    private function safeTargetPath(string $target): ?string
+    {
+        $target = trim($target);
+        if ($target === '' || !str_starts_with($target, '/') || str_starts_with($target, '//')) {
+            return null;
+        }
+
+        if (str_starts_with($target, '/connexion') || str_starts_with($target, '/logout')) {
+            return null;
+        }
+
+        return $target;
     }
 }

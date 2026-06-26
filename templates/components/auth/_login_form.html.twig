@@ -42,6 +42,7 @@
 	</div>
 
 	<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+	<input type="hidden" name="_target_path" value="{{ next|default(app.request.requestUri) }}">
 
 	<div class="auth-form__links">
 		<a class="link-secondary text-decoration-none" href="{{ path('app_forgot_password_request') }}">
