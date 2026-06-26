@@ -1029,12 +1029,13 @@ textarea.form-control.app-message-textarea {
 
 .settings-page .app-panel__header {
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: .85rem;
 }
 
 .settings-page .app-panel__header > div {
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 .settings-page .app-panel__header p {
@@ -1043,10 +1044,11 @@ textarea.form-control.app-message-textarea {
 }
 
 .settings-page .app-panel__icon {
+    order: -1;
     width: 36px;
     height: 36px;
     flex: 0 0 36px;
-    margin-left: auto;
+    margin-left: 0;
     border-radius: 8px;
     font-size: .95rem;
     box-shadow: 0 8px 18px rgba(36, 92, 54, .18);
@@ -1054,6 +1056,7 @@ textarea.form-control.app-message-textarea {
 
 .settings-page .app-panel__header > .btn {
     flex: 0 0 auto;
+    margin-left: auto;
 }
 
 .settings-page .app-tips-panel .app-panel__header {
