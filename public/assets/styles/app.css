@@ -1072,6 +1072,17 @@ textarea.form-control.app-message-textarea {
     line-height: 1.35;
 }
 
+.settings-page .hg-form-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    justify-items: end;
+    padding-top: .55rem;
+}
+
+.settings-page .hg-form-actions .btn {
+    min-width: 220px;
+}
+
 .hg-list-card {
     display: block;
     padding: 1rem;
@@ -3583,6 +3594,15 @@ textarea.form-control.app-message-textarea {
 @media screen and (max-width: 575.98px) {
     .app-panel__header {
         align-items: flex-start;
+    }
+
+    .settings-page .hg-form-actions {
+        justify-items: stretch;
+    }
+
+    .settings-page .hg-form-actions .btn {
+        width: 100%;
+        min-width: 0;
     }
 
     .app-alert-strip {
