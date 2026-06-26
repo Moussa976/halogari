@@ -2887,12 +2887,17 @@ textarea.form-control.app-message-textarea {
 
 .app-alert-strip p {
     max-width: 660px;
-    font-size: .94rem;
+    font-size: .86rem;
     line-height: 1.35;
+    color: #6f7c74;
 }
 
 .app-alert-strip__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
     flex: 0 0 auto;
+    margin-left: auto;
 }
 
 .app-alert-strip__action .btn,
@@ -3550,7 +3555,7 @@ textarea.form-control.app-message-textarea {
     }
 
     .app-alert-strip p {
-        font-size: .88rem;
+        font-size: .82rem;
     }
 
     .app-alert-strip__action,
