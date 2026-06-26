@@ -11,6 +11,7 @@ use App\Repository\TrajetAlertRepository;
 use App\Repository\UserRepository;
 use App\Service\NotificationService;
 use App\Service\TrajetAnnulationService;
+use App\Service\VillageCatalog;
 use Carbon\Carbon;
 use App\Entity\Trajet;
 use App\Repository\NotesRepository;
@@ -73,7 +74,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/chercher/{depart}/{arrivee}/{date}/{heure}/{places}", name="app_chercherResultats", methods={"GET"})
      */
-    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository): Response
+    public function chercherResultats(string $depart, string $arrivee, string $date, string $heure, string $places, TrajetRepository $trajetRepository, VillageCatalog $villageCatalog): Response
     {
         Carbon::setLocale('fr');
         if (!\DateTimeImmutable::createFromFormat('Y-m-d', $date)) {
@@ -92,7 +93,9 @@ class TrajetController extends AbstractController
         }
 
         $placesDemandees = (int) $places;
-        $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $placesDemandees);
+        $departAliases = $villageCatalog->aliasesFor($depart);
+        $arriveeAliases = $villageCatalog->aliasesFor($arrivee);
+        $trajets = $trajetRepository->findByRecherche($depart, $arrivee, $date, $placesDemandees, $departAliases, $arriveeAliases);
         $dateFr = Carbon::createFromFormat('Y-m-d', $date);
         $dateTrajet = $dateFr->translatedFormat('l d F Y');
         $dateObj = new \DateTimeImmutable($date);
@@ -104,16 +107,16 @@ class TrajetController extends AbstractController
             ->innerJoin('t.conducteur', 'c')
             ->where('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
-            ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
-            ->andWhere('LOWER(t.depart) != LOWER(:depart)')
+            ->andWhere('LOWER(t.arrivee) IN (:arriveeAliases)')
+            ->andWhere('LOWER(t.depart) NOT IN (:departAliases)')
             ->andWhere('t.annule IS NULL OR t.annule = false')
             ->andWhere('c.disabledAt IS NULL')
             ->addSelect('CASE WHEN t.placesDisponibles >= :places THEN 0 ELSE 1 END AS HIDDEN availabilityRank')
             ->setParameters([
                 'startOfDay' => $startOfDay,
                 'endOfDay' => $endOfDay,
-                'arrivee' => $arrivee,
-                'depart' => $depart,
+                'arriveeAliases' => array_map('mb_strtolower', $arriveeAliases),
+                'departAliases' => array_map('mb_strtolower', $departAliases),
                 'places' => $placesDemandees,
             ])
             ->orderBy('availabilityRank', 'ASC')

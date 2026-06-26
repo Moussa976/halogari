@@ -79,23 +79,25 @@ class TrajetRepository extends ServiceEntityRepository
     /**
      * @return Trajet[]
      */
-    public function findByRecherche(string $depart, string $arrivee, string $date, int $places): array
+    public function findByRecherche(string $depart, string $arrivee, string $date, int $places, array $departAliases = [], array $arriveeAliases = []): array
     {
         $dateObj = new \DateTime($date);
         $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
         $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
+        $departAliases = array_values(array_unique(array_filter($departAliases ?: [$depart])));
+        $arriveeAliases = array_values(array_unique(array_filter($arriveeAliases ?: [$arrivee])));
 
         return $this->createQueryBuilder('t')
             ->innerJoin('t.conducteur', 'c')
-            ->where('LOWER(t.depart) = LOWER(:depart)')
-            ->andWhere('LOWER(t.arrivee) = LOWER(:arrivee)')
+            ->where('LOWER(t.depart) IN (:departAliases)')
+            ->andWhere('LOWER(t.arrivee) IN (:arriveeAliases)')
             ->andWhere('t.dateTrajet >= :startOfDay')
             ->andWhere('t.dateTrajet < :endOfDay')
             ->andWhere('t.annule IS NULL OR t.annule = false')
             ->andWhere('c.disabledAt IS NULL')
             ->addSelect('CASE WHEN t.placesDisponibles >= :places THEN 0 ELSE 1 END AS HIDDEN availabilityRank')
-            ->setParameter('depart', $depart)
-            ->setParameter('arrivee', $arrivee)
+            ->setParameter('departAliases', array_map('mb_strtolower', $departAliases))
+            ->setParameter('arriveeAliases', array_map('mb_strtolower', $arriveeAliases))
             ->setParameter('places', $places)
             ->setParameter('startOfDay', $startOfDay)
             ->setParameter('endOfDay', $endOfDay)
