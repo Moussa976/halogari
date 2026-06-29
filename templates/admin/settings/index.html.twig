@@ -19,6 +19,7 @@
     <div class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
       <a class="nav-link active" href="#settings-stripe">Stripe</a>
       <a class="nav-link" href="#settings-facebook">Facebook</a>
+      <a class="nav-link" href="#settings-sms">SMS</a>
       <a class="nav-link" href="#settings-production">Production</a>
       <a class="nav-link" href="#settings-backup">Sauvegarde</a>
       <a class="nav-link" href="#settings-checks">Contrôles</a>
@@ -63,7 +64,7 @@
           </div>
         </div>
 
-        <div class="card" id="settings-facebook">
+        <div class="card mb-4" id="settings-facebook">
           <div class="card-header">
             <h2 class="h5 mb-1">Publication Facebook</h2>
             <p class="text-muted mb-0">Ces informations servent à publier automatiquement les affiches de trajets sur la Page HaloGari.</p>
@@ -119,6 +120,88 @@
                 <a href="https://www.facebook.com/profile.php?id={{ facebookPageId }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">Ouvrir la Page</a>
               </div>
             </form>
+          </div>
+        </div>
+
+        <div class="card" id="settings-sms">
+          <div class="card-header">
+            <h2 class="h5 mb-1">SMS passagers</h2>
+            <p class="text-muted mb-0">Envoi automatique uniquement quand une réservation est acceptée, refusée ou annulée.</p>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              <input type="hidden" name="settings_section" value="sms">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_sms') }}">
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="sms_enabled" name="sms_enabled" value="1" {% if smsEnabled %}checked{% endif %}>
+                <label class="form-check-label" for="sms_enabled">Activer les SMS automatiques</label>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label for="sms_provider" class="form-label">Fournisseur</label>
+                  <input type="text" id="sms_provider" class="form-control" value="{{ smsProvider|capitalize }}" disabled>
+                  <div class="form-text">Twilio est utilisé pour cette première version.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="sms_from" class="form-label">Numéro expéditeur</label>
+                  <input type="text" id="sms_from" name="sms_from" class="form-control" value="{{ smsFrom }}" placeholder="+1..., +33... ou numéro Twilio">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="sms_twilio_account_sid" class="form-label">Account SID</label>
+                  <input type="password" id="sms_twilio_account_sid" name="sms_twilio_account_sid" class="form-control" placeholder="{{ hasSmsAccountSid ? 'Laisser vide pour conserver le SID actuel' : 'AC...' }}" autocomplete="off">
+                  <div class="form-text">SID actuel : <strong>{{ smsAccountSidMasked }}</strong></div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="sms_twilio_auth_token" class="form-label">Auth token</label>
+                  <input type="password" id="sms_twilio_auth_token" name="sms_twilio_auth_token" class="form-control" placeholder="{{ hasSmsAuthToken ? 'Laisser vide pour conserver le token actuel' : 'Token Twilio' }}" autocomplete="off">
+                  <div class="form-text">Token actuel : <strong>{{ smsAuthTokenMasked }}</strong></div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary mt-4">Enregistrer SMS</button>
+            </form>
+
+            <hr>
+
+            <h3 class="h6 mb-3">Derniers SMS</h3>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Passager</th>
+                    <th>Événement</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for sms in smsLogs %}
+                    <tr>
+                      <td class="small">{{ sms.createdAt|date('d/m/Y H:i') }}</td>
+                      <td>
+                        <div>{{ sms.user ? sms.user.prenom : 'Utilisateur supprimé' }}</div>
+                        <div class="small text-muted">{{ sms.phone }}</div>
+                      </td>
+                      <td class="small">{{ sms.eventType|replace({'reservation_': '', '_': ' '}) }}</td>
+                      <td>
+                        <span class="badge {{ sms.status == 'sent' ? 'bg-success' : (sms.status == 'failed' ? 'bg-danger' : 'bg-secondary') }}">
+                          {{ sms.status == 'sent' ? 'Envoyé' : (sms.status == 'failed' ? 'Échec' : 'Ignoré') }}
+                        </span>
+                        {% if sms.error %}
+                          <div class="small text-muted text-truncate" style="max-width: 220px;">{{ sms.error }}</div>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="text-muted small">Aucun SMS enregistré pour le moment.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

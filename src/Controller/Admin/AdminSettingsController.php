@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\Repository\PlatformSettingRepository;
+use App\Repository\SmsLogRepository;
 use App\Service\AdminAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,6 +24,11 @@ class AdminSettingsController extends AbstractController
     private const STRIPE_PUBLIC_KEY = 'stripe.public_key';
     private const STRIPE_SECRET_KEY = 'stripe.secret_key';
     private const STRIPE_WEBHOOK_SECRET = 'stripe.webhook_secret';
+    private const SMS_ENABLED = 'sms.enabled';
+    private const SMS_PROVIDER = 'sms.provider';
+    private const SMS_FROM = 'sms.from';
+    private const SMS_TWILIO_ACCOUNT_SID = 'sms.twilio_account_sid';
+    private const SMS_TWILIO_AUTH_TOKEN = 'sms.twilio_auth_token';
 
     /**
      * @Route("/admin/parametres", name="admin_settings", methods={"GET", "POST"})
@@ -30,6 +36,7 @@ class AdminSettingsController extends AbstractController
     public function facebook(
         Request $request,
         PlatformSettingRepository $settings,
+        SmsLogRepository $smsLogs,
         EntityManagerInterface $em,
         AdminAuditLogger $auditLogger
     ): Response {
@@ -44,6 +51,10 @@ class AdminSettingsController extends AbstractController
 
             if ($section === 'stripe') {
                 return $this->saveStripeSettings($request, $settings, $em, $auditLogger);
+            }
+
+            if ($section === 'sms') {
+                return $this->saveSmsSettings($request, $settings, $em, $auditLogger);
             }
 
             if (!$this->isCsrfTokenValid('admin_settings_facebook', (string) $request->request->get('_token'))) {
@@ -99,7 +110,58 @@ class AdminSettingsController extends AbstractController
             'hasStripePublicKey' => $stripePublicKey !== '',
             'hasStripeSecretKey' => $stripeSecretKey !== '',
             'hasStripeWebhookSecret' => $stripeWebhookSecret !== '',
+            'smsEnabled' => $settings->getValue(self::SMS_ENABLED, '0') === '1',
+            'smsProvider' => $settings->getValue(self::SMS_PROVIDER, 'twilio'),
+            'smsFrom' => $settings->getValue(self::SMS_FROM, ''),
+            'smsAccountSidMasked' => $this->maskToken((string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '')),
+            'smsAuthTokenMasked' => $this->maskToken((string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '')),
+            'hasSmsAccountSid' => (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== '',
+            'hasSmsAuthToken' => (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== '',
+            'smsLogs' => $smsLogs->findRecent(12),
         ]);
+    }
+
+    private function saveSmsSettings(
+        Request $request,
+        PlatformSettingRepository $settings,
+        EntityManagerInterface $em,
+        AdminAuditLogger $auditLogger
+    ): Response {
+        if (!$this->isCsrfTokenValid('admin_settings_sms', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $enabled = (string) $request->request->get('sms_enabled') === '1';
+        $from = trim((string) $request->request->get('sms_from'));
+        $accountSid = trim((string) $request->request->get('sms_twilio_account_sid'));
+        $authToken = trim((string) $request->request->get('sms_twilio_auth_token'));
+
+        $settings->setValue(self::SMS_ENABLED, $enabled ? '1' : '0');
+        $settings->setValue(self::SMS_PROVIDER, 'twilio');
+        $settings->setValue(self::SMS_FROM, $from);
+
+        if ($accountSid !== '') {
+            $settings->setValue(self::SMS_TWILIO_ACCOUNT_SID, $accountSid);
+        }
+
+        if ($authToken !== '') {
+            $settings->setValue(self::SMS_TWILIO_AUTH_TOKEN, $authToken);
+        }
+
+        $em->flush();
+
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_sms_update', null, [
+            'enabled' => $enabled,
+            'from' => $from,
+            'accountSidUpdated' => $accountSid !== '',
+            'authTokenUpdated' => $authToken !== '',
+        ]);
+
+        $this->addFlash('success', 'Paramètres SMS enregistrés.');
+
+        return $this->redirectToRoute('admin_settings');
     }
 
     private function saveProductionSettings(
@@ -227,6 +289,7 @@ class AdminSettingsController extends AbstractController
         $stripeSecret = $this->stripeSettingOrEnv($settings, self::STRIPE_SECRET_KEY, 'STRIPE_SECRET_KEY');
         $stripeWebhook = $this->stripeSettingOrEnv($settings, self::STRIPE_WEBHOOK_SECRET, 'STRIPE_WEBHOOK_SECRET');
         $facebookToken = (string) $settings->getValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, '');
+        $smsEnabled = $settings->getValue(self::SMS_ENABLED, '0') === '1';
 
         return [
             $this->check('Environnement', $appEnv === 'prod', $appEnv ?: 'Non renseigne', 'APP_ENV doit valoir prod en production.'),
@@ -239,6 +302,7 @@ class AdminSettingsController extends AbstractController
             $this->check('Stripe webhook', $stripeWebhook !== '', $this->maskToken($stripeWebhook), 'Configurer le webhook Stripe de production.'),
             $this->check('Notifications push', $this->env('VAPID_PUBLIC_KEY') !== '' && $this->env('VAPID_PRIVATE_KEY') !== '', $this->env('VAPID_PUBLIC_KEY') !== '' ? 'VAPID configure' : 'VAPID manquant', 'Configurer les cles VAPID.'),
             $this->check('Facebook Page', (string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '', $facebookToken !== '' ? 'Token enregistre' : 'Token manquant', 'Configurer la publication Meta si elle doit etre active.'),
+            $this->check('SMS passagers', !$smsEnabled || ((string) $settings->getValue(self::SMS_FROM, '') !== '' && (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== '' && (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== ''), $smsEnabled ? 'Activés' : 'Désactivés', 'Configurer le numéro expéditeur, le SID et le token SMS.'),
         ];
     }
 

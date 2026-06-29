@@ -56,6 +56,7 @@ class AdminAuditLogger
             'payment_refund' => 'Remboursement paiement',
             'ride_status_update' => 'Mise à jour du suivi trajet',
             'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
+            'platform_settings_sms_update' => 'Mise a jour des parametres SMS',
         ];
 
         return $labels[$action] ?? ucfirst(str_replace('_', ' ', $action));

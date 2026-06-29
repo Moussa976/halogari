@@ -8,6 +8,7 @@ use App\Entity\Trajet;
 use App\Repository\TrajetRepository;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -159,7 +160,8 @@ class ReservationController extends AbstractController
         ReservationRepository $reservationRepository,
         TrajetRepository $trajetRepository,
         EntityManagerInterface $em,
-        NotificationService $notifier
+        NotificationService $notifier,
+        SmsService $smsService
     ): Response {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
@@ -198,6 +200,7 @@ class ReservationController extends AbstractController
         // 📩 Notification au passager
         $this->addFlash('success', 'Demande acceptée. Le passager peut maintenant payer sa place.');
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
+        $smsService->envoyerReservationAcceptee($reservation);
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }
@@ -206,7 +209,7 @@ class ReservationController extends AbstractController
     /**
      * @Route("/reservation/{id}/refuser", name="reservation_refuser", methods={"POST"})
      */
-    public function refuser(int $id, Request $request, ReservationRepository $reservationRepository, TrajetRepository $trajetRepository, EntityManagerInterface $em, NotificationService $notifier): Response
+    public function refuser(int $id, Request $request, ReservationRepository $reservationRepository, TrajetRepository $trajetRepository, EntityManagerInterface $em, NotificationService $notifier, SmsService $smsService): Response
     {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
@@ -234,6 +237,7 @@ class ReservationController extends AbstractController
 
         $this->addFlash('success', 'Demande refusée.');
         $notifier->envoyerConfirmationReservation($reservation, 'refusee');
+        $smsService->envoyerReservationAnnulee($reservation, 'refusee');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }
@@ -246,7 +250,8 @@ class ReservationController extends AbstractController
         Request $request,
         ReservationRepository $reservationRepository,
         PaiementService $paiementService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        SmsService $smsService
     ): Response
     {
         $reservation = $reservationRepository->find($id);
@@ -289,6 +294,7 @@ class ReservationController extends AbstractController
 
         $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
+        $smsService->envoyerReservationAnnulee($reservation, 'annulee_passager');
 
         $this->addFlash('info', 'Votre réservation est annulée.');
         return $this->redirectToRoute('app_mes_reservations');
