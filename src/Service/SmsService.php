@@ -126,7 +126,7 @@ class SmsService
         return isset($data['sid']) ? (string) $data['sid'] : null;
     }
 
-    private function sendWithOvh(string $to, string $message): ?string
+    private function sendWithOvh(string $to, string $message, bool $ignoreCustomSender = false): ?string
     {
         $serviceName = trim((string) $this->settings->getValue(self::OVH_SERVICE_NAME, ''));
         $applicationKey = trim((string) $this->settings->getValue(self::OVH_APPLICATION_KEY, ''));
@@ -134,13 +134,13 @@ class SmsService
         $consumerKey = trim((string) $this->settings->getValue(self::OVH_CONSUMER_KEY, ''));
         $sender = trim((string) $this->settings->getValue(self::FROM, ''));
 
-        if ($serviceName === '' || $applicationKey === '' || $applicationSecret === '' || $consumerKey === '' || $sender === '') {
-            throw new \RuntimeException('Configuration SMS OVH incomplète : service, clés ou expéditeur manquant.');
+        if ($serviceName === '' || $applicationKey === '' || $applicationSecret === '' || $consumerKey === '') {
+            throw new \RuntimeException('Configuration SMS OVH incomplète : service ou clés manquants.');
         }
 
         $path = sprintf('/sms/%s/jobs', rawurlencode($serviceName));
         $url = self::OVH_ENDPOINT . $path;
-        $body = json_encode([
+        $payload = [
             'charset' => 'UTF-8',
             'class' => 'phoneDisplay',
             'coding' => '7bit',
@@ -148,9 +148,14 @@ class SmsService
             'noStopClause' => true,
             'priority' => 'high',
             'receivers' => [$to],
-            'sender' => $sender,
             'validityPeriod' => 2880,
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        ];
+
+        if ($sender !== '' && !$ignoreCustomSender) {
+            $payload['sender'] = $sender;
+        }
+
+        $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!is_string($body)) {
             throw new \RuntimeException('Impossible de préparer le SMS OVH.');
@@ -179,7 +184,12 @@ class SmsService
 
         $data = $response->toArray(false);
         if ($response->getStatusCode() >= 400) {
-            throw new \RuntimeException((string) ($data['message'] ?? 'Erreur lors de l’envoi du SMS OVH.'));
+            $errorMessage = (string) ($data['message'] ?? 'Erreur lors de l’envoi du SMS OVH.');
+            if ($sender !== '' && !$ignoreCustomSender && stripos($errorMessage, 'sender') !== false) {
+                return $this->sendWithOvh($to, $message, true);
+            }
+
+            throw new \RuntimeException($errorMessage);
         }
 
         return isset($data['ids'][0]) ? (string) $data['ids'][0] : null;
