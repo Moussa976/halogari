@@ -24,12 +24,14 @@ class SmsService
     private EntityManagerInterface $em;
     private PlatformSettingRepository $settings;
     private HttpClientInterface $client;
+    private PhoneNumberService $phoneNumberService;
 
-    public function __construct(EntityManagerInterface $em, PlatformSettingRepository $settings, HttpClientInterface $client)
+    public function __construct(EntityManagerInterface $em, PlatformSettingRepository $settings, HttpClientInterface $client, PhoneNumberService $phoneNumberService)
     {
         $this->em = $em;
         $this->settings = $settings;
         $this->client = $client;
+        $this->phoneNumberService = $phoneNumberService;
     }
 
     public function envoyerReservationAcceptee(Reservation $reservation): void
@@ -57,7 +59,7 @@ class SmsService
     private function sendToPassenger(Reservation $reservation, string $eventType, string $message): void
     {
         $passager = $reservation->getPassager();
-        $phone = $this->normalizePhone((string) $passager->getTelephone());
+        $phone = $this->phoneNumberService->normalize((string) $passager->getTelephone());
 
         $provider = (string) $this->settings->getValue(self::PROVIDER, 'ovh');
 
@@ -194,21 +196,4 @@ class SmsService
         }
     }
 
-    private function normalizePhone(string $phone): string
-    {
-        $phone = preg_replace('/[^\d+]/', '', trim($phone));
-        if (!is_string($phone) || $phone === '') {
-            return '';
-        }
-
-        if (strpos($phone, '00') === 0) {
-            $phone = '+' . substr($phone, 2);
-        } elseif ($phone[0] === '0') {
-            $phone = '+262' . substr($phone, 1);
-        } elseif (strpos($phone, '262') === 0) {
-            $phone = '+' . $phone;
-        }
-
-        return preg_match('/^\+[1-9]\d{7,14}$/', $phone) ? $phone : '';
-    }
 }

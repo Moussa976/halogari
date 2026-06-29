@@ -81,6 +81,17 @@
 			</div>
 
 			<div class="form-floating">
+				{{ form_widget(registrationForm.telephoneCountry, {
+					attr: {
+						class: 'form-select ' ~ (registrationForm.telephoneCountry.vars.valid == false ? 'is-invalid' : ''),
+						'aria-describedby': 'telephoneCountryFeedback'
+					}
+				}) }}
+				{{ form_label(registrationForm.telephoneCountry, 'Pays ou territoire', {'label_attr': {'class': 'form-label'}}) }}
+				<div id="telephoneCountryFeedback" class="invalid-feedback">{{ form_errors(registrationForm.telephoneCountry) }}</div>
+			</div>
+
+			<div class="form-floating">
 				{{ form_widget(registrationForm.telephone, {
 					attr: {
 						class: 'form-control ' ~ (registrationForm.telephone.vars.valid == false ? 'is-invalid' : ''),

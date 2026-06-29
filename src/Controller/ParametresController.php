@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Service\AdminNotificationMailer;
 use App\Service\DocumentStorage;
 use App\Service\DocumentVerificationService;
+use App\Service\PhoneNumberService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,13 +26,16 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres", name="app_parametres", methods={"GET"})
      */
-    public function parametres(): Response
+    public function parametres(PhoneNumberService $phoneNumberService): Response
     {
         /** @var User $user */
         $user = $this->getUser();
 
         return $this->render('user/parametres.html.twig', [
             'identityFieldsLocked' => !$user->canEditIdentityFields(),
+            'phoneCountries' => $phoneNumberService->choices(),
+            'selectedPhoneCountry' => $phoneNumberService->countryFromPhone($user->getTelephone()),
+            'postalCountries' => ['Mayotte', 'Réunion', 'France'],
         ]);
     }
 
@@ -100,7 +104,7 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/parametres/infos", name="app_infos_update", methods={"POST"})
      */
-    public function updateInfos(Request $request, EntityManagerInterface $em): Response
+    public function updateInfos(Request $request, EntityManagerInterface $em, PhoneNumberService $phoneNumberService): Response
     {
         $user = $this->getUser();
 
@@ -120,7 +124,17 @@ class ParametresController extends AbstractController
 
             $user->setDateNaissance($dateNaissance);
         }
-        $user->setTelephone($request->request->get('telephone'));
+        $telephone = $phoneNumberService->normalize(
+            (string) $request->request->get('telephone'),
+            (string) $request->request->get('telephoneCountry', PhoneNumberService::COUNTRY_MAYOTTE)
+        );
+
+        if ($telephone === '') {
+            $this->addFlash('error', 'Merci de saisir un numéro de téléphone valide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $user->setTelephone($telephone);
 
         $em->flush();
         $this->addFlash('success', $user->canEditIdentityFields()
@@ -157,6 +171,11 @@ class ParametresController extends AbstractController
 
         if (!preg_match('/^[0-9A-Za-z -]{3,20}$/', $postalCode)) {
             $this->addFlash('error', 'Le code postal semble invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        if (!in_array($country, ['Mayotte', 'Réunion', 'France'], true)) {
+            $this->addFlash('error', 'Merci de choisir Mayotte, Réunion ou France.');
             return $this->redirectToRoute('app_parametres');
         }
 

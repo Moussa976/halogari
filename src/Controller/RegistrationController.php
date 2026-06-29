@@ -6,11 +6,13 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
+use App\Service\PhoneNumberService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,7 +36,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/creer-un-compte", name="app_register", methods={"GET", "POST"})
      */
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, MailerInterface $mailer): Response {
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, MailerInterface $mailer, PhoneNumberService $phoneNumberService): Response {
         // Si l'utilisateur est déjà connecté, le rediriger vers l'accueil
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -45,6 +47,21 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $telephone = $phoneNumberService->normalize(
+                (string) $form->get('telephone')->getData(),
+                (string) $form->get('telephoneCountry')->getData()
+            );
+
+            if ($telephone === '') {
+                $form->get('telephone')->addError(new FormError('Merci de saisir un numéro de téléphone valide.'));
+
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
+
+            $user->setTelephone($telephone);
+
             // Hachage du mot de passe
             $user->setPassword(
                 $userPasswordHasher->hashPassword(

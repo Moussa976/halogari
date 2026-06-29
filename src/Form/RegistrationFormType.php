@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Validator\IsAdult;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -44,6 +45,17 @@ class RegistrationFormType extends AbstractType
                 ]
             ])
 
+            ->add('telephoneCountry', ChoiceType::class, [
+                'mapped' => false,
+                'label' => 'Indicatif',
+                'data' => 'YT',
+                'choices' => [
+                    'Mayotte (+262)' => 'YT',
+                    'Réunion (+262)' => 'RE',
+                    'France (+33)' => 'FR',
+                ],
+                'attr' => ['class' => 'form-select'],
+            ])
             ->add('email', EmailType::class, [
                 'attr' => ['class' => 'form-control', 'placeholder' => 'exemple@halogari.yt'],
                 'constraints' => [
@@ -58,13 +70,13 @@ class RegistrationFormType extends AbstractType
                     ]),
                     new Length([
                         'min' => 8,
-                        'max' => 15,
+                        'max' => 20,
                         'minMessage' => "Le numéro est trop court (minimum 8 chiffres).",
-                        'maxMessage' => "Le numéro est trop long (maximum 15 chiffres)."
+                        'maxMessage' => "Le numéro est trop long."
                     ]),
                     new Regex([
-                        'pattern' => '/^\d+$/',
-                        'message' => 'Le numéro de téléphone ne doit contenir que des chiffres.',
+                        'pattern' => '/^\+?[0-9 .-]+$/',
+                        'message' => 'Le numéro de téléphone contient des caractères invalides.',
                     ]),
                 ],
             ])
