@@ -250,8 +250,7 @@ class ReservationController extends AbstractController
         Request $request,
         ReservationRepository $reservationRepository,
         PaiementService $paiementService,
-        EntityManagerInterface $em,
-        SmsService $smsService
+        EntityManagerInterface $em
     ): Response
     {
         $reservation = $reservationRepository->find($id);
@@ -294,7 +293,6 @@ class ReservationController extends AbstractController
 
         $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
         $em->flush();
-        $smsService->envoyerReservationAnnulee($reservation, 'annulee_passager');
 
         $this->addFlash('info', 'Votre réservation est annulée.');
         return $this->redirectToRoute('app_mes_reservations');

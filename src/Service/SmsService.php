@@ -15,6 +15,11 @@ class SmsService
     private const FROM = 'sms.from';
     private const TWILIO_ACCOUNT_SID = 'sms.twilio_account_sid';
     private const TWILIO_AUTH_TOKEN = 'sms.twilio_auth_token';
+    private const OVH_SERVICE_NAME = 'sms.ovh_service_name';
+    private const OVH_APPLICATION_KEY = 'sms.ovh_application_key';
+    private const OVH_APPLICATION_SECRET = 'sms.ovh_application_secret';
+    private const OVH_CONSUMER_KEY = 'sms.ovh_consumer_key';
+    private const OVH_ENDPOINT = 'https://eu.api.ovh.com/1.0';
 
     private EntityManagerInterface $em;
     private PlatformSettingRepository $settings;
@@ -54,13 +59,15 @@ class SmsService
         $passager = $reservation->getPassager();
         $phone = $this->normalizePhone((string) $passager->getTelephone());
 
+        $provider = (string) $this->settings->getValue(self::PROVIDER, 'ovh');
+
         $log = (new SmsLog())
             ->setReservation($reservation)
             ->setUser($passager)
             ->setPhone($phone ?: (string) $passager->getTelephone())
             ->setEventType($eventType)
             ->setMessage($message)
-            ->setProvider((string) $this->settings->getValue(self::PROVIDER, 'twilio'));
+            ->setProvider($provider);
 
         $this->em->persist($log);
 
@@ -79,7 +86,9 @@ class SmsService
         }
 
         try {
-            $providerMessageId = $this->sendWithTwilio($phone, $message);
+            $providerMessageId = $provider === 'twilio'
+                ? $this->sendWithTwilio($phone, $message)
+                : $this->sendWithOvh($phone, $message);
             $log->markSent($providerMessageId);
         } catch (\Throwable $exception) {
             $log->markFailed($exception->getMessage());
@@ -113,6 +122,76 @@ class SmsService
         }
 
         return isset($data['sid']) ? (string) $data['sid'] : null;
+    }
+
+    private function sendWithOvh(string $to, string $message): ?string
+    {
+        $serviceName = trim((string) $this->settings->getValue(self::OVH_SERVICE_NAME, ''));
+        $applicationKey = trim((string) $this->settings->getValue(self::OVH_APPLICATION_KEY, ''));
+        $applicationSecret = trim((string) $this->settings->getValue(self::OVH_APPLICATION_SECRET, ''));
+        $consumerKey = trim((string) $this->settings->getValue(self::OVH_CONSUMER_KEY, ''));
+        $sender = trim((string) $this->settings->getValue(self::FROM, ''));
+
+        if ($serviceName === '' || $applicationKey === '' || $applicationSecret === '' || $consumerKey === '' || $sender === '') {
+            throw new \RuntimeException('Configuration SMS OVH incomplète : service, clés ou expéditeur manquant.');
+        }
+
+        $path = sprintf('/sms/%s/jobs', rawurlencode($serviceName));
+        $url = self::OVH_ENDPOINT . $path;
+        $body = json_encode([
+            'charset' => 'UTF-8',
+            'class' => 'phoneDisplay',
+            'coding' => '7bit',
+            'message' => $message,
+            'noStopClause' => true,
+            'priority' => 'high',
+            'receivers' => [$to],
+            'sender' => $sender,
+            'validityPeriod' => 2880,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (!is_string($body)) {
+            throw new \RuntimeException('Impossible de préparer le SMS OVH.');
+        }
+
+        $timestamp = $this->ovhTimestamp();
+        $signature = '$1$' . sha1(implode('+', [
+            $applicationSecret,
+            $consumerKey,
+            'POST',
+            $url,
+            $body,
+            (string) $timestamp,
+        ]));
+
+        $response = $this->client->request('POST', $url, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-Ovh-Application' => $applicationKey,
+                'X-Ovh-Consumer' => $consumerKey,
+                'X-Ovh-Signature' => $signature,
+                'X-Ovh-Timestamp' => (string) $timestamp,
+            ],
+            'body' => $body,
+        ]);
+
+        $data = $response->toArray(false);
+        if ($response->getStatusCode() >= 400) {
+            throw new \RuntimeException((string) ($data['message'] ?? 'Erreur lors de l’envoi du SMS OVH.'));
+        }
+
+        return isset($data['ids'][0]) ? (string) $data['ids'][0] : null;
+    }
+
+    private function ovhTimestamp(): int
+    {
+        try {
+            $response = $this->client->request('GET', self::OVH_ENDPOINT . '/auth/time');
+
+            return (int) $response->getContent();
+        } catch (\Throwable $exception) {
+            return time();
+        }
     }
 
     private function normalizePhone(string $phone): string

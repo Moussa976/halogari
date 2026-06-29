@@ -126,7 +126,7 @@
         <div class="card" id="settings-sms">
           <div class="card-header">
             <h2 class="h5 mb-1">SMS passagers</h2>
-            <p class="text-muted mb-0">Envoi automatique uniquement quand une réservation est acceptée, refusée ou annulée.</p>
+            <p class="text-muted mb-0">Envoi automatique au passager quand le conducteur accepte, refuse ou annule un trajet.</p>
           </div>
           <div class="card-body">
             <form method="post">
@@ -141,13 +141,46 @@
               <div class="row g-3">
                 <div class="col-12 col-md-6">
                   <label for="sms_provider" class="form-label">Fournisseur</label>
-                  <input type="text" id="sms_provider" class="form-control" value="{{ smsProvider|capitalize }}" disabled>
-                  <div class="form-text">Twilio est utilisé pour cette première version.</div>
+                  <select id="sms_provider" name="sms_provider" class="form-select">
+                    <option value="ovh" {% if smsProvider == 'ovh' %}selected{% endif %}>OVHcloud SMS</option>
+                    <option value="twilio" {% if smsProvider == 'twilio' %}selected{% endif %}>Twilio</option>
+                  </select>
+                  <div class="form-text">OVH est recommandé puisque vous avez déjà un pack de 100 SMS.</div>
                 </div>
                 <div class="col-12 col-md-6">
                   <label for="sms_from" class="form-label">Numéro expéditeur</label>
-                  <input type="text" id="sms_from" name="sms_from" class="form-control" value="{{ smsFrom }}" placeholder="+1..., +33... ou numéro Twilio">
+                  <input type="text" id="sms_from" name="sms_from" class="form-control" value="{{ smsFrom }}" placeholder="Ex : HaloGari ou numéro expéditeur OVH">
                 </div>
+              </div>
+
+              <div class="border rounded p-3 mt-3">
+                <h3 class="h6 mb-3">OVHcloud SMS</h3>
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label for="sms_ovh_service_name" class="form-label">Service SMS OVH</label>
+                    <input type="text" id="sms_ovh_service_name" name="sms_ovh_service_name" class="form-control" value="{{ smsOvhServiceName }}" placeholder="Ex : sms-xx0000-1">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label for="sms_ovh_application_key" class="form-label">Application key</label>
+                    <input type="password" id="sms_ovh_application_key" name="sms_ovh_application_key" class="form-control" placeholder="{{ hasSmsOvhApplicationKey ? 'Laisser vide pour conserver la clé actuelle' : 'Application key OVH' }}" autocomplete="off">
+                    <div class="form-text">Clé actuelle : <strong>{{ smsOvhApplicationKeyMasked }}</strong></div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label for="sms_ovh_application_secret" class="form-label">Application secret</label>
+                    <input type="password" id="sms_ovh_application_secret" name="sms_ovh_application_secret" class="form-control" placeholder="{{ hasSmsOvhApplicationSecret ? 'Laisser vide pour conserver le secret actuel' : 'Application secret OVH' }}" autocomplete="off">
+                    <div class="form-text">Secret actuel : <strong>{{ smsOvhApplicationSecretMasked }}</strong></div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label for="sms_ovh_consumer_key" class="form-label">Consumer key</label>
+                    <input type="password" id="sms_ovh_consumer_key" name="sms_ovh_consumer_key" class="form-control" placeholder="{{ hasSmsOvhConsumerKey ? 'Laisser vide pour conserver la clé actuelle' : 'Consumer key OVH' }}" autocomplete="off">
+                    <div class="form-text">Clé actuelle : <strong>{{ smsOvhConsumerKeyMasked }}</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="fw-bold">Paramètres Twilio en secours</summary>
+                <div class="row g-3 mt-1">
                 <div class="col-12 col-md-6">
                   <label for="sms_twilio_account_sid" class="form-label">Account SID</label>
                   <input type="password" id="sms_twilio_account_sid" name="sms_twilio_account_sid" class="form-control" placeholder="{{ hasSmsAccountSid ? 'Laisser vide pour conserver le SID actuel' : 'AC...' }}" autocomplete="off">
@@ -159,6 +192,7 @@
                   <div class="form-text">Token actuel : <strong>{{ smsAuthTokenMasked }}</strong></div>
                 </div>
               </div>
+              </details>
 
               <button type="submit" class="btn btn-primary mt-4">Enregistrer SMS</button>
             </form>
