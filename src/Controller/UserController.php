@@ -15,6 +15,7 @@ use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Service\AdminNotificationMailer;
 use App\Service\AfficheService;
+use App\Service\CancellationCommunicationService;
 use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
 use App\Service\DocumentStorage;
@@ -702,7 +703,8 @@ class UserController extends AbstractController
         Request $request,
         ReservationRepository $repo,
         PaiementService $paiement,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        CancellationCommunicationService $cancellationCommunicationService
     ): Response {
         $reservation = $repo->find($id);
 
@@ -750,6 +752,8 @@ class UserController extends AbstractController
         if (!$placesRestored) {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
+
+        $cancellationCommunicationService->notifyPassengerCancellation($reservation);
 
         $em->flush();
 

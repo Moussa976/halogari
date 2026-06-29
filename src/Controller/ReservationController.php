@@ -6,6 +6,7 @@ use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\Trajet;
 use App\Repository\TrajetRepository;
+use App\Service\CancellationCommunicationService;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
 use App\Service\SmsService;
@@ -250,7 +251,8 @@ class ReservationController extends AbstractController
         Request $request,
         ReservationRepository $reservationRepository,
         PaiementService $paiementService,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        CancellationCommunicationService $cancellationCommunicationService
     ): Response
     {
         $reservation = $reservationRepository->find($id);
@@ -292,6 +294,7 @@ class ReservationController extends AbstractController
         }
 
         $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
+        $cancellationCommunicationService->notifyPassengerCancellation($reservation);
         $em->flush();
 
         $this->addFlash('info', 'Votre réservation est annulée.');

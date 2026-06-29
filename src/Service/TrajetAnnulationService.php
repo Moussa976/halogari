@@ -19,6 +19,7 @@ class TrajetAnnulationService
     private PaiementService $paiementService;
     private MailerInterface $mailer;
     private SmsService $smsService;
+    private CancellationCommunicationService $cancellationCommunicationService;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -26,7 +27,8 @@ class TrajetAnnulationService
         ReservationRepository $reservationRepository,
         PaiementService $paiementService,
         MailerInterface $mailer,
-        SmsService $smsService
+        SmsService $smsService,
+        CancellationCommunicationService $cancellationCommunicationService
     ) {
         $this->em = $em;
         $this->notifier = $notifier;
@@ -34,6 +36,7 @@ class TrajetAnnulationService
         $this->paiementService = $paiementService;
         $this->mailer = $mailer;
         $this->smsService = $smsService;
+        $this->cancellationCommunicationService = $cancellationCommunicationService;
     }
 
     /**
@@ -54,6 +57,7 @@ class TrajetAnnulationService
 
                 // 🔔 Notification interne
                 $this->notifier->envoyerReservationAnnuleeParConducteur($reservation);
+                $this->cancellationCommunicationService->notifyDriverTripCancellation($reservation);
                 $this->smsService->envoyerReservationAnnulee($reservation, 'annulee_conducteur');
 
                 // 📧 Email au passager

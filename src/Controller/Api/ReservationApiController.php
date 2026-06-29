@@ -8,6 +8,7 @@ use App\Entity\Trajet;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\ApiTokenService;
+use App\Service\CancellationCommunicationService;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -141,7 +142,8 @@ class ReservationApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        PaiementService $paiementService
+        PaiementService $paiementService,
+        CancellationCommunicationService $cancellationCommunicationService
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -185,6 +187,8 @@ class ReservationApiController extends AbstractController
         if (!$placesRestored) {
             $trajet->setPlacesDisponibles($trajet->getPlacesDisponibles() + $reservation->getPlaces());
         }
+
+        $cancellationCommunicationService->notifyPassengerCancellation($reservation);
 
         $em->flush();
 
