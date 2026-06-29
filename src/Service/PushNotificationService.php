@@ -3,81 +3,99 @@
 namespace App\Service;
 
 use App\Entity\User;
-use Minishlink\WebPush\WebPush;
+use Doctrine\ORM\EntityManagerInterface;
 use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\WebPush;
 
 class PushNotificationService
 {
-    private WebPush $webPush;
+    private ?WebPush $webPush = null;
+    private EntityManagerInterface $em;
 
-    public function __construct(string $vapidPublicKey, string $vapidPrivateKey, string $vapidEmail)
+    public function __construct(string $vapidPublicKey, string $vapidPrivateKey, string $vapidEmail, EntityManagerInterface $em)
     {
-        // Configuration VAPID obligatoire pour envoyer des pushs sécurisés
-        $auth = [
-            'VAPID' => [
-                'subject' => $vapidEmail,         // ton email pour identifier ton serveur
-                'publicKey' => $vapidPublicKey,   // la clé publique générée
-                'privateKey' => $vapidPrivateKey, // la clé privée générée
-            ],
-        ];
+        $this->em = $em;
 
-        // Initialise la bibliothèque WebPush avec l’authentification
-        $this->webPush = new WebPush($auth);
+        if ($vapidPublicKey === '' || $vapidPrivateKey === '' || $vapidEmail === '') {
+            return;
+        }
+
+        $this->webPush = new WebPush([
+            'VAPID' => [
+                'subject' => $vapidEmail,
+                'publicKey' => $vapidPublicKey,
+                'privateKey' => $vapidPrivateKey,
+            ],
+        ]);
+    }
+
+    public function sendNotification(array $subscriptionData, string $title, string $body, ?string $url = null): void
+    {
+        $this->dispatch($subscriptionData, $title, $body, $url);
+    }
+
+    public function sendToUser(User $user, string $title, string $body, ?string $url = null): void
+    {
+        if (!$this->webPush) {
+            return;
+        }
+
+        $removed = false;
+
+        foreach ($user->getPushSubscriptions() as $subscription) {
+            $result = $this->dispatch([
+                'endpoint' => $subscription->getEndpoint(),
+                'keys' => [
+                    'p256dh' => $subscription->getPublicKey(),
+                    'auth' => $subscription->getAuthToken(),
+                ],
+            ], $title, $body, $url);
+
+            if ($result['expired']) {
+                $this->em->remove($subscription);
+                $removed = true;
+            }
+        }
+
+        if ($removed) {
+            $this->em->flush();
+        }
     }
 
     /**
-     * Envoie une notification à un abonné
+     * @return array{sent: bool, expired: bool}
      */
-    public function sendNotification(array $subscriptionData, string $title, string $body): void
+    private function dispatch(array $subscriptionData, string $title, string $body, ?string $url = null): array
     {
-        // Crée une instance Subscription à partir des données du navigateur
+        if (!$this->webPush) {
+            return ['sent' => false, 'expired' => false];
+        }
+
         $subscription = Subscription::create([
             'endpoint' => $subscriptionData['endpoint'],
             'publicKey' => $subscriptionData['keys']['p256dh'],
             'authToken' => $subscriptionData['keys']['auth'],
         ]);
 
-        // Données à envoyer dans la notif
         $payload = json_encode([
             'title' => $title,
             'body' => $body,
-        ]);
+            'url' => $url ?: '/',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        // Envoie la notif
+        if (!is_string($payload)) {
+            return ['sent' => false, 'expired' => false];
+        }
+
         $this->webPush->queueNotification($subscription, $payload);
+        $sent = false;
+        $expired = false;
 
-        // Exécute l’envoi
         foreach ($this->webPush->flush() as $report) {
-            // Tu peux logger ici si besoin
-            $endpoint = $report->getRequest()->getUri();
-            if ($report->isSuccess() && $report->isSubscriptionExpired()) {
-                // echo "✅ Notification envoyée à : {$endpoint}\n";
-            } else {
-                // echo "❌ Échec pour {$endpoint} : {$report->getReason()}\n";
-            }
+            $sent = $sent || $report->isSuccess();
+            $expired = $expired || $report->isSubscriptionExpired();
         }
-    }
 
-    /**
-     * Envoie une notification Web Push à tous les appareils liés à un utilisateur.
-     *
-     * @param User   $user  L'utilisateur cible (possède plusieurs abonnements possibles)
-     * @param string $title Titre de la notification
-     * @param string $body  Contenu (message) de la notification
-     */
-    public function sendToUser(User $user, string $title, string $body): void
-    {
-        // Parcourt tous les abonnements push enregistrés pour cet utilisateur
-        foreach ($user->getPushSubscriptions() as $sub) {
-            // Envoie une notification pour chaque appareil (ou navigateur) lié
-            $this->sendNotification([
-                'endpoint' => $sub->getEndpoint(), // URL d'envoi spécifique à l'appareil
-                'keys' => [
-                    'p256dh' => $sub->getPublicKey(), // Clé publique du navigateur
-                    'auth' => $sub->getAuthToken(),  // Jeton d'authentification unique
-                ]
-            ], $title, $body);
-        }
+        return ['sent' => $sent, 'expired' => $expired];
     }
-
 }

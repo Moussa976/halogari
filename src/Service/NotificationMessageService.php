@@ -15,12 +15,14 @@ class NotificationMessageService
     private $em;
     private $mailer;
     private ParameterBagInterface $params;
+    private NotificationPushSender $notificationPushSender;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, ParameterBagInterface $params)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, ParameterBagInterface $params, NotificationPushSender $notificationPushSender)
     {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->params = $params;
+        $this->notificationPushSender = $notificationPushSender;
     }
 
     public function traiterMessageRecu(Message $message): void
@@ -64,6 +66,7 @@ class NotificationMessageService
 
         $this->mailer->send($email);
         $this->em->flush();
+        $this->notificationPushSender->send($notif);
     }
 
 }

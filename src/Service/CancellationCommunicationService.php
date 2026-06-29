@@ -11,10 +11,12 @@ use Doctrine\ORM\EntityManagerInterface;
 class CancellationCommunicationService
 {
     private EntityManagerInterface $em;
+    private NotificationPushSender $notificationPushSender;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, NotificationPushSender $notificationPushSender)
     {
         $this->em = $em;
+        $this->notificationPushSender = $notificationPushSender;
     }
 
     public function notifyPassengerCancellation(Reservation $reservation): void
@@ -92,5 +94,6 @@ class CancellationCommunicationService
             ->setLien($link);
 
         $this->em->persist($notification);
+        $this->notificationPushSender->send($notification);
     }
 }

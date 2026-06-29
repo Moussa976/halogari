@@ -21,7 +21,7 @@
 <script src="{{ asset('js/pwa-install.js') }}?v=20260615-pwa"></script>
 
 {# === 5. MESSAGERIE, SPLASH SCREEN & NOTIFICATION JS === #}
-<script src="{{ asset('js/message-check.js') }}?v=20260626-notifications-ajax"></script>
+<script src="{{ asset('js/message-check.js') }}?v=20260629-pwa-badge"></script>
 <script>
 {% if app.user is not null %}
   document.addEventListener("DOMContentLoaded", () => {
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="{{ asset('js/splash-screen.js') }}"></script>
 
 {# === 6. NOTIFICATIONS PUSH (fichier compilé séparé) === #}
-<script src="{{ path('js_push_notif') }}?v=20260615-pwa"></script>
+<script src="{{ path('js_push_notif') }}?v=20260629-push-url"></script>
 
 
 {# === 7. Voir le mot passe === #}

@@ -18,19 +18,22 @@ class NotificationService
     private EntityManagerInterface $em;
     private AdminNotificationMailer $adminNotificationMailer;
     private UrlGeneratorInterface $urlGenerator;
+    private NotificationPushSender $notificationPushSender;
 
     public function __construct(
         MailerInterface $mailer,
         Environment $twig,
         EntityManagerInterface $em,
         AdminNotificationMailer $adminNotificationMailer,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        NotificationPushSender $notificationPushSender
     ) {
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->em = $em;
         $this->adminNotificationMailer = $adminNotificationMailer;
         $this->urlGenerator = $urlGenerator;
+        $this->notificationPushSender = $notificationPushSender;
     }
 
     public function envoyerConfirmationReservation(Reservation $reservation, string $etat): void
@@ -330,5 +333,6 @@ class NotificationService
         $notif->setLien($link);
         $this->em->persist($notif);
         $this->em->flush();
+        $this->notificationPushSender->send($notif);
     }
 }

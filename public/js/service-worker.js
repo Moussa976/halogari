@@ -1,5 +1,5 @@
 // Cache app-shell for better offline resilience.
-const CACHE_NAME = 'halogari-cache-v4';
+const CACHE_NAME = 'halogari-cache-v5';
 const urlsToCache = [
   '/',
   '/css/style.css',
@@ -65,10 +65,33 @@ self.addEventListener('push', function(event) {
   const options = {
     body: data.body || 'Notification HaloGari',
     icon: '/images/icons/logo430x430.png',
-    badge: '/images/icons/icon-192x192.png'
+    badge: '/images/icons/icon-192x192.png',
+    data: {
+      url: data.url || '/'
+    }
   };
 
   event.waitUntil(
     self.registration.showNotification(data.title || 'HaloGari', options)
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      for (const client of clientList) {
+        if ('focus' in client && client.url.includes(self.location.origin)) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });

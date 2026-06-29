@@ -39,6 +39,7 @@ services:
             $vapidPublicKey: '%env(VAPID_PUBLIC_KEY)%'
             $vapidPrivateKey: '%env(VAPID_PRIVATE_KEY)%'
             $vapidEmail: '%env(VAPID_EMAIL)%'
+            $em: '@doctrine.orm.entity_manager'
 
     App\Service\AfficheService:
         arguments:

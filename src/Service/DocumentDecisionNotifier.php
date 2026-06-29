@@ -16,13 +16,15 @@ class DocumentDecisionNotifier
     private Environment $twig;
     private EntityManagerInterface $em;
     private UrlGeneratorInterface $urlGenerator;
+    private NotificationPushSender $notificationPushSender;
 
-    public function __construct(MailerInterface $mailer, Environment $twig, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator)
+    public function __construct(MailerInterface $mailer, Environment $twig, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, NotificationPushSender $notificationPushSender)
     {
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->em = $em;
         $this->urlGenerator = $urlGenerator;
+        $this->notificationPushSender = $notificationPushSender;
     }
 
     public function notify(Document $document, string $decision): void
@@ -63,6 +65,7 @@ class DocumentDecisionNotifier
 
         $this->em->persist($notification);
         $this->em->flush();
+        $this->notificationPushSender->send($notification);
     }
 
     private function notificationMessage(Document $document, string $decision): string
