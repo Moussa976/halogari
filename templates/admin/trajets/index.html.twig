@@ -193,6 +193,28 @@
               </div>
 
               <div class="border rounded p-3 mb-4">
+                <h6>Modifier la date et l&rsquo;heure</h6>
+                <p class="small text-muted mb-3">&Agrave; utiliser seulement pour corriger une erreur ou apr&egrave;s accord avec les personnes concern&eacute;es.</p>
+                <form method="post" action="{{ path('admin_trajet_horaire', { id: trajet.id }) }}" class="row g-2 align-items-end">
+                  <input type="hidden" name="_token" value="{{ csrf_token('admin_trajet_horaire_' ~ trajet.id) }}">
+                  <div class="col-md-4">
+                    <label for="trajet-date-{{ trajet.id }}" class="form-label small text-muted">Date</label>
+                    <input type="date" id="trajet-date-{{ trajet.id }}" name="date_trajet" class="form-control" value="{{ trajet.dateTrajet|date('Y-m-d') }}" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label for="trajet-heure-{{ trajet.id }}" class="form-label small text-muted">Heure</label>
+                    <input type="time" id="trajet-heure-{{ trajet.id }}" name="heure_trajet" class="form-control" value="{{ trajet.heureTrajet|date('H:i') }}" required>
+                  </div>
+                  <div class="col-md-5">
+                    <button type="submit" class="btn btn-primary w-100" onclick="return confirm('Modifier la date et l'heure de ce trajet ? Les personnes concernees recevront une notification.')">
+                      <i class="bi bi-calendar-check"></i>
+                      Enregistrer l&rsquo;horaire
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="border rounded p-3 mb-4">
                 <h6>Que faire pour ce trajet ?</h6>
                 <p class="small text-muted mb-3">
                   Choisissez seulement si vous avez vérifié le dossier. En cas de problème, bloquez le versement avec un litige.

@@ -14,7 +14,7 @@
             <td>
                 <h2 style="color: #ff6f00;">🚗 Nouvelle demande de réservation</h2>
 
-                <p><strong>{{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom }}</strong> a fait une demande de réservation pour ton trajet :</p>
+                <p><strong>{{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom }}</strong> a fait une demande de réservation pour votre trajet :</p>
 
                 <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; font-size: 15px;">
                     🗓️ {{ reservation.trajet.dateTrajet|date('d/m/Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}<br>
@@ -23,7 +23,7 @@
                     💰 Prix par place : {{ reservation.prix|number_format(2, ',', '.') }} €
                 </div>
 
-                <p style="margin-top: 20px;">Tu peux gerer cette demande depuis ton espace conducteur :</p>
+                <p style="margin-top: 20px;">Vous pouvez g&eacute;rer cette demande depuis votre espace conducteur :</p>
 
                 <div style="text-align: center; margin: 20px 0;">
                     <a href="{{ url('app_user_trajet', { id: reservation.trajet.id }) }}"

@@ -55,6 +55,7 @@ class AdminAuditLogger
             'payment_cancel' => 'Annulation paiement',
             'payment_refund' => 'Remboursement paiement',
             'ride_status_update' => 'Mise à jour du suivi trajet',
+            'ride_schedule_update' => 'Modification horaire trajet',
             'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
             'platform_settings_sms_update' => 'Mise a jour des parametres SMS',
         ];
