@@ -1,5 +1,5 @@
 // Cache app-shell for better offline resilience.
-const CACHE_NAME = 'halogari-cache-v6';
+const CACHE_NAME = 'halogari-cache-v7';
 const urlsToCache = [
   '/',
   '/css/style.css',
