@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const notifButtons = document.querySelectorAll('.btnEnableNotifications');
+  const helpTexts = document.querySelectorAll('[data-push-help]');
 
   if (!notifButtons.length) {
     return;
@@ -7,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const hideButtons = () => notifButtons.forEach(btn => btn.classList.add('d-none'));
   const showButtons = () => notifButtons.forEach(btn => btn.classList.remove('d-none'));
+  const setHelpText = (text) => helpTexts.forEach(element => {
+    element.textContent = text;
+  });
   const ua = navigator.userAgent.toLowerCase();
   const isIos = /iphone|ipad|ipod/.test(ua);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -31,8 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const explainIosInstall = () => {
     notify(
       'info',
-      'Installation necessaire',
-      "Sur iPhone, les notifications fonctionnent apres installation de HaloGari sur l'ecran d'accueil. Ouvrez le partage Safari, choisissez Sur l'ecran d'accueil, puis relancez HaloGari."
+      'Installation n\u00e9cessaire',
+      "Sur iPhone, les notifications fonctionnent apr\u00e8s installation de HaloGari sur l'\u00e9cran d'accueil. Ouvrez le partage Safari, choisissez Sur l'\u00e9cran d'accueil, puis relancez HaloGari."
     );
   };
 
@@ -50,6 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!('Notification' in window)) {
     showButtons();
+    setHelpText(isIos && !isStandalone
+      ? "Ouvrez HaloGari depuis l'\u00e9cran d'accueil pour activer les notifications sur iPhone."
+      : "Ce navigateur ne permet pas d'activer les notifications HaloGari.");
     notifButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         if (isIos && !isStandalone) {
@@ -65,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (isIos && !isStandalone) {
     showButtons();
+    setHelpText("Ouvrez HaloGari depuis l'\u00e9cran d'accueil pour activer les notifications sur iPhone.");
     notifButtons.forEach(btn => {
       btn.addEventListener('click', explainIosInstall);
     });
@@ -73,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     showButtons();
+    setHelpText('Les notifications push ne sont pas disponibles sur ce navigateur.');
     notifButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         notify('warning', 'Notifications indisponibles', 'Les notifications push ne sont pas disponibles sur ce navigateur.');
@@ -82,15 +91,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (Notification.permission === 'granted') {
+    setHelpText("Les notifications sont autoris\u00e9es sur cet appareil. V\u00e9rification de l'abonnement...");
     if (typeof window.subscribeToHaloGariPush === 'function') {
       window.subscribeToHaloGariPush().then((success) => {
         if (success) {
+          setHelpText('Notifications activ\u00e9es sur cet appareil.');
           hideButtons();
         } else {
+          setHelpText("Autorisation accord\u00e9e, mais l'abonnement n'est pas encore enregistr\u00e9.");
           showButtons();
         }
       });
     } else {
+      setHelpText("Autorisation accord\u00e9e, mais le module d'abonnement n'est pas charg\u00e9.");
       showButtons();
     }
     return;
@@ -98,15 +111,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (Notification.permission === 'denied') {
     showButtons();
+    setHelpText("Les notifications sont bloqu\u00e9es dans les r\u00e9glages du navigateur ou de l'application.");
     notifButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        notify('warning', 'Notifications bloquees', "Votre navigateur bloque les notifications HaloGari. Activez-les dans les reglages du site ou de l'application.");
+        notify('warning', 'Notifications bloqu\u00e9es', "Votre navigateur bloque les notifications HaloGari. Activez-les dans les r\u00e9glages du site ou de l'application.");
       });
     });
     return;
   }
 
   showButtons();
+  setHelpText(isStandalone
+    ? 'Activez les notifications pour recevoir les alertes importantes de HaloGari.'
+    : "Vous \u00eates dans le navigateur. Si HaloGari est install\u00e9, utilisez Ouvrir dans l'appli pour les notifications de l'app.");
 
   notifButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -119,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (permission !== 'granted') {
         setLoading(btn, false);
-        notify('warning', 'Notifications non activees', 'Vous devez autoriser les notifications pour recevoir les alertes HaloGari.');
+        notify('warning', 'Notifications non activ\u00e9es', 'Vous devez autoriser les notifications pour recevoir les alertes HaloGari.');
         return;
       }
 
@@ -131,10 +148,12 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoading(btn, false);
 
       if (success) {
-        notify('success', 'Notifications activees', 'Vous recevrez les alertes importantes de HaloGari sur cet appareil.');
+        notify('success', 'Notifications activ\u00e9es', 'Vous recevrez les alertes importantes de HaloGari sur cet appareil.');
+        setHelpText('Notifications activ\u00e9es sur cet appareil.');
         hideButtons();
       } else {
-        notify('error', 'Activation impossible', "L'autorisation est accordee, mais l'abonnement push n'a pas pu etre enregistre. Reessayez apres avoir ferme puis rouvert HaloGari.");
+        setHelpText("Autorisation accord\u00e9e, mais l'abonnement n'a pas pu \u00eatre enregistr\u00e9.");
+        notify('error', 'Activation impossible', "L'autorisation est accord\u00e9e, mais l'abonnement push n'a pas pu \u00eatre enregistr\u00e9. R\u00e9essayez apr\u00e8s avoir ferm\u00e9 puis rouvert HaloGari.");
       }
     });
   });
