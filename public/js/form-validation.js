@@ -56,6 +56,27 @@
     return String(field?.value || "").trim();
   }
 
+  function syncFlatpickrDate(field) {
+    if (!field || !field._flatpickr) {
+      return;
+    }
+
+    const picker = field._flatpickr;
+    if (picker.selectedDates && picker.selectedDates.length > 0) {
+      field.value = picker.formatDate(picker.selectedDates[0], "d/m/Y");
+      return;
+    }
+
+    const rawValue = String(field.value || "").trim();
+    if (rawValue) {
+      const parsed = picker.parseDate(rawValue, "d/m/Y") || picker.parseDate(rawValue, "Y-m-d");
+      if (parsed) {
+        picker.setDate(parsed, false, "d/m/Y");
+        field.value = picker.formatDate(parsed, "d/m/Y");
+      }
+    }
+  }
+
   function validateVillageForm(event) {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) {
@@ -91,6 +112,7 @@
     }
 
     const dateField = form.querySelector("[name='date_trajet'], [name='date']");
+    syncFlatpickrDate(dateField);
     const dateTrajet = String(dateField?.value || "").trim();
     if (dateField && !dateTrajet) {
       event.preventDefault();

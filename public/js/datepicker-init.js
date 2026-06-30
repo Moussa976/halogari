@@ -14,6 +14,7 @@ function initHaloGariDatepickers() {
     window.flatpickr(input, {
       locale: "fr",
       allowInput: true,
+      disableMobile: true,
       dateFormat: "d/m/Y",
       defaultDate: input.value || (input.dataset.defaultToday === "true" ? "today" : null),
       minDate: "today",
@@ -32,6 +33,7 @@ function initHaloGariDatepickers() {
     window.flatpickr(input, {
       locale: "fr",
       allowInput: true,
+      disableMobile: true,
       dateFormat: "d/m/Y",
       maxDate: input.dataset.maxDate || null,
       appendTo: getCalendarParent(input),
