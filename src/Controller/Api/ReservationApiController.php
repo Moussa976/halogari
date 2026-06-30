@@ -77,12 +77,19 @@ class ReservationApiController extends AbstractController
                 'message' => 'Ce trajet est deja passe.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
+        $existingReservation = $em->getRepository(Reservation::class)->createQueryBuilder('r')
+            ->where('r.trajet = :trajet')
+            ->andWhere('r.passager = :passager')
+            ->andWhere('r.statut IN (:statuts)')
+            ->setParameter('trajet', $trajet)
+            ->setParameter('passager', $user)
+            ->setParameter('statuts', ['en_attente', 'acceptee', 'payee'])
+            ->orderBy('r.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        $existingReservation = $em->getRepository(Reservation::class)->findOneBy([
-            'trajet' => $trajet,
-            'passager' => $user,
-        ]);
-        if ($existingReservation && in_array($existingReservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+        if ($existingReservation) {
             return $this->json([
                 'message' => 'Vous avez deja une reservation active pour ce trajet.',
                 'data' => $this->reservationPayload($existingReservation),

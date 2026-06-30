@@ -29,12 +29,12 @@ class PushNotificationService
         ]);
     }
 
-    public function sendNotification(array $subscriptionData, string $title, string $body, ?string $url = null): void
+    public function sendNotification(array $subscriptionData, string $title, string $body, ?string $url = null, ?int $badgeCount = null): void
     {
-        $this->dispatch($subscriptionData, $title, $body, $url);
+        $this->dispatch($subscriptionData, $title, $body, $url, $badgeCount);
     }
 
-    public function sendToUser(User $user, string $title, string $body, ?string $url = null): void
+    public function sendToUser(User $user, string $title, string $body, ?string $url = null, ?int $badgeCount = null): void
     {
         if (!$this->webPush) {
             return;
@@ -49,7 +49,7 @@ class PushNotificationService
                     'p256dh' => $subscription->getPublicKey(),
                     'auth' => $subscription->getAuthToken(),
                 ],
-            ], $title, $body, $url);
+            ], $title, $body, $url, $badgeCount);
 
             if ($result['expired']) {
                 $this->em->remove($subscription);
@@ -65,7 +65,7 @@ class PushNotificationService
     /**
      * @return array{sent: bool, expired: bool}
      */
-    private function dispatch(array $subscriptionData, string $title, string $body, ?string $url = null): array
+    private function dispatch(array $subscriptionData, string $title, string $body, ?string $url = null, ?int $badgeCount = null): array
     {
         if (!$this->webPush) {
             return ['sent' => false, 'expired' => false];
@@ -81,6 +81,7 @@ class PushNotificationService
             'title' => $title,
             'body' => $body,
             'url' => $url ?: '/',
+            'badgeCount' => $badgeCount,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!is_string($payload)) {

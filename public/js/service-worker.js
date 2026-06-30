@@ -1,5 +1,5 @@
 // Cache app-shell for better offline resilience.
-const CACHE_NAME = 'halogari-cache-v5';
+const CACHE_NAME = 'halogari-cache-v6';
 const urlsToCache = [
   '/',
   '/css/style.css',
@@ -61,18 +61,26 @@ self.addEventListener('fetch', function(event) {
 // 🔔 Gestion des notifications Web Push
 self.addEventListener('push', function(event) {
   const data = event.data ? event.data.json() : {};
+  const badgeCount = Number(data.badgeCount) || 0;
 
   const options = {
     body: data.body || 'Notification HaloGari',
     icon: '/images/icons/logo430x430.png',
     badge: '/images/icons/icon-192x192.png',
+    tag: data.url || 'halogari-notification',
+    renotify: true,
     data: {
       url: data.url || '/'
     }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'HaloGari', options)
+    Promise.all([
+      self.registration.showNotification(data.title || 'HaloGari', options),
+      badgeCount > 0 && self.registration.setAppBadge
+        ? self.registration.setAppBadge(badgeCount)
+        : Promise.resolve()
+    ])
   );
 });
 

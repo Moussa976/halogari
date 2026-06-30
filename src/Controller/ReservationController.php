@@ -105,12 +105,19 @@ class ReservationController extends AbstractController
                 "nbPlaceReservee" => $places
             ]);
         }
+        $existingReservation = $em->getRepository(Reservation::class)->createQueryBuilder('r')
+            ->where('r.trajet = :trajet')
+            ->andWhere('r.passager = :passager')
+            ->andWhere('r.statut IN (:statuts)')
+            ->setParameter('trajet', $trajet)
+            ->setParameter('passager', $this->getUser())
+            ->setParameter('statuts', ['en_attente', 'acceptee', 'payee'])
+            ->orderBy('r.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        $existingReservation = $em->getRepository(Reservation::class)->findOneBy([
-            'trajet' => $trajet,
-            'passager' => $this->getUser(),
-        ]);
-        if ($existingReservation && in_array($existingReservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+        if ($existingReservation) {
             $this->addFlash('info', 'Vous avez déjà une réservation active pour ce trajet.');
             return $this->redirectToRoute('app_user_reservation', ['id' => $existingReservation->getId()]);
         }
@@ -146,10 +153,7 @@ class ReservationController extends AbstractController
         $notifier->demanderValidationReservation($reservation);
 
         $this->addFlash('success', "Votre demande a été envoyée pour $places place(s).");
-
-        return $this->render('reservation/reservation_confirmation.html.twig', [
-            'reservation' => $reservation
-        ]);
+        return $this->redirectToRoute('app_reservation_direct', ['id' => $reservation->getId()]);
     }
 
     /**

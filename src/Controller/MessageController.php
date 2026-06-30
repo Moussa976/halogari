@@ -315,7 +315,7 @@ class MessageController extends AbstractController
 
             if (
                 (($passager === $userA && $conducteur === $userB) || ($passager === $userB && $conducteur === $userA))
-                && in_array($reservation->getStatut(), ['acceptee', 'payee'], true)
+                && in_array($reservation->getStatut(), ['acceptee', 'payee', 'annulee'], true)
             ) {
                 return $reservation;
             }

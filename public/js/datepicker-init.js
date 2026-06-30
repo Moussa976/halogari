@@ -1,5 +1,5 @@
 // Initialisation du selecteur de date Flatpickr.
-document.addEventListener("DOMContentLoaded", () => {
+function initHaloGariDatepickers() {
   if (typeof window.flatpickr !== "function") {
     return;
   }
@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const getCalendarParent = (input) => input.closest(".modal, .offcanvas") || document.body;
 
   document.querySelectorAll(".dateDepart").forEach((input) => {
+    if (input._flatpickr) {
+      return;
+    }
+
     window.flatpickr(input, {
       locale: "fr",
       allowInput: true,
@@ -21,6 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll(".dateFr").forEach((input) => {
+    if (input._flatpickr) {
+      return;
+    }
+
     window.flatpickr(input, {
       locale: "fr",
       allowInput: true,
@@ -32,4 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-});
+}
+
+document.addEventListener("DOMContentLoaded", initHaloGariDatepickers);
+window.addEventListener("pageshow", initHaloGariDatepickers);
