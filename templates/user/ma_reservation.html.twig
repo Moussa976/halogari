@@ -248,6 +248,41 @@
         </dl>
       </article>
 
+      {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.hasVehicleInfo %}
+        <article class="app-panel reservation-vehicle-card">
+          <div class="app-panel__header">
+            <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
+            <div>
+              <h2>VÃ©hicule</h2>
+              <p>RepÃ¨res utiles pour le dÃ©part.</p>
+            </div>
+          </div>
+          {% if trajet.conducteur.vehiclePhoto %}
+            <img src="{{ asset('uploads/vehicles/' ~ trajet.conducteur.vehiclePhoto) }}" alt="Photo du vÃ©hicule" class="reservation-vehicle-card__photo">
+          {% endif %}
+          <dl class="reservation-info-list">
+            {% if trajet.conducteur.vehicleBrand or trajet.conducteur.vehicleModel %}
+              <div>
+                <dt>ModÃ¨le</dt>
+                <dd>{{ [trajet.conducteur.vehicleBrand, trajet.conducteur.vehicleModel]|filter(v => v)|join(' ') }}</dd>
+              </div>
+            {% endif %}
+            {% if trajet.conducteur.vehicleColor %}
+              <div>
+                <dt>Couleur</dt>
+                <dd>{{ trajet.conducteur.vehicleColor }}</dd>
+              </div>
+            {% endif %}
+            {% if trajet.conducteur.vehicleSeats %}
+              <div>
+                <dt>Places</dt>
+                <dd>{{ trajet.conducteur.vehicleSeats }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+        </article>
+      {% endif %}
+
       {% if reservation.statut in ['acceptee', 'payee'] %}
         <article class="app-panel reservation-passengers">
           <div class="app-panel__header">

@@ -58,6 +58,8 @@ class AdminAuditLogger
             'ride_schedule_update' => 'Modification horaire trajet',
             'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
             'platform_settings_sms_update' => 'Mise a jour des parametres SMS',
+            'platform_sms_test' => 'Test SMS envoye',
+            'platform_sms_test_failed' => 'Test SMS en echec',
         ];
 
         return $labels[$action] ?? ucfirst(str_replace('_', ' ', $action));

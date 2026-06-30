@@ -56,6 +56,48 @@ class SmsService
         $this->sendToPassenger($reservation, 'reservation_' . $source, $message);
     }
 
+    public function envoyerSmsTest(string $phone): void
+    {
+        $phone = $this->phoneNumberService->normalize($phone);
+        $provider = (string) $this->settings->getValue(self::PROVIDER, 'ovh');
+        $message = 'HaloGari : test SMS automatique réussi.';
+
+        $log = (new SmsLog())
+            ->setPhone($phone)
+            ->setEventType('test_admin')
+            ->setMessage($message)
+            ->setProvider($provider);
+
+        $this->em->persist($log);
+
+        if ($this->settings->getValue(self::ENABLED, '0') !== '1') {
+            $log->markFailed('SMS désactivés dans les paramètres admin.');
+            $this->em->flush();
+
+            throw new \RuntimeException('SMS désactivés dans les paramètres admin.');
+        }
+
+        if ($phone === '') {
+            $log->markFailed('Numéro de téléphone de test manquant ou invalide.');
+            $this->em->flush();
+
+            throw new \RuntimeException('Numéro de téléphone de test manquant ou invalide.');
+        }
+
+        try {
+            $providerMessageId = $provider === 'twilio'
+                ? $this->sendWithTwilio($phone, $message)
+                : $this->sendWithOvh($phone, $message);
+            $log->markSent($providerMessageId);
+            $this->em->flush();
+        } catch (\Throwable $exception) {
+            $log->markFailed($exception->getMessage());
+            $this->em->flush();
+
+            throw $exception;
+        }
+    }
+
     private function sendToPassenger(Reservation $reservation, string $eventType, string $message): void
     {
         $passager = $reservation->getPassager();

@@ -7,6 +7,7 @@ parameters:
     documents_directory: '%kernel.project_dir%/var/private/documents'
     legacy_documents_directory: '%kernel.project_dir%/public/uploads/documents'
     photos_directory: '%kernel.project_dir%/public/uploads/photos'
+    vehicles_directory: '%kernel.project_dir%/public/uploads/vehicles'
     messages_directory: '%kernel.project_dir%/public/uploads/messages'
 
 services:

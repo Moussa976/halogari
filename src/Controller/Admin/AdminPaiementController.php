@@ -47,7 +47,7 @@ class AdminPaiementController extends AbstractController
      */
     public function capture(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'capture');
 
         try {
@@ -66,7 +66,7 @@ class AdminPaiementController extends AbstractController
      */
     public function transfer(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'transfer');
 
         try {
@@ -85,7 +85,7 @@ class AdminPaiementController extends AbstractController
      */
     public function cancel(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'cancel');
 
         try {
@@ -109,7 +109,7 @@ class AdminPaiementController extends AbstractController
      */
     public function refund(Paiement $paiement, Request $request, PaiementService $paiementService, PaiementEventLogger $eventLogger, AdminAuditLogger $auditLogger): RedirectResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'refund');
 
         try {

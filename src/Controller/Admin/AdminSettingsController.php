@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\PlatformSettingRepository;
 use App\Repository\SmsLogRepository;
 use App\Service\AdminAuditLogger;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +43,8 @@ class AdminSettingsController extends AbstractController
         PlatformSettingRepository $settings,
         SmsLogRepository $smsLogs,
         EntityManagerInterface $em,
-        AdminAuditLogger $auditLogger
+        AdminAuditLogger $auditLogger,
+        SmsService $smsService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
 
@@ -59,6 +61,10 @@ class AdminSettingsController extends AbstractController
 
             if ($section === 'sms') {
                 return $this->saveSmsSettings($request, $settings, $em, $auditLogger);
+            }
+
+            if ($section === 'sms_test') {
+                return $this->testSmsSettings($request, $smsService, $auditLogger);
             }
 
             if (!$this->isCsrfTokenValid('admin_settings_facebook', (string) $request->request->get('_token'))) {
@@ -256,6 +262,27 @@ class AdminSettingsController extends AbstractController
         return $this->redirectToRoute('admin_settings');
     }
 
+    private function testSmsSettings(Request $request, SmsService $smsService, AdminAuditLogger $auditLogger): Response
+    {
+        if (!$this->isCsrfTokenValid('admin_settings_sms_test', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $phone = trim((string) $request->request->get('sms_test_phone'));
+        try {
+            $smsService->envoyerSmsTest($phone);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test', null, ['phone' => $phone]);
+            $this->addFlash('success', 'SMS de test envoyé.');
+        } catch (\Throwable $exception) {
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test_failed', null, ['phone' => $phone, 'error' => $exception->getMessage()]);
+            $this->addFlash('danger', 'Échec SMS : ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_settings');
+    }
+
     private function saveStripeSettings(
         Request $request,
         PlatformSettingRepository $settings,
@@ -348,13 +375,10 @@ class AdminSettingsController extends AbstractController
             return true;
         }
 
-        if ((string) $settings->getValue(self::SMS_FROM, '') === '') {
-            return false;
-        }
-
         if ($settings->getValue(self::SMS_PROVIDER, 'ovh') === 'twilio') {
             return (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== ''
-                && (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== '';
+                && (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== ''
+                && (string) $settings->getValue(self::SMS_FROM, '') !== '';
         }
 
         return (string) $settings->getValue(self::SMS_OVH_SERVICE_NAME, '') !== ''

@@ -33,6 +33,7 @@
   {% set identite = user.getDocumentByType('identite') %}
   {% set ribHasIban = rib and rib.ribIban %}
   {% set canCreateStripe = rib and identite and rib.status == 'approved' and identite.status == 'approved' and ribHasIban %}
+  {% set adminCanEditUser = is_granted('ROLE_SUPER_ADMIN') %}
 
   <div class="container-fluid px-1">
     <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">

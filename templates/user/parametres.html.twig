@@ -64,6 +64,70 @@
 
     <article class="app-panel">
       <div class="app-panel__header">
+        <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
+        <div>
+          <h2>Mon vÃ©hicule</h2>
+          <p>Ajoutez quelques informations utiles pour rassurer les passagers, sans afficher de plaque.</p>
+        </div>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" action="{{ path('app_vehicle_update') }}" class="hg-form-grid">
+        <input type="hidden" name="_token" value="{{ csrf_token('parametres_vehicle') }}">
+        {% if app.user.vehiclePhoto %}
+          <div class="hg-form-full hg-vehicle-preview">
+            <img id="settingsVehiclePreview" src="{{ asset('uploads/vehicles/' ~ app.user.vehiclePhoto) }}" alt="Photo du vÃ©hicule" class="hg-vehicle-preview__image">
+            <div>
+              <strong>Photo actuelle</strong>
+              <p class="mb-0 text-muted">Elle aide les passagers Ã  reconnaÃ®tre le vÃ©hicule au dÃ©part.</p>
+            </div>
+          </div>
+        {% else %}
+          <div class="hg-form-full hg-vehicle-preview">
+            <span class="hg-vehicle-preview__empty"><i class="bi bi-car-front-fill"></i></span>
+            <div>
+              <strong>Aucune photo vÃ©hicule</strong>
+              <p class="mb-0 text-muted">Ajoutez une photo simple et lisible si vous le souhaitez.</p>
+            </div>
+          </div>
+        {% endif %}
+        <div class="form-floating">
+          <input type="text" name="vehicleBrand" id="vehicleBrand" class="form-control" value="{{ app.user.vehicleBrand }}" placeholder="Marque">
+          <label for="vehicleBrand">Marque</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="vehicleModel" id="vehicleModel" class="form-control" value="{{ app.user.vehicleModel }}" placeholder="ModÃ¨le">
+          <label for="vehicleModel">ModÃ¨le</label>
+        </div>
+        <div class="form-floating">
+          <input type="text" name="vehicleColor" id="vehicleColor" class="form-control" value="{{ app.user.vehicleColor }}" placeholder="Couleur">
+          <label for="vehicleColor">Couleur</label>
+        </div>
+        <div class="form-floating">
+          <input type="number" name="vehicleSeats" id="vehicleSeats" class="form-control" value="{{ app.user.vehicleSeats }}" placeholder="Places" min="1" max="9">
+          <label for="vehicleSeats">Places dans le vÃ©hicule</label>
+        </div>
+        <div class="hg-form-full">
+          <label for="vehiclePhoto" class="form-label">Photo du vÃ©hicule</label>
+          <input type="file" name="vehiclePhoto" class="form-control" accept="image/jpeg,image/png,image/webp" id="vehiclePhoto">
+          <div class="form-text">JPG, PNG ou WebP. Taille maximale : 3 Mo.</div>
+        </div>
+        <div class="hg-form-actions">
+          {% if app.user.vehiclePhoto %}
+            <button type="submit" name="remove_vehicle_photo" value="1" class="btn btn-outline-danger delete-confirm" data-message="Supprimer la photo du vÃ©hicule ?">
+              <i class="bi bi-trash3"></i>
+              Supprimer la photo
+            </button>
+          {% endif %}
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-check-circle-fill"></i>
+            Enregistrer le vÃ©hicule
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="app-panel">
+      <div class="app-panel__header">
         <div>
           <h2>Informations personnelles</h2>
           <p>Ces informations servent à sécuriser les réservations et à améliorer la confiance entre utilisateurs.</p>
@@ -313,6 +377,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('documentForm');
   const photoInput = document.getElementById('photoProfil');
   const photoPreview = document.getElementById('settingsPhotoPreview');
+  const vehiclePhotoInput = document.getElementById('vehiclePhoto');
+  const vehiclePhotoPreview = document.getElementById('settingsVehiclePreview');
   const addressInput = document.querySelector('[data-address-input]');
   const addressResults = document.querySelector('[data-address-results]');
   const postalCodeInput = document.getElementById('postalCode');
@@ -324,6 +390,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const file = this.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
     photoPreview.src = URL.createObjectURL(file);
+  });
+
+  vehiclePhotoInput?.addEventListener('change', function () {
+    const file = this.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    if (vehiclePhotoPreview) {
+      vehiclePhotoPreview.src = URL.createObjectURL(file);
+    }
   });
 
   select?.addEventListener('change', function () {

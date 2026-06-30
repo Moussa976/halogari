@@ -82,6 +82,7 @@ class AdminUserController extends AbstractController
      */
     public function update(User $user, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'update');
 
         $errors = [];
@@ -130,6 +131,11 @@ class AdminUserController extends AbstractController
             ->setPostalCode($request->request->get('postalCode'))
             ->setPostalCity($request->request->get('postalCity'))
             ->setPostalCountry($request->request->get('postalCountry') ?: 'Mayotte');
+        $user
+            ->setVehicleBrand($request->request->get('vehicleBrand'))
+            ->setVehicleModel($request->request->get('vehicleModel'))
+            ->setVehicleColor($request->request->get('vehicleColor'))
+            ->setVehicleSeats((int) $request->request->get('vehicleSeats', 0) ?: null);
 
         // 🔴 Suppression photo si demandé
         if ($request->get('remove_photo') && $user->getPhoto()) {
@@ -194,6 +200,7 @@ class AdminUserController extends AbstractController
      */
     public function delete(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'delete');
 
         // Protection contre suppression accidentelle de soi-même
@@ -219,6 +226,7 @@ class AdminUserController extends AbstractController
      */
     public function reactivate(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'reactivate');
 
         if (!$user->isDisabled()) {
@@ -270,6 +278,7 @@ class AdminUserController extends AbstractController
         EntityManagerInterface $em,
         AdminAuditLogger $auditLogger
     ): RedirectResponse {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'stripe_create');
 
         // Récupération des données POST
@@ -312,6 +321,7 @@ class AdminUserController extends AbstractController
      */
     public function deleteStripe(User $user, Request $request, StripeConnectService $stripeConnectService, AdminAuditLogger $auditLogger): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'stripe_delete');
 
         try {
@@ -331,6 +341,7 @@ class AdminUserController extends AbstractController
      */
     public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService, AdminAuditLogger $auditLogger, DocumentStorage $documentStorage): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'stripe_identity');
 
         // Récupération du document de type "identite"

@@ -194,6 +194,77 @@ class ParametresController extends AbstractController
     }
 
     /**
+     * @Route("/user/parametres/vehicule", name="app_vehicle_update", methods={"POST"})
+     */
+    public function updateVehicle(Request $request, SluggerInterface $slugger, EntityManagerInterface $em): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('parametres_vehicle', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $brand = trim((string) $request->request->get('vehicleBrand'));
+        $model = trim((string) $request->request->get('vehicleModel'));
+        $color = trim((string) $request->request->get('vehicleColor'));
+        $seats = (int) $request->request->get('vehicleSeats', 0);
+
+        if ($seats < 0 || $seats > 9) {
+            $this->addFlash('error', 'Le nombre de places du véhicule semble invalide.');
+            return $this->redirectToRoute('app_parametres');
+        }
+
+        $user
+            ->setVehicleBrand($brand ?: null)
+            ->setVehicleModel($model ?: null)
+            ->setVehicleColor($color ?: null)
+            ->setVehicleSeats($seats > 0 ? $seats : null);
+
+        if ($request->get('remove_vehicle_photo') && $user->getVehiclePhoto()) {
+            $this->deleteUploadedVehiclePhoto($user->getVehiclePhoto());
+            $user->setVehiclePhoto(null);
+        }
+
+        $photoFile = $request->files->get('vehiclePhoto');
+        if ($photoFile) {
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array($photoFile->getMimeType(), $allowedMimeTypes, true)) {
+                $this->addFlash('error', 'Photo véhicule invalide. JPG, PNG ou WebP uniquement.');
+                return $this->redirectToRoute('app_parametres');
+            }
+
+            if ($photoFile->getSize() > 3 * 1024 * 1024) {
+                $this->addFlash('error', 'Photo véhicule trop lourde. Max 3 Mo.');
+                return $this->redirectToRoute('app_parametres');
+            }
+
+            $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename ?: 'vehicule');
+            $extension = $photoFile->guessExtension() ?: 'jpg';
+            $newFilename = $safeFilename . '-' . uniqid('', true) . '.' . $extension;
+
+            try {
+                $photoFile->move($this->getParameter('vehicles_directory'), $newFilename);
+                if ($user->getVehiclePhoto()) {
+                    $this->deleteUploadedVehiclePhoto($user->getVehiclePhoto());
+                }
+                $user->setVehiclePhoto($newFilename);
+            } catch (FileException $exception) {
+                $this->addFlash('error', "Erreur lors de l'envoi de la photo du véhicule.");
+                return $this->redirectToRoute('app_parametres');
+            }
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Véhicule enregistré.');
+
+        return $this->redirectToRoute('app_parametres');
+    }
+
+    /**
      * @Route("/user/parametres/password", name="app_password_update", methods={"POST"})
      */
     public function updatePassword(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
@@ -378,6 +449,14 @@ class ParametresController extends AbstractController
         }
 
         return null;
+    }
+
+    private function deleteUploadedVehiclePhoto(string $filename): void
+    {
+        $path = $this->getParameter('vehicles_directory') . '/' . $filename;
+        if (is_file($path)) {
+            @unlink($path);
+        }
     }
 }
 

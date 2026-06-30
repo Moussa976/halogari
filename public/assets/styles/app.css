@@ -1144,6 +1144,39 @@ textarea.form-control.app-message-textarea {
     min-width: 220px;
 }
 
+.hg-vehicle-preview {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: .85rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .66);
+}
+
+.hg-vehicle-preview__image,
+.hg-vehicle-preview__empty {
+    width: 92px;
+    height: 68px;
+    flex: 0 0 92px;
+    border-radius: 8px;
+}
+
+.hg-vehicle-preview__image {
+    object-fit: cover;
+    border: 1px solid var(--hg-line);
+    background: #fff;
+}
+
+.hg-vehicle-preview__empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--hg-green);
+    background: rgba(36, 92, 54, .08);
+    font-size: 1.7rem;
+}
+
 .hg-list-card {
     display: block;
     padding: 1rem;
@@ -1718,6 +1751,16 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-ink);
     font-weight: 800;
     text-align: right;
+}
+
+.reservation-vehicle-card__photo {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    margin-bottom: .75rem;
+    background: #fff;
 }
 
 .reservation-passenger-list {

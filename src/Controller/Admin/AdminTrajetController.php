@@ -39,7 +39,7 @@ class AdminTrajetController extends AbstractController
         AdminAuditLogger $auditLogger,
         NotificationPushSender $pushSender
     ): RedirectResponse {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
 
         if (!$this->isCsrfTokenValid('admin_trajet_horaire_' . $trajet->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');

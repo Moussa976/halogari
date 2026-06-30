@@ -198,6 +198,25 @@
               <button type="submit" class="btn btn-primary mt-4">Enregistrer SMS</button>
             </form>
 
+            <div class="border rounded p-3 mt-4 bg-light">
+              <h3 class="h6 mb-2">Tester l'envoi</h3>
+              <p class="small text-muted mb-3">Envoyez un SMS réel pour voir si OVH accepte la configuration actuelle.</p>
+              <form method="post" class="row g-2 align-items-end">
+                <input type="hidden" name="settings_section" value="sms_test">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_sms_test') }}">
+                <div class="col-12 col-md">
+                  <label for="sms_test_phone" class="form-label">Numéro de test</label>
+                  <input type="tel" id="sms_test_phone" name="sms_test_phone" class="form-control" placeholder="Ex : 0639..." required>
+                </div>
+                <div class="col-12 col-md-auto">
+                  <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-send-fill"></i>
+                    Envoyer un test
+                  </button>
+                </div>
+              </form>
+            </div>
+
             <hr>
 
             <h3 class="h6 mb-3">Derniers SMS</h3>

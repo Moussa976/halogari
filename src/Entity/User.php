@@ -144,6 +144,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $postalAddressLine1;
 
     /**
+     * @ORM\Column(type="string", length=80, nullable=true)
+     */
+    private $vehicleBrand;
+
+    /**
+     * @ORM\Column(type="string", length=80, nullable=true)
+     */
+    private $vehicleModel;
+
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     */
+    private $vehicleColor;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $vehicleSeats;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $vehiclePhoto;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $postalAddressLine2;
@@ -691,6 +716,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             && trim((string) $this->postalCity) !== '';
     }
 
+    public function hasVehicleInfo(): bool
+    {
+        return trim((string) $this->vehicleBrand) !== ''
+            || trim((string) $this->vehicleModel) !== ''
+            || trim((string) $this->vehicleColor) !== ''
+            || $this->vehicleSeats !== null
+            || trim((string) $this->vehiclePhoto) !== '';
+    }
+
     public function canEditIdentityFields(): bool
     {
         return !$this->hasVerifiedIdentity();
@@ -774,6 +808,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->setPhoto(null);
         $this->setDescription(null);
         $this->setIsVerified(false);
+        $this->setVehicleBrand(null);
+        $this->setVehicleModel(null);
+        $this->setVehicleColor(null);
+        $this->setVehicleSeats(null);
+        $this->setVehiclePhoto(null);
     }
 
     public function getStripeAccountId(): ?string
@@ -795,6 +834,61 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPostalAddressLine1(?string $postalAddressLine1): self
     {
         $this->postalAddressLine1 = $postalAddressLine1 ? mb_substr(trim($postalAddressLine1), 0, 255) : null;
+        return $this;
+    }
+
+    public function getVehicleBrand(): ?string
+    {
+        return $this->vehicleBrand;
+    }
+
+    public function setVehicleBrand(?string $vehicleBrand): self
+    {
+        $this->vehicleBrand = $vehicleBrand ? mb_substr(trim($vehicleBrand), 0, 80) : null;
+        return $this;
+    }
+
+    public function getVehicleModel(): ?string
+    {
+        return $this->vehicleModel;
+    }
+
+    public function setVehicleModel(?string $vehicleModel): self
+    {
+        $this->vehicleModel = $vehicleModel ? mb_substr(trim($vehicleModel), 0, 80) : null;
+        return $this;
+    }
+
+    public function getVehicleColor(): ?string
+    {
+        return $this->vehicleColor;
+    }
+
+    public function setVehicleColor(?string $vehicleColor): self
+    {
+        $this->vehicleColor = $vehicleColor ? mb_substr(trim($vehicleColor), 0, 50) : null;
+        return $this;
+    }
+
+    public function getVehicleSeats(): ?int
+    {
+        return $this->vehicleSeats;
+    }
+
+    public function setVehicleSeats(?int $vehicleSeats): self
+    {
+        $this->vehicleSeats = $vehicleSeats !== null && $vehicleSeats > 0 ? min($vehicleSeats, 9) : null;
+        return $this;
+    }
+
+    public function getVehiclePhoto(): ?string
+    {
+        return $this->vehiclePhoto;
+    }
+
+    public function setVehiclePhoto(?string $vehiclePhoto): self
+    {
+        $this->vehiclePhoto = $vehiclePhoto ? mb_substr(trim($vehiclePhoto), 0, 255) : null;
         return $this;
     }
 
