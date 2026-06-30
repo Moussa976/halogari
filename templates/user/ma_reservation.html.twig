@@ -253,17 +253,17 @@
           <div class="app-panel__header">
             <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
             <div>
-              <h2>VÃ©hicule</h2>
-              <p>RepÃ¨res utiles pour le dÃ©part.</p>
+              <h2>V&eacute;hicule</h2>
+              <p>Rep&egrave;res utiles pour le d&eacute;part.</p>
             </div>
           </div>
           {% if trajet.conducteur.vehiclePhoto %}
-            <img src="{{ asset('uploads/vehicles/' ~ trajet.conducteur.vehiclePhoto) }}" alt="Photo du vÃ©hicule" class="reservation-vehicle-card__photo">
+            <img src="{{ asset('uploads/vehicles/' ~ trajet.conducteur.vehiclePhoto) }}" alt="Photo du v&eacute;hicule" class="reservation-vehicle-card__photo">
           {% endif %}
           <dl class="reservation-info-list">
             {% if trajet.conducteur.vehicleBrand or trajet.conducteur.vehicleModel %}
               <div>
-                <dt>ModÃ¨le</dt>
+                <dt>Mod&egrave;le</dt>
                 <dd>{{ [trajet.conducteur.vehicleBrand, trajet.conducteur.vehicleModel]|filter(v => v)|join(' ') }}</dd>
               </div>
             {% endif %}
