@@ -28,11 +28,12 @@
 </section>
 
 <section class="container hg-account-section">
-  <div class="app-panel">
-    <div class="app-panel__header">
+  <div class="app-panel reservations-summary-panel">
+    <div class="app-panel__header reservations-summary-panel__header">
+      <span class="app-panel__icon"><i class="bi bi-calendar-check-fill"></i></span>
       <div>
-        <h2>Où en est chaque trajet ?</h2>
-        <p>Voyez rapidement si vous devez attendre, payer, contacter ou laisser un avis.</p>
+        <h2>Suivi des réservations</h2>
+        <p>Retrouvez vos demandes, vos paiements, vos messages et vos avis en un coup d'œil.</p>
       </div>
       <a href="{{ path('app_chercher') }}" class="btn btn-orange btn-sm">
         <i class="bi bi-search"></i>
@@ -40,8 +41,8 @@
       </a>
     </div>
 
-    <div class="hg-filter-select mb-4">
-      <label for="filtreReservationsSelect">Filtrer les réservations</label>
+    <div class="hg-filter-select reservation-filter-field mb-4">
+      <label for="filtreReservationsSelect">Afficher</label>
       <select id="filtreReservationsSelect" class="form-select" onchange="filterReservations(this.value)">
         {% for key, label in trajetLabels %}
           <option value="{{ key }}">{{ label }}</option>

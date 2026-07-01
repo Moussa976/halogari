@@ -865,6 +865,31 @@ textarea.form-control.app-message-textarea {
     font-weight: 850;
 }
 
+.reservations-summary-panel {
+    display: grid;
+    gap: 1rem;
+}
+
+.reservations-summary-panel__header {
+    margin-bottom: 0;
+    padding-bottom: .85rem;
+    border-bottom: 1px solid rgba(36, 92, 54, .1);
+}
+
+.reservations-summary-panel__header .btn {
+    min-height: 42px;
+    padding-inline: .95rem;
+}
+
+.reservations-summary-panel__header p {
+    max-width: 56ch;
+}
+
+.reservation-filter-field {
+    max-width: 360px;
+    margin-bottom: .8rem !important;
+}
+
 .app-page-header {
     position: relative;
     padding: 7rem 0 3rem;
@@ -3842,6 +3867,41 @@ textarea.form-control.app-message-textarea {
 @media screen and (max-width: 575.98px) {
     .app-panel__header {
         align-items: flex-start;
+        flex-wrap: wrap;
+        gap: .7rem;
+    }
+
+    .app-panel__header > .btn {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .app-panel__header h2,
+    .app-panel h2 {
+        font-size: 1.18rem;
+        line-height: 1.15;
+    }
+
+    .app-panel__header p,
+    .app-panel p {
+        font-size: .84rem;
+    }
+
+    .app-panel__icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        font-size: .92rem;
+    }
+
+    .reservations-summary-panel__header {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+    }
+
+    .reservations-summary-panel__header .btn {
+        grid-column: 1 / -1;
+        min-height: 40px;
     }
 
     .settings-page .hg-form-actions {
