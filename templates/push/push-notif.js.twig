@@ -1,7 +1,7 @@
 {# templates/push/push-notif.js.twig #}
 
 const VAPID_PUBLIC_KEY = '{{ vapidPublicKey }}';
-const HALOGARI_PUSH_TIMEOUT_MS = 8000;
+const HALOGARI_PUSH_TIMEOUT_MS = 15000;
 
 function withPushTimeout(promise, label) {
   return Promise.race([
@@ -19,6 +19,20 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
 
+async function getHaloGariServiceWorkerRegistration() {
+  let registration = await navigator.serviceWorker.getRegistration();
+
+  if (!registration) {
+    registration = await navigator.serviceWorker.register('/js/service-worker.js', { updateViaCache: 'none' });
+  }
+
+  if (registration.active) {
+    return registration;
+  }
+
+  return await withPushTimeout(navigator.serviceWorker.ready, 'Service worker');
+}
+
 async function subscribeToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     alert('Notifications non supportées sur ce navigateur.');
@@ -26,7 +40,7 @@ async function subscribeToPush() {
   }
 
   try {
-    const registration = await withPushTimeout(navigator.serviceWorker.ready, 'Service worker');
+    const registration = await getHaloGariServiceWorkerRegistration();
     const subscription = await registration.pushManager.getSubscription()
       || await withPushTimeout(registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -47,7 +61,7 @@ async function subscribeToPush() {
 
     console.error("Erreur lors de l'envoi de l'abonnement Push");
   } catch (error) {
-    console.error('Abonnement Push impossible', error);
+    console.warn('Abonnement Push impossible pour le moment', error);
   }
 
   localStorage.removeItem('halogariPushSubscribed');

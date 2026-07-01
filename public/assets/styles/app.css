@@ -865,27 +865,32 @@ textarea.form-control.app-message-textarea {
     font-weight: 850;
 }
 
-.reservations-summary-panel {
+.reservations-summary-panel,
+.account-summary-panel {
     display: grid;
     gap: 1rem;
 }
 
-.reservations-summary-panel__header {
+.reservations-summary-panel__header,
+.account-summary-panel__header {
     margin-bottom: 0;
     padding-bottom: .85rem;
     border-bottom: 1px solid rgba(36, 92, 54, .1);
 }
 
-.reservations-summary-panel__header .btn {
+.reservations-summary-panel__header .btn,
+.account-summary-panel__header .btn {
     min-height: 42px;
     padding-inline: .95rem;
 }
 
-.reservations-summary-panel__header p {
+.reservations-summary-panel__header p,
+.account-summary-panel__header p {
     max-width: 56ch;
 }
 
-.reservation-filter-field {
+.reservation-filter-field,
+.account-filter-field {
     max-width: 360px;
     margin-bottom: .8rem !important;
 }
@@ -3894,12 +3899,14 @@ textarea.form-control.app-message-textarea {
         font-size: .92rem;
     }
 
-    .reservations-summary-panel__header {
+    .reservations-summary-panel__header,
+    .account-summary-panel__header {
         display: grid;
         grid-template-columns: 36px minmax(0, 1fr);
     }
 
-    .reservations-summary-panel__header .btn {
+    .reservations-summary-panel__header .btn,
+    .account-summary-panel__header .btn {
         grid-column: 1 / -1;
         min-height: 40px;
     }
