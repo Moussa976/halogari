@@ -872,7 +872,7 @@ textarea.form-control.app-message-textarea {
     overflow: hidden;
     background:
         linear-gradient(120deg, rgba(14, 46, 32, .96), rgba(36, 92, 54, .8)),
-        url('../images/carte de mayotte aves tous les villages.png') center/cover no-repeat;
+        url('../../images/carte de mayotte aves tous les villages.png') center/cover no-repeat;
 }
 
 .app-hero {
