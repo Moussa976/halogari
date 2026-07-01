@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const hideButtons = () => notifButtons.forEach(btn => btn.classList.add('d-none'));
   const showButtons = () => notifButtons.forEach(btn => btn.classList.remove('d-none'));
+  const setButtonsContent = (html, disabled = false) => notifButtons.forEach(btn => {
+    btn.disabled = disabled;
+    btn.innerHTML = html;
+  });
   const setHelpText = (text) => helpTexts.forEach(element => {
     element.textContent = text;
   });
@@ -54,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!('Notification' in window)) {
     showButtons();
+    setButtonsContent('<i class="bi bi-info-circle-fill"></i> Infos');
     setHelpText(isIos && !isStandalone
       ? "Ouvrez HaloGari depuis l'\u00e9cran d'accueil pour activer les notifications sur iPhone."
       : "Ce navigateur ne permet pas d'activer les notifications HaloGari.");
@@ -72,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (isIos && !isStandalone) {
     showButtons();
+    setButtonsContent('<i class="bi bi-box-arrow-up-right"></i> Ouvrir l\'app');
     setHelpText("Ouvrez HaloGari depuis l'\u00e9cran d'accueil pour activer les notifications sur iPhone.");
     notifButtons.forEach(btn => {
       btn.addEventListener('click', explainIosInstall);
@@ -81,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     showButtons();
+    setButtonsContent('<i class="bi bi-info-circle-fill"></i> Infos');
     setHelpText('Les notifications push ne sont pas disponibles sur ce navigateur.');
     notifButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -91,6 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (Notification.permission === 'granted') {
+    showButtons();
+    setButtonsContent('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>V\u00e9rification', true);
     setHelpText("Les notifications sont autoris\u00e9es sur cet appareil. V\u00e9rification de l'abonnement...");
     if (typeof window.subscribeToHaloGariPush === 'function') {
       window.subscribeToHaloGariPush().then((success) => {
@@ -99,11 +108,13 @@ document.addEventListener("DOMContentLoaded", () => {
           hideButtons();
         } else {
           setHelpText("Autorisation accord\u00e9e, mais l'abonnement n'est pas encore enregistr\u00e9.");
+          setButtonsContent('<i class="bi bi-arrow-repeat"></i> R\u00e9essayer');
           showButtons();
         }
       });
     } else {
       setHelpText("Autorisation accord\u00e9e, mais le module d'abonnement n'est pas charg\u00e9.");
+      setButtonsContent('<i class="bi bi-arrow-repeat"></i> R\u00e9essayer');
       showButtons();
     }
     return;
@@ -111,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (Notification.permission === 'denied') {
     showButtons();
+    setButtonsContent('<i class="bi bi-bell-slash-fill"></i> Bloqu\u00e9');
     setHelpText("Les notifications sont bloqu\u00e9es dans les r\u00e9glages du navigateur ou de l'application.");
     notifButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -121,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   showButtons();
+  setButtonsContent('<i class="bi bi-bell-fill"></i> Activer');
   setHelpText(isStandalone
     ? 'Activez les notifications pour recevoir les alertes importantes de HaloGari.'
     : "Vous \u00eates dans le navigateur. Si HaloGari est install\u00e9, utilisez Ouvrir dans l'appli pour les notifications de l'app.");
@@ -153,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hideButtons();
       } else {
         setHelpText("Autorisation accord\u00e9e, mais l'abonnement n'a pas pu \u00eatre enregistr\u00e9.");
+        setButtonsContent('<i class="bi bi-arrow-repeat"></i> R\u00e9essayer');
         notify('error', 'Activation impossible', "L'autorisation est accord\u00e9e, mais l'abonnement push n'a pas pu \u00eatre enregistr\u00e9. R\u00e9essayez apr\u00e8s avoir ferm\u00e9 puis rouvert HaloGari.");
       }
     });
