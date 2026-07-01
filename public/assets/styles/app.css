@@ -1414,6 +1414,67 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-muted);
 }
 
+.ride-price-details {
+    margin-top: .85rem;
+    border: 1px solid rgba(36, 92, 54, .12);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .04);
+}
+
+.ride-price-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .55rem;
+    padding: .7rem .8rem;
+    color: var(--hg-green);
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 900;
+    list-style: none;
+}
+
+.ride-price-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.ride-price-details summary::after {
+    content: "\F282";
+    font-family: "bootstrap-icons";
+    font-size: .78rem;
+    transition: transform .18s ease;
+}
+
+.ride-price-details[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.ride-price-details__rows {
+    display: grid;
+    gap: .55rem;
+    padding: 0 .8rem .8rem;
+}
+
+.ride-price-details__rows div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--hg-muted);
+    font-size: .88rem;
+}
+
+.ride-price-details__rows div:last-child {
+    padding-top: .55rem;
+    border-top: 1px solid rgba(36, 92, 54, .12);
+    color: var(--hg-ink);
+}
+
+.ride-price-details__rows strong {
+    color: var(--hg-ink);
+    white-space: nowrap;
+}
+
 .ride-booking-card__route,
 .ride-booking-card__driver,
 .ride-booking-card__price {

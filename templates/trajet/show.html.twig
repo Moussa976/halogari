@@ -210,6 +210,26 @@
 						<p class="ride-booking-card__subtitle">{{ passengerLabel }}
 							· paiement si le conducteur accepte</p>
 
+						<details class="ride-price-details">
+							<summary>
+								<i class="bi bi-receipt"></i>
+								D&eacute;tail du prix
+							</summary>
+							<div class="ride-price-details__rows">
+								<div>
+									<span>Prix par place</span>
+									<strong>{{ trajet.prix|number_format(2, ',', '.') }} &euro;</strong>
+								</div>
+								<div>
+									<span>Passagers</span>
+									<strong>x {{ nbPlaceReservee }}</strong>
+								</div>
+								<div>
+									<span>Total</span>
+									<strong>{{ totalReservation|number_format(2, ',', '.') }} &euro;</strong>
+								</div>
+							</div>
+						</details>
 					</div>
 
 					<div id="reservation-section" class="card-footer bg-white border-top text-center">
