@@ -50,11 +50,36 @@ class OtherController extends AbstractController
      */
     public function contact(Request $request, MailerInterface $mailer): Response
     {
+        $user = $this->getUser();
+
         if ($request->isMethod('POST')) {
-            $nom = $request->request->get('nom');
-            $email = $request->request->get('email');
-            $sujet = $request->request->get('sujet');
-            $messageContent = $request->request->get('message');
+            if (!$user) {
+                $request->getSession()->set('_security.main.target_path', $this->generateUrl('app_contact'));
+                $this->addFlash('warning', 'Connectez-vous pour envoyer un message depuis HaloGari.');
+
+                return $this->redirectToRoute('app_login', ['next' => $this->generateUrl('app_contact')]);
+            }
+
+            if (!$this->isCsrfTokenValid('contact_message', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Votre session a expiré. Merci de réessayer.');
+
+                return $this->redirectToRoute('app_contact');
+            }
+
+            $nom = trim((string) ($user->getNom() ?? '') . ' ' . (string) ($user->getPrenom() ?? ''));
+            $email = (string) $user->getEmail();
+            $sujet = trim((string) $request->request->get('sujet'));
+            $messageContent = trim((string) $request->request->get('message'));
+
+            if ($sujet === '' || $messageContent === '') {
+                $this->addFlash('error', 'Merci d’indiquer un sujet et un message.');
+
+                return $this->redirectToRoute('app_contact');
+            }
+
+            if ($nom === '') {
+                $nom = $email;
+            }
 
             // 1. Envoi à l'administrateur
             $adminEmail = (new TemplatedEmail())
@@ -67,6 +92,7 @@ class OtherController extends AbstractController
                 ->context([
                     'nom' => $nom,
                     'expediteur_email' => $email,
+                    'sujet' => $sujet,
                     'message' => $messageContent,
                 ]);
 
@@ -81,6 +107,7 @@ class OtherController extends AbstractController
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
                 ->context([
                     'nom' => $nom,
+                    'sujet' => $sujet,
                     'message' => $messageContent,
                 ]);
 

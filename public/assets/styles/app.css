@@ -4038,6 +4038,58 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-muted);
 }
 
+.contact-form__fields {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.contact-form .form-control:disabled,
+.contact-form .form-control[readonly] {
+    color: var(--hg-muted);
+    background: rgba(247, 249, 245, .88);
+    border-color: rgba(36, 92, 54, .14);
+    opacity: 1;
+}
+
+.contact-form .form-control[readonly]:not(:disabled) {
+    cursor: default;
+}
+
+.contact-login-notice {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .85rem;
+    border: 1px solid rgba(238, 121, 17, .28);
+    border-radius: 8px;
+    color: #6c4500;
+    background: rgba(255, 247, 232, .86);
+}
+
+.contact-login-notice i {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #fff;
+    background: var(--hg-orange);
+}
+
+.contact-login-notice strong,
+.contact-login-notice span {
+    display: block;
+}
+
+.contact-login-notice span {
+    margin-top: .12rem;
+    color: var(--hg-muted);
+    font-size: .88rem;
+}
+
 .hg-helpbot {
     position: fixed;
     right: 0;

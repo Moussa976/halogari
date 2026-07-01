@@ -4,6 +4,7 @@
 {% block meta_description %}Contactez HaloGari pour une question sur un trajet, une réservation, un paiement, un document ou l’utilisation du covoiturage à Mayotte.{% endblock %}
 
 {% block body %}
+{% set canContact = app.user is not null %}
 <section class="app-page-header app-page-header--compact">
   <div class="container">
     <p class="app-kicker">Support WEB976</p>
@@ -14,7 +15,7 @@
 
 <section class="container auth-layout">
   <div class="auth-card">
-    <form method="POST" action="{{ path('app_contact') }}" class="app-panel app-panel--form auth-form">
+    <form method="POST" action="{{ path('app_contact') }}" class="app-panel app-panel--form auth-form contact-form {{ not canContact ? 'contact-form--locked' : '' }}">
       <div class="auth-form__heading">
         <span><i class="bi bi-envelope-paper-heart-fill"></i></span>
         <div>
@@ -23,19 +24,29 @@
         </div>
       </div>
 
-      <div class="hg-form-grid">
+      {% if not canContact %}
+        <div class="contact-login-notice">
+          <i class="bi bi-lock-fill"></i>
+          <div>
+            <strong>Connexion requise</strong>
+            <span>Connectez-vous pour écrire au support depuis votre compte HaloGari.</span>
+          </div>
+        </div>
+      {% endif %}
+
+      <fieldset class="hg-form-grid contact-form__fields" {{ not canContact ? 'disabled' : '' }}>
         <div class="form-floating">
-          <input type="text" class="form-control" id="nom" name="nom" placeholder="Votre nom" autocomplete="name" required {% if app.user %}value="{{ app.user.nom ~ ' ' ~ app.user.prenom }}"{% endif %}>
+          <input type="text" class="form-control" id="nom" name="nom" placeholder="Votre nom" autocomplete="name" value="{{ canContact ? app.user.nom ~ ' ' ~ app.user.prenom : '' }}" readonly disabled>
           <label for="nom">Nom</label>
         </div>
 
         <div class="form-floating">
-          <input type="email" class="form-control" id="email" name="email" placeholder="exemple@halogari.yt" autocomplete="email" inputmode="email" required {% if app.user %}value="{{ app.user.email }}"{% endif %}>
+          <input type="email" class="form-control" id="email" name="email" placeholder="exemple@halogari.yt" autocomplete="email" inputmode="email" value="{{ canContact ? app.user.email : '' }}" readonly disabled>
           <label for="email">E-mail</label>
         </div>
 
         <div class="form-floating hg-form-full">
-          <input type="text" class="form-control" id="sujet" name="sujet" placeholder="Sujet" required>
+          <input type="text" class="form-control" id="sujet" name="sujet" placeholder="Sujet" required {{ not canContact ? 'disabled' : '' }}>
           <label for="sujet">Sujet</label>
         </div>
 
@@ -44,13 +55,21 @@
           <label for="message">Message</label>
         </div>
         <div class="field-hint hg-form-full">Ajoutez si possible : date du trajet, départ, arrivée, conducteur, passager ou numéro de réservation.</div>
-      </div>
+      </fieldset>
 
       <div class="hg-form-actions">
-        <button type="submit" class="btn btn-orange">
-          <i class="bi bi-send-fill"></i>
-          Envoyer
-        </button>
+        {% if canContact %}
+          <input type="hidden" name="_token" value="{{ csrf_token('contact_message') }}">
+          <button type="submit" class="btn btn-orange">
+            <i class="bi bi-send-fill"></i>
+            Envoyer
+          </button>
+        {% else %}
+          <a href="{{ path('app_login', { next: app.request.requestUri }) }}" class="btn btn-orange">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Se connecter pour écrire
+          </a>
+        {% endif %}
       </div>
     </form>
   </div>
