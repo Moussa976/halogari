@@ -72,6 +72,13 @@
         {% endif %}
       </div>
     </form>
+    {% if not canContact %}
+      <script>
+      document.querySelectorAll('.contact-form input, .contact-form textarea').forEach((field) => {
+        field.disabled = true;
+      });
+      </script>
+    {% endif %}
   </div>
 
   <aside class="app-panel auth-aside">
