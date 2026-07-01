@@ -1,6 +1,16 @@
 {# templates/push/push-notif.js.twig #}
 
 const VAPID_PUBLIC_KEY = '{{ vapidPublicKey }}';
+const HALOGARI_PUSH_TIMEOUT_MS = 8000;
+
+function withPushTimeout(promise, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(`${label} timeout`)), HALOGARI_PUSH_TIMEOUT_MS);
+    })
+  ]);
+}
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -16,18 +26,18 @@ async function subscribeToPush() {
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await withPushTimeout(navigator.serviceWorker.ready, 'Service worker');
     const subscription = await registration.pushManager.getSubscription()
-      || await registration.pushManager.subscribe({
+      || await withPushTimeout(registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
+      }), 'Push subscription');
 
-    const response = await fetch('/abonnement-push', {
+    const response = await withPushTimeout(fetch('/abonnement-push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subscription)
-    });
+    }), 'Push save');
 
     if (response.ok) {
       localStorage.setItem('halogariPushSubscribed', '1');

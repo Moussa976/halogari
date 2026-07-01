@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const setHelpText = (text) => helpTexts.forEach(element => {
     element.textContent = text;
   });
+  const waitWithTimeout = (promise, timeoutMs = 9000) => Promise.race([
+    promise,
+    new Promise((resolve) => {
+      window.setTimeout(() => resolve(false), timeoutMs);
+    })
+  ]);
   const ua = navigator.userAgent.toLowerCase();
   const isIos = /iphone|ipad|ipod/.test(ua);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -102,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setButtonsContent('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>V\u00e9rification', true);
     setHelpText("Les notifications sont autoris\u00e9es sur cet appareil. V\u00e9rification de l'abonnement...");
     if (typeof window.subscribeToHaloGariPush === 'function') {
-      window.subscribeToHaloGariPush().then((success) => {
+      waitWithTimeout(window.subscribeToHaloGariPush()).then((success) => {
         if (success) {
           setHelpText('Notifications activ\u00e9es sur cet appareil.');
           hideButtons();
@@ -155,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let success = false;
       if (typeof window.subscribeToHaloGariPush === 'function') {
-        success = await window.subscribeToHaloGariPush();
+        success = await waitWithTimeout(window.subscribeToHaloGariPush());
       }
 
       setLoading(btn, false);
