@@ -156,6 +156,21 @@ body.app-shell::before {
     padding: 0;
 }
 
+.app-icon-link {
+    border-color: rgba(36, 92, 54, .12);
+    background: rgba(255, 255, 255, .58);
+}
+
+.app-icon-link .badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.34rem;
+    height: 1.34rem;
+    padding: 0 .32rem;
+    border: 2px solid #fff;
+    box-shadow: 0 5px 14px rgba(23, 33, 27, .16);
+}
+
 .app-user-button {
     background: #fff;
     box-shadow: 0 10px 28px rgba(23, 33, 27, .08);
@@ -3671,7 +3686,7 @@ textarea.form-control.app-message-textarea {
 }
 
 .flatpickr-calendar {
-    z-index: 1010 !important;
+    z-index: var(--hg-z-floating-control) !important;
     border: 1px solid var(--hg-line) !important;
     border-radius: 14px !important;
     box-shadow: 0 18px 45px rgba(23, 33, 27, .18) !important;

@@ -4,7 +4,7 @@ function initHaloGariDatepickers() {
     return;
   }
 
-  const getCalendarParent = (input) => input.closest(".modal, .offcanvas") || document.body;
+  const getCalendarParent = () => document.body;
 
   document.querySelectorAll(".dateDepart").forEach((input) => {
     if (input._flatpickr) {
@@ -46,3 +46,5 @@ function initHaloGariDatepickers() {
 
 document.addEventListener("DOMContentLoaded", initHaloGariDatepickers);
 window.addEventListener("pageshow", initHaloGariDatepickers);
+document.addEventListener("shown.bs.offcanvas", initHaloGariDatepickers);
+document.addEventListener("shown.bs.modal", initHaloGariDatepickers);
