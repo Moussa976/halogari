@@ -14,7 +14,6 @@ class DocumentVerificationService
      */
     public function verify(UploadedFile $file, string $type): array
     {
-        $normalizedType = strtolower(trim($type));
         $mimeType = (string) $file->getMimeType();
         $size = (int) $file->getSize();
         $extension = strtolower((string) $file->guessExtension());
@@ -32,10 +31,6 @@ class DocumentVerificationService
 
         if ($size <= 0 || $size > 2 * 1024 * 1024) {
             return ['valid' => false, 'reason' => 'Fichier vide ou trop volumineux (max 2 Mo).'];
-        }
-
-        if (in_array($normalizedType, ['rib', 'identite'], true) && $size < 15 * 1024) {
-            return ['valid' => false, 'reason' => 'Document trop petit pour une vérification fiable.'];
         }
 
         return ['valid' => true, 'reason' => 'Pré-vérification automatique validée.'];
