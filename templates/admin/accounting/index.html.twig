@@ -1,0 +1,233 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Comptabilité | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1 admin-accounting">
+    <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Comptabilité</h1>
+        <p class="text-muted mb-0">Vue simple des montants payés, remboursés, versés et conservés par HaloGari.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-self-xl-start">
+        <a href="{{ path('admin_paiements') }}" class="btn btn-outline-primary btn-sm">Paiements</a>
+        <a href="{{ path('admin_litiges_remboursements') }}" class="btn btn-outline-primary btn-sm">Remboursements</a>
+        <a href="{{ path('admin_stripe_connect_accounts') }}" class="btn btn-outline-primary btn-sm">Comptes Stripe</a>
+      </div>
+    </div>
+
+    <div class="alert alert-light border d-flex flex-column flex-lg-row gap-2 justify-content-between mb-4">
+      <div>
+        <strong>Lecture rapide</strong>
+        <div class="small text-muted">
+          Les frais Stripe sont enregistrés quand le versement conducteur existe. Pour les paiements encore à traiter, HaloGari affiche une estimation.
+        </div>
+      </div>
+      <span class="badge bg-primary align-self-start">{{ counts.paid }} paiement{{ counts.paid > 1 ? 's' : '' }} capturé{{ counts.paid > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+      {% set cards = [
+        {'label': 'Payé par les passagers', 'value': totals.paid_gross, 'desc': 'Total capturé avant remboursement', 'class': 'primary'},
+        {'label': 'Remboursé', 'value': totals.refunded, 'desc': counts.refunded ~ ' paiement(s) concerné(s)', 'class': 'danger'},
+        {'label': 'Net après remboursements', 'value': totals.net_after_refunds, 'desc': 'Montant restant dans le circuit', 'class': 'success'},
+        {'label': 'Gain HaloGari enregistré', 'value': totals.halo_commission_recorded, 'desc': 'Commission déjà comptabilisée', 'class': 'dark'},
+        {'label': 'Gain HaloGari estimé', 'value': totals.halo_commission_pending, 'desc': 'Sur paiements à traiter', 'class': 'warning text-dark'},
+        {'label': 'Frais Stripe', 'value': totals.payment_fees_recorded + totals.payment_fees_estimated, 'desc': totals.payment_fees_recorded|number_format(2, ',', ' ') ~ ' € enregistrés + estimation', 'class': 'info text-dark'},
+        {'label': 'Versé aux conducteurs', 'value': totals.driver_paid, 'desc': counts.driver_paid ~ ' versement(s) enregistré(s)', 'class': 'success'},
+        {'label': 'Paiements enregistrés', 'value': totals.authorized, 'desc': counts.authorized ~ ' paiement(s) non capturé(s)', 'class': 'secondary'}
+      ] %}
+      {% for card in cards %}
+        <div class="col-sm-6 col-xl-3">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between gap-3">
+                <div>
+                  <div class="text-muted small">{{ card.label }}</div>
+                  <h3 class="mb-1">{{ card.value|number_format(2, ',', ' ') }} €</h3>
+                  <div class="small text-muted">{{ card.desc }}</div>
+                </div>
+                <span class="badge bg-{{ card.class }} align-self-start">€</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-xl-7">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>À traiter</span>
+            <span class="badge bg-warning text-dark">{{ counts.pending_to_process }}</span>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Paiement</th>
+                  <th>Trajet</th>
+                  <th>Disponible</th>
+                  <th>HaloGari</th>
+                  <th>Conducteur</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in pending_payments %}
+                  {% set paiement = row.paiement %}
+                  {% set reservation = paiement.reservation %}
+                  {% set trajet = reservation ? reservation.trajet : null %}
+                  <tr>
+                    <td>#{{ paiement.id }}</td>
+                    <td>
+                      {% if trajet %}
+                        <strong>{{ trajet.depart }} → {{ trajet.arrivee }}</strong>
+                        <div class="small text-muted">{{ trajet.dateTrajet|date('d/m/Y') }} à {{ trajet.heureTrajet|date('H:i') }}</div>
+                      {% else %}
+                        <span class="text-muted">Trajet introuvable</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ row.available|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ row.commission|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ row.driver|number_format(2, ',', ' ') }} €</td>
+                    <td class="text-end">
+                      <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_paiements') }}#paiement-{{ paiement.id }}">Voir</a>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="text-muted text-center py-4">Aucun paiement à traiter.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-5">
+        <div class="card h-100">
+          <div class="card-header">Top conducteurs</div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Conducteur</th>
+                  <th>Reçu</th>
+                  <th>Trajets</th>
+                  <th>Dernier</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in top_drivers %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        {{ avatar.formatSimple(row.driver, 34, 0, 1) }}
+                        <div>
+                          <a href="{{ path('admin_user_show', { id: row.driver.id }) }}">{{ row.driver.prenom }} {{ row.driver.nom }}</a>
+                          <div class="small text-muted">{{ row.driver.email }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><strong>{{ row.amount|number_format(2, ',', ' ') }} €</strong></td>
+                    <td>{{ row.rides_count }}</td>
+                    <td>{{ row.last_at ? row.last_at|date('d/m/Y') : '-' }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="4" class="text-muted text-center py-4">Aucun versement conducteur pour le moment.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header">Derniers remboursements</div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Paiement</th>
+                  <th>Passager</th>
+                  <th>Remboursé</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in refund_payments %}
+                  {% set paiement = row.paiement %}
+                  {% set reservation = paiement.reservation %}
+                  <tr>
+                    <td><a href="{{ path('admin_paiements') }}#paiement-{{ paiement.id }}">#{{ paiement.id }}</a></td>
+                    <td>
+                      {% if reservation and reservation.passager %}
+                        <a href="{{ path('admin_user_show', { id: reservation.passager.id }) }}">{{ reservation.passager.prenom }} {{ reservation.passager.nom }}</a>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ row.refunded|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ paiement.statutLabel }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="4" class="text-muted text-center py-4">Aucun remboursement enregistré.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header">Derniers versements conducteurs</div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Réservation</th>
+                  <th>HaloGari</th>
+                  <th>Frais</th>
+                  <th>Conducteur</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for commission in recent_commissions %}
+                  {% set reservation = commission.reservation %}
+                  {% set trajet = reservation ? reservation.trajet : null %}
+                  <tr>
+                    <td>
+                      #{{ reservation ? reservation.id : '-' }}
+                      {% if trajet %}
+                        <div class="small text-muted">{{ trajet.depart }} → {{ trajet.arrivee }}</div>
+                      {% endif %}
+                    </td>
+                    <td>{{ commission.commissionHaloGari|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ commission.fraisStripe|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ commission.montantConducteur|number_format(2, ',', ' ') }} €</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="4" class="text-muted text-center py-4">Aucun versement enregistré.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

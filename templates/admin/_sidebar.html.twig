@@ -55,6 +55,13 @@
 				</a>
 			</li>
 
+			<li class="sidebar-item {% if route == 'admin_comptabilite' %}active{% endif %}">
+				<a class="sidebar-link" href="{{ path('admin_comptabilite') }}">
+					<i class="align-middle" data-feather="bar-chart-2"></i>
+					<span class="align-middle">Comptabilité</span>
+				</a>
+			</li>
+
 			<li class="sidebar-item {% if route == 'admin_stripe_connect_accounts' %}active{% endif %}">
 				<a class="sidebar-link" href="{{ path('admin_stripe_connect_accounts') }}">
 					<i class="align-middle" data-feather="credit-card"></i>
