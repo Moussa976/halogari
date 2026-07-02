@@ -46,7 +46,7 @@
           <tbody>
             {% for reservation in reservations %}
               {% set reservationLabel = reservation.statut == 'annulee' and reservation.cancellationLabel ? reservation.cancellationLabel : labels[reservation.statut]|default(reservation.statut) %}
-              <tr>
+              <tr id="reservation-{{ reservation.id }}">
                 <td>#{{ reservation.id }}</td>
                 <td>
                   {% if reservation.passager %}

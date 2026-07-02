@@ -40,7 +40,7 @@
           </thead>
           <tbody>
             {% for document in documents %}
-              <tr>
+              <tr id="document-{{ document.id }}">
                 <td>#{{ document.id }}</td>
                 <td>
                   {% if document.user %}

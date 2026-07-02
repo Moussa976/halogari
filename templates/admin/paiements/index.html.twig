@@ -93,7 +93,7 @@
               ]|join(' ') %}
               {% set showRow = mode == 'paiements' or aRembourser or paiement.statut in ['rembourse', 'rembourse_partiel', 'echoue'] or statutTrajet == 'litige' %}
               {% if showRow %}
-                <tr data-payment-filters="{{ rowFilters|trim ?: 'all' }}">
+                <tr id="paiement-{{ paiement.id }}" data-payment-filters="{{ rowFilters|trim ?: 'all' }}">
                   <td>#{{ paiement.id }}</td>
                   <td><strong>{{ paiement.montant|number_format(2, ',', ' ') }} €</strong></td>
                   <td>

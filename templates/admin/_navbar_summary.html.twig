@@ -11,6 +11,7 @@
     <div class="dropdown-menu-header">
       {{ pendingCount }} action{{ pendingCount > 1 ? 's' : '' }} à traiter
     </div>
+    <div class="small text-muted text-center px-3 pb-2">Le badge compte uniquement les actions non ouvertes.</div>
     <div class="list-group">
       <a href="{{ path('admin_reservations') }}" class="list-group-item">
         <div class="row g-0 align-items-center">
@@ -40,8 +41,78 @@
         </div>
       </a>
     </div>
+    <div class="px-3 py-2 border-top admin-action-details">
+      {% if pendingReservations is not empty %}
+        <div class="small fw-bold text-dark mb-1">Demandes à ouvrir</div>
+        {% for reservation in pendingReservations %}
+          {% set seen = reservationSeen[reservation.id] is defined %}
+          <a href="{{ path('admin_reservations') }}#reservation-{{ reservation.id }}" class="admin-action-preview" data-admin-seen-type="reservation" data-admin-seen-id="{{ reservation.id }}">
+            <span>#{{ reservation.id }} · {{ reservation.passager ? reservation.passager.prenom ~ ' ' ~ reservation.passager.nom : 'Passager inconnu' }}</span>
+            {% if reservation.trajet %}
+              <small>{{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}</small>
+            {% endif %}
+            <em class="badge {{ seen ? 'bg-light text-muted border' : 'bg-warning text-dark' }}">{{ seen ? 'Ouverte' : 'Non ouverte' }}</em>
+          </a>
+        {% endfor %}
+      {% endif %}
+
+      {% if pendingDocuments is not empty %}
+        <div class="small fw-bold text-dark mt-2 mb-1">Documents à ouvrir</div>
+        {% for document in pendingDocuments %}
+          {% set seen = documentSeen[document.id] is defined %}
+          <a href="{{ path('admin_documents') }}#document-{{ document.id }}" class="admin-action-preview" data-admin-seen-type="document" data-admin-seen-id="{{ document.id }}">
+            <span>#{{ document.id }} · {{ document.user ? document.user.prenom ~ ' ' ~ document.user.nom : 'Utilisateur inconnu' }}</span>
+            <small>{{ document.typeDocument|replace({'_': ' '}) }}</small>
+            <em class="badge {{ seen ? 'bg-light text-muted border' : 'bg-warning text-dark' }}">{{ seen ? 'Ouvert' : 'Non ouvert' }}</em>
+          </a>
+        {% endfor %}
+      {% endif %}
+
+      {% if paymentActions is not empty %}
+        <div class="small fw-bold text-dark mt-2 mb-1">Paiements à ouvrir</div>
+        {% for paiement in paymentActions %}
+          {% set seen = paymentSeen[paiement.id] is defined %}
+          {% set reservation = paiement.reservation %}
+          {% set trajet = reservation ? reservation.trajet : null %}
+          <a href="{{ path('admin_paiements') }}#paiement-{{ paiement.id }}" class="admin-action-preview" data-admin-seen-type="paiement" data-admin-seen-id="{{ paiement.id }}">
+            <span>#{{ paiement.id }} · {{ paiement.montant|number_format(2, ',', ' ') }} €</span>
+            {% if trajet %}
+              <small>{{ trajet.depart }} → {{ trajet.arrivee }}</small>
+            {% endif %}
+            <em class="badge {{ seen ? 'bg-light text-muted border' : 'bg-warning text-dark' }}">{{ seen ? 'Ouvert' : 'Non ouvert' }}</em>
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+
     <div class="dropdown-menu-footer">
       <a href="{{ path('admin_dashboard') }}" class="text-muted">Voir le tableau de bord</a>
     </div>
   </div>
 </li>
+
+<script>
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('[data-admin-seen-type][data-admin-seen-id]');
+  if (!link) {
+    return;
+  }
+
+  const payload = new FormData();
+  payload.append('type', link.dataset.adminSeenType);
+  payload.append('id', link.dataset.adminSeenId);
+  payload.append('_token', '{{ csrf_token('admin_seen_action') }}');
+
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('{{ path('admin_seen_action_mark') }}', payload);
+    return;
+  }
+
+  fetch('{{ path('admin_seen_action_mark') }}', {
+    method: 'POST',
+    body: payload,
+    keepalive: true,
+    credentials: 'same-origin'
+  });
+});
+</script>

@@ -169,6 +169,48 @@
 				width: 100% !important;
 				height: 100% !important;
 			}
+			.admin-action-details {
+				max-height: 320px;
+				overflow-y: auto;
+			}
+			.admin-action-preview {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				gap: .15rem .5rem;
+				align-items: center;
+				padding: .45rem 0;
+				color: #343a40;
+				text-decoration: none;
+				border-top: 1px solid rgba(222, 226, 230, .72);
+			}
+			.admin-action-preview:first-of-type {
+				border-top: 0;
+			}
+			.admin-action-preview:hover {
+				color: #245c36;
+			}
+			.admin-action-preview span,
+			.admin-action-preview small {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.admin-action-preview small {
+				grid-column: 1;
+				color: #6c757d;
+			}
+			.admin-action-preview .badge {
+				grid-column: 2;
+				grid-row: 1 / span 2;
+				align-self: center;
+				font-style: normal;
+			}
+			.js-admin-table tr:target {
+				outline: 2px solid #ffc107;
+				outline-offset: -2px;
+				background: #fff8e1;
+			}
 			@media (max-width: 767.98px) {
 				.admin-table-tools {
 					grid-template-columns: 1fr;
