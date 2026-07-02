@@ -186,25 +186,26 @@
               <h2 class="h5 mb-1">Adresse postale</h2>
               <p class="text-muted small mb-0">À compléter pour autoriser la publication de trajets.</p>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-8 position-relative" data-address-autocomplete>
               <label class="form-label fw-bold">Adresse</label>
-              <input type="text" name="postalAddressLine1" class="form-control" value="{{ user.postalAddressLine1 }}">
+              <input type="text" name="postalAddressLine1" class="form-control" value="{{ user.postalAddressLine1 }}" autocomplete="address-line1" data-address-input>
+              <div class="list-group position-absolute start-0 end-0 shadow-sm d-none z-3 mx-2" data-address-results></div>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-bold">Complément</label>
-              <input type="text" name="postalAddressLine2" class="form-control" value="{{ user.postalAddressLine2 }}">
+              <input type="text" name="postalAddressLine2" class="form-control" value="{{ user.postalAddressLine2 }}" autocomplete="address-line2">
             </div>
             <div class="col-md-3">
               <label class="form-label fw-bold">Code postal</label>
-              <input type="text" name="postalCode" class="form-control" value="{{ user.postalCode }}">
+              <input type="text" name="postalCode" class="form-control" value="{{ user.postalCode }}" autocomplete="postal-code" data-address-postcode>
             </div>
             <div class="col-md-5">
               <label class="form-label fw-bold">Ville</label>
-              <input type="text" name="postalCity" class="form-control" value="{{ user.postalCity }}">
+              <input type="text" name="postalCity" class="form-control" value="{{ user.postalCity }}" autocomplete="address-level2" data-address-city>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-bold">Pays ou territoire</label>
-              <input type="text" name="postalCountry" class="form-control" value="{{ user.postalCountry ?: 'Mayotte' }}">
+              <input type="text" name="postalCountry" class="form-control" value="{{ user.postalCountry ?: 'Mayotte' }}" autocomplete="country-name" data-address-country>
             </div>
             <div class="col-md-8">
               <label class="form-label fw-bold">Photo de profil</label>
@@ -638,17 +639,18 @@
                     <label class="form-label">Titulaire du compte</label>
                     <input type="text" name="nom_complet" required class="form-control" value="{{ user.prenom ~ ' ' ~ user.nom }}">
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-6 position-relative" data-address-autocomplete>
                     <label class="form-label">Adresse</label>
-                    <input type="text" name="line1" required class="form-control" value="1 rue fictive">
+                    <input type="text" name="line1" required class="form-control" value="{{ user.postalAddressLine1 ?: '1 rue fictive' }}" autocomplete="address-line1" data-address-input>
+                    <div class="list-group position-absolute start-0 end-0 shadow-sm d-none z-3 mx-2" data-address-results></div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Ville</label>
-                    <input type="text" name="city" required class="form-control" value="Mamoudzou">
+                    <input type="text" name="city" required class="form-control" value="{{ user.postalCity ?: 'Mamoudzou' }}" autocomplete="address-level2" data-address-city>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Code postal</label>
-                    <input type="text" name="postal_code" required class="form-control" value="97600">
+                    <input type="text" name="postal_code" required class="form-control" value="{{ user.postalCode ?: '97600' }}" autocomplete="postal-code" data-address-postcode>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Pays</label>
@@ -683,4 +685,96 @@
       </div>
     {% endif %}
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const addressBlocks = Array.from(document.querySelectorAll('[data-address-autocomplete]'));
+      const timers = new WeakMap();
+
+      const resolvePostalCountry = (postcode, context) => {
+        if ((postcode || '').startsWith('976')) return 'Mayotte';
+        if ((postcode || '').startsWith('974')) return 'Réunion';
+        if ((context || '').includes('Mayotte')) return 'Mayotte';
+        if ((context || '').includes('Réunion') || (context || '').includes('Reunion')) return 'Réunion';
+        return 'France';
+      };
+
+      const hideResults = (block) => {
+        const results = block.querySelector('[data-address-results]');
+        if (!results) return;
+        results.classList.add('d-none');
+        results.innerHTML = '';
+      };
+
+      const fillAddress = (block, props) => {
+        const input = block.querySelector('[data-address-input]');
+        const form = block.closest('form') || document;
+        const postcode = form.querySelector('[data-address-postcode]');
+        const city = form.querySelector('[data-address-city]');
+        const country = form.querySelector('[data-address-country]');
+
+        if (input) input.value = props.name || props.label || '';
+        if (postcode) postcode.value = props.postcode || '';
+        if (city) city.value = props.city || '';
+        if (country) country.value = resolvePostalCountry(props.postcode || '', props.context || '');
+        hideResults(block);
+      };
+
+      const renderResults = (block, features) => {
+        const results = block.querySelector('[data-address-results]');
+        if (!results) return;
+        results.innerHTML = '';
+
+        if (!features.length) {
+          hideResults(block);
+          return;
+        }
+
+        features.slice(0, 5).forEach((feature) => {
+          const props = feature.properties || {};
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.className = 'list-group-item list-group-item-action text-start';
+          option.textContent = props.label || props.name || '';
+          option.addEventListener('click', () => fillAddress(block, props));
+          results.appendChild(option);
+        });
+
+        results.classList.remove('d-none');
+      };
+
+      addressBlocks.forEach((block) => {
+        const input = block.querySelector('[data-address-input]');
+        if (!input) return;
+
+        input.addEventListener('input', () => {
+          clearTimeout(timers.get(input));
+          const query = input.value.trim();
+          if (query.length < 3) {
+            hideResults(block);
+            return;
+          }
+
+          timers.set(input, setTimeout(async () => {
+            try {
+              const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`);
+              if (!response.ok) throw new Error('Adresse introuvable');
+              const data = await response.json();
+              renderResults(block, Array.isArray(data.features) ? data.features : []);
+            } catch (error) {
+              hideResults(block);
+            }
+          }, 250));
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-address-autocomplete]')) return;
+        addressBlocks.forEach(hideResults);
+      });
+    });
+  </script>
 {% endblock %}
