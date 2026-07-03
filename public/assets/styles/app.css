@@ -5294,7 +5294,7 @@ textarea.form-control.app-message-textarea {
 
 .site-footer__main {
     position: relative;
-    padding: clamp(2rem, 4vw, 3.4rem) 0 !important;
+    padding: clamp(2rem, 4vw, 3.4rem) 0 0 !important;
     background:
         linear-gradient(180deg, #1e2528 0%, #171d1f 100%) !important;
 }
