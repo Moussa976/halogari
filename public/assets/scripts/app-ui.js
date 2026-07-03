@@ -1,6 +1,73 @@
 document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('app-ready');
 
+    const progressBar = document.createElement('div');
+    progressBar.className = 'hg-page-progress';
+    progressBar.setAttribute('aria-hidden', 'true');
+    document.body.prepend(progressBar);
+
+    const isModifiedClick = (event) => event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+
+    const getInternalNavigationUrl = (link) => {
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+            return null;
+        }
+
+        if (
+            link.matches('[download], [target]:not([target="_self"]), [data-bs-toggle], [data-no-loading], [data-confirm], [data-helpbot-toggle], .js-chat-image')
+        ) {
+            return null;
+        }
+
+        const url = new URL(href, window.location.href);
+        if (url.origin !== window.location.origin || !['http:', 'https:'].includes(url.protocol)) {
+            return null;
+        }
+
+        if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) {
+            return null;
+        }
+
+        return url;
+    };
+
+    const startPageLoading = (source) => {
+        document.body.classList.add('is-page-loading');
+        source?.classList.add('is-nav-loading');
+        source?.setAttribute('aria-busy', 'true');
+    };
+
+    const clearPageLoading = () => {
+        document.body.classList.remove('is-page-loading');
+        document.querySelectorAll('.is-nav-loading').forEach((element) => {
+            element.classList.remove('is-nav-loading');
+            element.removeAttribute('aria-busy');
+        });
+    };
+
+    const prefetchedUrls = new Set();
+    const prefetchNavigation = (link) => {
+        const url = getInternalNavigationUrl(link);
+        if (!url || prefetchedUrls.has(url.href)) {
+            return;
+        }
+
+        const path = url.pathname.toLowerCase();
+        if (
+            link.matches('.btn-danger, .text-danger, .app-drawer__logout')
+            || /(logout|delete|supprimer|annuler|cancel|rembourser|refuser|accepter|valider|payer|paiement)/.test(path)
+        ) {
+            return;
+        }
+
+        prefetchedUrls.add(url.href);
+        const hint = document.createElement('link');
+        hint.rel = 'prefetch';
+        hint.href = url.href;
+        document.head.appendChild(hint);
+    };
+
     document.querySelectorAll('.form-label').forEach((label) => {
         const parent = label.parentElement;
         if (!parent || parent.classList.contains('form-floating')) {
@@ -225,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.HaloGariResetButtonLoading = resetButtonLoading;
 
     const resetPageLoadingStates = () => {
+        clearPageLoading();
         document.querySelectorAll('[data-loading-button].is-loading').forEach(resetButtonLoading);
     };
 
@@ -247,6 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (submitter?.matches('[data-loading-button]')) {
                 setButtonLoading(submitter);
             }
+
+            if (!form.matches('[data-no-loading]')) {
+                startPageLoading(submitter || form);
+            }
         });
     });
 
@@ -257,6 +329,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             setButtonLoading(link);
+        });
+    });
+
+    document.querySelectorAll('a[href]').forEach((link) => {
+        link.addEventListener('pointerenter', () => prefetchNavigation(link), { passive: true });
+        link.addEventListener('touchstart', () => prefetchNavigation(link), { passive: true });
+
+        link.addEventListener('click', (event) => {
+            if (event.defaultPrevented || isModifiedClick(event) || link.classList.contains('is-disabled')) {
+                return;
+            }
+
+            if (!getInternalNavigationUrl(link)) {
+                return;
+            }
+
+            startPageLoading(link);
         });
     });
 

@@ -1,15 +1,28 @@
 // Cache app-shell for better offline resilience.
-const CACHE_NAME = 'halogari-cache-v8';
+const CACHE_NAME = 'halogari-cache-v9';
 const urlsToCache = [
   '/',
   '/css/style.css',
   '/assets/styles/app.css',
+  '/assets/scripts/app-ui.js',
   '/manifest.json',
+  '/js/sw-register.js',
+  '/js/pwa-install.js',
+  '/js/message-check.js',
+  '/js/push-session-sync.js',
   '/images/logo/logo-787x298.png',
   '/images/icons/favicon.ico',
   '/images/icons/icon-192x192.png',
   '/images/icons/icon-512x512.png',
 ];
+
+const isLocalStaticAsset = function(request) {
+  const url = new URL(request.url);
+  return url.origin === self.location.origin
+    && ['/assets/', '/css/', '/js/', '/images/'].some(function(prefix) {
+      return url.pathname.startsWith(prefix);
+    });
+};
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -45,7 +58,30 @@ self.addEventListener('fetch', function(event) {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(function() {
-        return caches.match(event.request);
+        return caches.match(event.request).then(function(response) {
+          return response || caches.match('/');
+        });
+      })
+    );
+    return;
+  }
+
+  if (isLocalStaticAsset(event.request)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(function(cache) {
+        return cache.match(event.request).then(function(cachedResponse) {
+          const networkResponse = fetch(event.request).then(function(response) {
+            if (response && response.ok) {
+              cache.put(event.request, response.clone());
+            }
+
+            return response;
+          }).catch(function() {
+            return cachedResponse;
+          });
+
+          return cachedResponse || networkResponse;
+        });
       })
     );
     return;
