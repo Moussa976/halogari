@@ -222,6 +222,11 @@
               </form>
             </div>
 
+            <div class="alert alert-warning small mt-3 mb-0">
+              Les SMS envoyés par l'API OVH peuvent ne pas apparaître comme une campagne créée manuellement dans le Manager OVH.
+              Le suivi le plus fiable est le tableau ci-dessous : il indique le statut enregistré par HaloGari et le retour OVH.
+            </div>
+
             <hr>
 
             <h3 class="h6 mb-3">Derniers SMS</h3>
@@ -233,6 +238,7 @@
                     <th>Passager</th>
                     <th>Événement</th>
                     <th>Statut</th>
+                    <th>Retour OVH</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,10 +258,19 @@
                           <div class="small text-muted text-truncate" style="max-width: 220px;">{{ sms.error }}</div>
                         {% endif %}
                       </td>
+                      <td class="small">
+                        {% if sms.providerMessageId %}
+                          <code>{{ sms.providerMessageId }}</code>
+                        {% elseif sms.error %}
+                          <span class="text-danger" title="{{ sms.error }}">Erreur</span>
+                        {% else %}
+                          <span class="text-muted">-</span>
+                        {% endif %}
+                      </td>
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="4" class="text-muted small">Aucun SMS enregistré pour le moment.</td>
+                      <td colspan="5" class="text-muted small">Aucun SMS enregistré pour le moment.</td>
                     </tr>
                   {% endfor %}
                 </tbody>

@@ -48,7 +48,7 @@ class SmsService
     public function envoyerReservationRefusee(Reservation $reservation): void
     {
         $message = sprintf(
-            'HaloGari : votre demande %s -> %s a ete refusee. Vous pouvez chercher un autre trajet.',
+            'HaloGari : votre demande %s -> %s a été refusée. Vous pouvez chercher un autre trajet.',
             $reservation->getTrajet()->getDepart(),
             $reservation->getTrajet()->getArrivee()
         );
@@ -78,7 +78,7 @@ class SmsService
         }
 
         $message = sprintf(
-            'HaloGari : %s a annule sa reservation pour %s -> %s.',
+            'HaloGari : %s a annulé sa réservation pour %s -> %s.',
             $passager->getPrenom(),
             $trajet->getDepart(),
             $trajet->getArrivee()
@@ -95,7 +95,7 @@ class SmsService
         }
 
         $message = sprintf(
-            'HaloGari : horaire modifie pour %s -> %s. Nouveau depart : %s.',
+            'HaloGari : horaire modifié pour %s -> %s. Nouveau départ : %s.',
             $trajet->getDepart(),
             $trajet->getArrivee(),
             $newSchedule
@@ -205,14 +205,14 @@ class SmsService
         $this->em->persist($log);
 
         if ($this->settings->getValue(self::ENABLED, '0') !== '1') {
-            $log->markSkipped('SMS desactives dans les parametres admin.');
+            $log->markSkipped('SMS désactivés dans les paramètres admin.');
             $this->em->flush();
 
             return;
         }
 
         if ($phone === '') {
-            $log->markFailed('Numero de telephone manquant ou invalide.');
+            $log->markFailed('Numéro de téléphone manquant ou invalide.');
             $this->em->flush();
 
             return;
@@ -323,7 +323,7 @@ class SmsService
         }
 
         if (!empty($data['invalidReceivers']) && is_array($data['invalidReceivers'])) {
-            throw new \RuntimeException('OVH a refuse le numero : ' . implode(', ', $data['invalidReceivers']));
+            throw new \RuntimeException('OVH a refusé le numéro : ' . implode(', ', $data['invalidReceivers']));
         }
 
         if (isset($data['ids'][0])) {
