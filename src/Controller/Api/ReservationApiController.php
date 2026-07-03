@@ -11,6 +11,7 @@ use App\Service\ApiTokenService;
 use App\Service\CancellationCommunicationService;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -214,7 +215,8 @@ class ReservationApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        NotificationService $notifier
+        NotificationService $notifier,
+        SmsService $smsService
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -242,6 +244,7 @@ class ReservationApiController extends AbstractController
 
         $em->flush();
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
+        $smsService->envoyerReservationAcceptee($reservation);
 
         return $this->json([
             'message' => 'Reservation acceptee.',
@@ -258,7 +261,8 @@ class ReservationApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        NotificationService $notifier
+        NotificationService $notifier,
+        SmsService $smsService
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -280,6 +284,7 @@ class ReservationApiController extends AbstractController
 
         $em->flush();
         $notifier->envoyerConfirmationReservation($reservation, 'refusee');
+        $smsService->envoyerReservationRefusee($reservation);
 
         return $this->json([
             'message' => 'Reservation refusee.',

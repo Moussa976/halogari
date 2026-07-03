@@ -125,7 +125,7 @@
 
         <div class="card" id="settings-sms">
           <div class="card-header">
-            <h2 class="h5 mb-1">SMS passagers</h2>
+            <h2 class="h5 mb-1">SMS automatiques</h2>
             <p class="text-muted mb-0">Envoi automatique au passager quand le conducteur accepte, refuse ou annule un trajet.</p>
           </div>
           <div class="card-body">
@@ -138,12 +138,17 @@
                 <label class="form-check-label" for="sms_enabled">Activer les SMS automatiques</label>
               </div>
 
+              <div class="alert alert-info small">
+                <strong>Les SMS partent uniquement pour :</strong>
+                rÃ©servation acceptÃ©e, rÃ©servation refusÃ©e, trajet annulÃ© par le conducteur,
+                rÃ©servation annulÃ©e par le passager et horaire modifiÃ© par l'admin.
+              </div>
+
               <div class="row g-3">
                 <div class="col-12 col-md-6">
                   <label for="sms_provider" class="form-label">Fournisseur</label>
                   <select id="sms_provider" name="sms_provider" class="form-select">
                     <option value="ovh" {% if smsProvider == 'ovh' %}selected{% endif %}>OVHcloud SMS</option>
-                    <option value="twilio" {% if smsProvider == 'twilio' %}selected{% endif %}>Twilio</option>
                   </select>
                   <div class="form-text">OVH est recommandé puisque vous avez déjà un pack de 100 SMS.</div>
                 </div>
@@ -179,7 +184,7 @@
                 </div>
               </div>
 
-              <details class="mt-3">
+              <details class="mt-3 d-none">
                 <summary class="fw-bold">Paramètres Twilio en secours</summary>
                 <div class="row g-3 mt-1">
                 <div class="col-12 col-md-6">

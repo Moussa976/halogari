@@ -151,12 +151,8 @@ class AdminSettingsController extends AbstractController
         }
 
         $enabled = (string) $request->request->get('sms_enabled') === '1';
-        $provider = in_array((string) $request->request->get('sms_provider'), ['ovh', 'twilio'], true)
-            ? (string) $request->request->get('sms_provider')
-            : 'ovh';
+        $provider = 'ovh';
         $from = trim((string) $request->request->get('sms_from'));
-        $accountSid = trim((string) $request->request->get('sms_twilio_account_sid'));
-        $authToken = trim((string) $request->request->get('sms_twilio_auth_token'));
         $ovhServiceName = trim((string) $request->request->get('sms_ovh_service_name'));
         $ovhApplicationKey = trim((string) $request->request->get('sms_ovh_application_key'));
         $ovhApplicationSecret = trim((string) $request->request->get('sms_ovh_application_secret'));
@@ -166,14 +162,6 @@ class AdminSettingsController extends AbstractController
         $settings->setValue(self::SMS_PROVIDER, $provider);
         $settings->setValue(self::SMS_FROM, $from);
         $settings->setValue(self::SMS_OVH_SERVICE_NAME, $ovhServiceName);
-
-        if ($accountSid !== '') {
-            $settings->setValue(self::SMS_TWILIO_ACCOUNT_SID, $accountSid);
-        }
-
-        if ($authToken !== '') {
-            $settings->setValue(self::SMS_TWILIO_AUTH_TOKEN, $authToken);
-        }
 
         if ($ovhApplicationKey !== '') {
             $settings->setValue(self::SMS_OVH_APPLICATION_KEY, $ovhApplicationKey);
@@ -193,8 +181,6 @@ class AdminSettingsController extends AbstractController
             'enabled' => $enabled,
             'provider' => $provider,
             'from' => $from,
-            'accountSidUpdated' => $accountSid !== '',
-            'authTokenUpdated' => $authToken !== '',
             'ovhServiceName' => $ovhServiceName,
             'ovhApplicationKeyUpdated' => $ovhApplicationKey !== '',
             'ovhApplicationSecretUpdated' => $ovhApplicationSecret !== '',
@@ -373,12 +359,6 @@ class AdminSettingsController extends AbstractController
     {
         if ($settings->getValue(self::SMS_ENABLED, '0') !== '1') {
             return true;
-        }
-
-        if ($settings->getValue(self::SMS_PROVIDER, 'ovh') === 'twilio') {
-            return (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== ''
-                && (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== ''
-                && (string) $settings->getValue(self::SMS_FROM, '') !== '';
         }
 
         return (string) $settings->getValue(self::SMS_OVH_SERVICE_NAME, '') !== ''

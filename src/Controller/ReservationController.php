@@ -242,7 +242,7 @@ class ReservationController extends AbstractController
 
         $this->addFlash('success', 'Demande refusée.');
         $notifier->envoyerConfirmationReservation($reservation, 'refusee');
-        $smsService->envoyerReservationAnnulee($reservation, 'refusee');
+        $smsService->envoyerReservationRefusee($reservation);
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }

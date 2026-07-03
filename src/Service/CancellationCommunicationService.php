@@ -12,11 +12,13 @@ class CancellationCommunicationService
 {
     private EntityManagerInterface $em;
     private NotificationPushSender $notificationPushSender;
+    private SmsService $smsService;
 
-    public function __construct(EntityManagerInterface $em, NotificationPushSender $notificationPushSender)
+    public function __construct(EntityManagerInterface $em, NotificationPushSender $notificationPushSender, SmsService $smsService)
     {
         $this->em = $em;
         $this->notificationPushSender = $notificationPushSender;
+        $this->smsService = $smsService;
     }
 
     public function notifyPassengerCancellation(Reservation $reservation): void
@@ -44,6 +46,7 @@ class CancellationCommunicationService
             sprintf('%s a annulé sa réservation pour %s → %s.', $passager->getPrenom(), $trajet->getDepart(), $trajet->getArrivee()),
             '/user/messages/' . $passager->getId() . '/' . $trajet->getId()
         );
+        $this->smsService->envoyerReservationAnnuleeParPassager($reservation);
     }
 
     public function notifyDriverTripCancellation(Reservation $reservation): void

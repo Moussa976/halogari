@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\TrajetRepository;
 use App\Service\AdminAuditLogger;
 use App\Service\NotificationPushSender;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -37,7 +38,8 @@ class AdminTrajetController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         AdminAuditLogger $auditLogger,
-        NotificationPushSender $pushSender
+        NotificationPushSender $pushSender,
+        SmsService $smsService
     ): RedirectResponse {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
 
@@ -73,6 +75,12 @@ class AdminTrajetController extends AbstractController
 
         foreach ($notifications as $notification) {
             $pushSender->send($notification);
+        }
+
+        foreach ($trajet->getReservations() as $reservation) {
+            if (in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
+                $smsService->envoyerHoraireModifie($reservation, sprintf('%s a %s', $newDate, $newTime));
+            }
         }
 
         $auditLogger->log(

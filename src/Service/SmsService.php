@@ -45,6 +45,17 @@ class SmsService
         $this->sendToPassenger($reservation, 'reservation_acceptee', $message);
     }
 
+    public function envoyerReservationRefusee(Reservation $reservation): void
+    {
+        $message = sprintf(
+            'HaloGari : votre demande %s -> %s a ete refusee. Vous pouvez chercher un autre trajet.',
+            $reservation->getTrajet()->getDepart(),
+            $reservation->getTrajet()->getArrivee()
+        );
+
+        $this->sendToPassenger($reservation, 'reservation_refusee', $message);
+    }
+
     public function envoyerReservationAnnulee(Reservation $reservation, string $source = 'annulation'): void
     {
         $message = sprintf(
@@ -56,10 +67,47 @@ class SmsService
         $this->sendToPassenger($reservation, 'reservation_' . $source, $message);
     }
 
+    public function envoyerReservationAnnuleeParPassager(Reservation $reservation): void
+    {
+        $trajet = $reservation->getTrajet();
+        $conducteur = $trajet ? $trajet->getConducteur() : null;
+        $passager = $reservation->getPassager();
+
+        if (!$trajet || !$conducteur || !$passager) {
+            return;
+        }
+
+        $message = sprintf(
+            'HaloGari : %s a annule sa reservation pour %s -> %s.',
+            $passager->getPrenom(),
+            $trajet->getDepart(),
+            $trajet->getArrivee()
+        );
+
+        $this->sendToUser($conducteur, $reservation, 'reservation_annulee_passager', $message);
+    }
+
+    public function envoyerHoraireModifie(Reservation $reservation, string $newSchedule): void
+    {
+        $trajet = $reservation->getTrajet();
+        if (!$trajet) {
+            return;
+        }
+
+        $message = sprintf(
+            'HaloGari : horaire modifie pour %s -> %s. Nouveau depart : %s.',
+            $trajet->getDepart(),
+            $trajet->getArrivee(),
+            $newSchedule
+        );
+
+        $this->sendToPassenger($reservation, 'trajet_horaire_modifie', $message);
+    }
+
     public function envoyerSmsTest(string $phone): void
     {
         $phone = $this->phoneNumberService->normalize($phone);
-        $provider = (string) $this->settings->getValue(self::PROVIDER, 'ovh');
+        $provider = 'ovh';
         $message = 'HaloGari : test SMS automatique réussi.';
 
         $log = (new SmsLog())
@@ -85,9 +133,7 @@ class SmsService
         }
 
         try {
-            $providerMessageId = $provider === 'twilio'
-                ? $this->sendWithTwilio($phone, $message)
-                : $this->sendWithOvh($phone, $message);
+            $providerMessageId = $this->sendWithOvh($phone, $message);
             $log->markSent($providerMessageId);
             $this->em->flush();
         } catch (\Throwable $exception) {
@@ -103,7 +149,7 @@ class SmsService
         $passager = $reservation->getPassager();
         $phone = $this->phoneNumberService->normalize((string) $passager->getTelephone());
 
-        $provider = (string) $this->settings->getValue(self::PROVIDER, 'ovh');
+        $provider = 'ovh';
 
         $log = (new SmsLog())
             ->setReservation($reservation)
@@ -130,10 +176,50 @@ class SmsService
         }
 
         try {
-            $providerMessageId = $provider === 'twilio'
-                ? $this->sendWithTwilio($phone, $message)
-                : $this->sendWithOvh($phone, $message);
+            $providerMessageId = $this->sendWithOvh($phone, $message);
             $log->markSent($providerMessageId);
+        } catch (\Throwable $exception) {
+            $log->markFailed($exception->getMessage());
+        }
+
+        $this->em->flush();
+    }
+
+    private function sendToUser($user, ?Reservation $reservation, string $eventType, string $message): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        $phone = $this->phoneNumberService->normalize((string) $user->getTelephone());
+        $provider = 'ovh';
+
+        $log = (new SmsLog())
+            ->setReservation($reservation)
+            ->setUser($user)
+            ->setPhone($phone ?: (string) $user->getTelephone())
+            ->setEventType($eventType)
+            ->setMessage($message)
+            ->setProvider($provider);
+
+        $this->em->persist($log);
+
+        if ($this->settings->getValue(self::ENABLED, '0') !== '1') {
+            $log->markSkipped('SMS desactives dans les parametres admin.');
+            $this->em->flush();
+
+            return;
+        }
+
+        if ($phone === '') {
+            $log->markFailed('Numero de telephone manquant ou invalide.');
+            $this->em->flush();
+
+            return;
+        }
+
+        try {
+            $log->markSent($this->sendWithOvh($phone, $message));
         } catch (\Throwable $exception) {
             $log->markFailed($exception->getMessage());
         }
