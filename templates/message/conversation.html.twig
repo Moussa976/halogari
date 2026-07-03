@@ -140,7 +140,7 @@
         <span>{{ otherName }} écrit...</span>
       </div>
 
-      <form id="message-form" class="hg-chat-form" enctype="multipart/form-data">
+      <form id="message-form" class="hg-chat-form" enctype="multipart/form-data" data-no-loading>
         <input type="file" id="message-image" name="image" accept="image/jpeg,image/png,image/webp" hidden>
         <div class="hg-chat-composer">
           <button class="btn hg-chat-photo-btn" type="button" id="message-image-button" title="Ajouter une photo" aria-label="Ajouter une photo">
@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const imageInput = document.getElementById('message-image');
   const imageButton = document.getElementById('message-image-button');
   const imagePreview = document.getElementById('message-image-preview');
+  const sendButton = form?.querySelector('.hg-chat-send-btn');
   const typingIndicator = document.getElementById('typing-indicator');
   const chatImageModal = document.getElementById('chatImageModal');
   const chatImageModalImg = document.getElementById('chatImageModalImg');
@@ -188,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const typingUrl = {{ path('api_conversation_typing', { userId: otherUser.id, trajetId: trajet.id })|json_encode|raw }};
   let previewUrl = null;
   let lastMessageId = Math.max(0, ...Array.from(container?.querySelectorAll('[data-message-id]') || []).map((message) => Number(message.dataset.messageId) || 0));
+  let isSendingMessage = false;
   let isFetchingMessages = false;
   let lastTypingSentAt = 0;
   let typingStopTimer = null;
@@ -494,6 +496,19 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   };
 
+  const setSendingState = (sending) => {
+    isSendingMessage = sending;
+    if (!sendButton) {
+      return;
+    }
+
+    sendButton.disabled = sending;
+    sendButton.setAttribute('aria-busy', sending ? 'true' : 'false');
+    sendButton.innerHTML = sending
+      ? '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>'
+      : '<i class="bi bi-send-fill"></i>';
+  };
+
   const newMessagesTimer = window.setInterval(fetchNewMessages, 3000);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -507,9 +522,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   form?.addEventListener('submit', function (event) {
     event.preventDefault();
+    if (isSendingMessage) {
+      return;
+    }
+
     const contenu = input.value.trim();
     const image = imageInput.files?.[0] || null;
-    if (contenu === '' && !image) return;
+    if (contenu === '' && !image) {
+      input.focus();
+      return;
+    }
+
+    setSendingState(true);
 
     const formData = new FormData();
     formData.append('contenu', contenu);
@@ -632,6 +656,9 @@ document.addEventListener('DOMContentLoaded', function () {
           title: 'Connexion impossible',
           text: 'Veuillez réessayer dans quelques instants.'
         });
+      })
+      .finally(() => {
+        setSendingState(false);
       });
   });
 });

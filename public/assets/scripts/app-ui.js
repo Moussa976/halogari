@@ -302,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', (event) => {
             if (
-                event.defaultPrevented ||
                 form.matches('[data-loading-defer]') ||
                 !form.checkValidity() ||
                 hasInvalidVillage(form) ||
@@ -311,14 +310,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const submitter = event.submitter || form.querySelector('[type="submit"][data-loading-button]');
-            if (submitter?.matches('[data-loading-button]')) {
-                setButtonLoading(submitter);
-            }
+            const afterSubmitListeners = window.queueMicrotask || ((callback) => window.setTimeout(callback, 0));
+            afterSubmitListeners(() => {
+                if (event.defaultPrevented) {
+                    return;
+                }
 
-            if (!form.matches('[data-no-loading]')) {
-                startPageLoading(submitter || form);
-            }
+                const submitter = event.submitter || form.querySelector('[type="submit"][data-loading-button]');
+                if (submitter?.matches('[data-loading-button]')) {
+                    setButtonLoading(submitter);
+                }
+
+                if (!form.matches('[data-no-loading]')) {
+                    startPageLoading(submitter || form);
+                }
+            });
         });
     });
 
