@@ -322,7 +322,19 @@ class SmsService
             throw new \RuntimeException($errorMessage);
         }
 
-        return isset($data['ids'][0]) ? (string) $data['ids'][0] : null;
+        if (!empty($data['invalidReceivers']) && is_array($data['invalidReceivers'])) {
+            throw new \RuntimeException('OVH a refuse le numero : ' . implode(', ', $data['invalidReceivers']));
+        }
+
+        if (isset($data['ids'][0])) {
+            return (string) $data['ids'][0];
+        }
+
+        if (!empty($data['validReceivers']) && is_array($data['validReceivers'])) {
+            return 'accepted:' . implode(',', $data['validReceivers']);
+        }
+
+        return 'accepted-no-id';
     }
 
     private function ovhTimestamp(): int
