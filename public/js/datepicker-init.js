@@ -7,7 +7,7 @@ function initHaloGariDatepickers() {
   const getCalendarParent = () => document.body;
 
   document.querySelectorAll(".dateDepart").forEach((input) => {
-    if (input._flatpickr) {
+    if (input._flatpickr || input.readOnly || input.disabled || input.dataset.noDatepicker === "true") {
       return;
     }
 
@@ -26,7 +26,7 @@ function initHaloGariDatepickers() {
   });
 
   document.querySelectorAll(".dateFr").forEach((input) => {
-    if (input._flatpickr) {
+    if (input._flatpickr || input.readOnly || input.disabled || input.dataset.noDatepicker === "true") {
       return;
     }
 
