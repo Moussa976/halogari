@@ -5332,6 +5332,7 @@ textarea.form-control.app-message-textarea {
     min-height: 32px;
     color: rgba(255, 255, 255, .86) !important;
     font-weight: 750;
+    text-decoration: none !important;
     transition: color .18s ease, transform .18s ease, opacity .18s ease;
 }
 
