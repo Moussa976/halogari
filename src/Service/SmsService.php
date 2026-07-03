@@ -281,6 +281,8 @@ class SmsService
 
         if ($sender !== '' && !$ignoreCustomSender) {
             $payload['sender'] = $sender;
+        } else {
+            $payload['senderForResponse'] = true;
         }
 
         $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
