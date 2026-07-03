@@ -5186,7 +5186,7 @@ textarea.form-control.app-message-textarea {
 
 .site-footer {
     color: #fff;
-    background: #171d1f;
+    background: #245c36;
 }
 
 .site-footer__main {
@@ -5334,10 +5334,6 @@ textarea.form-control.app-message-textarea {
     .trust-strip__button {
         width: 100%;
         justify-content: center;
-    }
-
-    .site-footer {
-        padding-bottom: 86px;
     }
 
     .site-footer__main {
