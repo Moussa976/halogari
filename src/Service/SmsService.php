@@ -254,7 +254,7 @@ class SmsService
         return isset($data['sid']) ? (string) $data['sid'] : null;
     }
 
-    private function sendWithOvh(string $to, string $message, bool $ignoreCustomSender = false): ?string
+    private function sendWithOvh(string $to, string $message, bool $ignoreCustomSender = false, bool $triedReceiverFallback = false): ?string
     {
         $serviceName = trim((string) $this->settings->getValue(self::OVH_SERVICE_NAME, ''));
         $applicationKey = trim((string) $this->settings->getValue(self::OVH_APPLICATION_KEY, ''));
@@ -316,13 +316,18 @@ class SmsService
         if ($response->getStatusCode() >= 400) {
             $errorMessage = (string) ($data['message'] ?? 'Erreur lors de l’envoi du SMS OVH.');
             if ($sender !== '' && !$ignoreCustomSender && stripos($errorMessage, 'sender') !== false) {
-                return $this->sendWithOvh($to, $message, true);
+                return $this->sendWithOvh($to, $message, true, $triedReceiverFallback);
             }
 
             throw new \RuntimeException($errorMessage);
         }
 
         if (!empty($data['invalidReceivers']) && is_array($data['invalidReceivers'])) {
+            $fallbackReceiver = $this->ovhReceiverFallback($to);
+            if (!$triedReceiverFallback && $fallbackReceiver !== null) {
+                return $this->sendWithOvh($fallbackReceiver, $message, $ignoreCustomSender, true);
+            }
+
             throw new \RuntimeException('OVH a refusé le numéro : ' . implode(', ', $data['invalidReceivers']));
         }
 
@@ -335,6 +340,19 @@ class SmsService
         }
 
         return 'accepted-no-id';
+    }
+
+    private function ovhReceiverFallback(string $phone): ?string
+    {
+        if (strpos($phone, '+') === 0) {
+            return '00' . substr($phone, 1);
+        }
+
+        if (strpos($phone, '00') === 0) {
+            return '+' . substr($phone, 2);
+        }
+
+        return null;
     }
 
     private function ovhTimestamp(): int
