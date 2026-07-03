@@ -17,8 +17,12 @@
 <script src="{{ asset('js/sw-register.js') }}?v=20260630-sw-update"></script>
 
 {# === 4. NOTIFICATIONS PUSH + INSTALLATION PWA === #}
+<script>
+  window.HALOGARI_AUTHENTICATED = {{ app.user ? 'true' : 'false' }};
+</script>
 <script src="{{ path('js_push_notif') }}?v=20260701-push-ready"></script>
 <script src="{{ asset('js/push-permission.js') }}?v=20260701-push-ready"></script>
+<script src="{{ asset('js/push-session-sync.js') }}?v=20260703-logout-unsubscribe"></script>
 <script src="{{ asset('js/pwa-install.js') }}?v=20260615-pwa"></script>
 
 {# === 5. MESSAGERIE, SPLASH SCREEN & NOTIFICATION JS === #}

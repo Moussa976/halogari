@@ -564,6 +564,11 @@ showConfirmButton: false
 				{% endfor %}
 			{% endfor %}
 
+			<script>
+				window.HALOGARI_AUTHENTICATED = {{ app.user ? 'true' : 'false' }};
+			</script>
+			<script src="{{ asset('js/push-session-sync.js') }}?v=20260703-logout-unsubscribe"></script>
+
 			{% block scripts %}{% endblock %}
 
 

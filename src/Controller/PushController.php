@@ -79,6 +79,30 @@ class PushController extends AbstractController
 
 
     /**
+     * @Route("/abonnement-push/supprimer", name="push_abonnement_delete", methods={"POST", "DELETE"})
+     */
+    public function supprimerAbonnementPush(
+        Request $request,
+        EntityManagerInterface $em,
+        PushSubscriptionRepository $repo
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['endpoint'])) {
+            return new JsonResponse(['error' => 'Requête invalide'], 400);
+        }
+
+        $subscription = $repo->findOneBy(['endpoint' => (string) $data['endpoint']]);
+        if ($subscription) {
+            $em->remove($subscription);
+            $em->flush();
+        }
+
+        return new JsonResponse(['status' => 'Abonnement supprimé']);
+    }
+
+
+    /**
      * @Route("/push/test", name="push_test", methods={"GET"})
      */
     public function testPush(
