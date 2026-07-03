@@ -128,12 +128,17 @@
 
 <section class="trust-strip">
   <div class="container trust-strip__inner">
-    <div>
+    <div class="trust-strip__content">
       <p class="app-kicker">Sécurité</p>
       <h2>Une communauté locale, avec des règles claires.</h2>
       <p>HaloGari accompagne les profils vérifiés, les paiements sécurisés, les avis et les notifications importantes.</p>
     </div>
-    <a href="{{ path('app_securite') }}" class="btn btn-light btn-lg">
+    <div class="trust-strip__checks" aria-label="Points de confiance HaloGari">
+      <span><i class="bi bi-patch-check-fill"></i> Profils vérifiés</span>
+      <span><i class="bi bi-credit-card-2-front-fill"></i> Paiements protégés</span>
+      <span><i class="bi bi-bell-fill"></i> Alertes utiles</span>
+    </div>
+    <a href="{{ path('app_securite') }}" class="btn btn-light btn-lg trust-strip__button">
       <i class="bi bi-shield-check"></i>
       Voir la sécurité
     </a>
