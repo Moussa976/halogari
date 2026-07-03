@@ -444,7 +444,7 @@ body.app-shell::before {
     left: 0;
     z-index: 2147483647;
     width: 100%;
-    height: 5px;
+    height: 7px;
     background: linear-gradient(90deg, var(--hg-orange), var(--hg-green));
     box-shadow: 0 0 16px rgba(255, 127, 0, .45);
     transform: scaleX(0);
@@ -5273,6 +5273,32 @@ textarea.form-control.app-message-textarea {
     color: rgba(255, 255, 255, .8);
 }
 
+.security-page .feature-grid {
+    gap: .85rem;
+}
+
+.security-page .feature-card {
+    min-height: 0;
+    padding: 1.05rem 1.1rem;
+    display: grid;
+    align-content: start;
+}
+
+.security-page .feature-card h3 {
+    margin: 0 0 .38rem;
+    font-size: 1.05rem;
+    line-height: 1.15;
+}
+
+.security-page .feature-card p {
+    font-size: .86rem;
+    line-height: 1.35;
+}
+
+.security-page.app-page-grid {
+    align-items: start;
+}
+
 @media (max-width: 991.98px) {
     .trust-strip__inner {
         grid-template-columns: 1fr;
@@ -5292,6 +5318,14 @@ textarea.form-control.app-message-textarea {
 }
 
 @media (max-width: 575.98px) {
+    .security-page .feature-grid {
+        gap: .65rem;
+    }
+
+    .security-page .feature-card {
+        padding: .95rem 1rem;
+    }
+
     .trust-strip__checks {
         grid-template-columns: 1fr;
     }
