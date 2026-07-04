@@ -1259,8 +1259,8 @@ textarea.form-control.app-message-textarea {
 
 .app-hero__content h1 {
     max-width: 660px;
-    line-height: .98;
-    font-size: clamp(2.7rem, 4vw, 5.1rem);
+    line-height: 1.02;
+    font-size: clamp(2.25rem, 3.4vw, 4.25rem);
 }
 
 .app-hero__lead {
@@ -1288,8 +1288,9 @@ textarea.form-control.app-message-textarea {
     margin: 0;
     color: #fff;
     text-align: left;
-    font-size: clamp(2.3rem, 4vw, 4.5rem);
+    font-size: clamp(2rem, 3.2vw, 3.45rem);
     font-weight: 900;
+    line-height: 1.04;
 }
 
 .app-hero__content h1,
@@ -1643,8 +1644,8 @@ textarea.form-control.app-message-textarea {
     margin: 0;
     color: var(--hg-ink);
     font-family: var(--font-heading);
-    font-size: clamp(2rem, 5vw, 3.4rem);
-    line-height: .95;
+    font-size: clamp(1.85rem, 4vw, 2.75rem);
+    line-height: 1.02;
 }
 
 .ride-show-heading p:last-child {
@@ -1779,8 +1780,8 @@ textarea.form-control.app-message-textarea {
     margin: 0;
     color: var(--hg-ink);
     font-family: var(--font-heading);
-    font-size: 2.2rem;
-    line-height: 1;
+    font-size: clamp(1.65rem, 2.6vw, 1.95rem);
+    line-height: 1.05;
 }
 
 .ride-booking-card__subtitle {
@@ -2384,7 +2385,7 @@ textarea.form-control.app-message-textarea {
 .payment-total strong {
     display: block;
     margin-top: .2rem;
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(1.8rem, 4vw, 2.45rem);
     font-weight: 900;
 }
 
@@ -2397,7 +2398,7 @@ textarea.form-control.app-message-textarea {
 
 .payment-total--compact strong {
     margin-top: 0;
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-size: clamp(1.55rem, 3vw, 2.1rem);
     white-space: nowrap;
 }
 
@@ -3943,8 +3944,8 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-ink);
     text-align: center;
     font-family: var(--hg-font-display);
-    font-size: clamp(2.1rem, 5vw, 3.7rem);
-    line-height: 1.02;
+    font-size: clamp(1.8rem, 3.6vw, 2.85rem);
+    line-height: 1.08;
 }
 
 .app-main .container.py-5 > .row,
@@ -5115,7 +5116,7 @@ textarea.form-control.app-message-textarea {
     }
 
     .ride-show-heading h1 {
-        font-size: 2.05rem;
+        font-size: 1.82rem;
     }
 
     .ride-show-heading p:last-child {
@@ -5432,8 +5433,8 @@ textarea.form-control.app-message-textarea {
     max-width: 860px;
     margin-bottom: .6rem;
     color: #fff;
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    line-height: .98;
+    font-size: clamp(1.75rem, 3vw, 2.55rem);
+    line-height: 1.06;
 }
 
 .trust-strip p {
@@ -5491,8 +5492,8 @@ textarea.form-control.app-message-textarea {
 .home-feature-section .app-section-heading h2,
 .home-routes-section .app-section-heading h2,
 .trust-strip h2 {
-    font-size: clamp(1.7rem, 3vw, 2.4rem);
-    line-height: 1.05;
+    font-size: clamp(1.55rem, 2.4vw, 2.05rem);
+    line-height: 1.08;
 }
 
 .home-feature-section .feature-grid {
