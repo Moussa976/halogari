@@ -1457,6 +1457,19 @@ textarea.form-control.app-message-textarea {
     border-radius: 8px;
 }
 
+.home-search-fields .input-group .form-control,
+.home-search-fields .input-group .form-select,
+.home-search-fields .input-group .input-group-text,
+.home-search-fields .input-group > .form-floating > .form-control,
+.home-search-fields .input-group > .form-floating > .form-select,
+.search-page-fields .input-group .form-control,
+.search-page-fields .input-group .form-select,
+.search-page-fields .input-group .input-group-text,
+.search-page-fields .input-group > .form-floating > .form-control,
+.search-page-fields .input-group > .form-floating > .form-select {
+    border-radius: 0;
+}
+
 .input-group-text {
     min-width: 48px;
     justify-content: center;
