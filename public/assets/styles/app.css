@@ -480,8 +480,9 @@ body.app-shell::before {
 }
 
 .search-page-form--wide .ride-scene {
-    width: min(100%, 560px);
-    margin: 0 auto 1rem;
+    width: 100%;
+    max-width: none;
+    margin: 0 0 1rem;
 }
 
 .search-page-form--wide .quick-search__title {
