@@ -35,7 +35,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/chercher", name="app_chercher", methods={"GET"})
      */
-    public function chercher(Request $request): Response
+    public function chercher(Request $request, TrajetRepository $trajetRepository): Response
     {
         $depart = $request->query->get('select_departure');
         $arrivee = $request->query->get('select_arrival');
@@ -68,7 +68,14 @@ class TrajetController extends AbstractController
             ]);
         }
 
-        return $this->render('trajet/chercher.html.twig');
+        $today = new \DateTimeImmutable('today');
+
+        return $this->render('trajet/chercher.html.twig', [
+            'latestTrajets' => $trajetRepository->findRecentlyPublishedAvailable(3),
+            'popularRoutes' => $trajetRepository->findMostReservedRoutes(3),
+            'todaySearchDate' => $today->format('Y-m-d'),
+            'todayDisplayDate' => $today->format('d/m/Y'),
+        ]);
     }
 
     /**

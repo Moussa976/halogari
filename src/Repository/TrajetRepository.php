@@ -64,6 +64,50 @@ class TrajetRepository extends ServiceEntityRepository
     /**
      * @return Trajet[]
      */
+    public function findRecentlyPublishedAvailable(int $limit = 3): array
+    {
+        $today = (new \DateTime())->setTime(0, 0, 0);
+
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.conducteur', 'c')
+            ->where('t.dateTrajet >= :today')
+            ->andWhere('t.placesDisponibles > 0')
+            ->andWhere('t.annule IS NULL OR t.annule = false')
+            ->andWhere('c.disabledAt IS NULL')
+            ->setParameter('today', $today)
+            ->orderBy('t.createdAt', 'DESC')
+            ->addOrderBy('t.dateTrajet', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findMostReservedRoutes(int $limit = 3): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT t.depart, t.arrivee, COUNT(r.id) AS total
+            FROM reservation r
+            JOIN trajet t ON r.trajet_id = t.id
+            JOIN `user` u ON t.conducteur_id = u.id
+            WHERE (t.annule IS NULL OR t.annule = 0)
+              AND u.disabled_at IS NULL
+            GROUP BY t.depart, t.arrivee
+            ORDER BY total DESC
+            LIMIT :limit
+        ';
+
+        return $conn->executeQuery($sql, [
+            'limit' => $limit,
+        ], [
+            'limit' => \PDO::PARAM_INT,
+        ])->fetchAllAssociative();
+    }
+
+    /**
+     * @return Trajet[]
+     */
     public function findAvailableUpcoming(int $limit = 10): array
     {
         $now = new \DateTime();

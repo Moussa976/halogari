@@ -469,6 +469,217 @@ body.app-shell::before {
     min-height: 48px;
 }
 
+.search-page-layout {
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+    margin-bottom: clamp(2.2rem, 5vw, 4rem);
+}
+
+.search-page-form--wide {
+    width: min(100%, 1060px);
+    margin: 0 auto;
+}
+
+.search-page-form--wide .ride-scene {
+    margin-bottom: 1rem;
+}
+
+.search-page-form--wide .quick-search__title {
+    margin-bottom: 1rem;
+}
+
+.search-page-form--wide .form-floating > .form-control,
+.search-page-form--wide .form-floating > .form-select {
+    min-height: 58px;
+}
+
+.search-page-form--wide .search-form-field {
+    min-width: 0;
+}
+
+.search-page-form--wide .input-group-text {
+    min-width: 46px;
+    justify-content: center;
+    border-color: rgba(36, 92, 54, .14);
+    background: rgba(36, 92, 54, .07);
+}
+
+.search-discovery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    width: min(100%, 1060px);
+    margin: 1.15rem auto 0;
+}
+
+.search-discovery__panel {
+    padding: 1.05rem;
+    border: 1px solid rgba(36, 92, 54, .12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .86);
+    box-shadow: 0 18px 46px rgba(31, 45, 36, .08);
+}
+
+.search-discovery__header {
+    margin-bottom: .75rem;
+}
+
+.search-discovery__header .app-kicker {
+    margin-bottom: .18rem;
+}
+
+.search-discovery__header h2 {
+    margin: 0;
+    color: var(--hg-ink);
+    font-size: clamp(1.05rem, 1.4vw, 1.24rem);
+    line-height: 1.15;
+}
+
+.search-mini-list {
+    display: grid;
+    gap: .65rem;
+}
+
+.search-mini-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .75rem;
+    min-height: 66px;
+    padding: .72rem .78rem;
+    border: 1px solid rgba(36, 92, 54, .1);
+    border-radius: 8px;
+    color: var(--hg-ink);
+    background: #fff;
+    text-decoration: none;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.search-mini-card:hover,
+.search-mini-card:focus {
+    color: var(--hg-ink);
+    border-color: rgba(238, 121, 17, .42);
+    box-shadow: 0 12px 28px rgba(31, 45, 36, .09);
+    transform: translateY(-1px);
+}
+
+.search-mini-card__time,
+.search-mini-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    min-height: 48px;
+    border-radius: 7px;
+    color: var(--hg-green);
+    background: rgba(36, 92, 54, .08);
+    text-align: center;
+}
+
+.search-mini-card__time {
+    flex-direction: column;
+}
+
+.search-mini-card__time strong,
+.search-mini-card__main strong,
+.search-mini-card__price {
+    font-weight: 900;
+}
+
+.search-mini-card__time small,
+.search-mini-card__main small {
+    display: block;
+    color: var(--hg-muted);
+    font-size: .84rem;
+}
+
+.search-mini-card__main {
+    min-width: 0;
+}
+
+.search-mini-card__main strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-mini-card__price {
+    color: var(--hg-orange);
+    white-space: nowrap;
+}
+
+.search-mini-card__arrow {
+    color: var(--hg-muted);
+}
+
+.search-empty-line {
+    padding: .85rem;
+    border: 1px dashed rgba(36, 92, 54, .18);
+    border-radius: 8px;
+    color: var(--hg-muted);
+    background: rgba(36, 92, 54, .04);
+    font-weight: 750;
+}
+
+@media screen and (min-width: 992px) {
+    .search-page-form--wide {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(160px, .7fr) minmax(120px, .45fr) minmax(170px, .65fr);
+        gap: .72rem;
+        align-items: end;
+        padding: 1rem;
+    }
+
+    .search-page-form--wide .ride-scene,
+    .search-page-form--wide .search-page-form__title {
+        grid-column: 1 / -1;
+    }
+
+    .search-page-form--wide .ride-scene {
+        max-width: 520px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .search-page-form--wide > .search-form-field,
+    .search-page-form--wide .quick-search__row {
+        margin-bottom: 0;
+    }
+
+    .search-page-form--wide .quick-search__row {
+        display: contents;
+    }
+
+    .search-page-form--wide .quick-search__row .search-form-field {
+        min-width: 0;
+    }
+
+    .search-page-form--wide .btn {
+        width: 100%;
+        min-height: 58px;
+    }
+}
+
+@media screen and (max-width: 767.98px) {
+    .search-discovery {
+        grid-template-columns: 1fr;
+    }
+
+    .search-discovery__panel {
+        padding: .9rem;
+    }
+
+    .search-mini-card {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .search-mini-card__price,
+    .search-mini-card__arrow {
+        grid-column: 2;
+        justify-self: start;
+    }
+}
+
 .table .btn,
 .ride-card .btn,
 .list-group-item .btn {
