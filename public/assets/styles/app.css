@@ -541,14 +541,67 @@ body.app-shell::before {
 }
 
 @media screen and (min-width: 992px) {
+    .home-search-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(160px, .7fr) minmax(120px, .45fr) minmax(170px, .65fr);
+        gap: 0;
+        align-items: end;
+        width: min(100%, 1120px);
+        margin-top: clamp(1.25rem, 2.4vw, 2rem);
+        padding: .85rem;
+        border: 2px solid rgba(238, 121, 17, .86) !important;
+        border-radius: 14px !important;
+        background: rgba(255, 255, 255, .9) !important;
+        box-shadow: 0 22px 54px rgba(31, 45, 36, .16);
+        backdrop-filter: blur(14px);
+    }
+
+    .home-search-form .ride-scene,
+    .home-search-form .quick-search__title {
+        grid-column: 1 / -1;
+    }
+
+    .home-search-form .ride-scene {
+        width: 100%;
+    }
+
+    .home-search-form > .search-form-field,
+    .home-search-form .quick-search__row {
+        margin-bottom: 0;
+    }
+
+    .home-search-form > .search-form-field,
+    .home-search-form .quick-search__row .search-form-field {
+        border-right: 1px solid rgba(36, 92, 54, .14);
+    }
+
+    .home-search-form .quick-search__row {
+        display: contents;
+    }
+
+    .home-search-form .search-form-field .input-group-text,
+    .home-search-form .search-form-field .form-control,
+    .home-search-form .search-form-field .form-select {
+        border-color: transparent;
+        background: #fff;
+        box-shadow: none;
+    }
+
+    .home-search-form .form-floating > label {
+        color: var(--hg-green);
+        font-weight: 900;
+    }
+
+    .home-search-form .btn {
+        min-height: 58px;
+        border-radius: 0 10px 10px 0;
+    }
+
     body.home-search-stuck .home-search-form {
         position: fixed;
         top: 84px;
         left: 50%;
         z-index: var(--hg-z-navbar);
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(160px, .7fr) minmax(120px, .45fr) minmax(170px, .65fr);
-        gap: 0;
         align-items: stretch;
         width: min(calc(100% - 48px), 1120px);
         margin: 0;
@@ -821,12 +874,12 @@ body.app-shell::before {
         left: 12px;
         z-index: var(--hg-z-navbar);
         display: none;
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: auto minmax(0, 1fr) minmax(88px, 24vw);
         align-items: center;
         gap: .65rem;
-        width: 100%;
+        width: auto;
         min-height: 56px;
-        margin-top: 1.1rem;
+        margin: 0;
         border: 2px solid var(--hg-orange);
         border-radius: 14px;
         background: #fff;
@@ -834,10 +887,33 @@ body.app-shell::before {
         padding: .45rem .45rem .45rem .85rem;
         text-align: left;
         box-shadow: 0 14px 34px rgba(36, 92, 54, .14);
+        transform: translateY(-18px);
+        opacity: 0;
+        isolation: isolate;
     }
 
     body.home-search-stuck .home-search-mobile-trigger {
         display: grid;
+        animation: homeSearchDrop .24s ease forwards;
+    }
+
+    .home-search-mobile-trigger::before {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        inset: -14px -12px auto;
+        height: calc(100% + 18px);
+        border-bottom: 1px solid rgba(36, 92, 54, .1);
+        background: rgba(255, 255, 255, .94);
+        box-shadow: 0 10px 24px rgba(31, 45, 36, .08);
+        backdrop-filter: blur(12px);
+    }
+
+    @keyframes homeSearchDrop {
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     .home-search-mobile-trigger i {
@@ -875,8 +951,8 @@ body.app-shell::before {
         border-radius: 0 10px 10px 0;
         background: linear-gradient(135deg, var(--hg-orange), var(--hg-gold));
         color: #fff;
-        padding: 0 .8rem;
-        font-size: .82rem;
+        padding: 0 .55rem;
+        font-size: clamp(.72rem, 3vw, .82rem);
         font-weight: 900;
     }
 
@@ -991,6 +1067,25 @@ body.app-shell::before {
 @media screen and (max-width: 767.98px) {
     .home-search-form {
         max-width: none;
+    }
+
+    .home-search-mobile-trigger {
+        top: 70px;
+        right: 8px;
+        left: 8px;
+        grid-template-columns: auto minmax(0, 1fr) minmax(82px, 26vw);
+        min-height: 52px;
+        gap: .5rem;
+        padding-left: .65rem;
+        border-radius: 12px;
+    }
+
+    .home-search-mobile-trigger strong {
+        font-size: clamp(.66rem, 2.8vw, .76rem);
+    }
+
+    .home-search-mobile-trigger small {
+        font-size: clamp(.61rem, 2.55vw, .7rem);
     }
 }
 
