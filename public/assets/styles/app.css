@@ -509,6 +509,11 @@ body.app-shell::before {
     box-shadow: none;
 }
 
+.search-page-fields {
+    display: grid;
+    gap: .75rem;
+}
+
 .home-search-mobile-trigger,
 .home-search-form__mobile-head {
     display: none;
@@ -813,11 +818,8 @@ body.app-shell::before {
 
 @media screen and (min-width: 992px) {
     .search-page-form--wide {
-        display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(160px, .7fr) minmax(120px, .45fr) minmax(170px, .65fr);
-        gap: 0;
-        align-items: end;
-        padding: .85rem;
+        display: block;
+        padding: 1rem;
         border: 2px solid rgba(238, 121, 17, .85);
         border-radius: 14px;
         background: rgba(255, 255, 255, .96);
@@ -829,19 +831,26 @@ body.app-shell::before {
         grid-column: 1 / -1;
     }
 
-    .search-page-form--wide > .search-form-field,
-    .search-page-form--wide .quick-search__row {
+    .search-page-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(160px, .7fr) minmax(120px, .45fr) minmax(170px, .65fr);
+        gap: 0;
+        align-items: stretch;
+        overflow: hidden;
+        border: 2px solid var(--hg-orange);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 12px 26px rgba(31, 45, 36, .1);
+    }
+
+    .search-page-fields .search-form-field,
+    .search-page-fields .quick-search__row {
         margin-bottom: 0;
     }
 
-    .search-page-form--wide > .search-form-field,
-    .search-page-form--wide .quick-search__row .search-form-field {
+    .search-page-fields .search-form-field {
+        min-width: 0;
         border-right: 1px solid rgba(36, 92, 54, .14);
-    }
-
-    .search-page-form--wide > .search-form-field:first-of-type {
-        border-top-left-radius: 10px;
-        border-bottom-left-radius: 10px;
     }
 
     .search-page-form--wide .search-form-field .input-group-text,
@@ -861,21 +870,30 @@ body.app-shell::before {
         font-weight: 900;
     }
 
-    .search-page-form--wide .quick-search__row {
+    .search-page-fields .input-group-text {
+        display: none;
+    }
+
+    .search-page-fields .form-floating > .form-control,
+    .search-page-fields .form-floating > .form-select,
+    .search-page-fields .input-group > .form-floating > .form-control,
+    .search-page-fields .input-group > .form-floating > .form-select {
+        min-height: 62px;
+        border: 0;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: none;
+    }
+
+    .search-page-fields .quick-search__row {
         display: contents;
     }
 
-    .search-page-form--wide .quick-search__row .search-form-field {
-        min-width: 0;
-    }
-
-    .search-page-form--wide .btn {
+    .search-page-fields .btn {
         width: 100%;
-        min-height: 58px;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-top-right-radius: 10px;
-        border-bottom-right-radius: 10px;
+        min-height: 62px;
+        border-radius: 0 12px 12px 0;
+        box-shadow: none;
     }
 }
 
@@ -905,6 +923,52 @@ body.app-shell::before {
     .search-mini-card__arrow {
         grid-column: 2;
         justify-self: start;
+    }
+
+    .search-page-fields {
+        gap: 0;
+        overflow: hidden;
+        border: 2px solid var(--hg-orange);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 16px 34px rgba(31, 45, 36, .12);
+    }
+
+    .search-page-fields .search-form-field,
+    .search-page-fields .quick-search__row {
+        margin-bottom: 0;
+    }
+
+    .search-page-fields .quick-search__row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .search-page-fields .search-form-field {
+        border-bottom: 1px solid rgba(36, 92, 54, .12);
+    }
+
+    .search-page-fields .form-floating > .form-control,
+    .search-page-fields .form-floating > .form-select,
+    .search-page-fields .input-group > .form-floating > .form-control,
+    .search-page-fields .input-group > .form-floating > .form-select {
+        min-height: 60px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .search-page-fields .input-group-text {
+        border: 0;
+        border-radius: 0;
+        background: rgba(36, 92, 54, .07);
+    }
+
+    .search-page-fields .btn {
+        min-height: 54px;
+        border-radius: 0;
+        box-shadow: none;
     }
 
     .home-search-mobile-trigger {
