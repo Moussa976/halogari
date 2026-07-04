@@ -1522,6 +1522,141 @@ textarea.form-control.app-message-textarea {
     transform: scale(.85) translateY(-.5rem) translateX(.15rem);
 }
 
+.home-search-fields,
+.search-page-fields {
+    --hg-search-border: rgba(238, 121, 17, .88);
+    --hg-search-separator: rgba(36, 92, 54, .13);
+    --hg-search-focus: rgba(238, 121, 17, .08);
+    border: 2px solid var(--hg-search-border) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 16px 36px rgba(31, 45, 36, .12);
+}
+
+.home-search-fields .search-form-field,
+.search-page-fields .search-form-field {
+    position: relative;
+    min-width: 0;
+    margin: 0 !important;
+    overflow: visible;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff;
+}
+
+.home-search-fields .search-form-field:focus-within,
+.search-page-fields .search-form-field:focus-within {
+    background: var(--hg-search-focus);
+}
+
+.home-search-fields .search-form-field .form-floating,
+.home-search-fields .search-form-field .hg-autocomplete,
+.search-page-fields .search-form-field .form-floating,
+.search-page-fields .search-form-field .hg-autocomplete {
+    height: 100%;
+}
+
+.home-search-fields .search-form-field .input-group-text,
+.home-search-fields .search-form-field .form-control,
+.home-search-fields .search-form-field .form-select,
+.home-search-fields .search-form-field .hg-autocomplete > .form-control,
+.search-page-fields .search-form-field .input-group-text,
+.search-page-fields .search-form-field .form-control,
+.search-page-fields .search-form-field .form-select,
+.search-page-fields .search-form-field .hg-autocomplete > .form-control {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.home-search-fields .search-form-field .form-control:focus,
+.home-search-fields .search-form-field .form-select:focus,
+.search-page-fields .search-form-field .form-control:focus,
+.search-page-fields .search-form-field .form-select:focus {
+    box-shadow: none !important;
+}
+
+.home-search-fields .search-form-field .input-group-text,
+.search-page-fields .search-form-field .input-group-text {
+    flex: 0 0 48px;
+    min-width: 48px;
+}
+
+@media screen and (min-width: 992px) {
+    .home-search-fields,
+    .search-page-fields {
+        overflow: visible;
+    }
+
+    .home-search-fields .search-form-field::after,
+    .search-page-fields .search-form-field::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        right: 0;
+        bottom: 14px;
+        width: 1px;
+        background: var(--hg-search-separator);
+        pointer-events: none;
+    }
+
+    .home-search-fields .input-group-text,
+    .search-page-fields .input-group-text {
+        display: none !important;
+    }
+
+    .home-search-fields .form-floating > .form-control,
+    .home-search-fields .form-floating > .form-select,
+    .home-search-fields .form-floating > .hg-autocomplete > .form-control,
+    .search-page-fields .form-floating > .form-control,
+    .search-page-fields .form-floating > .form-select,
+    .search-page-fields .form-floating > .hg-autocomplete > .form-control {
+        min-height: 64px;
+    }
+
+    .home-search-fields .btn,
+    .search-page-fields .btn {
+        min-height: 64px;
+        border-radius: 0 13px 13px 0 !important;
+        box-shadow: none !important;
+    }
+}
+
+@media screen and (max-width: 991.98px) {
+    .home-search-fields,
+    .search-page-fields {
+        overflow: visible;
+    }
+
+    .home-search-fields .search-form-field,
+    .search-page-fields .search-form-field {
+        border-bottom: 1px solid var(--hg-search-separator) !important;
+    }
+
+    .home-search-fields .input-group-text,
+    .search-page-fields .input-group-text {
+        border-right: 1px solid var(--hg-search-separator) !important;
+        background: rgba(31, 116, 71, .06) !important;
+    }
+
+    .home-search-fields .form-floating > .form-control,
+    .home-search-fields .form-floating > .form-select,
+    .home-search-fields .form-floating > .hg-autocomplete > .form-control,
+    .search-page-fields .form-floating > .form-control,
+    .search-page-fields .form-floating > .form-select,
+    .search-page-fields .form-floating > .hg-autocomplete > .form-control {
+        min-height: 62px;
+    }
+
+    .home-search-fields .btn,
+    .search-page-fields .btn {
+        min-height: 56px;
+        border-radius: 0 0 13px 13px !important;
+        box-shadow: none !important;
+    }
+}
+
 .hg-autocomplete__panel {
     position: absolute;
     top: calc(100% + .35rem);
