@@ -5422,11 +5422,16 @@ textarea.form-control.app-message-textarea {
     }
 
     .site-footer .row {
-        text-align: left !important;
+        text-align: center !important;
     }
 
     .site-footer a {
-        justify-content: flex-start;
+        justify-content: center;
+    }
+
+    .site-footer .my-3 a {
+        margin-left: .5rem !important;
+        margin-right: .5rem !important;
     }
 }
 
