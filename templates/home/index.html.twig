@@ -29,6 +29,7 @@
       <b>Rechercher</b>
     </button>
 
+    <div class="home-search-placeholder" aria-hidden="true"></div>
     <form method="GET" action="{{ path('app_chercher') }}" id="form-recherche" class="quick-search home-search-form" aria-label="Recherche rapide">
       <div class="home-search-form__mobile-head">
         <button type="button" class="home-search-form__close" data-home-search-close aria-label="Fermer la recherche">
@@ -200,15 +201,36 @@
       const trigger = document.querySelector('[data-home-search-open]');
       const form = document.querySelector('.home-search-form');
       const close = document.querySelector('[data-home-search-close]');
+      const placeholder = document.querySelector('.home-search-placeholder');
 
-      if (!trigger || !form || !close) {
+      if (!trigger || !form || !close || !placeholder) {
         return;
       }
+
+      let searchTop = 0;
+
+      const measure = () => {
+        const wasStuck = document.body.classList.contains('home-search-stuck');
+        document.body.classList.remove('home-search-stuck');
+        placeholder.style.height = '0px';
+        searchTop = form.getBoundingClientRect().top + window.scrollY;
+        document.body.classList.toggle('home-search-stuck', wasStuck);
+        placeholder.style.height = wasStuck && window.matchMedia('(min-width: 992px)').matches ? `${form.offsetHeight}px` : '0px';
+      };
+
+      const syncSticky = () => {
+        const shouldStick = window.scrollY > Math.max(0, searchTop - 88);
+        const canStick = !form.classList.contains('is-mobile-open');
+        document.body.classList.toggle('home-search-stuck', shouldStick && canStick);
+        placeholder.style.height = shouldStick && canStick && window.matchMedia('(min-width: 992px)').matches ? `${form.offsetHeight}px` : '0px';
+      };
 
       const open = () => {
         form.classList.add('is-mobile-open');
         trigger.setAttribute('aria-expanded', 'true');
         document.body.classList.add('home-search-is-open');
+        document.body.classList.remove('home-search-stuck');
+        placeholder.style.height = '0px';
         window.setTimeout(() => form.querySelector('.villages')?.focus(), 80);
       };
 
@@ -216,8 +238,16 @@
         form.classList.remove('is-mobile-open');
         trigger.setAttribute('aria-expanded', 'false');
         document.body.classList.remove('home-search-is-open');
+        syncSticky();
       };
 
+      measure();
+      syncSticky();
+      window.addEventListener('resize', () => {
+        measure();
+        syncSticky();
+      });
+      window.addEventListener('scroll', syncSticky, { passive: true });
       trigger.addEventListener('click', open);
       close.addEventListener('click', hide);
       document.addEventListener('keydown', (event) => {
