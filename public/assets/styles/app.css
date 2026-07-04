@@ -379,9 +379,32 @@ body.app-shell::before {
 }
 
 .btn-orange {
+    position: relative;
+    overflow: hidden;
     color: #fff;
     border-color: transparent;
-    background: linear-gradient(135deg, var(--hg-orange), var(--hg-gold));
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 46%),
+        linear-gradient(135deg, #f1760b 0%, #ff8a13 48%, #ffba54 100%);
+    box-shadow:
+        0 14px 30px rgba(238, 121, 17, .28),
+        0 4px 10px rgba(36, 92, 54, .08),
+        inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+.btn-orange:not(.btn-sm)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, .28) 38%, transparent 62%);
+    transform: translateX(-135%);
+    transition: transform .5s ease;
+}
+
+.btn-orange:not(.btn-sm):hover::after,
+.btn-orange:not(.btn-sm):focus-visible::after {
+    transform: translateX(135%);
 }
 
 .btn-vert,
@@ -415,6 +438,24 @@ body.app-shell::before {
 
 .btn:hover {
     transform: translateY(-1px);
+}
+
+.btn-orange:hover,
+.btn-orange:focus {
+    color: #fff;
+    border-color: transparent;
+    filter: saturate(1.08);
+    box-shadow:
+        0 18px 38px rgba(238, 121, 17, .34),
+        0 8px 18px rgba(36, 92, 54, .1),
+        inset 0 1px 0 rgba(255, 255, 255, .42);
+}
+
+.btn-orange:active {
+    transform: translateY(0) scale(.99);
+    box-shadow:
+        0 8px 18px rgba(238, 121, 17, .22),
+        inset 0 2px 6px rgba(128, 60, 0, .16);
 }
 
 .btn:focus-visible {
