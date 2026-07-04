@@ -5136,6 +5136,8 @@ textarea.form-control.app-message-textarea {
 .trust-strip .app-kicker {
     margin-bottom: .7rem;
     color: #ffd08a;
+    font-size: .78rem;
+    line-height: 1.2;
 }
 
 .trust-strip h2 {
