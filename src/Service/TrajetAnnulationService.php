@@ -62,6 +62,7 @@ class TrajetAnnulationService
 
                 // 📧 Email au passager
                 $email = (new TemplatedEmail())
+                    ->from(MailAddressProvider::publicSender())
                     ->to($reservation->getPassager()->getEmail())
                     ->subject('Trajet annulé - remboursement en cours')
                     ->htmlTemplate('emails/trajet_annule_passager.html.twig')
@@ -79,6 +80,7 @@ class TrajetAnnulationService
 
         // 📧 Email au conducteur
         $emailConducteur = (new TemplatedEmail())
+            ->from(MailAddressProvider::publicSender())
             ->to($trajet->getConducteur()->getEmail())
             ->subject('Vous avez annulé un trajet')
             ->htmlTemplate('emails/trajet_annule_conducteur.html.twig')

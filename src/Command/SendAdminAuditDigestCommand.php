@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Repository\AdminAuditLogRepository;
 use App\Service\AdminAuditLogger;
+use App\Service\MailAddressProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Console\Command\Command;
@@ -11,7 +12,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 
 class SendAdminAuditDigestCommand extends Command
 {
@@ -75,8 +75,8 @@ class SendAdminAuditDigestCommand extends Command
         }
 
         $email = (new TemplatedEmail())
-            ->from(new Address('moussa@halogari.yt', 'HaloGari Admin'))
-            ->to('moussa@halogari.yt')
+            ->from(MailAddressProvider::adminSender())
+            ->to(MailAddressProvider::ADMIN_EMAIL)
             ->subject('[HaloGari Admin] Résumé hebdomadaire')
             ->htmlTemplate('emails/admin_audit_digest.html.twig')
             ->context([

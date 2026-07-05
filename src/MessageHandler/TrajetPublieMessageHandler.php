@@ -6,6 +6,7 @@ use App\Message\TrajetPublieMessage;
 use App\Repository\TrajetAlertRepository;
 use App\Repository\TrajetRepository;
 use App\Service\AfficheService;
+use App\Service\MailAddressProvider;
 use App\Service\MetaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -13,7 +14,6 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class TrajetPublieMessageHandler implements MessageHandlerInterface
@@ -63,7 +63,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
         try {
             $email = (new TemplatedEmail())
-            ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+            ->from(MailAddressProvider::publicSender())
             ->to($user->getEmail())
             ->subject('Votre trajet a été publié')
             ->htmlTemplate('emails/trajet_publie.html.twig')
@@ -170,7 +170,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
             try {
                 $email = (new TemplatedEmail())
-                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->from(MailAddressProvider::publicSender())
                     ->to($user->getEmail())
                     ->subject('Un trajet que vous attendiez est disponible')
                     ->htmlTemplate('emails/trajet_alert_match.html.twig')

@@ -121,7 +121,7 @@ class AdminSettingsController extends AbstractController
             'facebookTokenMasked' => $this->maskToken($token),
             'hasFacebookToken' => $token !== '',
             'productionPublicUrl' => $settings->getValue(self::PRODUCTION_PUBLIC_URL, 'https://halogari.yt'),
-            'productionSupportEmail' => $settings->getValue(self::PRODUCTION_SUPPORT_EMAIL, 'moussa@halogari.yt'),
+            'productionSupportEmail' => $settings->getValue(self::PRODUCTION_SUPPORT_EMAIL, 'contact@halogari.yt'),
             'databaseBackupLastAt' => $settings->getValue(self::PRODUCTION_BACKUP_LAST_AT, ''),
             'prelaunchConfirmedAt' => $settings->getValue(self::PRODUCTION_PRELAUNCH_CONFIRMED_AT, ''),
             'productionChecks' => $this->buildProductionChecks($settings),
@@ -254,7 +254,7 @@ class AdminSettingsController extends AbstractController
         }
 
         $settings->setValue(self::PRODUCTION_PUBLIC_URL, $publicUrl ?: 'https://halogari.yt');
-        $settings->setValue(self::PRODUCTION_SUPPORT_EMAIL, $supportEmail ?: 'moussa@halogari.yt');
+        $settings->setValue(self::PRODUCTION_SUPPORT_EMAIL, $supportEmail ?: 'contact@halogari.yt');
 
         $now = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
         $backupMarked = $request->request->getBoolean('mark_database_backup');

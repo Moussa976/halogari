@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ChangePasswordFormType;
 use App\Form\ResetPasswordRequestFormType;
+use App\Service\MailAddressProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,7 +13,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -134,7 +134,7 @@ class ResetPasswordController extends AbstractController
             $this->entityManager->flush();
 
             $email = (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->from(MailAddressProvider::publicSender())
                 ->to($user->getEmail())
                 ->subject('Votre mot de passe a été modifié')
                 ->htmlTemplate('emails/password_reset_success.html.twig')
@@ -187,7 +187,7 @@ class ResetPasswordController extends AbstractController
         }
 
         $email = (new TemplatedEmail())
-            ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+            ->from(MailAddressProvider::publicSender())
             ->to($user->getEmail())
             ->subject('Réinitialisation de votre mot de passe')
             ->htmlTemplate('emails/reset_password.html.twig')

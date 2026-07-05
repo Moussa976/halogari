@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
+use App\Service\MailAddressProvider;
 use App\Service\PhoneNumberService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -13,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -80,7 +80,7 @@ class RegistrationController extends AbstractController
                 'app_verify_email',
                 $user,
                 (new TemplatedEmail())
-                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->from(MailAddressProvider::publicSender())
                     ->to($user->getEmail())
                     ->subject('Veuillez confirmer votre adresse e-mail')
                     ->htmlTemplate('emails/confirmation_register.html.twig')
@@ -99,8 +99,8 @@ class RegistrationController extends AbstractController
 
             $mailer->send(
                 (new TemplatedEmail())
-                    ->from(new Address('moussa@halogari.yt', 'HaloGari - Notifications'))
-                    ->to('moussa@halogari.yt')
+                    ->from(MailAddressProvider::adminSender())
+                    ->to(MailAddressProvider::ADMIN_EMAIL)
                     ->subject('Nouvelle inscription sur HaloGari')
                     ->htmlTemplate('emails/new_user.html.twig')
                     ->context([

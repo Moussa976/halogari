@@ -52,7 +52,7 @@ class NotificationMessageService
 
         // 📧 Email au destinataire
         $email = (new TemplatedEmail())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($destinataire->getEmail())
             ->subject('Nouveau message de ' . $expediteur->getPrenom())
             ->htmlTemplate('emails/nouveau_message.html.twig')

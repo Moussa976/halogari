@@ -48,7 +48,7 @@ class DocumentDecisionNotifier
         ]);
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($user->getEmail())
             ->subject($subject)
             ->html($html)

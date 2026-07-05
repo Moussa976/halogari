@@ -3,12 +3,12 @@
 namespace App\Controller;
 
 use App\Service\AdminNotificationMailer;
+use App\Service\MailAddressProvider;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 
 class OtherController extends AbstractController
@@ -84,9 +84,9 @@ class OtherController extends AbstractController
 
             // 1. Envoi à l'administrateur
             $adminEmail = (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->from(MailAddressProvider::publicSender())
                 ->replyTo($email)
-                ->to('moussa@halogari.yt')
+                ->to(MailAddressProvider::ADMIN_EMAIL)
                 ->subject('[Contact] ' . $sujet)
                 ->htmlTemplate('emails/contact.html.twig')
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
@@ -107,7 +107,7 @@ class OtherController extends AbstractController
 
             // 2. Envoi de confirmation à l’utilisateur
             $userConfirmation = (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->from(MailAddressProvider::publicSender())
                 ->to($email)
                 ->subject('Confirmation de votre message')
                 ->htmlTemplate('emails/confirmation_contact.html.twig')

@@ -19,6 +19,7 @@ use App\Service\CancellationCommunicationService;
 use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
 use App\Service\DocumentStorage;
+use App\Service\MailAddressProvider;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -31,7 +32,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Utils\DateHelper;
@@ -789,7 +789,7 @@ class UserController extends AbstractController
                 'app_verify_email',
                 $user,
                 (new TemplatedEmail())
-                    ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                    ->from(MailAddressProvider::publicSender())
                     ->to($user->getEmail())
                     ->subject('Veuillez confirmer votre adresse e-mail')
                     ->htmlTemplate('emails/confirmation_register.html.twig')

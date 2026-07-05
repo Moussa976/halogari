@@ -7,13 +7,10 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 class AdminNotificationMailer
 {
-    private const ADMIN_EMAIL = 'moussa@halogari.yt';
-
     private MailerInterface $mailer;
     private UserRepository $userRepository;
     private EntityManagerInterface $em;
@@ -40,8 +37,8 @@ class AdminNotificationMailer
         }
 
         $email = (new Email())
-            ->from(new Address(self::ADMIN_EMAIL, 'HaloGari Admin'))
-            ->to(self::ADMIN_EMAIL)
+            ->from(MailAddressProvider::adminSender())
+            ->to(MailAddressProvider::ADMIN_EMAIL)
             ->subject('[HaloGari Admin] ' . $subject)
             ->text($body);
 

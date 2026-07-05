@@ -46,7 +46,7 @@ class NotificationService
             : 'Votre réservation a été refusée.';
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($passager->getEmail())
             ->subject($subject)
             ->html($this->twig->render('emails/confirmation_reservation.html.twig', [
@@ -73,7 +73,7 @@ class NotificationService
         $conducteur = $reservation->getTrajet()->getConducteur();
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($conducteur->getEmail())
             ->subject('Nouvelle demande de réservation à valider')
             ->html($this->twig->render('emails/demande_validation_reservation.html.twig', [
@@ -117,7 +117,7 @@ class NotificationService
     public function envoyerConfirmationPaiement(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Paiement enregistré - Réservation HaloGari')
             ->html($this->twig->render('emails/paiement_confirme.html.twig', [
@@ -131,7 +131,7 @@ class NotificationService
     public function envoyerReservationAnnuleeParConducteur(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Votre réservation a été annulée par le conducteur')
             ->html($this->twig->render('emails/reservation_annulee_conducteur.html.twig', [
@@ -145,7 +145,7 @@ class NotificationService
     public function envoyerRemboursementEffectue(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Votre remboursement a été effectué')
             ->html($this->twig->render('emails/remboursement_effectue.html.twig', [
@@ -160,7 +160,7 @@ class NotificationService
     public function envoyerEchecPaiement(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Paiement annulé ou expiré')
             ->html($this->twig->render('emails/echec_paiement.html.twig', [
@@ -182,7 +182,7 @@ class NotificationService
     public function envoyerPaiementCapture(Reservation $reservation): void
     {
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Votre paiement est confirmé')
             ->html($this->twig->render('emails/paiement_capture.html.twig', [
@@ -230,7 +230,7 @@ class NotificationService
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($destinataire->getEmail())
             ->subject('Vous avez reçu un avis sur HaloGari')
             ->html($this->twig->render('emails/nouvel_avis.html.twig', [
@@ -264,7 +264,7 @@ class NotificationService
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($passager->getEmail())
             ->subject('Comment s’est passé votre trajet ?')
             ->html($this->twig->render('emails/demande_avis_passager.html.twig', [
@@ -300,7 +300,7 @@ class NotificationService
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
-            ->from('moussa@halogari.yt')
+            ->from(MailAddressProvider::publicSender())
             ->to($conducteur->getEmail())
             ->subject('Pensez à noter votre passager')
             ->html($this->twig->render('emails/demande_avis_conducteur.html.twig', [

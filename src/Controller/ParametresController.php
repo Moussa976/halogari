@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Service\AdminNotificationMailer;
 use App\Service\DocumentStorage;
 use App\Service\DocumentVerificationService;
+use App\Service\MailAddressProvider;
 use App\Service\PhoneNumberService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -15,7 +16,6 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -415,7 +415,7 @@ class ParametresController extends AbstractController
 
         try {
             $message = (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->from(MailAddressProvider::publicSender())
                 ->to($email)
                 ->subject('Demande de suppression de votre compte HaloGari')
                 ->htmlTemplate('emails/account_deleted.html.twig')

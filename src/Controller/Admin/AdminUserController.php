@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Service\AdminAuditLogger;
 use App\Service\DocumentStorage;
+use App\Service\MailAddressProvider;
 use App\Service\StripeConnectService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -16,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
@@ -393,7 +393,7 @@ class AdminUserController extends AbstractController
             'app_verify_email',
             $user,
             (new TemplatedEmail())
-                ->from(new Address('moussa@halogari.yt', 'HaloGari'))
+                ->from(MailAddressProvider::publicSender())
                 ->to($user->getEmail())
                 ->subject('Veuillez confirmer votre adresse e-mail')
                 ->htmlTemplate('emails/confirmation_register.html.twig')
