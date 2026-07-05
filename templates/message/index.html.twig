@@ -17,7 +17,7 @@
     <div class="app-panel__header">
       <div>
         <h2>Conversations</h2>
-        <p>{{ conversations|length }} échange{{ conversations|length > 1 ? 's' : '' }}</p>
+        <p>{{ conversations|length }} échange{{ conversations|length > 1 ? 's' : '' }} · messages supprimés après 30 jours</p>
       </div>
       <a href="{{ path('app_chercher') }}" class="btn btn-outline-primary btn-sm">
         <i class="bi bi-search"></i>
