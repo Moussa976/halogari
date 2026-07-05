@@ -66,7 +66,7 @@ class MetaService
                 throw new \RuntimeException(sprintf(
                     'Facebook a refusé la publication (%d) : %s',
                     $statusCode,
-                    json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                    $this->formatFacebookError($content)
                 ));
             }
 
@@ -79,5 +79,20 @@ class MetaService
         } finally {
             fclose($file);
         }
+    }
+
+    private function formatFacebookError(array $content): string
+    {
+        $message = (string) ($content['error']['message'] ?? '');
+
+        if (stripos($message, 'publish_actions') !== false) {
+            return 'le token enregistré semble être un token utilisateur. Récupérez le token d’accès de la Page Facebook via /me/accounts, puis enregistrez ce token de Page dans les paramètres admin.';
+        }
+
+        if ($message !== '') {
+            return $message;
+        }
+
+        return json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: 'erreur inconnue.';
     }
 }

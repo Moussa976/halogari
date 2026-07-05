@@ -30,6 +30,31 @@
 		border-color: #dc3545;
 	}
 
+	.publish-form .input-group > .input-group-text:first-child {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.publish-form .input-group > .input-group-text:first-child + .form-floating > .form-control,
+	.publish-form .input-group > .input-group-text:first-child + .form-floating > .form-select,
+	.publish-form .input-group > .input-group-text:first-child + .form-floating > .hg-autocomplete > .form-control {
+		border-left: 0;
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+
+	.publish-form .input-group > .form-floating:not(:last-child) > .form-control,
+	.publish-form .input-group > .form-floating:not(:last-child) > .form-select,
+	.publish-form .input-group > .form-floating:not(:last-child) > .hg-autocomplete > .form-control {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.publish-form .input-group > .form-floating + .input-group-text {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+
 	#mapItineraire {
 		height: 400px;
 		width: 100%;
@@ -101,7 +126,7 @@
 	}
 
 	.publish-description-field textarea {
-		min-height: 230px;
+		min-height: 130px;
 		resize: vertical;
 	}
 
@@ -178,8 +203,8 @@
 						<div class="input-group">
 							<span class="input-group-text text-vert"><i class="bi bi-geo-fill"></i></span>
 							<div class="form-floating">
-								<select id="select_departure" class="form-select villages" name="departure" required>
-									<option value="">Choisir un village</option>
+								<select id="select_departure" class="form-select villages" name="departure" placeholder="Village de départ" required>
+									<option value="">Village de départ</option>
 								</select>
 								<label for="select_departure">Départ</label>
 							</div>
@@ -190,8 +215,8 @@
 						<div class="input-group">
 							<span class="input-group-text text-vert"><i class="bi bi-flag-fill"></i></span>
 							<div class="form-floating">
-								<select id="select_arrival" class="form-select villages" name="arrival" required>
-									<option value="">Choisir un village</option>
+								<select id="select_arrival" class="form-select villages" name="arrival" placeholder="Village d'arrivée" required>
+									<option value="">Village d'arrivée</option>
 								</select>
 								<label for="select_arrival">Arrivée</label>
 							</div>
