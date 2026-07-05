@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\AdminNotificationMailer;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,7 +49,7 @@ class OtherController extends AbstractController
     /**
      * @Route("/contact", name="app_contact", methods={"GET", "POST"})
      */
-    public function contact(Request $request, MailerInterface $mailer): Response
+    public function contact(Request $request, MailerInterface $mailer, AdminNotificationMailer $adminNotificationMailer): Response
     {
         $user = $this->getUser();
 
@@ -97,6 +98,12 @@ class OtherController extends AbstractController
                 ]);
 
             $mailer->send($adminEmail);
+
+            $adminNotificationMailer->notify(
+                'Nouveau message de contact',
+                sprintf("%s <%s> a envoye une demande : %s", $nom, $email, $sujet),
+                '/admin'
+            );
 
             // 2. Envoi de confirmation à l’utilisateur
             $userConfirmation = (new TemplatedEmail())

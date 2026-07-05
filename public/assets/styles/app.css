@@ -5222,6 +5222,38 @@ textarea.form-control.app-message-textarea {
     transform: translateY(-50%);
 }
 
+.hg-admin-float {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + .55rem);
+    display: inline-flex;
+    align-items: center;
+    gap: .34rem;
+    min-height: 34px;
+    padding: .42rem .68rem .42rem .58rem;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 999px 0 0 999px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--hg-orange), #c45607);
+    box-shadow: -8px 12px 26px rgba(23, 33, 27, .18);
+    font-size: .78rem;
+    font-weight: 950;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.hg-admin-float:hover,
+.hg-admin-float:focus-visible {
+    color: #fff;
+    transform: translateX(-4px);
+    box-shadow: -12px 16px 32px rgba(23, 33, 27, .24);
+}
+
+.hg-admin-float i {
+    font-size: .92rem;
+}
+
 .hg-helpbot__trigger {
     display: grid;
     width: 30px;
@@ -5678,6 +5710,17 @@ textarea.form-control.app-message-textarea {
         right: 0;
         bottom: 104px;
         transform: none;
+    }
+
+    .hg-admin-float {
+        bottom: 0;
+        right: 0;
+        transform: translateY(calc(100% + .45rem));
+    }
+
+    .hg-admin-float:hover,
+    .hg-admin-float:focus-visible {
+        transform: translateY(calc(100% + .45rem)) translateX(-4px);
     }
 
     .hg-helpbot__trigger {

@@ -17,6 +17,7 @@ class AdminSettingsController extends AbstractController
 {
     private const FACEBOOK_PAGE_ID = 'facebook.page_id';
     private const FACEBOOK_PAGE_ACCESS_TOKEN = 'facebook.page_access_token';
+    private const FACEBOOK_TOKEN_EXPIRES_AT = 'facebook.token_expires_at';
     private const FACEBOOK_AUTO_POST = 'facebook.auto_post';
     private const PRODUCTION_PUBLIC_URL = 'production.public_url';
     private const PRODUCTION_SUPPORT_EMAIL = 'production.support_email';
@@ -75,13 +76,22 @@ class AdminSettingsController extends AbstractController
 
             $pageId = trim((string) $request->request->get('facebook_page_id'));
             $token = trim((string) $request->request->get('facebook_page_access_token'));
+            $tokenExpiresAt = trim((string) $request->request->get('facebook_token_expires_at'));
             $autoPost = (string) $request->request->get('facebook_auto_post') === '1';
+
+            if ($tokenExpiresAt !== '' && !\DateTimeImmutable::createFromFormat('!Y-m-d', $tokenExpiresAt)) {
+                $this->addFlash('danger', 'Date d\'expiration Facebook invalide.');
+
+                return $this->redirectToRoute('admin_settings');
+            }
 
             $settings->setValue(self::FACEBOOK_PAGE_ID, $pageId);
             $settings->setValue(self::FACEBOOK_AUTO_POST, $autoPost ? '1' : '0');
+            $settings->setValue(self::FACEBOOK_TOKEN_EXPIRES_AT, $tokenExpiresAt);
 
             if ($token !== '') {
                 $settings->setValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, $token);
+                $settings->setValue('facebook.token_expiry_alert_sent_for', '');
             }
 
             $em->flush();
@@ -90,6 +100,7 @@ class AdminSettingsController extends AbstractController
                 'pageId' => $pageId,
                 'autoPost' => $autoPost,
                 'tokenUpdated' => $token !== '',
+                'tokenExpiresAt' => $tokenExpiresAt,
             ]);
 
             $this->addFlash('success', 'Paramètres Facebook enregistrés.');
@@ -105,6 +116,7 @@ class AdminSettingsController extends AbstractController
         return $this->render('admin/settings/index.html.twig', [
             'facebookPageId' => $settings->getValue(self::FACEBOOK_PAGE_ID, '1202754536249735'),
             'facebookAutoPost' => $settings->getValue(self::FACEBOOK_AUTO_POST, '0') === '1',
+            'facebookTokenExpiresAt' => $settings->getValue(self::FACEBOOK_TOKEN_EXPIRES_AT, ''),
             'facebookTokenMasked' => $this->maskToken($token),
             'hasFacebookToken' => $token !== '',
             'productionPublicUrl' => $settings->getValue(self::PRODUCTION_PUBLIC_URL, 'https://halogari.yt'),
@@ -338,6 +350,7 @@ class AdminSettingsController extends AbstractController
         $stripeSecret = $this->stripeSettingOrEnv($settings, self::STRIPE_SECRET_KEY, 'STRIPE_SECRET_KEY');
         $stripeWebhook = $this->stripeSettingOrEnv($settings, self::STRIPE_WEBHOOK_SECRET, 'STRIPE_WEBHOOK_SECRET');
         $facebookToken = (string) $settings->getValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, '');
+        $facebookTokenExpiresAt = (string) $settings->getValue(self::FACEBOOK_TOKEN_EXPIRES_AT, '');
         $smsEnabled = $settings->getValue(self::SMS_ENABLED, '0') === '1';
 
         return [
@@ -350,7 +363,7 @@ class AdminSettingsController extends AbstractController
             $this->check('Stripe cle secrete', $stripeSecret !== '', $this->stripeMode($stripeSecret), 'Configurer la cle secrete Stripe.'),
             $this->check('Stripe webhook', $stripeWebhook !== '', $this->maskToken($stripeWebhook), 'Configurer le webhook Stripe de production.'),
             $this->check('Notifications push', $this->env('VAPID_PUBLIC_KEY') !== '' && $this->env('VAPID_PRIVATE_KEY') !== '', $this->env('VAPID_PUBLIC_KEY') !== '' ? 'VAPID configure' : 'VAPID manquant', 'Configurer les cles VAPID.'),
-            $this->check('Facebook Page', (string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '', $facebookToken !== '' ? 'Token enregistre' : 'Token manquant', 'Configurer la publication Meta si elle doit etre active.'),
+            $this->check('Facebook Page', (string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '' && $facebookTokenExpiresAt !== '', $facebookToken !== '' ? ($facebookTokenExpiresAt !== '' ? 'Token suivi jusqu\'au ' . $facebookTokenExpiresAt : 'Expiration non renseignee') : 'Token manquant', 'Configurer la publication Meta et sa date d\'expiration.'),
             $this->check('SMS passagers', $this->isSmsReady($settings), $smsEnabled ? 'Activés' : 'Désactivés', 'Configurer le fournisseur SMS, l’expéditeur et les clés.'),
         ];
     }

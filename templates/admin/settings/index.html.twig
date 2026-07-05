@@ -102,6 +102,20 @@
                 </div>
               </div>
 
+              <div class="mb-3">
+                <label for="facebook_token_expires_at" class="form-label">Expiration du token Facebook</label>
+                <input
+                  type="date"
+                  id="facebook_token_expires_at"
+                  name="facebook_token_expires_at"
+                  class="form-control"
+                  value="{{ facebookTokenExpiresAt }}"
+                >
+                <div class="form-text">
+                  Collez ici la date indiquee par Meta. HaloGari previendra le superadmin 10 jours avant.
+                </div>
+              </div>
+
               <div class="form-check form-switch mb-4">
                 <input
                   class="form-check-input"
