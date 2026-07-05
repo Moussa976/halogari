@@ -46,7 +46,7 @@ function initHaloGariDatepickers() {
 
     window.flatpickr(input, {
       locale: "fr",
-      allowInput: true,
+      allowInput: false,
       disableMobile: true,
       altInput: true,
       altFormat: "d/m/Y",
