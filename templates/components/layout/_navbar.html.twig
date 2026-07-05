@@ -77,7 +77,7 @@
         <a href="{{ path('app_mes_paiements') }}" class="{{ currentRoute == 'app_mes_paiements' ? 'is-active' : '' }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}" class="{{ currentRoute == 'app_documents' ? 'is-active' : '' }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
         <a href="{{ path('app_parametres') }}" class="{{ currentRoute == 'app_parametres' ? 'is-active' : '' }}"><i class="bi bi-gear"></i> Paramètres</a>
-        <a href="{{ path('app_logout') }}" class="app-drawer__logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+        <a href="{{ path('app_logout') }}" class="app-drawer__logout" data-no-loading><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
       {% else %}
         <button type="button" data-bs-toggle="modal" data-bs-target="#modalConnexion" data-bs-dismiss="offcanvas">
           <i class="bi bi-box-arrow-in-right"></i> Se connecter

@@ -19,7 +19,10 @@
       return;
     }
 
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => window.setTimeout(() => reject(new Error('Service worker timeout')), 2500))
+    ]);
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
       return;
@@ -64,7 +67,11 @@
         }
 
         event.preventDefault();
-        await unsubscribeCurrentDevice();
+        try {
+          await unsubscribeCurrentDevice();
+        } catch (error) {
+          // La déconnexion doit rester possible même si le push est indisponible.
+        }
         window.location.href = link.href;
       });
     });
