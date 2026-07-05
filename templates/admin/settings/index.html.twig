@@ -223,9 +223,17 @@
               <form method="post" class="row g-2 align-items-end">
                 <input type="hidden" name="settings_section" value="sms_test">
                 <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_sms_test') }}">
+                <div class="col-12 col-md-4">
+                  <label for="sms_test_country" class="form-label">Pays ou territoire</label>
+                  <select id="sms_test_country" name="sms_test_country" class="form-select">
+                    <option value="FR">France (+33)</option>
+                    <option value="YT">Mayotte (+262)</option>
+                    <option value="RE">Réunion (+262)</option>
+                  </select>
+                </div>
                 <div class="col-12 col-md">
                   <label for="sms_test_phone" class="form-label">Numéro de test</label>
-                  <input type="tel" id="sms_test_phone" name="sms_test_phone" class="form-control" placeholder="Ex : 0639..." required>
+                  <input type="tel" id="sms_test_phone" name="sms_test_phone" class="form-control" placeholder="Ex : 0612345678 ou +33612345678" required>
                 </div>
                 <div class="col-12 col-md-auto">
                   <button type="submit" class="btn btn-outline-primary w-100">

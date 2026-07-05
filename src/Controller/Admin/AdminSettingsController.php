@@ -269,12 +269,13 @@ class AdminSettingsController extends AbstractController
         }
 
         $phone = trim((string) $request->request->get('sms_test_phone'));
+        $country = trim((string) $request->request->get('sms_test_country', 'YT'));
         try {
-            $smsService->envoyerSmsTest($phone);
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test', null, ['phone' => $phone]);
+            $smsService->envoyerSmsTest($phone, $country);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test', null, ['phone' => $phone, 'country' => $country]);
             $this->addFlash('success', 'SMS de test envoyé.');
         } catch (\Throwable $exception) {
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test_failed', null, ['phone' => $phone, 'error' => $exception->getMessage()]);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_sms_test_failed', null, ['phone' => $phone, 'country' => $country, 'error' => $exception->getMessage()]);
             $this->addFlash('danger', 'Échec SMS : ' . $exception->getMessage());
         }
 

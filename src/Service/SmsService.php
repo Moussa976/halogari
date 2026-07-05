@@ -104,9 +104,9 @@ class SmsService
         $this->sendToPassenger($reservation, 'trajet_horaire_modifie', $message);
     }
 
-    public function envoyerSmsTest(string $phone): void
+    public function envoyerSmsTest(string $phone, string $country = PhoneNumberService::COUNTRY_MAYOTTE): void
     {
-        $phone = $this->phoneNumberService->normalize($phone);
+        $phone = $this->phoneNumberService->normalize($phone, $country);
         $provider = 'ovh';
         $message = 'HaloGari : test SMS automatique réussi.';
 
