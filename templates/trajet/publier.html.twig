@@ -54,12 +54,14 @@
 	}
 
 	.publish-suggestion {
-		overflow: hidden;
+		border: 1px solid rgba(31, 92, 58, 0.12);
+		border-radius: 1rem;
+		background: rgba(31, 92, 58, 0.04);
 	}
 
 	.publish-suggestion__header {
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		gap: 0.75rem;
 		min-width: 0;
 	}
@@ -67,8 +69,8 @@
 	.publish-suggestion__text {
 		display: block;
 		max-width: 100%;
-		margin: 0.75rem 0 1rem;
-		padding: 0.875rem 1rem;
+		margin: 1rem 0 0;
+		padding: 1rem;
 		border-radius: 1rem;
 		background: rgba(31, 92, 58, 0.06);
 		color: #1f2d26;
@@ -80,8 +82,26 @@
 		word-break: break-word;
 	}
 
+	.publish-suggestion:not(.modal-content) .publish-suggestion__text,
+	.publish-suggestion:not(.modal-content) .field-hint {
+		display: none;
+	}
+
+	.publish-suggestion:not(.modal-content) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem !important;
+		padding: 0.85rem 1rem !important;
+	}
+
+	.publish-suggestion:not(.modal-content) .publish-suggestion__actions {
+		margin-left: auto;
+	}
+
 	.publish-description-field textarea {
-		min-height: 150px;
+		min-height: 230px;
 		resize: vertical;
 	}
 
@@ -249,15 +269,17 @@
 						<div class="publish-suggestion__header">
 							<i class="bi bi-chat-left-dots text-vert publish-suggestion__icon"></i>
 							<div>
-								<strong>Suggestion intelligente</strong>
+								<strong>Besoin d'aide ?</strong>
 								<div class="field-hint mb-0">Une phrase prête à utiliser pour rassurer les passagers.</div>
 							</div>
 						</div>
 						<pre id="suggestionText"
 							class="publish-suggestion__text">Bonjour !\nDépart à l’heure, trajet direct. Possibilité de déposer à Combani si besoin.</pre>
 						<div class="text-end publish-suggestion__actions">
-							<button type="button" class="btn btn-outline-success btn-sm"
-								onclick="useSuggestion()">Utiliser cette suggestion</button>
+							<button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal"
+								data-bs-target="#suggestionDescriptionModal" onclick="showRandomSuggestion()">
+								<i class="bi bi-stars me-1"></i>Voir une suggestion
+							</button>
 						</div>
 					</div>
 
@@ -371,6 +393,32 @@
 								<button type="button" class="btn btn-success"
 									id="confirmItineraire">Confirmer</button>
 							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="modal fade" id="suggestionDescriptionModal" tabindex="-1" aria-labelledby="suggestionDescriptionModalLabel"
+				aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content publish-suggestion">
+						<div class="modal-header">
+							<div>
+								<h5 class="modal-title" id="suggestionDescriptionModalLabel">
+									<i class="bi bi-stars text-vert me-2"></i>Suggestion de description
+								</h5>
+								<p class="field-hint mb-0">Vous pouvez l'utiliser telle quelle ou l'adapter.</p>
+							</div>
+							<button type="button" class="btn-close" data-bs-dismiss="modal"
+								aria-label="Fermer"></button>
+						</div>
+						<div class="modal-body">
+							<pre id="suggestionPreview" class="publish-suggestion__text"></pre>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+							<button type="button" class="btn btn-success" data-bs-dismiss="modal"
+								onclick="useSuggestion()">Utiliser cette suggestion</button>
 						</div>
 					</div>
 				</div>
@@ -668,7 +716,7 @@ const suggestions = [
 
 function useSuggestion() {
 	const textarea = document.getElementById('description');
-	const suggestion = document.getElementById('suggestionText').innerText;
+	const suggestion = document.getElementById('suggestionPreview')?.innerText || document.getElementById('suggestionText').innerText;
 	textarea.value = suggestion;
 	updateDescriptionCounter();
 }
@@ -676,6 +724,10 @@ function useSuggestion() {
 function showRandomSuggestion() {
 	const index = Math.floor(Math.random() * suggestions.length);
 	document.getElementById('suggestionText').innerText = suggestions[index];
+	const preview = document.getElementById('suggestionPreview');
+	if (preview) {
+		preview.innerText = suggestions[index];
+	}
 }
 
 function updateDescriptionCounter() {
