@@ -1136,7 +1136,7 @@ body.app-shell::before {
         max-width: none;
         min-height: 100dvh;
         margin: 0;
-        padding: clamp(1rem, 4vw, 1.4rem);
+        padding: clamp(2.4rem, 8dvh, 4.8rem) clamp(1rem, 4vw, 1.4rem) clamp(1rem, 4vw, 1.4rem);
         overflow-y: auto;
         border: 0 !important;
         border-radius: 0 !important;
