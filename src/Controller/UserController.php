@@ -319,8 +319,7 @@ class UserController extends AbstractController
             }
 
             // Vérification du type MIME
-            $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-            if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+            if (!$documentVerificationService->isAllowedDocumentFile($file)) {
                 $this->addFlash('error', 'Format non autorisé. Seuls les PDF, JPG ou PNG sont acceptés.');
                 return $this->redirectToRoute('app_documents');
             }

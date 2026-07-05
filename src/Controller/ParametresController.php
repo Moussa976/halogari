@@ -323,8 +323,7 @@ class ParametresController extends AbstractController
             return $this->redirectToRoute('app_parametres');
         }
 
-        $allowedMime = ['application/pdf', 'image/jpeg', 'image/png'];
-        if (!in_array($fichier->getMimeType(), $allowedMime)) {
+        if (!$documentVerificationService->isAllowedDocumentFile($fichier)) {
             $this->addFlash('error', 'Format de document invalide. Autorisés : PDF, JPG, PNG.');
             return $this->redirectToRoute('app_parametres');
         }

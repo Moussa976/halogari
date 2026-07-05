@@ -42,7 +42,10 @@ class DocumentStorage
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $safeName = strtolower((string) $this->slugger->slug($originalName ?: 'document'));
         $safeName = substr($safeName, 0, 80) ?: 'document';
-        $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension() ?: 'bin'));
+        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
+        $extension = in_array($clientExtension, ['pdf', 'jpg', 'jpeg', 'png'], true)
+            ? $clientExtension
+            : strtolower((string) ($file->guessExtension() ?: 'bin'));
         $filename = sprintf('%s-%s.%s', $safeName, bin2hex(random_bytes(16)), $extension);
 
         $file->move($directory, $filename);

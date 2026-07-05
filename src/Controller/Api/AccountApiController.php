@@ -217,8 +217,7 @@ class AccountApiController extends AbstractController
             return $this->json(['message' => 'Type et fichier requis.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-        if (!in_array($file->getMimeType(), $allowedMimeTypes, true)) {
+        if (!$documentVerificationService->isAllowedDocumentFile($file)) {
             return $this->json(['message' => 'Format invalide. PDF, JPG ou PNG uniquement.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
