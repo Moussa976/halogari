@@ -2,9 +2,7 @@
 
 namespace App\Command;
 
-use App\Entity\Message;
-use App\Entity\Notification;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\UserDataRetentionCleaner;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -14,14 +12,12 @@ class CleanupUserDataCommand extends Command
 {
     protected static $defaultName = 'halogari:user-data:cleanup';
 
-    private EntityManagerInterface $em;
-    private string $messagesDirectory;
+    private UserDataRetentionCleaner $cleaner;
 
-    public function __construct(EntityManagerInterface $em, string $messagesDirectory)
+    public function __construct(UserDataRetentionCleaner $cleaner)
     {
         parent::__construct();
-        $this->em = $em;
-        $this->messagesDirectory = $messagesDirectory;
+        $this->cleaner = $cleaner;
     }
 
     protected function configure(): void
@@ -36,77 +32,25 @@ class CleanupUserDataCommand extends Command
     {
         $days = max(1, (int) $input->getOption('days'));
         $dryRun = (bool) $input->getOption('dry-run');
-        $cutoff = (new \DateTimeImmutable())->modify(sprintf('-%d days', $days));
-
-        $notificationCount = (int) $this->em->createQueryBuilder()
-            ->select('COUNT(n.id)')
-            ->from(Notification::class, 'n')
-            ->where('n.createdAt <= :cutoff')
-            ->setParameter('cutoff', $cutoff)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        $messages = $this->em->createQueryBuilder()
-            ->select('m')
-            ->from(Message::class, 'm')
-            ->where('m.createdAt <= :cutoff')
-            ->orderBy('m.id', 'ASC')
-            ->setParameter('cutoff', $cutoff)
-            ->getQuery()
-            ->getResult();
-
-        $messageCount = count($messages);
-        $imageCount = 0;
-
-        foreach ($messages as $message) {
-            if ($message instanceof Message && $message->getImageFilename()) {
-                $imageCount++;
-            }
-        }
+        $result = $this->cleaner->cleanup($days, $dryRun);
 
         if ($dryRun) {
             $output->writeln(sprintf(
                 '%d notification(s), %d message(s) et %d image(s) seraient supprimes avant le %s.',
-                $notificationCount,
-                $messageCount,
-                $imageCount,
-                $cutoff->format('d/m/Y H:i')
+                $result['notifications'],
+                $result['messages'],
+                $result['images'],
+                $result['cutoff']->format('d/m/Y H:i')
             ));
 
             return Command::SUCCESS;
         }
 
-        $deletedImages = 0;
-        foreach ($messages as $message) {
-            if (!$message instanceof Message) {
-                continue;
-            }
-
-            $filename = $message->getImageFilename();
-            if ($filename) {
-                $path = $this->messagesDirectory . DIRECTORY_SEPARATOR . basename($filename);
-                if (is_file($path) && @unlink($path)) {
-                    $deletedImages++;
-                }
-            }
-
-            $this->em->remove($message);
-        }
-
-        $deletedNotifications = $this->em->createQueryBuilder()
-            ->delete(Notification::class, 'n')
-            ->where('n.createdAt <= :cutoff')
-            ->setParameter('cutoff', $cutoff)
-            ->getQuery()
-            ->execute();
-
-        $this->em->flush();
-
         $output->writeln(sprintf(
             '%d notification(s), %d message(s) et %d image(s) supprimes.',
-            $deletedNotifications,
-            $messageCount,
-            $deletedImages
+            $result['notifications'],
+            $result['messages'],
+            $result['images']
         ));
 
         return Command::SUCCESS;
