@@ -31,6 +31,7 @@ class AdminSettingsController extends AbstractController
     private const SMS_FROM = 'sms.from';
     private const SMS_TWILIO_ACCOUNT_SID = 'sms.twilio_account_sid';
     private const SMS_TWILIO_AUTH_TOKEN = 'sms.twilio_auth_token';
+    private const SMS_TWILIO_FROM = 'sms.twilio_from';
     private const SMS_OVH_SERVICE_NAME = 'sms.ovh_service_name';
     private const SMS_OVH_APPLICATION_KEY = 'sms.ovh_application_key';
     private const SMS_OVH_APPLICATION_SECRET = 'sms.ovh_application_secret';
@@ -135,10 +136,13 @@ class AdminSettingsController extends AbstractController
             'smsEnabled' => $settings->getValue(self::SMS_ENABLED, '0') === '1',
             'smsProvider' => $settings->getValue(self::SMS_PROVIDER, 'ovh'),
             'smsFrom' => $settings->getValue(self::SMS_FROM, ''),
+            'smsTwilioFrom' => $settings->getValue(self::SMS_TWILIO_FROM, ''),
             'smsAccountSidMasked' => $this->maskToken((string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '')),
             'smsAuthTokenMasked' => $this->maskToken((string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '')),
+            'smsTwilioFromMasked' => $this->maskToken((string) $settings->getValue(self::SMS_TWILIO_FROM, '')),
             'hasSmsAccountSid' => (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== '',
             'hasSmsAuthToken' => (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== '',
+            'hasSmsTwilioFrom' => (string) $settings->getValue(self::SMS_TWILIO_FROM, '') !== '',
             'smsOvhServiceName' => $settings->getValue(self::SMS_OVH_SERVICE_NAME, ''),
             'smsOvhApplicationKeyMasked' => $this->maskToken((string) $settings->getValue(self::SMS_OVH_APPLICATION_KEY, '')),
             'smsOvhApplicationSecretMasked' => $this->maskToken((string) $settings->getValue(self::SMS_OVH_APPLICATION_SECRET, '')),
@@ -169,6 +173,9 @@ class AdminSettingsController extends AbstractController
         $ovhApplicationKey = trim((string) $request->request->get('sms_ovh_application_key'));
         $ovhApplicationSecret = trim((string) $request->request->get('sms_ovh_application_secret'));
         $ovhConsumerKey = trim((string) $request->request->get('sms_ovh_consumer_key'));
+        $twilioAccountSid = trim((string) $request->request->get('sms_twilio_account_sid'));
+        $twilioAuthToken = trim((string) $request->request->get('sms_twilio_auth_token'));
+        $twilioFrom = trim((string) $request->request->get('sms_twilio_from'));
 
         $settings->setValue(self::SMS_ENABLED, $enabled ? '1' : '0');
         $settings->setValue(self::SMS_PROVIDER, $provider);
@@ -187,6 +194,18 @@ class AdminSettingsController extends AbstractController
             $settings->setValue(self::SMS_OVH_CONSUMER_KEY, $ovhConsumerKey);
         }
 
+        if ($twilioAccountSid !== '') {
+            $settings->setValue(self::SMS_TWILIO_ACCOUNT_SID, $twilioAccountSid);
+        }
+
+        if ($twilioAuthToken !== '') {
+            $settings->setValue(self::SMS_TWILIO_AUTH_TOKEN, $twilioAuthToken);
+        }
+
+        if ($twilioFrom !== '') {
+            $settings->setValue(self::SMS_TWILIO_FROM, $twilioFrom);
+        }
+
         $em->flush();
 
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_sms_update', null, [
@@ -197,6 +216,9 @@ class AdminSettingsController extends AbstractController
             'ovhApplicationKeyUpdated' => $ovhApplicationKey !== '',
             'ovhApplicationSecretUpdated' => $ovhApplicationSecret !== '',
             'ovhConsumerKeyUpdated' => $ovhConsumerKey !== '',
+            'twilioAccountSidUpdated' => $twilioAccountSid !== '',
+            'twilioAuthTokenUpdated' => $twilioAuthToken !== '',
+            'twilioFromUpdated' => $twilioFrom !== '',
         ]);
 
         $this->addFlash('success', 'Paramètres SMS enregistrés.');
@@ -378,7 +400,10 @@ class AdminSettingsController extends AbstractController
         return (string) $settings->getValue(self::SMS_OVH_SERVICE_NAME, '') !== ''
             && (string) $settings->getValue(self::SMS_OVH_APPLICATION_KEY, '') !== ''
             && (string) $settings->getValue(self::SMS_OVH_APPLICATION_SECRET, '') !== ''
-            && (string) $settings->getValue(self::SMS_OVH_CONSUMER_KEY, '') !== '';
+            && (string) $settings->getValue(self::SMS_OVH_CONSUMER_KEY, '') !== ''
+            && (string) $settings->getValue(self::SMS_TWILIO_ACCOUNT_SID, '') !== ''
+            && (string) $settings->getValue(self::SMS_TWILIO_AUTH_TOKEN, '') !== ''
+            && (string) $settings->getValue(self::SMS_TWILIO_FROM, '') !== '';
     }
 
     private function check(string $label, bool $ok, string $value, string $help): array

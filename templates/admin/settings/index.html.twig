@@ -162,12 +162,12 @@
                 <div class="col-12 col-md-6">
                   <label for="sms_provider" class="form-label">Fournisseur</label>
                   <select id="sms_provider" name="sms_provider" class="form-select">
-                    <option value="ovh" {% if smsProvider == 'ovh' %}selected{% endif %}>OVHcloud SMS</option>
+                    <option value="ovh" {% if smsProvider == 'ovh' %}selected{% endif %}>Routage automatique : OVH (+33) et Twilio (+262)</option>
                   </select>
                   <div class="form-text">OVH est recommandé puisque vous avez déjà un pack de 100 SMS.</div>
                 </div>
                 <div class="col-12 col-md-6">
-                  <label for="sms_from" class="form-label">Numéro expéditeur</label>
+                  <label for="sms_from" class="form-label">Expéditeur OVH</label>
                   <input type="text" id="sms_from" name="sms_from" class="form-control" value="{{ smsFrom }}" placeholder="Ex : HaloGari ou numéro expéditeur OVH">
                   <div class="form-text">Avec OVH, laissez vide si l'expéditeur personnalisé n'est pas encore créé et validé. Si OVH refuse "HaloGari", l'envoi repartira avec l'expéditeur OVH par défaut.</div>
                 </div>
@@ -198,9 +198,15 @@
                 </div>
               </div>
 
-              <details class="mt-3 d-none">
-                <summary class="fw-bold">Paramètres Twilio en secours</summary>
-                <div class="row g-3 mt-1">
+              <div class="border rounded p-3 mt-3">
+                <h3 class="h6 mb-2">Twilio pour Mayotte et Réunion</h3>
+                <p class="small text-muted mb-3">Les numéros +262 passent par Twilio, car OVH ne livre pas correctement Mayotte/Réunion.</p>
+                <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label for="sms_twilio_from" class="form-label">Numéro Twilio expéditeur</label>
+                  <input type="text" id="sms_twilio_from" name="sms_twilio_from" class="form-control" placeholder="{{ hasSmsTwilioFrom ? 'Laisser vide pour conserver le numéro actuel' : '+17622391154' }}" autocomplete="off">
+                  <div class="form-text">Numéro actuel : <strong>{{ smsTwilioFromMasked }}</strong></div>
+                </div>
                 <div class="col-12 col-md-6">
                   <label for="sms_twilio_account_sid" class="form-label">Account SID</label>
                   <input type="password" id="sms_twilio_account_sid" name="sms_twilio_account_sid" class="form-control" placeholder="{{ hasSmsAccountSid ? 'Laisser vide pour conserver le SID actuel' : 'AC...' }}" autocomplete="off">
@@ -212,14 +218,14 @@
                   <div class="form-text">Token actuel : <strong>{{ smsAuthTokenMasked }}</strong></div>
                 </div>
               </div>
-              </details>
+              </div>
 
               <button type="submit" class="btn btn-primary mt-4">Enregistrer SMS</button>
             </form>
 
             <div class="border rounded p-3 mt-4 bg-light">
               <h3 class="h6 mb-2">Tester l'envoi</h3>
-              <p class="small text-muted mb-3">Envoyez un SMS réel pour voir si OVH accepte la configuration actuelle.</p>
+              <p class="small text-muted mb-3">Envoyez un SMS réel pour vérifier le routage : +33 via OVH, +262 via Twilio.</p>
               <form method="post" class="row g-2 align-items-end">
                 <input type="hidden" name="settings_section" value="sms_test">
                 <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_sms_test') }}">
@@ -245,8 +251,8 @@
             </div>
 
             <div class="alert alert-warning small mt-3 mb-0">
-              Les SMS envoyés par l'API OVH peuvent ne pas apparaître comme une campagne créée manuellement dans le Manager OVH.
-              Le suivi le plus fiable est le tableau ci-dessous : il indique le statut enregistré par HaloGari et le retour OVH.
+              Les SMS envoyés par API peuvent ne pas apparaître comme une campagne créée manuellement dans les interfaces OVH/Twilio.
+              Le suivi le plus fiable est le tableau ci-dessous : il indique le fournisseur, le statut enregistré par HaloGari et le retour technique.
             </div>
 
             <hr>
@@ -259,8 +265,9 @@
                     <th>Date</th>
                     <th>Passager</th>
                     <th>Événement</th>
+                    <th>Fournisseur</th>
                     <th>Statut</th>
-                    <th>Retour OVH</th>
+                    <th>Retour fournisseur</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -272,6 +279,7 @@
                         <div class="small text-muted">{{ sms.phone }}</div>
                       </td>
                       <td class="small">{{ sms.eventType|replace({'reservation_': '', '_': ' '}) }}</td>
+                      <td class="small"><span class="badge bg-light text-dark">{{ sms.provider ?: '-' }}</span></td>
                       <td>
                         <span class="badge {{ sms.status == 'sent' ? 'bg-success' : (sms.status == 'failed' ? 'bg-danger' : 'bg-secondary') }}">
                           {{ sms.status == 'sent' ? 'Envoyé' : (sms.status == 'failed' ? 'Échec' : 'Ignoré') }}
@@ -292,7 +300,7 @@
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="5" class="text-muted small">Aucun SMS enregistré pour le moment.</td>
+                      <td colspan="6" class="text-muted small">Aucun SMS enregistré pour le moment.</td>
                     </tr>
                   {% endfor %}
                 </tbody>

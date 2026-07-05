@@ -15,6 +15,7 @@ class SmsService
     private const FROM = 'sms.from';
     private const TWILIO_ACCOUNT_SID = 'sms.twilio_account_sid';
     private const TWILIO_AUTH_TOKEN = 'sms.twilio_auth_token';
+    private const TWILIO_FROM = 'sms.twilio_from';
     private const OVH_SERVICE_NAME = 'sms.ovh_service_name';
     private const OVH_APPLICATION_KEY = 'sms.ovh_application_key';
     private const OVH_APPLICATION_SECRET = 'sms.ovh_application_secret';
@@ -107,7 +108,7 @@ class SmsService
     public function envoyerSmsTest(string $phone, string $country = PhoneNumberService::COUNTRY_MAYOTTE): void
     {
         $phone = $this->phoneNumberService->normalize($phone, $country);
-        $provider = 'ovh';
+        $provider = $this->providerForPhone($phone);
         $message = 'HaloGari : test SMS automatique réussi.';
 
         $log = (new SmsLog())
@@ -133,7 +134,7 @@ class SmsService
         }
 
         try {
-            $providerMessageId = $this->sendWithOvh($phone, $message);
+            $providerMessageId = $this->sendWithProvider($provider, $phone, $message);
             $log->markSent($providerMessageId);
             $this->em->flush();
         } catch (\Throwable $exception) {
@@ -149,7 +150,7 @@ class SmsService
         $passager = $reservation->getPassager();
         $phone = $this->phoneNumberService->normalize((string) $passager->getTelephone());
 
-        $provider = 'ovh';
+        $provider = $this->providerForPhone($phone);
 
         $log = (new SmsLog())
             ->setReservation($reservation)
@@ -176,7 +177,7 @@ class SmsService
         }
 
         try {
-            $providerMessageId = $this->sendWithOvh($phone, $message);
+            $providerMessageId = $this->sendWithProvider($provider, $phone, $message);
             $log->markSent($providerMessageId);
         } catch (\Throwable $exception) {
             $log->markFailed($exception->getMessage());
@@ -192,7 +193,7 @@ class SmsService
         }
 
         $phone = $this->phoneNumberService->normalize((string) $user->getTelephone());
-        $provider = 'ovh';
+        $provider = $this->providerForPhone($phone);
 
         $log = (new SmsLog())
             ->setReservation($reservation)
@@ -219,7 +220,7 @@ class SmsService
         }
 
         try {
-            $log->markSent($this->sendWithOvh($phone, $message));
+            $log->markSent($this->sendWithProvider($provider, $phone, $message));
         } catch (\Throwable $exception) {
             $log->markFailed($exception->getMessage());
         }
@@ -231,7 +232,7 @@ class SmsService
     {
         $accountSid = trim((string) $this->settings->getValue(self::TWILIO_ACCOUNT_SID, ''));
         $authToken = trim((string) $this->settings->getValue(self::TWILIO_AUTH_TOKEN, ''));
-        $from = trim((string) $this->settings->getValue(self::FROM, ''));
+        $from = trim((string) $this->settings->getValue(self::TWILIO_FROM, ''));
 
         if ($accountSid === '' || $authToken === '' || $from === '') {
             throw new \RuntimeException('Configuration SMS incomplète : SID, token ou numéro expéditeur manquant.');
@@ -252,6 +253,28 @@ class SmsService
         }
 
         return isset($data['sid']) ? (string) $data['sid'] : null;
+    }
+
+    private function sendWithProvider(string $provider, string $to, string $message): ?string
+    {
+        if ($provider === 'twilio') {
+            return $this->sendWithTwilio($to, $message);
+        }
+
+        return $this->sendWithOvh($to, $message);
+    }
+
+    private function providerForPhone(string $phone): string
+    {
+        if (strpos($phone, '+262') === 0) {
+            return 'twilio';
+        }
+
+        if (strpos($phone, '+33') === 0) {
+            return 'ovh';
+        }
+
+        return (string) $this->settings->getValue(self::PROVIDER, 'ovh') ?: 'ovh';
     }
 
     private function sendWithOvh(string $to, string $message, bool $ignoreCustomSender = false, bool $triedReceiverFallback = false): ?string
