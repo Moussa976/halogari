@@ -1583,6 +1583,13 @@ textarea.form-control.app-message-textarea {
     min-width: 48px;
 }
 
+.home-search-fields .form-floating > .hg-autocomplete ~ label,
+.search-page-fields .form-floating > .hg-autocomplete ~ label {
+    color: var(--hg-green);
+    opacity: .88;
+    transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+}
+
 @media screen and (min-width: 992px) {
     .home-search-fields,
     .search-page-fields {
@@ -1599,6 +1606,11 @@ textarea.form-control.app-message-textarea {
         width: 1px;
         background: var(--hg-search-separator);
         pointer-events: none;
+    }
+
+    .home-search-fields > .search-form-field:first-child,
+    .search-page-fields > .search-form-field:first-child {
+        border-radius: 14px 0 0 14px !important;
     }
 
     .home-search-fields .input-group-text,
@@ -1632,6 +1644,11 @@ textarea.form-control.app-message-textarea {
     .home-search-fields .search-form-field,
     .search-page-fields .search-form-field {
         border-bottom: 1px solid var(--hg-search-separator) !important;
+    }
+
+    .home-search-fields > .search-form-field:first-child,
+    .search-page-fields > .search-form-field:first-child {
+        border-radius: 14px 14px 0 0 !important;
     }
 
     .home-search-fields .input-group-text,
