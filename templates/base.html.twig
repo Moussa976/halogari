@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% set currentRoute = app.request.attributes.get('_route')|default('') %}
   {% set isPreprodHost = app.request.host starts with 'preprod.' %}
+  {% set seoDefaultTitle = platform_setting('seo.default_title', 'HaloGari | Covoiturage à Mayotte') %}
+  {% set seoDefaultDescription = platform_setting('seo.default_description', 'HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.') %}
+  {% set seoDefaultImage = platform_setting('seo.og_image', absolute_url(asset('images/logo/logo-787x298.png'))) %}
+  {% set seoCanonicalBaseUrl = platform_setting('seo.canonical_base_url', '') %}
+  {% set seoProductionRobots = platform_setting('seo.robots_default', 'index, follow') %}
+  {% set seoGoogleVerification = platform_setting('seo.google_site_verification', '') %}
+  {% set seoBingVerification = platform_setting('seo.bing_site_verification', '') %}
   {% set isPrivateSeoRoute =
     currentRoute starts with 'admin_'
     or currentRoute starts with 'api_'
@@ -23,18 +30,24 @@
     or currentRoute in ['app_login', 'app_register', 'registration_confirmation', 'app_publier', 'app_chercherResultats', 'app_trajet_show', 'trajet_annuler', 'affiche_test', 'app_test_carte', 'app_message', 'notification_voir', 'paiement_form', 'paiement_confirmation', 'app_mesreservation', 'reservation_accepter', 'reservation_refuser', 'reservation_annuler_legacy', 'app_user', 'app_profile', 'app_compte', 'app_documents', 'reservation_annuler', 'app_user_resend_confirmation', 'push_test_user']
   %}
   <title>
-    {% block title %}HaloGari | Covoiturage à Mayotte
+    {% block title %}{{ seoDefaultTitle }}
     {% endblock %}
   </title>
-  <meta name="description" content="{% block meta_description %}HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.{% endblock %}">
-  <meta name="robots" content="{% block meta_robots %}{{ isPrivateSeoRoute ? 'noindex, nofollow' : (isPreprodHost ? 'noindex, follow' : 'index, follow') }}{% endblock %}">
-  <link rel="canonical" href="{% block canonical_url %}{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}{% endblock %}">
+  <meta name="description" content="{% block meta_description %}{{ seoDefaultDescription }}{% endblock %}">
+  <meta name="robots" content="{% block meta_robots %}{{ isPrivateSeoRoute ? 'noindex, nofollow' : (isPreprodHost ? 'noindex, follow' : seoProductionRobots) }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical_url %}{{ (not isPreprodHost and seoCanonicalBaseUrl ? seoCanonicalBaseUrl : app.request.schemeAndHttpHost) ~ app.request.pathInfo }}{% endblock %}">
+  {% if seoGoogleVerification %}
+    <meta name="google-site-verification" content="{{ seoGoogleVerification }}">
+  {% endif %}
+  {% if seoBingVerification %}
+    <meta name="msvalidate.01" content="{{ seoBingVerification }}">
+  {% endif %}
   <meta property="og:site_name" content="HaloGari">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:title" content="{% block og_title %}{{ block('title')|striptags|trim }}{% endblock %}">
   <meta property="og:description" content="{% block og_description %}{{ block('meta_description')|striptags|trim }}{% endblock %}">
   <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}">
-  <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/logo/logo-787x298.png')) }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ seoDefaultImage }}{% endblock %}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ block('og_title')|striptags|trim }}">
   <meta name="twitter:description" content="{{ block('og_description')|striptags|trim }}">

@@ -36,6 +36,13 @@ class AdminSettingsController extends AbstractController
     private const SMS_OVH_APPLICATION_KEY = 'sms.ovh_application_key';
     private const SMS_OVH_APPLICATION_SECRET = 'sms.ovh_application_secret';
     private const SMS_OVH_CONSUMER_KEY = 'sms.ovh_consumer_key';
+    private const SEO_DEFAULT_TITLE = 'seo.default_title';
+    private const SEO_DEFAULT_DESCRIPTION = 'seo.default_description';
+    private const SEO_OG_IMAGE = 'seo.og_image';
+    private const SEO_CANONICAL_BASE_URL = 'seo.canonical_base_url';
+    private const SEO_ROBOTS_DEFAULT = 'seo.robots_default';
+    private const SEO_GOOGLE_SITE_VERIFICATION = 'seo.google_site_verification';
+    private const SEO_BING_SITE_VERIFICATION = 'seo.bing_site_verification';
 
     /**
      * @Route("/admin/parametres", name="admin_settings", methods={"GET", "POST"})
@@ -67,6 +74,10 @@ class AdminSettingsController extends AbstractController
 
             if ($section === 'sms_test') {
                 return $this->testSmsSettings($request, $smsService, $auditLogger);
+            }
+
+            if ($section === 'seo') {
+                return $this->saveSeoSettings($request, $settings, $em, $auditLogger);
             }
 
             if (!$this->isCsrfTokenValid('admin_settings_facebook', (string) $request->request->get('_token'))) {
@@ -151,7 +162,74 @@ class AdminSettingsController extends AbstractController
             'hasSmsOvhApplicationSecret' => (string) $settings->getValue(self::SMS_OVH_APPLICATION_SECRET, '') !== '',
             'hasSmsOvhConsumerKey' => (string) $settings->getValue(self::SMS_OVH_CONSUMER_KEY, '') !== '',
             'smsLogs' => $smsLogs->findRecent(12),
+            'seoDefaultTitle' => $settings->getValue(self::SEO_DEFAULT_TITLE, 'HaloGari | Covoiturage à Mayotte'),
+            'seoDefaultDescription' => $settings->getValue(self::SEO_DEFAULT_DESCRIPTION, 'HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.'),
+            'seoOgImage' => $settings->getValue(self::SEO_OG_IMAGE, 'https://halogari.yt/images/logo/logo-787x298.png'),
+            'seoCanonicalBaseUrl' => $settings->getValue(self::SEO_CANONICAL_BASE_URL, 'https://halogari.yt'),
+            'seoRobotsDefault' => $settings->getValue(self::SEO_ROBOTS_DEFAULT, 'index, follow'),
+            'seoGoogleSiteVerification' => $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, ''),
+            'seoBingSiteVerification' => $settings->getValue(self::SEO_BING_SITE_VERIFICATION, ''),
         ]);
+    }
+
+    private function saveSeoSettings(
+        Request $request,
+        PlatformSettingRepository $settings,
+        EntityManagerInterface $em,
+        AdminAuditLogger $auditLogger
+    ): Response {
+        if (!$this->isCsrfTokenValid('admin_settings_seo', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de securite invalide. Merci de reessayer.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $title = trim((string) $request->request->get('seo_default_title'));
+        $description = trim((string) $request->request->get('seo_default_description'));
+        $ogImage = trim((string) $request->request->get('seo_og_image'));
+        $canonicalBaseUrl = rtrim(trim((string) $request->request->get('seo_canonical_base_url')), '/');
+        $robotsDefault = trim((string) $request->request->get('seo_robots_default', 'index, follow'));
+        $googleVerification = trim((string) $request->request->get('seo_google_site_verification'));
+        $bingVerification = trim((string) $request->request->get('seo_bing_site_verification'));
+
+        if ($canonicalBaseUrl !== '' && !filter_var($canonicalBaseUrl, FILTER_VALIDATE_URL)) {
+            $this->addFlash('danger', 'URL canonique invalide.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        if ($ogImage !== '' && !filter_var($ogImage, FILTER_VALIDATE_URL)) {
+            $this->addFlash('danger', 'Image de partage invalide. Utilisez une URL complete.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $allowedRobots = ['index, follow', 'index, nofollow', 'noindex, follow', 'noindex, nofollow'];
+        if (!in_array($robotsDefault, $allowedRobots, true)) {
+            $robotsDefault = 'index, follow';
+        }
+
+        $settings->setValue(self::SEO_DEFAULT_TITLE, $title ?: 'HaloGari | Covoiturage à Mayotte');
+        $settings->setValue(self::SEO_DEFAULT_DESCRIPTION, $description ?: 'HaloGari facilite le covoiturage local à Mayotte : cherchez une place, publiez un trajet et voyagez avec une communauté de confiance.');
+        $settings->setValue(self::SEO_OG_IMAGE, $ogImage ?: 'https://halogari.yt/images/logo/logo-787x298.png');
+        $settings->setValue(self::SEO_CANONICAL_BASE_URL, $canonicalBaseUrl ?: 'https://halogari.yt');
+        $settings->setValue(self::SEO_ROBOTS_DEFAULT, $robotsDefault);
+        $settings->setValue(self::SEO_GOOGLE_SITE_VERIFICATION, $googleVerification);
+        $settings->setValue(self::SEO_BING_SITE_VERIFICATION, $bingVerification);
+
+        $em->flush();
+
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_seo_update', null, [
+            'title' => $title,
+            'canonicalBaseUrl' => $canonicalBaseUrl,
+            'robotsDefault' => $robotsDefault,
+            'hasGoogleVerification' => $googleVerification !== '',
+            'hasBingVerification' => $bingVerification !== '',
+        ]);
+
+        $this->addFlash('success', 'Parametres SEO enregistres.');
+
+        return $this->redirectToRoute('admin_settings');
     }
 
     private function saveSmsSettings(

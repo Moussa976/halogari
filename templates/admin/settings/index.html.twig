@@ -19,6 +19,7 @@
     <div class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
       <a class="nav-link active" href="#settings-stripe">Stripe</a>
       <a class="nav-link" href="#settings-facebook">Facebook</a>
+      <a class="nav-link" href="#settings-seo">SEO</a>
       <a class="nav-link" href="#settings-sms">SMS</a>
       <a class="nav-link" href="#settings-production">Production</a>
       <a class="nav-link" href="#settings-backup">Sauvegarde</a>
@@ -133,6 +134,74 @@
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
                 <a href="https://www.facebook.com/profile.php?id={{ facebookPageId }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">Ouvrir la Page</a>
               </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card mb-4" id="settings-seo">
+          <div class="card-header">
+            <h2 class="h5 mb-1">Référencement SEO</h2>
+            <p class="text-muted mb-0">Réglages par défaut utilisés par les pages publiques quand elles n'ont pas de texte spécifique.</p>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              <input type="hidden" name="settings_section" value="seo">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_seo') }}">
+
+              <div class="mb-3">
+                <label for="seo_default_title" class="form-label">Titre par défaut</label>
+                <input type="text" id="seo_default_title" name="seo_default_title" class="form-control" value="{{ seoDefaultTitle }}" maxlength="70">
+                <div class="form-text">Idéalement entre 45 et 60 caractères.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="seo_default_description" class="form-label">Description par défaut</label>
+                <textarea id="seo_default_description" name="seo_default_description" class="form-control" rows="3" maxlength="180">{{ seoDefaultDescription }}</textarea>
+                <div class="form-text">Idéalement entre 140 et 160 caractères.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="seo_og_image" class="form-label">Image de partage</label>
+                <input type="url" id="seo_og_image" name="seo_og_image" class="form-control" value="{{ seoOgImage }}" placeholder="https://halogari.yt/images/...">
+                <div class="form-text">Image utilisée par défaut pour Facebook, WhatsApp et les aperçus sociaux.</div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-7">
+                  <label for="seo_canonical_base_url" class="form-label">Domaine canonique</label>
+                  <input type="url" id="seo_canonical_base_url" name="seo_canonical_base_url" class="form-control" value="{{ seoCanonicalBaseUrl }}" placeholder="https://halogari.yt">
+                </div>
+                <div class="col-12 col-md-5">
+                  <label for="seo_robots_default" class="form-label">Indexation par défaut</label>
+                  <select id="seo_robots_default" name="seo_robots_default" class="form-select">
+                    {% for value, label in {
+                      'index, follow': 'Indexer',
+                      'index, nofollow': 'Indexer sans suivre les liens',
+                      'noindex, follow': 'Ne pas indexer mais suivre',
+                      'noindex, nofollow': 'Ne pas indexer'
+                    } %}
+                      <option value="{{ value }}" {% if seoRobotsDefault == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                  <label for="seo_google_site_verification" class="form-label">Google Search Console</label>
+                  <input type="text" id="seo_google_site_verification" name="seo_google_site_verification" class="form-control" value="{{ seoGoogleSiteVerification }}" placeholder="Code google-site-verification">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="seo_bing_site_verification" class="form-label">Bing Webmaster Tools</label>
+                  <input type="text" id="seo_bing_site_verification" name="seo_bing_site_verification" class="form-control" value="{{ seoBingSiteVerification }}" placeholder="Code msvalidate.01">
+                </div>
+              </div>
+
+              <div class="alert alert-light border small mt-3">
+                Les pages sensibles restent en <code>noindex</code> automatiquement : admin, compte, paiement, réservations, messages et publication.
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enregistrer SEO</button>
             </form>
           </div>
         </div>

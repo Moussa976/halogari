@@ -2,18 +2,21 @@
 
 namespace App\Controller;
 
+use App\Repository\PlatformSettingRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class SeoController extends AbstractController
 {
+    private const SEO_CANONICAL_BASE_URL = 'seo.canonical_base_url';
+
     /**
      * @Route("/robots.txt", name="app_robots", methods={"GET"})
      */
-    public function robots(): Response
+    public function robots(PlatformSettingRepository $settings): Response
     {
+        $baseUrl = $this->canonicalBaseUrl($settings);
         $content = implode("\n", [
             'User-agent: *',
             'Allow: /',
@@ -26,7 +29,7 @@ class SeoController extends AbstractController
             'Disallow: /notifications',
             'Disallow: /push/',
             'Disallow: /chercher/*',
-            'Sitemap: ' . $this->generateUrl('app_sitemap', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'Sitemap: ' . $baseUrl . '/sitemap.xml',
             '',
         ]);
 
@@ -36,8 +39,9 @@ class SeoController extends AbstractController
     /**
      * @Route("/sitemap.xml", name="app_sitemap", methods={"GET"})
      */
-    public function sitemap(): Response
+    public function sitemap(PlatformSettingRepository $settings): Response
     {
+        $baseUrl = $this->canonicalBaseUrl($settings);
         $routes = [
             ['app_home', [], '1.0', 'daily'],
             ['app_chercher', [], '0.9', 'daily'],
@@ -53,7 +57,7 @@ class SeoController extends AbstractController
         $urls = [];
         foreach ($routes as [$route, $parameters, $priority, $changefreq]) {
             $urls[] = [
-                'loc' => $this->generateUrl($route, $parameters, UrlGeneratorInterface::ABSOLUTE_URL),
+                'loc' => $baseUrl . $this->generateUrl($route, $parameters),
                 'priority' => $priority,
                 'changefreq' => $changefreq,
             ];
@@ -62,5 +66,10 @@ class SeoController extends AbstractController
         return $this->render('seo/sitemap.xml.twig', [
             'urls' => $urls,
         ], new Response('', Response::HTTP_OK, ['Content-Type' => 'application/xml; charset=UTF-8']));
+    }
+
+    private function canonicalBaseUrl(PlatformSettingRepository $settings): string
+    {
+        return rtrim((string) $settings->getValue(self::SEO_CANONICAL_BASE_URL, 'https://halogari.yt'), '/');
     }
 }

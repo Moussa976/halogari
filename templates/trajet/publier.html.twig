@@ -125,9 +125,27 @@
 		margin-left: auto;
 	}
 
-	.publish-description-field textarea {
-		min-height: 130px;
+	.publish-description-field,
+	.publish-description-field textarea.form-control {
+		min-height: 170px;
+	}
+
+	.publish-description-field textarea.form-control {
+		height: 170px;
 		resize: vertical;
+	}
+
+	.publish-description-field + label,
+	.publish-description-field label {
+		align-self: flex-start;
+	}
+
+	.publish-step-actions,
+	.publish-suggestion .modal-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
 	}
 
 	@media (max-width: 575.98px) {
@@ -143,15 +161,14 @@
 			margin-top: 0.15rem;
 		}
 
-		.publish-suggestion .btn,
-		.publish-step-actions .btn {
-			width: 100%;
+		.publish-step-actions {
+			flex-direction: row;
 		}
 
-		.publish-step-actions {
-			display: grid !important;
-			grid-template-columns: 1fr;
-			gap: 0.75rem;
+		.publish-step-actions .btn,
+		.publish-suggestion .modal-footer .btn {
+			width: auto;
+			min-width: 128px;
 		}
 	}
 </style>
