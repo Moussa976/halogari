@@ -139,6 +139,45 @@ class AdminPaiementController extends AbstractController
         return $this->redirectBackToPayments($request);
     }
 
+    /**
+     * @Route("/admin/paiements/{id}/refund-manual", name="admin_paiement_refund_manual", methods={"POST"})
+     */
+    public function refundManual(Paiement $paiement, Request $request, PaiementEventLogger $eventLogger, AdminAuditLogger $auditLogger): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->assertValidPaymentToken($paiement, $request, 'refund_manual');
+
+        try {
+            $reservation = $paiement->getReservation();
+            if (!$reservation || $reservation->getCommissions()->count() === 0) {
+                throw new \RuntimeException('Ce paiement peut encore suivre le remboursement automatique HaloGari.');
+            }
+
+            $eventLogger->log(
+                $paiement,
+                'remboursement_apres_versement',
+                'Remboursement à traiter manuellement',
+                'La part conducteur a déjà été versée. Vérifiez le transfert côté Stripe, traitez le remboursement depuis Stripe, puis conservez la décision dans ce paiement.',
+                $this->getUser() instanceof User ? $this->getUser() : null,
+                [
+                    'reservationId' => $reservation->getId(),
+                    'commissionId' => $reservation->getCommissions()->first() ? $reservation->getCommissions()->first()->getId() : null,
+                ]
+            );
+
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_refund_manual_required', $reservation->getPassager(), [
+                'paiementId' => $paiement->getId(),
+                'reservationId' => $reservation->getId(),
+                'montant' => $paiement->getMontant(),
+            ]);
+            $this->addFlash('success', 'Suivi manuel ajouté. Traitez le remboursement depuis Stripe, puis conservez la preuve dans l’historique.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
+
+        return $this->redirectBackToPayments($request);
+    }
+
     private function assertValidPaymentToken(Paiement $paiement, Request $request, string $action): void
     {
         if (!$this->isCsrfTokenValid('admin_paiement_' . $action . '_' . $paiement->getId(), (string) $request->request->get('_token'))) {

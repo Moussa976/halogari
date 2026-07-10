@@ -80,18 +80,20 @@
               {% endif %}
               {% set aRembourser = remboursementPourcentage > 0 %}
               {% set aControler = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse and remboursementPourcentage == 0 %}
+              {% set remboursementManuel = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and dejaVerse %}
               {% set aVerser = paiement.statut == 'capture' and not dejaVerse and trajet and trajet.pretPourVersement %}
               {% set rowFilters = [
                 paiement.statut == 'autorise' ? 'enregistre' : '',
                 paiement.statut == 'capture' ? 'confirme' : '',
                 aRembourser ? 'a-rembourser' : '',
                 aControler ? 'a-controler' : '',
+                remboursementManuel ? 'a-controler' : '',
                 paiement.statut in ['rembourse', 'rembourse_partiel'] ? 'rembourse' : '',
                 aVerser ? 'a-verser' : '',
                 dejaVerse ? 'verse' : '',
                 paiement.statut == 'echoue' ? 'erreur' : ''
               ]|join(' ') %}
-              {% set showRow = mode == 'paiements' or aRembourser or paiement.statut in ['rembourse', 'rembourse_partiel', 'echoue'] or statutTrajet == 'litige' %}
+              {% set showRow = mode == 'paiements' or aRembourser or remboursementManuel or paiement.statut in ['rembourse', 'rembourse_partiel', 'echoue'] or statutTrajet == 'litige' %}
               {% if showRow %}
                 <tr id="paiement-{{ paiement.id }}" data-payment-filters="{{ rowFilters|trim ?: 'all' }}">
                   <td>#{{ paiement.id }}</td>
@@ -126,6 +128,8 @@
                       <span class="badge bg-danger ms-1">à rembourser</span>
                     {% elseif aControler %}
                       <span class="badge bg-warning text-dark ms-1">à contrôler</span>
+                    {% elseif remboursementManuel %}
+                      <span class="badge bg-warning text-dark ms-1">manuel</span>
                     {% elseif dejaVerse %}
                       <span class="badge bg-success ms-1">versé</span>
                     {% elseif aVerser %}
@@ -159,6 +163,7 @@
       {% set repartitionConducteur = commissionVersement ? commissionVersement.montantConducteur : max(montantRestant - repartitionCommission - repartitionFraisStripe, 0) %}
       {% set remboursementPourcentage = null %}
       {% set remboursementMessage = null %}
+      {% set remboursementManuel = reservation and reservation.statut == 'annulee' and paiement.statut == 'capture' and dejaVerse %}
       {% if reservation and trajet and reservation.statut == 'annulee' and paiement.statut == 'capture' and not dejaVerse %}
         {% if reservation.canceledBy == 'conducteur' %}
           {% set remboursementPourcentage = 100 %}
@@ -267,6 +272,21 @@
                   </div>
                 </div>
               {% endif %}
+              {% if remboursementManuel %}
+                <div class="alert alert-warning mb-3">
+                  <strong>Remboursement après versement conducteur</strong>
+                  <p class="mb-2">
+                    La part conducteur a déjà été envoyée. Ne lancez pas un remboursement automatique depuis HaloGari :
+                    contrôlez d’abord le transfert côté Stripe, puis remboursez le passager depuis Stripe si la décision est validée.
+                  </p>
+                  <ol class="mb-0 small">
+                    <li>Ouvrir le paiement et le transfert dans Stripe.</li>
+                    <li>Récupérer ou inverser la part conducteur si nécessaire.</li>
+                    <li>Effectuer le remboursement total ou partiel côté Stripe.</li>
+                    <li>Conserver la trace dans l’historique HaloGari.</li>
+                  </ol>
+                </div>
+              {% endif %}
 
               <div class="border rounded p-3">
                 <h6>Historique</h6>
@@ -317,18 +337,26 @@
                       <span class="text-muted small align-self-center">Versement bloqué jusqu’à la fin du trajet ou validation admin.</span>
                     {% endif %}
                   {% endif %}
-                  <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
-                    <input type="hidden" name="mode" value="{{ mode }}">
-                    {% if remboursementPourcentage is same as(0) %}
-                      <input type="hidden" name="exceptionnel" value="1">
-                      <button class="btn btn-outline-danger" onclick="return confirm('La politique indique 0 % de remboursement automatique. Confirmer un remboursement exceptionnel ?')">Remboursement exceptionnel</button>
-                    {% elseif remboursementPourcentage is not null and remboursementPourcentage < 100 %}
-                      <button class="btn btn-danger" onclick="return confirm('Rembourser {{ remboursementPourcentage }} % de ce paiement ?')">Rembourser {{ remboursementPourcentage }} %</button>
-                    {% else %}
-                      <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
-                    {% endif %}
-                  </form>
+                  {% if dejaVerse %}
+                    <form method="post" action="{{ path('admin_paiement_refund_manual', {id: paiement.id}) }}">
+                      <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_manual_' ~ paiement.id) }}">
+                      <input type="hidden" name="mode" value="{{ mode }}">
+                      <button class="btn btn-outline-danger" onclick="return confirm('Ajouter un suivi manuel ? Le remboursement devra être traité directement depuis Stripe.')">Traiter manuellement</button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{{ path('admin_paiement_refund', {id: paiement.id}) }}">
+                      <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_refund_' ~ paiement.id) }}">
+                      <input type="hidden" name="mode" value="{{ mode }}">
+                      {% if remboursementPourcentage is same as(0) %}
+                        <input type="hidden" name="exceptionnel" value="1">
+                        <button class="btn btn-outline-danger" onclick="return confirm('La politique indique 0 % de remboursement automatique. Confirmer un remboursement exceptionnel ?')">Remboursement exceptionnel</button>
+                      {% elseif remboursementPourcentage is not null and remboursementPourcentage < 100 %}
+                        <button class="btn btn-danger" onclick="return confirm('Rembourser {{ remboursementPourcentage }} % de ce paiement ?')">Rembourser {{ remboursementPourcentage }} %</button>
+                      {% else %}
+                        <button class="btn btn-danger" onclick="return confirm('Rembourser ce paiement ?')">Rembourser</button>
+                      {% endif %}
+                    </form>
+                  {% endif %}
                 {% else %}
                   <span class="text-muted">Aucune action disponible</span>
                 {% endif %}

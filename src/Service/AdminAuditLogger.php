@@ -54,6 +54,7 @@ class AdminAuditLogger
             'payment_transfer_driver' => 'Versement conducteur',
             'payment_cancel' => 'Annulation paiement',
             'payment_refund' => 'Remboursement paiement',
+            'payment_refund_manual_required' => 'Remboursement manuel à traiter',
             'ride_status_update' => 'Mise à jour du suivi trajet',
             'ride_schedule_update' => 'Modification horaire trajet',
             'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
