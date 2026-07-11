@@ -6,6 +6,7 @@ use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use App\Service\PaiementEventLogger;
+use App\Service\SmsService;
 use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -35,7 +36,8 @@ class WebhookController extends AbstractController
         Request $request,
         ReservationRepository $reservationRepository,
         EntityManagerInterface $em,
-        PaiementEventLogger $eventLogger
+        PaiementEventLogger $eventLogger,
+        SmsService $smsService
     ): Response {
         $payload = $request->getContent();
         $sigHeader = $request->headers->get('stripe-signature');
@@ -98,6 +100,7 @@ class WebhookController extends AbstractController
                     $paiement->setCapturedAt(new \DateTimeImmutable());
                     $eventLogger->log($paiement, 'paiement_confirme', 'Paiement confirmé', 'Confirmation reçue depuis Stripe.');
                     $this->notifier->envoyerPaiementCapture($reservation);
+                    $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
                 }
 
                 if ($reservation->getStatut() !== 'payee') {

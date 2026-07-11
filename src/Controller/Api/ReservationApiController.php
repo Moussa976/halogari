@@ -135,6 +135,9 @@ class ReservationApiController extends AbstractController
             'places' => $reservation->getPlaces(),
             'prixTotal' => (float) $reservation->getPrixTotal(),
             'statut' => $reservation->getStatut(),
+            'boardingCode' => $reservation->getBoardingCode(),
+            'boardingCodeCreatedAt' => $reservation->getBoardingCodeCreatedAt() ? $reservation->getBoardingCodeCreatedAt()->format(\DateTimeInterface::ATOM) : null,
+            'boardingValidatedAt' => $reservation->getBoardingValidatedAt() ? $reservation->getBoardingValidatedAt()->format(\DateTimeInterface::ATOM) : null,
             'canceledBy' => $reservation->getCanceledBy(),
             'canceledAt' => $reservation->getCanceledAt() ? $reservation->getCanceledAt()->format(\DateTimeInterface::ATOM) : null,
             'cancellationLabel' => $reservation->getCancellationLabel(),
@@ -215,8 +218,7 @@ class ReservationApiController extends AbstractController
         UserRepository $userRepository,
         ApiTokenService $tokenService,
         EntityManagerInterface $em,
-        NotificationService $notifier,
-        SmsService $smsService
+        NotificationService $notifier
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
@@ -244,7 +246,6 @@ class ReservationApiController extends AbstractController
 
         $em->flush();
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
-        $smsService->envoyerReservationAcceptee($reservation);
 
         return $this->json([
             'message' => 'Reservation acceptee.',

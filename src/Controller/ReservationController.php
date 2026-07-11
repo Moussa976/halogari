@@ -165,8 +165,7 @@ class ReservationController extends AbstractController
         ReservationRepository $reservationRepository,
         TrajetRepository $trajetRepository,
         EntityManagerInterface $em,
-        NotificationService $notifier,
-        SmsService $smsService
+        NotificationService $notifier
     ): Response {
         $reservation = $reservationRepository->find($id);
         if (!$reservation) {
@@ -205,7 +204,6 @@ class ReservationController extends AbstractController
         // 📩 Notification au passager
         $this->addFlash('success', 'Demande acceptée. Le passager peut maintenant payer sa place.');
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
-        $smsService->envoyerReservationAcceptee($reservation);
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }
@@ -243,6 +241,45 @@ class ReservationController extends AbstractController
         $this->addFlash('success', 'Demande refusée.');
         $notifier->envoyerConfirmationReservation($reservation, 'refusee');
         $smsService->envoyerReservationRefusee($reservation);
+
+        return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+    }
+
+    /**
+     * @Route("/reservation/{id}/code-montee/valider", name="reservation_boarding_validate", methods={"POST"})
+     */
+    public function validateBoardingCode(
+        int $id,
+        Request $request,
+        ReservationRepository $reservationRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $reservation = $reservationRepository->find($id);
+        if (!$reservation || !$reservation->getTrajet()) {
+            throw $this->createNotFoundException('Réservation introuvable.');
+        }
+
+        $trajet = $reservation->getTrajet();
+        if ($trajet->getConducteur() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à valider ce code.");
+        }
+
+        if (!$this->isCsrfTokenValid('boarding_validate_' . $reservation->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('La session a expiré. Veuillez réessayer.');
+        }
+
+        if (!$reservation->getBoardingCode()) {
+            $this->addFlash('warning', "Aucun code de montée n'a encore été généré pour cette réservation.");
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+        }
+
+        if (!$reservation->getBoardingValidatedAt()) {
+            $reservation->setBoardingValidatedAt(new \DateTimeImmutable());
+            $reservation->setBoardingValidatedBy($this->getUser());
+            $em->flush();
+        }
+
+        $this->addFlash('success', 'Code de montée validé.');
 
         return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
     }

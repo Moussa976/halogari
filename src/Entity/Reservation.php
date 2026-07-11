@@ -95,6 +95,27 @@ class Reservation
      */
     private $driverRatingReminderSentAt;
 
+    /**
+     * @ORM\Column(type="string", length=12, nullable=true)
+     */
+    private $boardingCode;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $boardingCodeCreatedAt;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $boardingValidatedAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     */
+    private $boardingValidatedBy;
+
     public function __construct()
     {
         $this->commissions = new ArrayCollection();
@@ -255,6 +276,65 @@ class Reservation
             default:
                 return $this->statut === 'annulee' ? 'Annulée' : null;
         }
+    }
+
+    public function getBoardingCode(): ?string
+    {
+        return $this->boardingCode;
+    }
+
+    public function ensureBoardingCode(): string
+    {
+        if (!$this->boardingCode) {
+            $this->boardingCode = (string) random_int(100000, 999999);
+            $this->boardingCodeCreatedAt = new \DateTimeImmutable();
+        }
+
+        return $this->boardingCode;
+    }
+
+    public function setBoardingCode(?string $boardingCode): self
+    {
+        $this->boardingCode = $boardingCode;
+        $this->boardingCodeCreatedAt = $boardingCode ? new \DateTimeImmutable() : null;
+
+        return $this;
+    }
+
+    public function getBoardingCodeCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->boardingCodeCreatedAt;
+    }
+
+    public function setBoardingCodeCreatedAt(?\DateTimeImmutable $boardingCodeCreatedAt): self
+    {
+        $this->boardingCodeCreatedAt = $boardingCodeCreatedAt;
+
+        return $this;
+    }
+
+    public function getBoardingValidatedAt(): ?\DateTimeImmutable
+    {
+        return $this->boardingValidatedAt;
+    }
+
+    public function setBoardingValidatedAt(?\DateTimeImmutable $boardingValidatedAt): self
+    {
+        $this->boardingValidatedAt = $boardingValidatedAt;
+
+        return $this;
+    }
+
+    public function getBoardingValidatedBy(): ?User
+    {
+        return $this->boardingValidatedBy;
+    }
+
+    public function setBoardingValidatedBy(?User $boardingValidatedBy): self
+    {
+        $this->boardingValidatedBy = $boardingValidatedBy;
+
+        return $this;
     }
 
     public function getPlaces(): ?int

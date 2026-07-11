@@ -210,6 +210,16 @@
                   {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
                 </span>
               {% endif %}
+              {% if reservation.boardingCode %}
+                <span class="reservation-status reservation-status--payment-capture" title="Code à vérifier avant la montée">
+                  Code {{ reservation.boardingCode }}
+                </span>
+                {% if reservation.boardingValidatedAt %}
+                  <span class="reservation-status reservation-status--payee">
+                    Vérifié
+                  </span>
+                {% endif %}
+              {% endif %}
             </div>
 
             <div class="ride-reservation-card__actions">
@@ -258,6 +268,15 @@
                   <i class="bi bi-telephone"></i>
                   Appeler
                 </a>
+              {% endif %}
+              {% if reservation.boardingCode and not reservation.boardingValidatedAt %}
+                <form method="post" action="{{ path('reservation_boarding_validate', { id: reservation.id }) }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('boarding_validate_' ~ reservation.id) }}">
+                  <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-patch-check"></i>
+                    Code vérifié
+                  </button>
+                </form>
               {% endif %}
             </div>
           </div>

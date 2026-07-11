@@ -26,24 +26,65 @@ class SmsService
     private PlatformSettingRepository $settings;
     private HttpClientInterface $client;
     private PhoneNumberService $phoneNumberService;
+    private PaiementEventLogger $paiementEventLogger;
 
-    public function __construct(EntityManagerInterface $em, PlatformSettingRepository $settings, HttpClientInterface $client, PhoneNumberService $phoneNumberService)
-    {
+    public function __construct(
+        EntityManagerInterface $em,
+        PlatformSettingRepository $settings,
+        HttpClientInterface $client,
+        PhoneNumberService $phoneNumberService,
+        PaiementEventLogger $paiementEventLogger
+    ) {
         $this->em = $em;
         $this->settings = $settings;
         $this->client = $client;
         $this->phoneNumberService = $phoneNumberService;
+        $this->paiementEventLogger = $paiementEventLogger;
     }
 
     public function envoyerReservationAcceptee(Reservation $reservation): void
     {
+        // L'acceptation simple ne déclenche plus de SMS : le SMS utile part après paiement confirmé avec le code de montée.
+    }
+
+    public function envoyerPlaceConfirmeeAvecCode(Reservation $reservation): void
+    {
+        $alreadySent = $this->em->getRepository(SmsLog::class)->findOneBy([
+            'reservation' => $reservation,
+            'eventType' => 'reservation_place_confirmee_code',
+            'status' => SmsLog::STATUS_SENT,
+        ]);
+
+        if ($alreadySent) {
+            return;
+        }
+
+        $trajet = $reservation->getTrajet();
+        if (!$trajet) {
+            return;
+        }
+
+        $code = $reservation->ensureBoardingCode();
+        $schedule = $this->formatSchedule($trajet->getDateTrajet(), $trajet->getHeureTrajet());
         $message = sprintf(
-            'HaloGari : votre réservation %s -> %s est acceptée. Vous pouvez maintenant finaliser votre paiement depuis votre espace.',
-            $reservation->getTrajet()->getDepart(),
-            $reservation->getTrajet()->getArrivee()
+            'HaloGari : votre place %s -> %s du %s est confirmée. Code montée : %s. Montrez ce code au conducteur.',
+            $trajet->getDepart(),
+            $trajet->getArrivee(),
+            $schedule,
+            $code
         );
 
-        $this->sendToPassenger($reservation, 'reservation_acceptee', $message);
+        $this->sendToPassenger($reservation, 'reservation_place_confirmee_code', $message);
+
+        if ($reservation->getPaiement()) {
+            $this->paiementEventLogger->log(
+                $reservation->getPaiement(),
+                'code_montee_envoye',
+                'Code de montée envoyé',
+                'Le code de montée a été transmis au passager par SMS.'
+            );
+            $this->em->flush();
+        }
     }
 
     public function envoyerReservationRefusee(Reservation $reservation): void
@@ -387,6 +428,15 @@ class SmsService
         } catch (\Throwable $exception) {
             return time();
         }
+    }
+
+    private function formatSchedule(?\DateTimeInterface $date, ?\DateTimeInterface $time): string
+    {
+        if (!$date || !$time) {
+            return 'trajet';
+        }
+
+        return sprintf('%s à %s', $date->format('d/m/Y'), $time->format('H:i'));
     }
 
 }

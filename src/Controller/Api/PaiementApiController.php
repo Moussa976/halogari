@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use App\Service\ApiTokenService;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\SmsService;
 use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,7 @@ class PaiementApiController extends AbstractController
         EntityManagerInterface $em,
         PaiementService $paiementService,
         NotificationService $notificationService,
+        SmsService $smsService,
         StripeConfigService $stripeConfig
     ): JsonResponse {
         $user = $this->resolveUser($request, $userRepository, $tokenService);
@@ -47,6 +49,7 @@ class PaiementApiController extends AbstractController
         try {
             if ($paiementService->synchroniserPaiementStripe($reservation)) {
                 $notificationService->envoyerPaiementCapture($reservation);
+                $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
             }
         } catch (\Throwable $error) {
             // Le webhook Stripe ou la confirmation web reprendront la synchronisation.

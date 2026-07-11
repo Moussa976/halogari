@@ -235,6 +235,35 @@
                     <div class="small text-danger mt-1">{{ reservation.cancellationLabel ?: 'Annulée' }} le {{ reservation.canceledAt|date('d/m/Y à H:i') }}</div>
                   {% endif %}
                 </div>
+
+                <div class="border rounded p-3 mb-3">
+                  <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                    <div>
+                      <h6 class="mb-1">Code de montée</h6>
+                      <div class="small text-muted">À présenter au conducteur au moment de monter.</div>
+                    </div>
+                    {% if reservation.boardingCode %}
+                      <span class="badge bg-success align-self-start">Créé</span>
+                    {% else %}
+                      <span class="badge bg-secondary align-self-start">Après paiement confirmé</span>
+                    {% endif %}
+                  </div>
+                  {% if reservation.boardingCode %}
+                    <div class="display-6 fw-bold mt-2 mb-1">{{ reservation.boardingCode }}</div>
+                    <div class="small text-muted">
+                      Généré le {{ reservation.boardingCodeCreatedAt ? reservation.boardingCodeCreatedAt|date('d/m/Y à H:i') : 'date inconnue' }}.
+                    </div>
+                    {% if reservation.boardingValidatedAt %}
+                      <div class="small text-success mt-1">
+                        Validé le {{ reservation.boardingValidatedAt|date('d/m/Y à H:i') }}{% if reservation.boardingValidatedBy %} par {{ reservation.boardingValidatedBy.prenom }}{% endif %}.
+                      </div>
+                    {% else %}
+                      <div class="small text-muted mt-1">Pas encore validé côté conducteur.</div>
+                    {% endif %}
+                  {% else %}
+                    <p class="text-muted mb-0 mt-2">Le code sera généré et envoyé par SMS quand le paiement sera confirmé.</p>
+                  {% endif %}
+                </div>
               {% endif %}
 
               <div class="border rounded p-3 mb-3">

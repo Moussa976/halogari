@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\ReservationRepository;
 use App\Service\NotificationService;
 use App\Service\PaiementService;
+use App\Service\SmsService;
 use App\Service\StripeConfigService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -26,7 +27,8 @@ class PaiementController extends AbstractController
         PaiementService $paiementService,
         StripeConfigService $stripeConfig,
         EntityManagerInterface $em,
-        NotificationService $notificationService
+        NotificationService $notificationService,
+        SmsService $smsService
     ): Response {
         $reservation = $repo->find($id);
 
@@ -41,6 +43,7 @@ class PaiementController extends AbstractController
         try {
             if ($paiementService->synchroniserPaiementStripe($reservation)) {
                 $notificationService->envoyerPaiementCapture($reservation);
+                $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
             }
         } catch (\Throwable $exception) {
             // Le formulaire reste disponible si Stripe n'est pas joignable ici.
@@ -90,7 +93,8 @@ class PaiementController extends AbstractController
         int $id,
         ReservationRepository $repo,
         PaiementService $paiementService,
-        NotificationService $notificationService
+        NotificationService $notificationService,
+        SmsService $smsService
     ): Response
     {
         $reservation = $repo->find($id);
@@ -102,6 +106,7 @@ class PaiementController extends AbstractController
         try {
             if ($paiementService->synchroniserPaiementStripe($reservation)) {
                 $notificationService->envoyerPaiementCapture($reservation);
+                $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
             }
         } catch (\Throwable $exception) {
             // Le webhook Stripe reste le filet de securite si la synchronisation directe echoue.

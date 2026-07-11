@@ -8,6 +8,7 @@ use App\Repository\PaiementRepository;
 use App\Service\AdminAuditLogger;
 use App\Service\PaiementEventLogger;
 use App\Service\PaiementService;
+use App\Service\SmsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,13 +46,16 @@ class AdminPaiementController extends AbstractController
     /**
      * @Route("/admin/paiements/{id}/capture", name="admin_paiement_capture", methods={"POST"})
      */
-    public function capture(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
+    public function capture(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger, SmsService $smsService): RedirectResponse
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidPaymentToken($paiement, $request, 'capture');
 
         try {
             $paiementService->capturerPaiement((string) $paiement->getPaymentIntentId());
+            if ($paiement->getReservation()) {
+                $smsService->envoyerPlaceConfirmeeAvecCode($paiement->getReservation());
+            }
             $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_confirm', $paiement->getReservation() ? $paiement->getReservation()->getPassager() : null, ['paiementId' => $paiement->getId(), 'montant' => $paiement->getMontant()]);
             $this->addFlash('success', 'Paiement confirmé avec succès.');
         } catch (\Exception $e) {

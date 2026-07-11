@@ -144,6 +144,16 @@
         </div>
       </div>
 
+      {% if reservation.boardingCode %}
+        <div class="reservation-note reservation-note--success">
+          <i class="bi bi-qr-code"></i>
+          <p>
+            <strong>Code de montée : {{ reservation.boardingCode }}</strong>
+            Montrez ce code au conducteur avant de monter.
+          </p>
+        </div>
+      {% endif %}
+
       <div class="reservation-actions">
         {% if peutPayer %}
           <a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success">
