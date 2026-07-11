@@ -252,7 +252,8 @@ class ReservationController extends AbstractController
         int $id,
         Request $request,
         ReservationRepository $reservationRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        NotificationService $notifier
     ): Response {
         $reservation = $reservationRepository->find($id);
         if (!$reservation || !$reservation->getTrajet()) {
@@ -273,10 +274,22 @@ class ReservationController extends AbstractController
             return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
         }
 
+        $submittedCode = preg_replace('/\s+/', '', (string) $request->request->get('boarding_code', ''));
+        if ($submittedCode === '') {
+            $this->addFlash('warning', 'Saisissez le code présenté par le passager.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+        }
+
+        if (!hash_equals((string) $reservation->getBoardingCode(), $submittedCode)) {
+            $this->addFlash('error', 'Code incorrect. Vérifiez le code avec le passager.');
+            return $this->redirectToRoute('app_user_trajet', ['id' => $trajet->getId()]);
+        }
+
         if (!$reservation->getBoardingValidatedAt()) {
             $reservation->setBoardingValidatedAt(new \DateTimeImmutable());
             $reservation->setBoardingValidatedBy($this->getUser());
             $em->flush();
+            $notifier->envoyerCodeMonteeValide($reservation);
         }
 
         $this->addFlash('success', 'Code de montée validé.');

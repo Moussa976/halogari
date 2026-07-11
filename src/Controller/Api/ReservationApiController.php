@@ -93,7 +93,7 @@ class ReservationApiController extends AbstractController
         if ($existingReservation) {
             return $this->json([
                 'message' => 'Vous avez deja une reservation active pour ce trajet.',
-                'data' => $this->reservationPayload($existingReservation),
+                'data' => $this->reservationPayload($existingReservation, $user),
             ], JsonResponse::HTTP_CONFLICT);
         }
 
@@ -120,22 +120,24 @@ class ReservationApiController extends AbstractController
 
         return $this->json([
             'message' => 'Demande envoyée. Le conducteur doit répondre.',
-            'data' => $this->reservationPayload($reservation),
+            'data' => $this->reservationPayload($reservation, $user),
         ], JsonResponse::HTTP_CREATED);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function reservationPayload(Reservation $reservation): array
+    private function reservationPayload(Reservation $reservation, ?User $viewer = null): array
     {
+        $canSeeBoardingCode = $viewer && $reservation->getPassager() === $viewer;
+
         return [
             'id' => $reservation->getId(),
             'trajetId' => $reservation->getTrajet() ? $reservation->getTrajet()->getId() : null,
             'places' => $reservation->getPlaces(),
             'prixTotal' => (float) $reservation->getPrixTotal(),
             'statut' => $reservation->getStatut(),
-            'boardingCode' => $reservation->getBoardingCode(),
+            'boardingCode' => $canSeeBoardingCode ? $reservation->getBoardingCode() : null,
             'boardingCodeCreatedAt' => $reservation->getBoardingCodeCreatedAt() ? $reservation->getBoardingCodeCreatedAt()->format(\DateTimeInterface::ATOM) : null,
             'boardingValidatedAt' => $reservation->getBoardingValidatedAt() ? $reservation->getBoardingValidatedAt()->format(\DateTimeInterface::ATOM) : null,
             'canceledBy' => $reservation->getCanceledBy(),
@@ -205,7 +207,7 @@ class ReservationApiController extends AbstractController
 
         return $this->json([
             'message' => 'Reservation annulee.',
-            'data' => $this->reservationPayload($reservation),
+            'data' => $this->reservationPayload($reservation, $user),
         ]);
     }
 
@@ -249,7 +251,7 @@ class ReservationApiController extends AbstractController
 
         return $this->json([
             'message' => 'Reservation acceptee.',
-            'data' => $this->reservationPayload($reservation),
+            'data' => $this->reservationPayload($reservation, $user),
         ]);
     }
 
@@ -289,7 +291,7 @@ class ReservationApiController extends AbstractController
 
         return $this->json([
             'message' => 'Reservation refusee.',
-            'data' => $this->reservationPayload($reservation),
+            'data' => $this->reservationPayload($reservation, $user),
         ]);
     }
 

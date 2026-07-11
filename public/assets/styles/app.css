@@ -3372,6 +3372,18 @@ textarea.form-control.app-message-textarea {
     margin: 0;
 }
 
+.ride-reservation-card__code-form {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.ride-reservation-card__code-form .form-control {
+    width: 8.75rem;
+    min-height: 2.25rem;
+    font-weight: 700;
+}
+
 .ride-reservation-card__actions .btn {
     display: inline-flex;
     align-items: center;
@@ -6007,6 +6019,17 @@ textarea.form-control.app-message-textarea {
 
     .ride-reservation-card__actions form {
         display: contents;
+    }
+
+    .ride-reservation-card__actions .ride-reservation-card__code-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .ride-reservation-card__code-form .form-control {
+        width: 100%;
     }
 
     .reservation-timeline__item,

@@ -215,6 +215,33 @@ class NotificationService
         );
     }
 
+    public function envoyerCodeMonteeValide(Reservation $reservation): void
+    {
+        $trajet = $reservation->getTrajet();
+
+        $this->createNotification(
+            $reservation->getPassager(),
+            'reservation',
+            'Code de montee valide',
+            sprintf('Votre montee est validee pour le trajet %s -> %s.', $trajet->getDepart(), $trajet->getArrivee()),
+            '/user/reservation/' . $reservation->getId()
+        );
+
+        $this->adminNotificationMailer->notify(
+            'Code de montee valide',
+            sprintf(
+                "Code de montee valide pour la reservation #%d.\nPassager : %s %s <%s>\nTrajet : %s -> %s",
+                $reservation->getId(),
+                $reservation->getPassager()->getPrenom(),
+                $reservation->getPassager()->getNom(),
+                $reservation->getPassager()->getEmail(),
+                $trajet->getDepart(),
+                $trajet->getArrivee()
+            ),
+            '/admin/reservations'
+        );
+    }
+
     public function envoyerNouvelAvis(Notes $note): void
     {
         $destinataire = $note->getNotePour();

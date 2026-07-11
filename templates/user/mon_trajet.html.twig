@@ -211,12 +211,13 @@
                 </span>
               {% endif %}
               {% if reservation.boardingCode %}
-                <span class="reservation-status reservation-status--payment-capture" title="Code à vérifier avant la montée">
-                  Code {{ reservation.boardingCode }}
-                </span>
                 {% if reservation.boardingValidatedAt %}
                   <span class="reservation-status reservation-status--payee">
-                    Vérifié
+                    Code vérifié
+                  </span>
+                {% else %}
+                  <span class="reservation-status reservation-status--payment-capture" title="Le passager doit vous montrer son code avant la montée">
+                    Code à vérifier
                   </span>
                 {% endif %}
               {% endif %}
@@ -270,11 +271,22 @@
                 </a>
               {% endif %}
               {% if reservation.boardingCode and not reservation.boardingValidatedAt %}
-                <form method="post" action="{{ path('reservation_boarding_validate', { id: reservation.id }) }}">
+                <form method="post" action="{{ path('reservation_boarding_validate', { id: reservation.id }) }}" class="ride-reservation-card__code-form">
                   <input type="hidden" name="_token" value="{{ csrf_token('boarding_validate_' ~ reservation.id) }}">
+                  <input
+                    type="text"
+                    name="boarding_code"
+                    class="form-control form-control-sm"
+                    inputmode="numeric"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    autocomplete="off"
+                    placeholder="Code passager"
+                    required
+                  >
                   <button type="submit" class="btn btn-outline-success btn-sm">
                     <i class="bi bi-patch-check"></i>
-                    Code vérifié
+                    Valider
                   </button>
                 </form>
               {% endif %}
