@@ -222,15 +222,15 @@ class NotificationService
         $this->createNotification(
             $reservation->getPassager(),
             'reservation',
-            'Code de montee valide',
-            sprintf('Votre montee est validee pour le trajet %s -> %s.', $trajet->getDepart(), $trajet->getArrivee()),
+            'Code de montée validé',
+            sprintf('Votre montée est validée pour le trajet %s → %s.', $trajet->getDepart(), $trajet->getArrivee()),
             '/user/reservation/' . $reservation->getId()
         );
 
         $this->adminNotificationMailer->notify(
-            'Code de montee valide',
+            'Code de montée validé',
             sprintf(
-                "Code de montee valide pour la reservation #%d.\nPassager : %s %s <%s>\nTrajet : %s -> %s",
+                "Code de montée validé pour la réservation #%d.\nPassager : %s %s <%s>\nTrajet : %s → %s",
                 $reservation->getId(),
                 $reservation->getPassager()->getPrenom(),
                 $reservation->getPassager()->getNom(),

@@ -37,7 +37,7 @@ class ReservationApiController extends AbstractController
         $user = $this->resolveUser($request, $userRepository, $tokenService);
         if (!$user) {
             return $this->json([
-                'message' => 'Connexion requise pour reserver ce trajet.',
+                'message' => 'Connexion requise pour réserver ce trajet.',
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
@@ -53,20 +53,20 @@ class ReservationApiController extends AbstractController
 
         if ($trajetId < 1 || $places < 1 || $places > 8) {
             return $this->json([
-                'message' => 'Parametres invalides.',
+                'message' => 'Paramètres invalides.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $trajet = $em->getRepository(Trajet::class)->find($trajetId);
         if (!$trajet || $trajet->isAnnule()) {
             return $this->json([
-                'message' => 'Trajet introuvable ou annule.',
+                'message' => 'Trajet introuvable ou annulé.',
             ], JsonResponse::HTTP_NOT_FOUND);
         }
 
         if ($trajet->getConducteur() === $user) {
             return $this->json([
-                'message' => 'Vous ne pouvez pas reserver votre propre trajet.',
+                'message' => 'Vous ne pouvez pas réserver votre propre trajet.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -75,7 +75,7 @@ class ReservationApiController extends AbstractController
         );
         if ($trajetDateTime < new \DateTimeImmutable()) {
             return $this->json([
-                'message' => 'Ce trajet est deja passe.',
+                'message' => 'Ce trajet est déjà passé.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
         $existingReservation = $em->getRepository(Reservation::class)->createQueryBuilder('r')
@@ -92,7 +92,7 @@ class ReservationApiController extends AbstractController
 
         if ($existingReservation) {
             return $this->json([
-                'message' => 'Vous avez deja une reservation active pour ce trajet.',
+                'message' => 'Vous avez déjà une réservation active pour ce trajet.',
                 'data' => $this->reservationPayload($existingReservation, $user),
             ], JsonResponse::HTTP_CONFLICT);
         }
@@ -165,11 +165,11 @@ class ReservationApiController extends AbstractController
 
         $reservation = $em->getRepository(Reservation::class)->find($id);
         if (!$reservation || $reservation->getPassager() !== $user) {
-            return $this->json(['message' => 'Reservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Réservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         if (!in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
-            return $this->json(['message' => 'Cette reservation ne peut plus etre annulee.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Cette réservation ne peut plus être annulée.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $trajet = $reservation->getTrajet();
@@ -177,7 +177,7 @@ class ReservationApiController extends AbstractController
             $trajet->getDateTrajet()->format('Y-m-d') . ' ' . $trajet->getHeureTrajet()->format('H:i')
         );
         if ($trajetDateTime < new \DateTimeImmutable()) {
-            return $this->json(['message' => 'Ce trajet est deja passe.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Ce trajet est déjà passé.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $reservation->markCanceled(Reservation::CANCELED_BY_PASSAGER, 'Annulation demandée par le passager.');
@@ -206,7 +206,7 @@ class ReservationApiController extends AbstractController
         $em->flush();
 
         return $this->json([
-            'message' => 'Reservation annulee.',
+            'message' => 'Réservation annulée.',
             'data' => $this->reservationPayload($reservation, $user),
         ]);
     }
@@ -229,11 +229,11 @@ class ReservationApiController extends AbstractController
 
         $reservation = $em->getRepository(Reservation::class)->find($id);
         if (!$reservation || $reservation->getTrajet()->getConducteur() !== $user) {
-            return $this->json(['message' => 'Reservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Réservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            return $this->json(['message' => 'Cette reservation a deja ete traitee.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Cette réservation a déjà été traitée.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $reservation->setStatut('acceptee');
@@ -250,7 +250,7 @@ class ReservationApiController extends AbstractController
         $notifier->envoyerConfirmationReservation($reservation, 'acceptee');
 
         return $this->json([
-            'message' => 'Reservation acceptee.',
+            'message' => 'Réservation acceptée.',
             'data' => $this->reservationPayload($reservation, $user),
         ]);
     }
@@ -274,11 +274,11 @@ class ReservationApiController extends AbstractController
 
         $reservation = $em->getRepository(Reservation::class)->find($id);
         if (!$reservation || $reservation->getTrajet()->getConducteur() !== $user) {
-            return $this->json(['message' => 'Reservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Réservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         if ($reservation->getStatut() !== 'en_attente') {
-            return $this->json(['message' => 'Cette reservation a deja ete traitee.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Cette réservation a déjà été traitée.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $trajet = $reservation->getTrajet();
@@ -290,7 +290,7 @@ class ReservationApiController extends AbstractController
         $smsService->envoyerReservationRefusee($reservation);
 
         return $this->json([
-            'message' => 'Reservation refusee.',
+            'message' => 'Réservation refusée.',
             'data' => $this->reservationPayload($reservation, $user),
         ]);
     }

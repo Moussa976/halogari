@@ -101,7 +101,7 @@ class OtherController extends AbstractController
 
             $adminNotificationMailer->notify(
                 'Nouveau message de contact',
-                sprintf("%s <%s> a envoye une demande : %s", $nom, $email, $sujet),
+                sprintf("%s <%s> a envoyé une demande : %s", $nom, $email, $sujet),
                 '/admin'
             );
 

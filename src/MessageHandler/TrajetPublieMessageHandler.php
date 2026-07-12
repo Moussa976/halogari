@@ -75,7 +75,7 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
             $this->mailer->send($email);
         } catch (\Throwable $exception) {
-            $this->logger->warning('Email de publication de trajet non envoye.', [
+            $this->logger->warning('E-mail de publication de trajet non envoyé.', [
                 'trajetId' => $trajet->getId(),
                 'userId' => $user->getId(),
                 'exception' => $exception,
@@ -184,13 +184,13 @@ class TrajetPublieMessageHandler implements MessageHandlerInterface
 
                 $this->mailer->send($email);
                 $alert->markNotified($trajet);
-                $this->logger->info('Alerte trajet envoyee.', [
+                $this->logger->info('Alerte trajet envoyée.', [
                     'trajetId' => $trajet->getId(),
                     'alertId' => $alert->getId(),
                     'userId' => $user->getId(),
                 ]);
             } catch (\Throwable $exception) {
-                $this->logger->warning('Alerte trajet non envoyee.', [
+                $this->logger->warning('Alerte trajet non envoyée.', [
                     'trajetId' => $trajet->getId(),
                     'alertId' => $alert->getId(),
                     'exception' => $exception,

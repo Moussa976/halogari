@@ -57,10 +57,10 @@ class AdminAuditLogger
             'payment_refund_manual_required' => 'Remboursement manuel à traiter',
             'ride_status_update' => 'Mise à jour du suivi trajet',
             'ride_schedule_update' => 'Modification horaire trajet',
-            'platform_settings_facebook_update' => 'Mise a jour des parametres Facebook',
-            'platform_settings_sms_update' => 'Mise a jour des parametres SMS',
-            'platform_sms_test' => 'Test SMS envoye',
-            'platform_sms_test_failed' => 'Test SMS en echec',
+            'platform_settings_facebook_update' => 'Mise à jour des paramètres Facebook',
+            'platform_settings_sms_update' => 'Mise à jour des paramètres SMS',
+            'platform_sms_test' => 'Test SMS envoyé',
+            'platform_sms_test_failed' => 'Test SMS en échec',
         ];
 
         return $labels[$action] ?? ucfirst(str_replace('_', ' ', $action));

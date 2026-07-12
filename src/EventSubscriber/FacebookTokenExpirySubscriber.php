@@ -103,9 +103,9 @@ class FacebookTokenExpirySubscriber implements EventSubscriberInterface
         }
 
         $this->adminNotificationMailer->notify(
-            'Token Facebook bientot expire',
+            'Token Facebook bientôt expiré',
             sprintf(
-                "Le token Facebook expire le %s. Il reste %d jour(s). Pense a le renouveler dans les parametres admin.",
+                "Le token Facebook expire le %s. Il reste %d jour(s). Pense à le renouveler dans les paramètres admin.",
                 $expiresAt->format('d/m/Y'),
                 $daysLeft
             ),

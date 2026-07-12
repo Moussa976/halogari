@@ -43,7 +43,7 @@ class PaiementApiController extends AbstractController
 
         $reservation = $em->getRepository(Reservation::class)->find($id);
         if (!$reservation || $reservation->getPassager() !== $user) {
-            return $this->json(['message' => 'Reservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Réservation introuvable.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         try {
@@ -57,7 +57,7 @@ class PaiementApiController extends AbstractController
 
         if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'capture') {
             return $this->json([
-                'message' => 'Paiement deja confirme.',
+                'message' => 'Paiement déjà confirmé.',
                 'status' => 'capture',
                 'paymentUrl' => $this->generateUrl('paiement_confirmation', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ]);
@@ -65,14 +65,14 @@ class PaiementApiController extends AbstractController
 
         if ($reservation->getPaiement() && $reservation->getPaiement()->getStatut() === 'autorise') {
             return $this->json([
-                'message' => 'Paiement deja enregistre.',
+                'message' => 'Paiement déjà enregistré.',
                 'status' => 'autorise',
                 'paymentUrl' => $this->generateUrl('paiement_confirmation', ['id' => $reservation->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ]);
         }
 
         if ($reservation->getStatut() !== 'acceptee') {
-            return $this->json(['message' => 'Le paiement sera disponible apres acceptation du conducteur.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Le paiement sera disponible après acceptation du conducteur.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -84,7 +84,7 @@ class PaiementApiController extends AbstractController
         }
 
         return $this->json([
-            'message' => 'Enregistrement du paiement initialise.',
+            'message' => 'Enregistrement du paiement initialisé.',
             'clientSecret' => $clientSecret,
             'stripePublicKey' => $stripeConfig->publicKey(),
             'amount' => (float) $reservation->getPrixTotal(),

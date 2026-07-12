@@ -40,12 +40,12 @@ class AuthApiController extends AbstractController
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($password) < 8 || $prenom === '' || $nom === '' || $telephone === '') {
             return $this->json([
-                'message' => 'Informations invalides. Mot de passe: 8 caracteres minimum.',
+                'message' => 'Informations invalides. Mot de passe : 8 caractères minimum.',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         if ($userRepository->findOneBy(['email' => $email])) {
-            return $this->json(['message' => 'Un compte existe deja avec cet email.'], JsonResponse::HTTP_CONFLICT);
+            return $this->json(['message' => 'Un compte existe déjà avec cet email.'], JsonResponse::HTTP_CONFLICT);
         }
 
         $user = new User();
@@ -63,7 +63,7 @@ class AuthApiController extends AbstractController
         return $this->json([
             'token' => $tokenService->create($user),
             'user' => $this->userPayload($user),
-            'message' => 'Compte cree.',
+            'message' => 'Compte créé.',
         ], JsonResponse::HTTP_CREATED);
     }
 

@@ -79,7 +79,7 @@ class AdminTrajetController extends AbstractController
 
         foreach ($trajet->getReservations() as $reservation) {
             if (in_array($reservation->getStatut(), ['en_attente', 'acceptee', 'payee'], true)) {
-                $smsService->envoyerHoraireModifie($reservation, sprintf('%s a %s', $newDate, $newTime));
+                $smsService->envoyerHoraireModifie($reservation, sprintf('%s à %s', $newDate, $newTime));
             }
         }
 

@@ -256,9 +256,9 @@ class AccountApiController extends AbstractController
         $em->flush();
 
         $adminNotificationMailer->notify(
-            'Document utilisateur recu',
+            'Document utilisateur reçu',
             sprintf(
-                "%s %s <%s> a envoye un document %s depuis l'application. Il attend une validation admin.",
+                "%s %s <%s> a envoyé un document %s depuis l'application. Il attend une validation admin.",
                 $user->getPrenom(),
                 $user->getNom(),
                 $user->getEmail(),

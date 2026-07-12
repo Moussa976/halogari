@@ -179,7 +179,7 @@ class AdminSettingsController extends AbstractController
         AdminAuditLogger $auditLogger
     ): Response {
         if (!$this->isCsrfTokenValid('admin_settings_seo', (string) $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Jeton de securite invalide. Merci de reessayer.');
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
 
             return $this->redirectToRoute('admin_settings');
         }
@@ -199,7 +199,7 @@ class AdminSettingsController extends AbstractController
         }
 
         if ($ogImage !== '' && !filter_var($ogImage, FILTER_VALIDATE_URL)) {
-            $this->addFlash('danger', 'Image de partage invalide. Utilisez une URL complete.');
+            $this->addFlash('danger', 'Image de partage invalide. Utilisez une URL complète.');
 
             return $this->redirectToRoute('admin_settings');
         }
@@ -227,7 +227,7 @@ class AdminSettingsController extends AbstractController
             'hasBingVerification' => $bingVerification !== '',
         ]);
 
-        $this->addFlash('success', 'Parametres SEO enregistres.');
+        $this->addFlash('success', 'Paramètres SEO enregistrés.');
 
         return $this->redirectToRoute('admin_settings');
     }
@@ -311,7 +311,7 @@ class AdminSettingsController extends AbstractController
         AdminAuditLogger $auditLogger
     ): Response {
         if (!$this->isCsrfTokenValid('admin_settings_production', (string) $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Jeton de securite invalide. Merci de reessayer.');
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
 
             return $this->redirectToRoute('admin_settings');
         }
@@ -355,7 +355,7 @@ class AdminSettingsController extends AbstractController
             'prelaunchConfirmed' => $prelaunchConfirmed,
         ]);
 
-        $this->addFlash('success', 'Parametres de production enregistres.');
+        $this->addFlash('success', 'Paramètres de production enregistrés.');
 
         return $this->redirectToRoute('admin_settings');
     }
@@ -389,7 +389,7 @@ class AdminSettingsController extends AbstractController
         AdminAuditLogger $auditLogger
     ): Response {
         if (!$this->isCsrfTokenValid('admin_settings_stripe', (string) $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Jeton de securite invalide. Merci de reessayer.');
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
 
             return $this->redirectToRoute('admin_settings');
         }
@@ -399,13 +399,13 @@ class AdminSettingsController extends AbstractController
         $webhookSecret = trim((string) $request->request->get('stripe_webhook_secret'));
 
         if ($publicKey !== '' && !preg_match('/^pk_(test|live)_/', $publicKey)) {
-            $this->addFlash('danger', 'La cle publique Stripe doit commencer par pk_test_ ou pk_live_.');
+            $this->addFlash('danger', 'La clé publique Stripe doit commencer par pk_test_ ou pk_live_.');
 
             return $this->redirectToRoute('admin_settings');
         }
 
         if ($secretKey !== '' && !preg_match('/^sk_(test|live)_/', $secretKey)) {
-            $this->addFlash('danger', 'La cle secrete Stripe doit commencer par sk_test_ ou sk_live_.');
+            $this->addFlash('danger', 'La clé secrète Stripe doit commencer par sk_test_ ou sk_live_.');
 
             return $this->redirectToRoute('admin_settings');
         }
@@ -437,7 +437,7 @@ class AdminSettingsController extends AbstractController
             'mode' => $this->stripeMode($secretKey ?: $publicKey),
         ]);
 
-        $this->addFlash('success', 'Parametres Stripe enregistres.');
+        $this->addFlash('success', 'Paramètres Stripe enregistrés.');
 
         return $this->redirectToRoute('admin_settings');
     }
@@ -455,16 +455,16 @@ class AdminSettingsController extends AbstractController
         $smsEnabled = $settings->getValue(self::SMS_ENABLED, '0') === '1';
 
         return [
-            $this->check('Environnement', $appEnv === 'prod', $appEnv ?: 'Non renseigne', 'APP_ENV doit valoir prod en production.'),
-            $this->check('Mode debug', in_array(strtolower($appDebug), ['0', 'false', 'off', 'no', ''], true), $appDebug === '' ? 'Non force' : $appDebug, 'APP_DEBUG doit etre desactive en production.'),
-            $this->check('Base de donnees', $this->env('DATABASE_URL') !== '', $this->maskDsn($this->env('DATABASE_URL')), 'DATABASE_URL doit pointer vers la base de production.'),
-            $this->check('Secret application', strlen($this->env('APP_SECRET')) >= 24, $this->maskToken($this->env('APP_SECRET')), 'APP_SECRET doit etre long et propre a la production.'),
-            $this->check('E-mails', $mailerDsn !== '' && !str_starts_with($mailerDsn, 'null://'), $mailerDsn === '' ? 'Non renseigne' : 'Configure', 'MAILER_DSN doit envoyer de vrais e-mails.'),
-            $this->check('Stripe cle publique', $stripePublic !== '', $this->stripeMode($stripePublic), 'Configurer la cle publique Stripe.'),
-            $this->check('Stripe cle secrete', $stripeSecret !== '', $this->stripeMode($stripeSecret), 'Configurer la cle secrete Stripe.'),
+            $this->check('Environnement', $appEnv === 'prod', $appEnv ?: 'Non renseigné', 'APP_ENV doit valoir prod en production.'),
+            $this->check('Mode debug', in_array(strtolower($appDebug), ['0', 'false', 'off', 'no', ''], true), $appDebug === '' ? 'Non forcé' : $appDebug, 'APP_DEBUG doit être désactivé en production.'),
+            $this->check('Base de données', $this->env('DATABASE_URL') !== '', $this->maskDsn($this->env('DATABASE_URL')), 'DATABASE_URL doit pointer vers la base de production.'),
+            $this->check('Secret application', strlen($this->env('APP_SECRET')) >= 24, $this->maskToken($this->env('APP_SECRET')), 'APP_SECRET doit être long et propre à la production.'),
+            $this->check('E-mails', $mailerDsn !== '' && !str_starts_with($mailerDsn, 'null://'), $mailerDsn === '' ? 'Non renseigné' : 'Configuré', 'MAILER_DSN doit envoyer de vrais e-mails.'),
+            $this->check('Clé publique Stripe', $stripePublic !== '', $this->stripeMode($stripePublic), 'Configurer la clé publique Stripe.'),
+            $this->check('Clé secrète Stripe', $stripeSecret !== '', $this->stripeMode($stripeSecret), 'Configurer la clé secrète Stripe.'),
             $this->check('Stripe webhook', $stripeWebhook !== '', $this->maskToken($stripeWebhook), 'Configurer le webhook Stripe de production.'),
-            $this->check('Notifications push', $this->env('VAPID_PUBLIC_KEY') !== '' && $this->env('VAPID_PRIVATE_KEY') !== '', $this->env('VAPID_PUBLIC_KEY') !== '' ? 'VAPID configure' : 'VAPID manquant', 'Configurer les cles VAPID.'),
-            $this->check('Facebook Page', (string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '' && $facebookTokenExpiresAt !== '', $facebookToken !== '' ? ($facebookTokenExpiresAt !== '' ? 'Token suivi jusqu\'au ' . $facebookTokenExpiresAt : 'Expiration non renseignee') : 'Token manquant', 'Configurer la publication Meta et sa date d\'expiration.'),
+            $this->check('Notifications push', $this->env('VAPID_PUBLIC_KEY') !== '' && $this->env('VAPID_PRIVATE_KEY') !== '', $this->env('VAPID_PUBLIC_KEY') !== '' ? 'VAPID configuré' : 'VAPID manquant', 'Configurer les clés VAPID.'),
+            $this->check('Page Facebook', (string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '' && $facebookTokenExpiresAt !== '', $facebookToken !== '' ? ($facebookTokenExpiresAt !== '' ? 'Token suivi jusqu\'au ' . $facebookTokenExpiresAt : 'Expiration non renseignée') : 'Token manquant', 'Configurer la publication Meta et sa date d\'expiration.'),
             $this->check('SMS passagers', $this->isSmsReady($settings), $smsEnabled ? 'Activés' : 'Désactivés', 'Configurer le fournisseur SMS, l’expéditeur et les clés.'),
         ];
     }
@@ -520,24 +520,24 @@ class AdminSettingsController extends AbstractController
             return 'Mode test';
         }
 
-        return 'Configuree';
+        return 'Configurée';
     }
 
     private function maskDsn(string $dsn): string
     {
         if ($dsn === '') {
-            return 'Non renseigne';
+            return 'Non renseigné';
         }
 
         $parts = parse_url($dsn);
         if (!is_array($parts) || !isset($parts['scheme'])) {
-            return 'Configure';
+            return 'Configuré';
         }
 
-        $host = $parts['host'] ?? 'hote masque';
-        $db = isset($parts['path']) ? ltrim($parts['path'], '/') : 'base masquee';
+        $host = $parts['host'] ?? 'hôte masqué';
+        $db = isset($parts['path']) ? ltrim($parts['path'], '/') : 'base masquée';
 
-        return sprintf('%s://%s/%s', $parts['scheme'], $host, $db ?: 'base masquee');
+        return sprintf('%s://%s/%s', $parts['scheme'], $host, $db ?: 'base masquée');
     }
 
     private function buildBackupCommands(): array
