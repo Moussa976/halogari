@@ -7,7 +7,7 @@
   <div class="container">
     <p class="app-kicker">Espace personnel</p>
     <h1>Paramètres du compte</h1>
-    <p>Gérez vos informations, votre sécurité, vos documents et vos préférences de confiance.</p>
+    <p>Retrouvez les réglages essentiels et les accès vers vos pages personnelles.</p>
   </div>
 </section>
 
@@ -15,506 +15,69 @@
   <div class="d-grid gap-4">
     <article class="app-panel">
       <div class="app-panel__header">
+        <span class="app-panel__icon"><i class="bi bi-grid-1x2-fill"></i></span>
         <div>
-          <h2>Photo de profil</h2>
-          <p>Une photo claire aide les conducteurs et les passagers à se reconnaître plus facilement.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-camera-fill"></i></span>
-      </div>
-
-      <form method="POST" enctype="multipart/form-data" action="{{ path('app_photo_update') }}" class="hg-form-grid">
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_photo') }}">
-        <div class="hg-form-full hg-photo-preview-row">
-          <span class="hg-avatar-wrap hg-photo-preview-wrap{% if app.user.isProfilVerifieComplet %} is-verified{% endif %}"
-                {% if app.user.isProfilVerifieComplet %}
-                  tabindex="0"
-                  title="Profil vérifié : pièce d'identité validée"
-                {% endif %}>
-            <img id="settingsPhotoPreview" src="{{ app.user.photo ? asset('uploads/photos/' ~ app.user.photo) : asset('images/profil.png') }}" alt="Photo de profil actuelle" class="hg-photo-preview">
-            {% if app.user.isProfilVerifieComplet %}
-              <span class="hg-verified-badge" aria-label="Profil vérifié">
-                <i class="bi bi-patch-check-fill"></i>
-              </span>
-            {% endif %}
-          </span>
-          <div>
-            <strong>Aperçu de votre photo</strong>
-            <p class="mb-0 text-muted">Choisissez une image pour prévisualiser le résultat avant d'enregistrer.</p>
-          </div>
-        </div>
-        <div class="hg-form-full">
-          <label for="photoProfil" class="form-label">Nouvelle photo</label>
-          <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" id="photoProfil" required>
-          <div class="form-text">Formats acceptés : JPG, PNG ou WebP. Taille maximale : 2 Mo.</div>
-        </div>
-        <div class="hg-form-actions">
-          {% if app.user.photo %}
-            <button type="submit" name="remove_photo" value="1" class="btn btn-outline-danger delete-confirm" data-message="Supprimer votre photo de profil actuelle ?">
-              <i class="bi bi-trash3"></i>
-              Supprimer
-            </button>
-          {% endif %}
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-cloud-arrow-up-fill"></i>
-            Mettre à jour
-          </button>
-        </div>
-      </form>
-    </article>
-
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
-        <div>
-          <h2>Mon v&eacute;hicule</h2>
-          <p>Ajoutez quelques informations utiles pour rassurer les passagers, sans afficher de plaque.</p>
+          <h2>Mes informations</h2>
+          <p>Les détails personnels sont maintenant rangés dans des pages dédiées.</p>
         </div>
       </div>
 
-      <form method="POST" enctype="multipart/form-data" action="{{ path('app_vehicle_update') }}" class="hg-form-grid">
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_vehicle') }}">
-        {% if app.user.vehiclePhoto %}
-          <div class="hg-form-full hg-vehicle-preview">
-            <img id="settingsVehiclePreview" src="{{ asset('uploads/vehicles/' ~ app.user.vehiclePhoto) }}" alt="Photo du v&eacute;hicule" class="hg-vehicle-preview__image">
-            <div>
-              <strong>Photo actuelle</strong>
-              <p class="mb-0 text-muted">Elle aide les passagers &agrave; reconna&icirc;tre le v&eacute;hicule au d&eacute;part.</p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_profil') }}">
+            <div class="app-panel__header mb-0">
+              <span class="app-panel__icon"><i class="bi bi-person-circle"></i></span>
+              <div>
+                <h3 class="h5 mb-1 text-dark">Mon profil</h3>
+                <p class="mb-0 text-muted">Identité, téléphone et photo.</p>
+              </div>
             </div>
-          </div>
-        {% else %}
-          <div class="hg-form-full hg-vehicle-preview">
-            <span class="hg-vehicle-preview__empty"><i class="bi bi-car-front-fill"></i></span>
-            <div>
-              <strong>Aucune photo v&eacute;hicule</strong>
-              <p class="mb-0 text-muted">Ajoutez une photo simple et lisible si vous le souhaitez.</p>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_adresse') }}">
+            <div class="app-panel__header mb-0">
+              <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
+              <div>
+                <h3 class="h5 mb-1 text-dark">Mon adresse</h3>
+                <p class="mb-0 text-muted">Adresse postale du dossier conducteur.</p>
+              </div>
             </div>
-          </div>
-        {% endif %}
-        <div class="form-floating">
-          <input type="text" name="vehicleBrand" id="vehicleBrand" class="form-control" value="{{ app.user.vehicleBrand }}" placeholder="Marque">
-          <label for="vehicleBrand">Marque</label>
+          </a>
         </div>
-        <div class="form-floating">
-          <input type="text" name="vehicleModel" id="vehicleModel" class="form-control" value="{{ app.user.vehicleModel }}" placeholder="Mod&egrave;le">
-          <label for="vehicleModel">Mod&egrave;le</label>
+        <div class="col-md-6">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_vehicule') }}">
+            <div class="app-panel__header mb-0">
+              <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
+              <div>
+                <h3 class="h5 mb-1 text-dark">Mon véhicule</h3>
+                <p class="mb-0 text-muted">Marque, modèle, couleur et photo.</p>
+              </div>
+            </div>
+          </a>
         </div>
-        <div class="form-floating">
-          <input type="text" name="vehicleColor" id="vehicleColor" class="form-control" value="{{ app.user.vehicleColor }}" placeholder="Couleur">
-          <label for="vehicleColor">Couleur</label>
+        <div class="col-md-6">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_documents') }}">
+            <div class="app-panel__header mb-0">
+              <span class="app-panel__icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+              <div>
+                <h3 class="h5 mb-1 text-dark">Mes documents</h3>
+                <p class="mb-0 text-muted">Pièce d’identité, RIB et validation.</p>
+              </div>
+            </div>
+          </a>
         </div>
-        <div class="form-floating">
-          <input type="number" name="vehicleSeats" id="vehicleSeats" class="form-control" value="{{ app.user.vehicleSeats }}" placeholder="Places" min="1" max="9">
-          <label for="vehicleSeats">Places dans le v&eacute;hicule</label>
-        </div>
-        <div class="hg-form-full">
-          <label for="vehiclePhoto" class="form-label">Photo du v&eacute;hicule</label>
-          <input type="file" name="vehiclePhoto" class="form-control" accept="image/jpeg,image/png,image/webp" id="vehiclePhoto">
-          <div class="form-text">JPG, PNG ou WebP. Taille maximale : 3 Mo.</div>
-        </div>
-        <div class="hg-form-actions">
-          {% if app.user.vehiclePhoto %}
-            <button type="submit" name="remove_vehicle_photo" value="1" class="btn btn-outline-danger delete-confirm" data-message="Supprimer la photo du v&eacute;hicule ?">
-              <i class="bi bi-trash3"></i>
-              Supprimer la photo
-            </button>
-          {% endif %}
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-check-circle-fill"></i>
-            Enregistrer le v&eacute;hicule
-          </button>
-        </div>
-      </form>
-    </article>
-
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <div>
-          <h2>Informations personnelles</h2>
-          <p>Ces informations servent à sécuriser les réservations et à améliorer la confiance entre utilisateurs.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-person-lines-fill"></i></span>
-      </div>
-
-      <form method="POST" action="{{ path('app_infos_update') }}" class="hg-form-grid">
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_infos') }}">
-        {% if identityFieldsLocked %}
-          <div class="alert alert-success hg-form-full mb-0">
-            Votre identité a été vérifiée. Pour protéger votre profil, le prénom, le nom et la date de naissance ne sont plus modifiables.
-          </div>
-        {% endif %}
-        <div class="form-floating">
-          <input type="text" name="prenom" id="prenom" class="form-control" value="{{ app.user.prenom }}" placeholder="Prénom" autocomplete="given-name" {% if identityFieldsLocked %}readonly aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
-          <label for="prenom">Prénom</label>
-        </div>
-        <div class="form-floating">
-          <input type="text" name="nom" id="nom" class="form-control" value="{{ app.user.nom }}" placeholder="Nom" autocomplete="family-name" {% if identityFieldsLocked %}readonly aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
-          <label for="nom">Nom</label>
-        </div>
-        <div class="form-floating">
-          <input type="text" name="dateNaissance" id="dateNaissance" class="form-control dateFr" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('d/m/Y') : '' }}" placeholder="jj/mm/aaaa" data-max-date="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" {% if identityFieldsLocked %}readonly data-no-datepicker="true" aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
-          <label for="dateNaissance">Date de naissance</label>
-        </div>
-        {% if identityFieldsLocked %}
-          <p id="identityLockedHelp" class="form-text hg-form-full mb-0">En cas d’erreur, contactez HaloGari avec un nouveau justificatif.</p>
-        {% endif %}
-        <div class="form-floating">
-          <select name="telephoneCountry" id="telephoneCountry" class="form-select" autocomplete="tel-country-code" required>
-            {% for label, code in phoneCountries %}
-              <option value="{{ code }}" {% if selectedPhoneCountry == code %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-          <label for="telephoneCountry">Pays ou territoire</label>
-        </div>
-        <div class="form-floating">
-          <input type="tel" name="telephone" id="telephone" class="form-control" value="{{ app.user.telephone }}" placeholder="Téléphone" autocomplete="tel" required>
-          <label for="telephone">Téléphone</label>
-        </div>
-        <div class="form-floating hg-form-full">
-          <input type="email" id="email" class="form-control" value="{{ app.user.email }}" placeholder="E-mail" disabled>
-          <label for="email">E-mail non modifiable</label>
-        </div>
-        <div class="hg-form-actions">
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-check-circle-fill"></i>
-            Enregistrer
-          </button>
-        </div>
-      </form>
-    </article>
-
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <div>
-          <h2>Adresse postale</h2>
-          <p>Elle est nécessaire pour compléter votre dossier conducteur avant de publier un trajet.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
-      </div>
-
-      {% if app.user.hasPostalAddress %}
-        <div class="alert alert-success mb-3">
-          Adresse enregistrée. Vous pourrez publier dès que vos documents seront validés.
-        </div>
-      {% endif %}
-
-      <form method="POST" action="{{ path('app_postal_address_update') }}" class="hg-form-grid">
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_postal_address') }}">
-        <div class="form-floating hg-form-full position-relative" data-address-autocomplete>
-          <input type="text" name="postalAddressLine1" id="postalAddressLine1" class="form-control" value="{{ app.user.postalAddressLine1 }}" placeholder="Adresse" autocomplete="address-line1" data-address-input required>
-          <label for="postalAddressLine1">Adresse</label>
-          <div class="list-group position-absolute top-100 start-0 end-0 shadow-sm d-none z-3" data-address-results></div>
-        </div>
-        <div class="form-floating hg-form-full">
-          <input type="text" name="postalAddressLine2" id="postalAddressLine2" class="form-control" value="{{ app.user.postalAddressLine2 }}" placeholder="Complément d’adresse" autocomplete="address-line2">
-          <label for="postalAddressLine2">Complément d’adresse</label>
-        </div>
-        <div class="form-floating">
-          <input type="text" name="postalCode" id="postalCode" class="form-control" value="{{ app.user.postalCode }}" placeholder="Code postal" autocomplete="postal-code" required>
-          <label for="postalCode">Code postal</label>
-        </div>
-        <div class="form-floating">
-          <input type="text" name="postalCity" id="postalCity" class="form-control" value="{{ app.user.postalCity }}" placeholder="Ville" autocomplete="address-level2" required>
-          <label for="postalCity">Ville</label>
-        </div>
-        <div class="form-floating hg-form-full">
-          <select name="postalCountry" id="postalCountry" class="form-select" autocomplete="country-name" required>
-            {% set currentPostalCountry = app.user.postalCountry ?: 'Mayotte' %}
-            {% for country in postalCountries %}
-              <option value="{{ country }}" {% if currentPostalCountry == country %}selected{% endif %}>{{ country }}</option>
-            {% endfor %}
-          </select>
-          <label for="postalCountry">Pays ou territoire</label>
-        </div>
-        <div class="hg-form-actions">
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-check-circle-fill"></i>
-            Enregistrer l’adresse
-          </button>
-        </div>
-      </form>
-    </article>
-
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <div>
-          <h2>Sécurité du compte</h2>
-          <p>Utilisez un mot de passe unique, difficile à deviner, avec lettres, chiffres et caractère spécial.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-shield-lock-fill"></i></span>
-      </div>
-
-      <form method="POST" action="{{ path('app_password_update') }}" class="hg-form-grid">
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_password') }}">
-        <div class="form-floating hg-form-full">
-          <input type="password" name="oldPassword" id="oldPassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
-          <label for="oldPassword">Mot de passe actuel</label>
-        </div>
-        <div class="form-floating">
-          <input type="password" name="newPassword" id="newPassword" class="form-control" placeholder="Nouveau mot de passe" autocomplete="new-password" required>
-          <label for="newPassword">Nouveau mot de passe</label>
-        </div>
-        <div class="form-floating">
-          <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="Confirmer le mot de passe" autocomplete="new-password" required>
-          <label for="confirmPassword">Confirmer le mot de passe</label>
-        </div>
-        <div class="password-rules hg-form-full" data-password-rules data-for="newPassword">
-          <span data-rule="length">8 caractères minimum</span>
-          <span data-rule="lower">Une minuscule</span>
-          <span data-rule="upper">Une majuscule</span>
-          <span data-rule="number">Un chiffre</span>
-          <span data-rule="special">Un caractère spécial</span>
-        </div>
-        <div class="hg-form-actions">
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-key-fill"></i>
-            Changer le mot de passe
-          </button>
-        </div>
-      </form>
-    </article>
-
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <div>
-          <h2>Notifications</h2>
-          <p data-push-help>Activez les alertes importantes sur cet appareil.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
-      </div>
-      <div class="hg-form-actions">
-        <button class="btn btn-orange btnEnableNotifications" type="button">
-          <i class="bi bi-bell-fill"></i>
-          Activer les notifications
-        </button>
-        <a class="btn btn-outline-primary" href="{{ path('app_notifications') }}">
-          <i class="bi bi-inbox-fill"></i>
-          Voir mes notifications
-        </a>
       </div>
     </article>
 
-    <article class="app-panel">
-      <div class="app-panel__header">
-        <div>
-          <h2>Documents</h2>
-          <p>Ajoutez les documents utiles à la vérification de votre profil et à l'activation des paiements.</p>
-        </div>
-        <span class="app-panel__icon"><i class="bi bi-folder2-open"></i></span>
-        <a class="btn btn-outline-primary btn-sm" href="{{ path('app_documents') }}">
-          <i class="bi bi-folder2-open"></i>
-          Voir mes documents
-        </a>
-      </div>
-
-      <form id="documentForm" method="POST" enctype="multipart/form-data" action="{{ path('app_document_add') }}" class="hg-form-grid" novalidate>
-        <input type="hidden" name="_token" value="{{ csrf_token('parametres_document') }}">
-        <div class="form-floating">
-          <select class="form-select" name="type_doc" id="type_doc" required>
-            <option value="">Sélectionner</option>
-            <option value="identite">Justificatif d'identité</option>
-            <option value="rib">RIB</option>
-            <option value="autre">Autre</option>
-          </select>
-          <label for="type_doc">Type de document</label>
-        </div>
-        <div class="form-floating d-none" id="autre_doc_container">
-          <input type="text" name="autre_doc" id="autre_doc" class="form-control" placeholder="Nom du document">
-          <label for="autre_doc">Précisez le document</label>
-        </div>
-        <div class="hg-form-full">
-          <label for="document" class="form-label">Fichier</label>
-          <input type="file" class="form-control" id="document" name="document" accept="application/pdf,image/jpeg,image/png" required>
-          <div class="form-text">PDF, JPG ou PNG uniquement. Taille maximale : 2 Mo.</div>
-        </div>
-        <div class="hg-form-actions">
-          <button type="submit" class="btn btn-orange">
-            <i class="bi bi-file-earmark-arrow-up-fill"></i>
-            Ajouter le document
-          </button>
-        </div>
-      </form>
-    </article>
+    {% include 'user/partials/_notification_panel.html.twig' %}
+    {% include 'user/partials/_security_form.html.twig' %}
   </div>
 
-  <aside class="app-panel app-tips-panel">
-    <div class="app-panel__header">
-      <div>
-        <h2>Compte de confiance</h2>
-      </div>
-      <span class="app-panel__icon"><i class="bi bi-person-check-fill"></i></span>
-    </div>
-    <div class="tip-list">
-      <span><i class="bi bi-check-circle-fill"></i> E-mail vérifié</span>
-      <span><i class="bi bi-check-circle-fill"></i> Photo lisible</span>
-      <span><i class="bi bi-check-circle-fill"></i> Documents à jour</span>
-      <span><i class="bi bi-check-circle-fill"></i> Mot de passe solide</span>
-    </div>
-
-    <hr>
-
-    <h2>Zone sensible</h2>
-    <p>Votre compte sera désactivé pendant 15 jours avant suppression définitive.</p>
-    <form method="POST" action="{{ path('app_account_delete') }}">
-      <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
-      <div class="form-floating mb-3">
-        <input type="password" name="deletePassword" id="deletePassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
-        <label for="deletePassword">Mot de passe actuel</label>
-      </div>
-      <button type="submit" class="btn btn-outline-danger w-100 delete-confirm" data-message="Désactiver votre compte HaloGari ? La suppression définitive sera programmée dans 15 jours.">
-        <i class="bi bi-trash3-fill"></i>
-        Supprimer mon compte
-      </button>
-    </form>
-  </aside>
+  {% include 'user/partials/_delete_account_panel.html.twig' %}
 </section>
 {% endblock %}
+
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const select = document.getElementById('type_doc');
-  const autreContainer = document.getElementById('autre_doc_container');
-  const autreInput = document.getElementById('autre_doc');
-  const form = document.getElementById('documentForm');
-  const photoInput = document.getElementById('photoProfil');
-  const photoPreview = document.getElementById('settingsPhotoPreview');
-  const vehiclePhotoInput = document.getElementById('vehiclePhoto');
-  const vehiclePhotoPreview = document.getElementById('settingsVehiclePreview');
-  const addressInput = document.querySelector('[data-address-input]');
-  const addressResults = document.querySelector('[data-address-results]');
-  const postalCodeInput = document.getElementById('postalCode');
-  const postalCityInput = document.getElementById('postalCity');
-  const postalCountrySelect = document.getElementById('postalCountry');
-  let addressSearchTimer = null;
-
-  photoInput?.addEventListener('change', function () {
-    const file = this.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    photoPreview.src = URL.createObjectURL(file);
-  });
-
-  vehiclePhotoInput?.addEventListener('change', function () {
-    const file = this.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    if (vehiclePhotoPreview) {
-      vehiclePhotoPreview.src = URL.createObjectURL(file);
-    }
-  });
-
-  select?.addEventListener('change', function () {
-    const isOther = this.value === 'autre';
-    autreContainer?.classList.toggle('d-none', !isOther);
-    if (isOther) {
-      autreInput?.setAttribute('required', 'required');
-    } else {
-      autreInput?.removeAttribute('required');
-      if (autreInput) autreInput.value = '';
-    }
-  });
-
-  const hideAddressResults = () => {
-    addressResults?.classList.add('d-none');
-    if (addressResults) addressResults.innerHTML = '';
-  };
-
-  const resolvePostalCountry = (postcode, context) => {
-    if (postcode?.startsWith('976')) return 'Mayotte';
-    if (postcode?.startsWith('974')) return 'Réunion';
-    if (context?.includes('Mayotte')) return 'Mayotte';
-    if (context?.includes('Réunion') || context?.includes('Reunion')) return 'Réunion';
-    return 'France';
-  };
-
-  const renderAddressResults = (features) => {
-    if (!addressResults) return;
-    addressResults.innerHTML = '';
-    if (!features.length) {
-      hideAddressResults();
-      return;
-    }
-
-    features.slice(0, 5).forEach((feature) => {
-      const props = feature.properties || {};
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'list-group-item list-group-item-action text-start';
-      button.textContent = props.label || props.name || '';
-      button.addEventListener('click', () => {
-        if (addressInput) addressInput.value = props.name || props.label || '';
-        if (postalCodeInput) postalCodeInput.value = props.postcode || '';
-        if (postalCityInput) postalCityInput.value = props.city || '';
-        if (postalCountrySelect) postalCountrySelect.value = resolvePostalCountry(props.postcode || '', props.context || '');
-        hideAddressResults();
-      });
-      addressResults.appendChild(button);
-    });
-
-    addressResults.classList.remove('d-none');
-  };
-
-  addressInput?.addEventListener('input', () => {
-    clearTimeout(addressSearchTimer);
-    const query = addressInput.value.trim();
-    if (query.length < 3) {
-      hideAddressResults();
-      return;
-    }
-
-    addressSearchTimer = setTimeout(async () => {
-      try {
-        const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`);
-        if (!response.ok) throw new Error('Adresse introuvable');
-        const data = await response.json();
-        renderAddressResults(Array.isArray(data.features) ? data.features : []);
-      } catch (error) {
-        hideAddressResults();
-      }
-    }, 250);
-  });
-
-  document.addEventListener('click', (event) => {
-    if (!event.target.closest('[data-address-autocomplete]')) {
-      hideAddressResults();
-    }
-  });
-
-  form?.addEventListener('submit', function (event) {
-    if (select?.value === 'autre' && autreInput?.value.trim() === '') {
-      event.preventDefault();
-      autreInput.focus();
-      Swal.fire({
-        icon: 'warning',
-        title: 'Champ requis',
-        text: 'Merci de préciser le nom du document si vous choisissez Autre.',
-        confirmButtonText: 'OK'
-      });
-    }
-  });
-
-  document.querySelectorAll('.delete-confirm').forEach(button => {
-    button.addEventListener('click', function (event) {
-      event.preventDefault();
-      const form = this.closest('form');
-      const message = this.dataset.message || 'Confirmez-vous cette action ?';
-
-      Swal.fire({
-        title: 'Confirmation',
-        text: message,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Oui, continuer',
-        cancelButtonText: 'Annuler'
-      }).then(result => {
-        if (!result.isConfirmed) return;
-        if (typeof form.requestSubmit === 'function') {
-          form.requestSubmit();
-        } else {
-          form.submit();
-        }
-      });
-    });
-  });
-});
-</script>
+  {% include 'user/partials/_settings_scripts.html.twig' %}
 {% endblock %}

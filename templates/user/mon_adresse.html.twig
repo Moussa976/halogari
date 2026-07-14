@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mon adresse{% endblock %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Dossier conducteur</p>
+    <h1>Mon adresse</h1>
+    <p>Complétez l’adresse utilisée pour votre dossier conducteur.</p>
+  </div>
+</section>
+
+<section class="container settings-page">
+  {% include 'user/partials/_address_form.html.twig' %}
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  {% include 'user/partials/_settings_scripts.html.twig' %}
+{% endblock %}

@@ -31,12 +31,50 @@ class ParametresController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        return $this->render('user/parametres.html.twig', [
+        return $this->render('user/parametres.html.twig', $this->accountViewContext($user, $phoneNumberService));
+    }
+
+    /**
+     * @Route("/user/mon-profil", name="app_mon_profil", methods={"GET"})
+     */
+    public function monProfil(PhoneNumberService $phoneNumberService): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->render('user/mon_profil.html.twig', $this->accountViewContext($user, $phoneNumberService));
+    }
+
+    /**
+     * @Route("/user/mon-adresse", name="app_mon_adresse", methods={"GET"})
+     */
+    public function monAdresse(PhoneNumberService $phoneNumberService): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->render('user/mon_adresse.html.twig', $this->accountViewContext($user, $phoneNumberService));
+    }
+
+    /**
+     * @Route("/user/mon-vehicule", name="app_mon_vehicule", methods={"GET"})
+     */
+    public function monVehicule(PhoneNumberService $phoneNumberService): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $this->render('user/mon_vehicule.html.twig', $this->accountViewContext($user, $phoneNumberService));
+    }
+
+    private function accountViewContext(User $user, PhoneNumberService $phoneNumberService): array
+    {
+        return [
             'identityFieldsLocked' => !$user->canEditIdentityFields(),
             'phoneCountries' => $phoneNumberService->choices(),
             'selectedPhoneCountry' => $phoneNumberService->countryFromPhone($user->getTelephone()),
             'postalCountries' => ['Mayotte', 'Réunion', 'France'],
-        ]);
+        ];
     }
 
     /**
@@ -48,7 +86,7 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('parametres_photo', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_profil');
         }
 
         if ($request->get('remove_photo') && $user->getPhoto()) {
@@ -59,7 +97,7 @@ class ParametresController extends AbstractController
             $user->setPhoto(null);
             $em->flush();
             $this->addFlash('success', 'Votre photo de profil a été supprimée.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_profil');
         }
 
         $photoFile = $request->files->get('photo');
@@ -67,12 +105,12 @@ class ParametresController extends AbstractController
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!in_array($photoFile->getMimeType(), $allowedMimeTypes)) {
                 $this->addFlash('error', 'Format invalide. JPG, PNG ou WebP uniquement.');
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_profil');
             }
 
             if ($photoFile->getSize() > 2 * 1024 * 1024) {
                 $this->addFlash('error', 'Image trop lourde. Max 2 Mo.');
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_profil');
             }
 
             $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -98,7 +136,7 @@ class ParametresController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('app_parametres');
+        return $this->redirectAfterAccountForm($request, 'app_mon_profil');
     }
 
     /**
@@ -110,7 +148,7 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('parametres_infos', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_profil');
         }
 
         if ($user->canEditIdentityFields()) {
@@ -119,7 +157,7 @@ class ParametresController extends AbstractController
             $dateNaissance = $this->parseFrenchDate((string) $request->request->get('dateNaissance'));
             if (!$dateNaissance) {
                 $this->addFlash('error', 'La date de naissance doit être au format jj/mm/aaaa.');
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_profil');
             }
 
             $user->setDateNaissance($dateNaissance);
@@ -131,7 +169,7 @@ class ParametresController extends AbstractController
 
         if ($telephone === '') {
             $this->addFlash('error', 'Merci de saisir un numéro de téléphone valide.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_profil');
         }
 
         $user->setTelephone($telephone);
@@ -142,7 +180,7 @@ class ParametresController extends AbstractController
             : 'Téléphone mis à jour. Votre identité est verrouillée depuis la validation de votre pièce d’identité.'
         );
 
-        return $this->redirectToRoute('app_parametres');
+        return $this->redirectAfterAccountForm($request, 'app_mon_profil');
     }
 
     /**
@@ -155,7 +193,7 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('parametres_postal_address', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_adresse');
         }
 
         $line1 = trim((string) $request->request->get('postalAddressLine1'));
@@ -166,17 +204,17 @@ class ParametresController extends AbstractController
 
         if ($line1 === '' || $postalCode === '' || $city === '') {
             $this->addFlash('error', 'Merci de compléter l’adresse, le code postal et la ville.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_adresse');
         }
 
         if (!preg_match('/^[0-9A-Za-z -]{3,20}$/', $postalCode)) {
             $this->addFlash('error', 'Le code postal semble invalide.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_adresse');
         }
 
         if (!in_array($country, ['Mayotte', 'Réunion', 'France'], true)) {
             $this->addFlash('error', 'Merci de choisir Mayotte, Réunion ou France.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_adresse');
         }
 
         $user
@@ -190,7 +228,7 @@ class ParametresController extends AbstractController
 
         $this->addFlash('success', 'Adresse postale enregistrée.');
 
-        return $this->redirectToRoute('app_parametres');
+        return $this->redirectAfterAccountForm($request, 'app_mon_adresse');
     }
 
     /**
@@ -203,7 +241,7 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('parametres_vehicle', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
         }
 
         $brand = trim((string) $request->request->get('vehicleBrand'));
@@ -213,7 +251,7 @@ class ParametresController extends AbstractController
 
         if ($seats < 0 || $seats > 9) {
             $this->addFlash('error', 'Le nombre de places du véhicule semble invalide.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
         }
 
         $user
@@ -232,12 +270,12 @@ class ParametresController extends AbstractController
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!in_array($photoFile->getMimeType(), $allowedMimeTypes, true)) {
                 $this->addFlash('error', 'Photo véhicule invalide. JPG, PNG ou WebP uniquement.');
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
             }
 
             if ($photoFile->getSize() > 3 * 1024 * 1024) {
                 $this->addFlash('error', 'Photo véhicule trop lourde. Max 3 Mo.');
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
             }
 
             $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -253,7 +291,7 @@ class ParametresController extends AbstractController
                 $user->setVehiclePhoto($newFilename);
             } catch (FileException $exception) {
                 $this->addFlash('error', "Erreur lors de l'envoi de la photo du véhicule.");
-                return $this->redirectToRoute('app_parametres');
+                return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
             }
         }
 
@@ -261,7 +299,7 @@ class ParametresController extends AbstractController
 
         $this->addFlash('success', 'Véhicule enregistré.');
 
-        return $this->redirectToRoute('app_parametres');
+        return $this->redirectAfterAccountForm($request, 'app_mon_vehicule');
     }
 
     /**
@@ -273,7 +311,7 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('parametres_password', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_parametres');
         }
 
         $oldPassword = $request->request->get('oldPassword');
@@ -292,7 +330,7 @@ class ParametresController extends AbstractController
             $this->addFlash('success', 'Mot de passe modifié avec succès.');
         }
 
-        return $this->redirectToRoute('app_parametres');
+        return $this->redirectAfterAccountForm($request, 'app_parametres');
     }
 
     /**
@@ -397,13 +435,13 @@ class ParametresController extends AbstractController
 
         if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
             $this->addFlash('error', 'La session a expiré. Veuillez réessayer.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_parametres');
         }
 
         $deletePassword = (string) $request->request->get('deletePassword', '');
         if (!$passwordHasher->isPasswordValid($user, $deletePassword)) {
             $this->addFlash('error', 'Mot de passe incorrect. La suppression du compte a été annulée.');
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectAfterAccountForm($request, 'app_parametres');
         }
 
         $email = $user->getEmail();
@@ -456,6 +494,24 @@ class ParametresController extends AbstractController
         if (is_file($path)) {
             @unlink($path);
         }
+    }
+
+    private function redirectAfterAccountForm(Request $request, string $fallbackRoute = 'app_parametres'): Response
+    {
+        $targetRoute = (string) $request->request->get('_target_route', $fallbackRoute);
+        $allowedRoutes = [
+            'app_parametres',
+            'app_mon_profil',
+            'app_mon_adresse',
+            'app_mon_vehicule',
+            'app_documents',
+        ];
+
+        if (!in_array($targetRoute, $allowedRoutes, true)) {
+            $targetRoute = $fallbackRoute;
+        }
+
+        return $this->redirectToRoute($targetRoute);
     }
 }
 

@@ -1,0 +1,36 @@
+<article class="app-panel app-tips-panel">
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-person-check-fill"></i></span>
+    <div>
+      <h2>Compte de confiance</h2>
+    </div>
+  </div>
+  <div class="tip-list">
+    <span><i class="bi bi-check-circle-fill"></i> E-mail vérifié</span>
+    <span><i class="bi bi-check-circle-fill"></i> Photo lisible</span>
+    <span><i class="bi bi-check-circle-fill"></i> Documents à jour</span>
+    <span><i class="bi bi-check-circle-fill"></i> Mot de passe solide</span>
+  </div>
+
+  <hr>
+
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+    <div>
+      <h2>Zone sensible</h2>
+      <p>Votre compte sera désactivé pendant 15 jours avant suppression définitive.</p>
+    </div>
+  </div>
+  <form method="POST" action="{{ path('app_account_delete') }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+    <input type="hidden" name="_target_route" value="app_parametres">
+    <div class="form-floating mb-3">
+      <input type="password" name="deletePassword" id="deletePassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
+      <label for="deletePassword">Mot de passe actuel</label>
+    </div>
+    <button type="submit" class="btn btn-outline-danger w-100 delete-confirm" data-message="Désactiver votre compte HaloGari ? La suppression définitive sera programmée dans 15 jours.">
+      <i class="bi bi-trash3-fill"></i>
+      Supprimer mon compte
+    </button>
+  </form>
+</article>

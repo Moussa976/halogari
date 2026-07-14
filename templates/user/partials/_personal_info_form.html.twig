@@ -1,0 +1,56 @@
+<article class="app-panel">
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-person-lines-fill"></i></span>
+    <div>
+      <h2>Informations personnelles</h2>
+      <p>Ces informations sécurisent les réservations et renforcent la confiance.</p>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ path('app_infos_update') }}" class="hg-form-grid">
+    <input type="hidden" name="_token" value="{{ csrf_token('parametres_infos') }}">
+    <input type="hidden" name="_target_route" value="app_mon_profil">
+    {% if identityFieldsLocked %}
+      <div class="alert alert-success hg-form-full mb-0">
+        Votre identité a été vérifiée. Le prénom, le nom et la date de naissance ne sont plus modifiables.
+      </div>
+    {% endif %}
+    <div class="form-floating">
+      <input type="text" name="prenom" id="prenom" class="form-control" value="{{ app.user.prenom }}" placeholder="Prénom" autocomplete="given-name" {% if identityFieldsLocked %}readonly aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
+      <label for="prenom">Prénom</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="nom" id="nom" class="form-control" value="{{ app.user.nom }}" placeholder="Nom" autocomplete="family-name" {% if identityFieldsLocked %}readonly aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
+      <label for="nom">Nom</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="dateNaissance" id="dateNaissance" class="form-control dateFr" value="{{ app.user.dateNaissance ? app.user.dateNaissance|date('d/m/Y') : '' }}" placeholder="jj/mm/aaaa" data-max-date="{{ (date()|date_modify('-18 years'))|date('Y-m-d') }}" {% if identityFieldsLocked %}readonly data-no-datepicker="true" aria-describedby="identityLockedHelp"{% else %}required{% endif %}>
+      <label for="dateNaissance">Date de naissance</label>
+    </div>
+    {% if identityFieldsLocked %}
+      <p id="identityLockedHelp" class="form-text hg-form-full mb-0">En cas d’erreur, contactez HaloGari avec un nouveau justificatif.</p>
+    {% endif %}
+    <div class="form-floating">
+      <select name="telephoneCountry" id="telephoneCountry" class="form-select" autocomplete="tel-country-code" required>
+        {% for label, code in phoneCountries %}
+          <option value="{{ code }}" {% if selectedPhoneCountry == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <label for="telephoneCountry">Pays ou territoire</label>
+    </div>
+    <div class="form-floating">
+      <input type="tel" name="telephone" id="telephone" class="form-control" value="{{ app.user.telephone }}" placeholder="Téléphone" autocomplete="tel" required>
+      <label for="telephone">Téléphone</label>
+    </div>
+    <div class="form-floating hg-form-full">
+      <input type="email" id="email" class="form-control" value="{{ app.user.email }}" placeholder="E-mail" disabled>
+      <label for="email">E-mail non modifiable</label>
+    </div>
+    <div class="hg-form-actions">
+      <button type="submit" class="btn btn-orange">
+        <i class="bi bi-check-circle-fill"></i>
+        Enregistrer
+      </button>
+    </div>
+  </form>
+</article>

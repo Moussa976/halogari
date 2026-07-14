@@ -1,0 +1,52 @@
+<article class="app-panel">
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
+    <div>
+      <h2>Adresse postale</h2>
+      <p>Elle complète votre dossier conducteur avant la publication d’un trajet.</p>
+    </div>
+  </div>
+
+  {% if app.user.hasPostalAddress %}
+    <div class="alert alert-success mb-3">
+      Adresse enregistrée. Vous pourrez publier dès que vos documents seront validés.
+    </div>
+  {% endif %}
+
+  <form method="POST" action="{{ path('app_postal_address_update') }}" class="hg-form-grid">
+    <input type="hidden" name="_token" value="{{ csrf_token('parametres_postal_address') }}">
+    <input type="hidden" name="_target_route" value="app_mon_adresse">
+    <div class="form-floating hg-form-full position-relative" data-address-autocomplete>
+      <input type="text" name="postalAddressLine1" id="postalAddressLine1" class="form-control" value="{{ app.user.postalAddressLine1 }}" placeholder="Adresse" autocomplete="address-line1" data-address-input required>
+      <label for="postalAddressLine1">Adresse</label>
+      <div class="list-group position-absolute top-100 start-0 end-0 shadow-sm d-none z-3" data-address-results></div>
+    </div>
+    <div class="form-floating hg-form-full">
+      <input type="text" name="postalAddressLine2" id="postalAddressLine2" class="form-control" value="{{ app.user.postalAddressLine2 }}" placeholder="Complément d’adresse" autocomplete="address-line2">
+      <label for="postalAddressLine2">Complément d’adresse</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="postalCode" id="postalCode" class="form-control" value="{{ app.user.postalCode }}" placeholder="Code postal" autocomplete="postal-code" required>
+      <label for="postalCode">Code postal</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="postalCity" id="postalCity" class="form-control" value="{{ app.user.postalCity }}" placeholder="Ville" autocomplete="address-level2" required>
+      <label for="postalCity">Ville</label>
+    </div>
+    <div class="form-floating hg-form-full">
+      <select name="postalCountry" id="postalCountry" class="form-select" autocomplete="country-name" required>
+        {% set currentPostalCountry = app.user.postalCountry ?: 'Mayotte' %}
+        {% for country in postalCountries %}
+          <option value="{{ country }}" {% if currentPostalCountry == country %}selected{% endif %}>{{ country }}</option>
+        {% endfor %}
+      </select>
+      <label for="postalCountry">Pays ou territoire</label>
+    </div>
+    <div class="hg-form-actions">
+      <button type="submit" class="btn btn-orange">
+        <i class="bi bi-check-circle-fill"></i>
+        Enregistrer l’adresse
+      </button>
+    </div>
+  </form>
+</article>

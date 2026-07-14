@@ -1,0 +1,64 @@
+<article class="app-panel">
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
+    <div>
+      <h2>Mon véhicule</h2>
+      <p>Ajoutez les informations utiles, sans afficher de plaque.</p>
+    </div>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{{ path('app_vehicle_update') }}" class="hg-form-grid">
+    <input type="hidden" name="_token" value="{{ csrf_token('parametres_vehicle') }}">
+    <input type="hidden" name="_target_route" value="app_mon_vehicule">
+    {% if app.user.vehiclePhoto %}
+      <div class="hg-form-full hg-vehicle-preview">
+        <img id="settingsVehiclePreview" src="{{ asset('uploads/vehicles/' ~ app.user.vehiclePhoto) }}" alt="Photo du véhicule" class="hg-vehicle-preview__image">
+        <div>
+          <strong>Photo actuelle</strong>
+          <p class="mb-0 text-muted">Elle aide les passagers à reconnaître le véhicule au départ.</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="hg-form-full hg-vehicle-preview">
+        <span class="hg-vehicle-preview__empty"><i class="bi bi-car-front-fill"></i></span>
+        <div>
+          <strong>Aucune photo véhicule</strong>
+          <p class="mb-0 text-muted">Ajoutez une photo simple et lisible si vous le souhaitez.</p>
+        </div>
+      </div>
+    {% endif %}
+    <div class="form-floating">
+      <input type="text" name="vehicleBrand" id="vehicleBrand" class="form-control" value="{{ app.user.vehicleBrand }}" placeholder="Marque">
+      <label for="vehicleBrand">Marque</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="vehicleModel" id="vehicleModel" class="form-control" value="{{ app.user.vehicleModel }}" placeholder="Modèle">
+      <label for="vehicleModel">Modèle</label>
+    </div>
+    <div class="form-floating">
+      <input type="text" name="vehicleColor" id="vehicleColor" class="form-control" value="{{ app.user.vehicleColor }}" placeholder="Couleur">
+      <label for="vehicleColor">Couleur</label>
+    </div>
+    <div class="form-floating">
+      <input type="number" name="vehicleSeats" id="vehicleSeats" class="form-control" value="{{ app.user.vehicleSeats }}" placeholder="Places" min="1" max="9">
+      <label for="vehicleSeats">Places dans le véhicule</label>
+    </div>
+    <div class="hg-form-full">
+      <label for="vehiclePhoto" class="form-label">Photo du véhicule</label>
+      <input type="file" name="vehiclePhoto" class="form-control" accept="image/jpeg,image/png,image/webp" id="vehiclePhoto">
+      <div class="form-text">JPG, PNG ou WebP. Taille maximale : 3 Mo.</div>
+    </div>
+    <div class="hg-form-actions">
+      {% if app.user.vehiclePhoto %}
+        <button type="submit" name="remove_vehicle_photo" value="1" class="btn btn-outline-danger delete-confirm" data-message="Supprimer la photo du véhicule ?">
+          <i class="bi bi-trash3"></i>
+          Supprimer la photo
+        </button>
+      {% endif %}
+      <button type="submit" class="btn btn-orange">
+        <i class="bi bi-check-circle-fill"></i>
+        Enregistrer le véhicule
+      </button>
+    </div>
+  </form>
+</article>

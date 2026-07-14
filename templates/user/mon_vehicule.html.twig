@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mon véhicule{% endblock %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Conducteur</p>
+    <h1>Mon véhicule</h1>
+    <p>Ajoutez une description simple de votre véhicule pour rassurer les passagers.</p>
+  </div>
+</section>
+
+<section class="container settings-page">
+  {% include 'user/partials/_vehicle_form.html.twig' %}
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  {% include 'user/partials/_settings_scripts.html.twig' %}
+{% endblock %}

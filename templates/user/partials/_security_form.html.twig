@@ -1,0 +1,39 @@
+<article class="app-panel">
+  <div class="app-panel__header">
+    <span class="app-panel__icon"><i class="bi bi-shield-lock-fill"></i></span>
+    <div>
+      <h2>Sécurité du compte</h2>
+      <p>Utilisez un mot de passe unique, difficile à deviner.</p>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ path('app_password_update') }}" class="hg-form-grid">
+    <input type="hidden" name="_token" value="{{ csrf_token('parametres_password') }}">
+    <input type="hidden" name="_target_route" value="app_parametres">
+    <div class="form-floating hg-form-full">
+      <input type="password" name="oldPassword" id="oldPassword" class="form-control" placeholder="Mot de passe actuel" autocomplete="current-password" required>
+      <label for="oldPassword">Mot de passe actuel</label>
+    </div>
+    <div class="form-floating">
+      <input type="password" name="newPassword" id="newPassword" class="form-control" placeholder="Nouveau mot de passe" autocomplete="new-password" required>
+      <label for="newPassword">Nouveau mot de passe</label>
+    </div>
+    <div class="form-floating">
+      <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="Confirmer le mot de passe" autocomplete="new-password" required>
+      <label for="confirmPassword">Confirmer le mot de passe</label>
+    </div>
+    <div class="password-rules hg-form-full" data-password-rules data-for="newPassword">
+      <span data-rule="length">8 caractères minimum</span>
+      <span data-rule="lower">Une minuscule</span>
+      <span data-rule="upper">Une majuscule</span>
+      <span data-rule="number">Un chiffre</span>
+      <span data-rule="special">Un caractère spécial</span>
+    </div>
+    <div class="hg-form-actions">
+      <button type="submit" class="btn btn-orange">
+        <i class="bi bi-key-fill"></i>
+        Changer le mot de passe
+      </button>
+    </div>
+  </form>
+</article>
