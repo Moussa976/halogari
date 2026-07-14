@@ -271,7 +271,7 @@ class TrajetController extends AbstractController
 
             if (!$postalAddressReady) {
                 $this->addFlash('error', 'Complétez votre adresse postale avant de publier un trajet.');
-                return $this->redirectToRoute('app_mon_adresse');
+                return $this->redirectToRoute('app_compte', ['section' => 'adresse']);
             }
 
             if (!$rib || !$identite) {

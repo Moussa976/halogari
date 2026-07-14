@@ -24,7 +24,7 @@
 
       <div class="row g-3">
         <div class="col-md-6">
-          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_profil') }}">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_compte', { section: 'informations' }) }}">
             <div class="app-panel__header mb-0">
               <span class="app-panel__icon"><i class="bi bi-person-circle"></i></span>
               <div>
@@ -35,7 +35,7 @@
           </a>
         </div>
         <div class="col-md-6">
-          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_adresse') }}">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_compte', { section: 'adresse' }) }}">
             <div class="app-panel__header mb-0">
               <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
               <div>
@@ -46,7 +46,7 @@
           </a>
         </div>
         <div class="col-md-6">
-          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_mon_vehicule') }}">
+          <a class="d-block text-decoration-none border rounded-3 p-3 h-100 bg-white" href="{{ path('app_compte', { section: 'vehicule' }) }}">
             <div class="app-panel__header mb-0">
               <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
               <div>

@@ -37,34 +37,25 @@ class ParametresController extends AbstractController
     /**
      * @Route("/user/mon-profil", name="app_mon_profil", methods={"GET"})
      */
-    public function monProfil(PhoneNumberService $phoneNumberService): Response
+    public function monProfil(): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return $this->render('user/mon_profil.html.twig', $this->accountViewContext($user, $phoneNumberService));
+        return $this->redirectToRoute('app_compte', ['section' => 'informations']);
     }
 
     /**
      * @Route("/user/mon-adresse", name="app_mon_adresse", methods={"GET"})
      */
-    public function monAdresse(PhoneNumberService $phoneNumberService): Response
+    public function monAdresse(): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return $this->render('user/mon_adresse.html.twig', $this->accountViewContext($user, $phoneNumberService));
+        return $this->redirectToRoute('app_compte', ['section' => 'adresse']);
     }
 
     /**
      * @Route("/user/mon-vehicule", name="app_mon_vehicule", methods={"GET"})
      */
-    public function monVehicule(PhoneNumberService $phoneNumberService): Response
+    public function monVehicule(): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return $this->render('user/mon_vehicule.html.twig', $this->accountViewContext($user, $phoneNumberService));
+        return $this->redirectToRoute('app_compte', ['section' => 'vehicule']);
     }
 
     private function accountViewContext(User $user, PhoneNumberService $phoneNumberService): array

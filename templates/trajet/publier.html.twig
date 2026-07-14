@@ -194,7 +194,7 @@
 			{% elseif postalAddressReady is defined and not postalAddressReady %}
 				<div class="alert alert-warning">
 					<strong>Avant de publier :</strong> complétez votre adresse postale dans vos paramètres.
-					<a href="{{ path('app_mon_adresse') }}" class="alert-link">Compléter mon adresse</a>.
+					<a href="{{ path('app_compte', { section: 'adresse' }) }}" class="alert-link">Compléter mon adresse</a>.
 				</div>
 			{% else %}
 				<div class="alert alert-success">

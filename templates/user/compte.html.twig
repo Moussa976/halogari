@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HaloGari | Mon compte{% endblock %}
+
+{% set accountLinks = [
+  {
+    key: 'informations',
+    label: 'Mes informations personnelles',
+    icon: 'bi-person-lines-fill',
+    hint: 'Photo, identité et téléphone'
+  },
+  {
+    key: 'adresse',
+    label: 'Mon adresse postale',
+    icon: 'bi-geo-alt-fill',
+    hint: 'Adresse du dossier conducteur'
+  },
+  {
+    key: 'vehicule',
+    label: 'Mon véhicule',
+    icon: 'bi-car-front-fill',
+    hint: 'Infos et photo du véhicule'
+  },
+  {
+    key: 'documents',
+    label: 'Mes documents',
+    icon: 'bi-file-earmark-check',
+    hint: 'Pièce d’identité et RIB'
+  }
+] %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Compte</p>
+    <h1>Mon compte</h1>
+    <p>Gérez vos informations utiles pour réserver, publier et voyager avec confiance.</p>
+  </div>
+</section>
+
+<section class="container account-settings-layout settings-page">
+  <aside class="account-settings-sidebar" aria-label="Navigation du compte">
+    <div class="account-settings-card">
+      <div class="account-settings-card__user">
+        <span class="hg-avatar-wrap{% if app.user.isProfilVerifieComplet %} is-verified{% endif %}"
+          {% if app.user.isProfilVerifieComplet %}
+            tabindex="0"
+            title="Profil vérifié : pièce d'identité validée"
+          {% endif %}>
+          <img src="{{ app.user.photo ? asset('uploads/photos/' ~ app.user.photo) : asset('images/profil.png') }}" alt="Photo de {{ app.user.prenom }}" class="profile-avatar">
+          {% if app.user.isProfilVerifieComplet %}
+            <span class="hg-verified-badge" aria-label="Profil vérifié">
+              <i class="bi bi-patch-check-fill"></i>
+            </span>
+          {% endif %}
+        </span>
+        <div>
+          <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong>
+          <a href="{{ path('app_profile', { id: app.user.id }) }}">Voir mon profil public</a>
+        </div>
+      </div>
+
+      <nav class="account-settings-nav">
+        {% for item in accountLinks %}
+          <a href="{{ path('app_compte', { section: item.key }) }}" class="account-settings-nav__link {{ accountSection == item.key ? 'is-active' : '' }}">
+            <span><i class="bi {{ item.icon }}"></i></span>
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.hint }}</small>
+          </a>
+        {% endfor %}
+      </nav>
+    </div>
+  </aside>
+
+  <div class="account-settings-content">
+    {% if accountSection == 'adresse' %}
+      {% include 'user/partials/_address_form.html.twig' %}
+    {% elseif accountSection == 'vehicule' %}
+      {% include 'user/partials/_vehicle_form.html.twig' %}
+    {% elseif accountSection == 'documents' %}
+      <article class="app-panel">
+        <div class="app-panel__header">
+          <span class="app-panel__icon"><i class="bi bi-file-earmark-check-fill"></i></span>
+          <div>
+            <h2>Mes documents</h2>
+            <p>Ajoutez votre pièce d’identité et votre RIB. La vérification peut prendre jusqu’à 24 h.</p>
+          </div>
+          <a href="{{ path('app_documents') }}" class="btn btn-orange">
+            <i class="bi bi-folder2-open"></i>
+            Ouvrir
+          </a>
+        </div>
+        <div class="tip-list">
+          <span><i class="bi bi-check-circle-fill"></i> PDF, JPG ou PNG</span>
+          <span><i class="bi bi-check-circle-fill"></i> Fichier lisible</span>
+          <span><i class="bi bi-check-circle-fill"></i> 2 Mo maximum</span>
+        </div>
+      </article>
+    {% else %}
+      <div class="app-stack">
+        {% include 'user/partials/_profile_photo_form.html.twig' %}
+        {% include 'user/partials/_personal_info_form.html.twig' %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% include 'user/partials/_settings_scripts.html.twig' %}
+{% endblock %}

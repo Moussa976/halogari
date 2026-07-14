@@ -20,6 +20,7 @@ use App\Service\PaiementService;
 use App\Service\DocumentVerificationService;
 use App\Service\DocumentStorage;
 use App\Service\MailAddressProvider;
+use App\Service\PhoneNumberService;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -268,10 +269,25 @@ class UserController extends AbstractController
     /**
      * @Route("/user/compte/", name="app_compte", methods={"GET"})
      */
-    public function compte(): Response
+    public function compte(Request $request, PhoneNumberService $phoneNumberService): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        /** @var User $user */
+        $user = $this->getUser();
+        $section = (string) $request->query->get('section', 'informations');
+        $allowedSections = ['informations', 'adresse', 'vehicule', 'documents'];
+
+        if (!in_array($section, $allowedSections, true)) {
+            $section = 'informations';
+        }
+
         return $this->render('user/compte.html.twig', [
-            // 'controller_name' => 'UserController',
+            'accountSection' => $section,
+            'identityFieldsLocked' => !$user->canEditIdentityFields(),
+            'phoneCountries' => $phoneNumberService->choices(),
+            'selectedPhoneCountry' => $phoneNumberService->countryFromPhone($user->getTelephone()),
+            'postalCountries' => ['Mayotte', 'Réunion', 'France'],
         ]);
     }
 

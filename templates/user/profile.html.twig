@@ -30,7 +30,7 @@
           </span>
         {% endif %}
         {% if isOwner %}
-          <a href="{{ path('app_mon_profil') }}" class="btn btn-light border rounded-circle hg-profile-photo-edit" title="Modifier la photo">
+          <a href="{{ path('app_compte', { section: 'informations' }) }}" class="btn btn-light border rounded-circle hg-profile-photo-edit" title="Modifier la photo">
             <i class="bi bi-pencil-fill"></i>
           </a>
         {% endif %}
@@ -52,9 +52,9 @@
             {{ noteMoyenne ? noteMoyenne ~ '/5' : 'Aucun avis' }}
           </button>
           {% if isOwner %}
-            <a href="{{ path('app_mon_profil') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ path('app_compte', { section: 'informations' }) }}" class="btn btn-outline-primary btn-sm">
               <i class="bi bi-gear-fill"></i>
-              Paramètres
+              Mon compte
             </a>
           {% endif %}
         </div>
