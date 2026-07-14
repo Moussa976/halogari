@@ -67,6 +67,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\SeedDealmDemoDataCommand:
+        arguments:
+            $environment: '%kernel.environment%'
+
     App\Service\UserDataRetentionCleaner:
         arguments:
             $messagesDirectory: '%messages_directory%'
