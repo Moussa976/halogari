@@ -376,7 +376,7 @@ class ParametresController extends AbstractController
             '/admin/documents'
         );
 
-        $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration.');
+        $this->addFlash('success', 'Document envoyé. Il est maintenant en attente de validation par l’administration, généralement sous 24 h.');
         return $this->redirectToRoute('app_parametres');
     }
 

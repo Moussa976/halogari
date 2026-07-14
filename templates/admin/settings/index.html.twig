@@ -18,6 +18,7 @@
 
     <div class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
       <a class="nav-link active" href="#settings-stripe">Stripe</a>
+      <a class="nav-link" href="#settings-announcement">Annonce</a>
       <a class="nav-link" href="#settings-facebook">Facebook</a>
       <a class="nav-link" href="#settings-seo">SEO</a>
       <a class="nav-link" href="#settings-sms">SMS</a>
@@ -28,6 +29,80 @@
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
+        <div class="card mb-4" id="settings-announcement">
+          <div class="card-header">
+            <h2 class="h5 mb-1">Annonce plateforme</h2>
+            <p class="text-muted mb-0">Bandeau visible en haut du site pour prévenir les utilisateurs : maintenance, mise à jour, information importante.</p>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              <input type="hidden" name="settings_section" value="announcement">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_announcement') }}">
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="announcement_enabled" name="announcement_enabled" value="1" {% if announcementEnabled %}checked{% endif %}>
+                <label class="form-check-label" for="announcement_enabled">Afficher l’annonce sur le site</label>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-4">
+                  <label for="announcement_type" class="form-label">Type</label>
+                  <select id="announcement_type" name="announcement_type" class="form-select">
+                    {% for value, label in {
+                      'info': 'Information',
+                      'maintenance': 'Maintenance',
+                      'warning': 'Alerte',
+                      'success': 'Bonne nouvelle'
+                    } %}
+                      <option value="{{ value }}" {% if announcementType == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-md-8">
+                  <label for="announcement_title" class="form-label">Titre court</label>
+                  <input type="text" id="announcement_title" name="announcement_title" class="form-control" value="{{ announcementTitle }}" maxlength="80" placeholder="Ex : Maintenance prévue">
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label for="announcement_message" class="form-label">Message affiché</label>
+                <textarea id="announcement_message" name="announcement_message" class="form-control" rows="3" maxlength="220" placeholder="Ex : Une mise à jour est prévue ce soir à 22 h. Le service peut être interrompu quelques minutes.">{{ announcementMessage }}</textarea>
+                <div class="form-text">Texte court conseillé : il défilera dans le bandeau.</div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-12 col-md-7">
+                  <label for="announcement_link_url" class="form-label">Lien optionnel</label>
+                  <input type="text" id="announcement_link_url" name="announcement_link_url" class="form-control" value="{{ announcementLinkUrl }}" placeholder="/contact ou https://...">
+                </div>
+                <div class="col-12 col-md-5">
+                  <label for="announcement_link_label" class="form-label">Texte du lien</label>
+                  <input type="text" id="announcement_link_label" name="announcement_link_label" class="form-control" value="{{ announcementLinkLabel }}" maxlength="40" placeholder="En savoir plus">
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                  <label for="announcement_start_date" class="form-label">Début d’affichage</label>
+                  <input type="datetime-local" id="announcement_start_date" name="announcement_start_date" class="form-control" value="{{ announcementStartDate }}">
+                  <div class="form-text">Laisser vide pour afficher dès maintenant.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <label for="announcement_end_date" class="form-label">Fin d’affichage</label>
+                  <input type="datetime-local" id="announcement_end_date" name="announcement_end_date" class="form-control" value="{{ announcementEndDate }}">
+                  <div class="form-text">Laisser vide pour ne pas mettre de date de fin.</div>
+                </div>
+              </div>
+
+              <div class="alert alert-light border small mt-3 mb-3">
+                L’annonce est globale : elle apparaît pour les visiteurs connectés ou non. Elle ne remplace pas les notifications personnelles.
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enregistrer l’annonce</button>
+            </form>
+          </div>
+        </div>
+
         <div class="card mb-4" id="settings-stripe">
           <div class="card-header">
             <h2 class="h5 mb-1">Paiements Stripe</h2>

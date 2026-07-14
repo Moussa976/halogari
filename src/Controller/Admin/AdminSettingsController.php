@@ -43,6 +43,14 @@ class AdminSettingsController extends AbstractController
     private const SEO_ROBOTS_DEFAULT = 'seo.robots_default';
     private const SEO_GOOGLE_SITE_VERIFICATION = 'seo.google_site_verification';
     private const SEO_BING_SITE_VERIFICATION = 'seo.bing_site_verification';
+    private const ANNOUNCEMENT_ENABLED = 'announcement.enabled';
+    private const ANNOUNCEMENT_TYPE = 'announcement.type';
+    private const ANNOUNCEMENT_TITLE = 'announcement.title';
+    private const ANNOUNCEMENT_MESSAGE = 'announcement.message';
+    private const ANNOUNCEMENT_LINK_URL = 'announcement.link_url';
+    private const ANNOUNCEMENT_LINK_LABEL = 'announcement.link_label';
+    private const ANNOUNCEMENT_START_DATE = 'announcement.start_date';
+    private const ANNOUNCEMENT_END_DATE = 'announcement.end_date';
 
     /**
      * @Route("/admin/parametres", name="admin_settings", methods={"GET", "POST"})
@@ -78,6 +86,10 @@ class AdminSettingsController extends AbstractController
 
             if ($section === 'seo') {
                 return $this->saveSeoSettings($request, $settings, $em, $auditLogger);
+            }
+
+            if ($section === 'announcement') {
+                return $this->saveAnnouncementSettings($request, $settings, $em, $auditLogger);
             }
 
             if (!$this->isCsrfTokenValid('admin_settings_facebook', (string) $request->request->get('_token'))) {
@@ -169,6 +181,14 @@ class AdminSettingsController extends AbstractController
             'seoRobotsDefault' => $settings->getValue(self::SEO_ROBOTS_DEFAULT, 'index, follow'),
             'seoGoogleSiteVerification' => $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, ''),
             'seoBingSiteVerification' => $settings->getValue(self::SEO_BING_SITE_VERIFICATION, ''),
+            'announcementEnabled' => $settings->getValue(self::ANNOUNCEMENT_ENABLED, '0') === '1',
+            'announcementType' => $settings->getValue(self::ANNOUNCEMENT_TYPE, 'info'),
+            'announcementTitle' => $settings->getValue(self::ANNOUNCEMENT_TITLE, ''),
+            'announcementMessage' => $settings->getValue(self::ANNOUNCEMENT_MESSAGE, ''),
+            'announcementLinkUrl' => $settings->getValue(self::ANNOUNCEMENT_LINK_URL, ''),
+            'announcementLinkLabel' => $settings->getValue(self::ANNOUNCEMENT_LINK_LABEL, ''),
+            'announcementStartDate' => $settings->getValue(self::ANNOUNCEMENT_START_DATE, ''),
+            'announcementEndDate' => $settings->getValue(self::ANNOUNCEMENT_END_DATE, ''),
         ]);
     }
 
@@ -228,6 +248,85 @@ class AdminSettingsController extends AbstractController
         ]);
 
         $this->addFlash('success', 'Paramètres SEO enregistrés.');
+
+        return $this->redirectToRoute('admin_settings');
+    }
+
+    private function saveAnnouncementSettings(
+        Request $request,
+        PlatformSettingRepository $settings,
+        EntityManagerInterface $em,
+        AdminAuditLogger $auditLogger
+    ): Response {
+        if (!$this->isCsrfTokenValid('admin_settings_announcement', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $enabled = $request->request->getBoolean('announcement_enabled');
+        $type = trim((string) $request->request->get('announcement_type', 'info'));
+        $title = trim((string) $request->request->get('announcement_title'));
+        $message = trim((string) $request->request->get('announcement_message'));
+        $linkUrl = trim((string) $request->request->get('announcement_link_url'));
+        $linkLabel = trim((string) $request->request->get('announcement_link_label'));
+        $startDate = trim((string) $request->request->get('announcement_start_date'));
+        $endDate = trim((string) $request->request->get('announcement_end_date'));
+
+        if (!in_array($type, ['info', 'maintenance', 'warning', 'success'], true)) {
+            $type = 'info';
+        }
+
+        if ($enabled && $message === '') {
+            $this->addFlash('danger', 'Ajoutez un message avant d’activer l’annonce.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        if ($linkUrl !== '' && !filter_var($linkUrl, FILTER_VALIDATE_URL) && !str_starts_with($linkUrl, '/')) {
+            $this->addFlash('danger', 'Lien de l’annonce invalide. Utilisez une URL complète ou un chemin commençant par /.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        if ($startDate !== '' && !\DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $startDate)) {
+            $this->addFlash('danger', 'Date de début invalide.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        if ($endDate !== '' && !\DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $endDate)) {
+            $this->addFlash('danger', 'Date de fin invalide.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        if ($startDate !== '' && $endDate !== '' && $endDate < $startDate) {
+            $this->addFlash('danger', 'La date de fin doit être après la date de début.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $settings->setValue(self::ANNOUNCEMENT_ENABLED, $enabled ? '1' : '0');
+        $settings->setValue(self::ANNOUNCEMENT_TYPE, $type);
+        $settings->setValue(self::ANNOUNCEMENT_TITLE, $title);
+        $settings->setValue(self::ANNOUNCEMENT_MESSAGE, $message);
+        $settings->setValue(self::ANNOUNCEMENT_LINK_URL, $linkUrl);
+        $settings->setValue(self::ANNOUNCEMENT_LINK_LABEL, $linkLabel);
+        $settings->setValue(self::ANNOUNCEMENT_START_DATE, $startDate);
+        $settings->setValue(self::ANNOUNCEMENT_END_DATE, $endDate);
+
+        $em->flush();
+
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_announcement_update', null, [
+            'enabled' => $enabled,
+            'type' => $type,
+            'hasLink' => $linkUrl !== '',
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+        ]);
+
+        $this->addFlash('success', 'Annonce plateforme enregistrée.');
 
         return $this->redirectToRoute('admin_settings');
     }

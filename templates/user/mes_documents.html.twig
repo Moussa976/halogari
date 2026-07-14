@@ -36,6 +36,14 @@
       </div>
     {% endif %}
 
+    <div class="alert alert-info d-flex gap-2 align-items-start">
+      <i class="bi bi-clock-history"></i>
+      <div>
+        <strong>Vérification sous 24 h.</strong>
+        Après l'envoi, votre document est contrôlé par l'administration. Vous recevrez une notification dès qu'il est validé ou refusé.
+      </div>
+    </div>
+
     {% if documents is empty %}
       <div class="alert alert-info mb-0">Aucun document n'a encore été ajouté.</div>
     {% else %}
@@ -130,6 +138,10 @@
             <label for="document" class="form-label">Fichier</label>
             <input type="file" class="form-control" id="document" name="document" accept="application/pdf,image/jpeg,image/png" required>
             <div class="form-text">Formats autorisés : PDF, JPG, PNG. Taille maximale : 2 Mo.</div>
+          </div>
+          <div class="alert alert-light border small mb-0">
+            <i class="bi bi-clock-history"></i>
+            Le document sera vérifié sous 24 h après l'envoi.
           </div>
         </div>
         <div class="modal-footer">

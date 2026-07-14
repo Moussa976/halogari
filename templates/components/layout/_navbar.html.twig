@@ -91,3 +91,46 @@
 </div>
 
 <main class="flex-grow-1 {% if app.request.attributes.get('_route') == 'app_home' %}pt-0{% else %}app-main{% endif %}">
+{% set announcementEnabled = platform_setting('announcement.enabled', '0') == '1' %}
+{% set announcementTitle = platform_setting('announcement.title', '')|trim %}
+{% set announcementMessage = platform_setting('announcement.message', '')|trim %}
+{% set announcementType = platform_setting('announcement.type', 'info') %}
+{% set announcementLinkUrl = platform_setting('announcement.link_url', '')|trim %}
+{% set announcementLinkLabel = platform_setting('announcement.link_label', '')|trim %}
+{% set announcementStartDate = platform_setting('announcement.start_date', '')|trim %}
+{% set announcementEndDate = platform_setting('announcement.end_date', '')|trim %}
+{% set announcementNow = 'now'|date('Y-m-d\\TH:i') %}
+{% set announcementIsActive = announcementEnabled
+  and announcementMessage
+  and (announcementStartDate == '' or announcementStartDate <= announcementNow)
+  and (announcementEndDate == '' or announcementEndDate >= announcementNow)
+%}
+{% if announcementIsActive %}
+  {% set announcementIcons = {
+    info: 'bi-megaphone-fill',
+    maintenance: 'bi-tools',
+    warning: 'bi-exclamation-triangle-fill',
+    success: 'bi-check-circle-fill'
+  } %}
+  <section class="platform-announcement platform-announcement--{{ announcementType|default('info') }}" aria-label="Annonce HaloGari">
+    <div class="platform-announcement__track">
+      {% for i in 1..2 %}
+        <div class="platform-announcement__item" aria-hidden="{{ i == 2 ? 'true' : 'false' }}">
+          <span class="platform-announcement__badge">
+            <i class="bi {{ announcementIcons[announcementType]|default('bi-megaphone-fill') }}"></i>
+            HaloGari
+          </span>
+          {% if announcementTitle %}
+            <strong>{{ announcementTitle }}</strong>
+          {% endif %}
+          <span>{{ announcementMessage }}</span>
+          {% if announcementLinkUrl %}
+            <a href="{{ announcementLinkUrl }}" class="platform-announcement__link">
+              {{ announcementLinkLabel ?: 'En savoir plus' }}
+            </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}

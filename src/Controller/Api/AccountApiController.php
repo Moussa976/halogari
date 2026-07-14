@@ -268,7 +268,7 @@ class AccountApiController extends AbstractController
         );
 
         return $this->json([
-            'message' => 'Document envoyé. Il est maintenant en attente de validation par l’administration.',
+            'message' => 'Document envoyé. Il est maintenant en attente de validation par l’administration, généralement sous 24 h.',
             'data' => $this->documentPayload($document),
         ], JsonResponse::HTTP_CREATED);
     }
