@@ -80,6 +80,7 @@ class SeedDealmDemoDataCommand extends Command
         foreach ($drivers as $driver) {
             $users[$driver['email']] = $this->upsertDriver($driver);
         }
+        $this->entityManager->flush();
 
         $trips = [
             ['driver' => 'dealm.moussa@halogari.test', 'depart' => 'Hamjago', 'arrivee' => 'Dzoumogné', 'date' => '2026-07-20', 'time' => '07:20', 'places' => 2, 'price' => '3.00'],
