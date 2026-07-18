@@ -80,10 +80,6 @@
         <span><i class="bi {{ verifications.email ? 'bi-patch-check-fill text-success' : 'bi-patch-minus-fill text-danger' }} me-2"></i>Adresse e-mail</span>
         <strong>{{ verifications.email ? 'Vérifiée' : 'À vérifier' }}</strong>
       </div>
-      <div class="d-flex justify-content-between align-items-center border rounded p-3">
-        <span><i class="bi {{ verifications.telephone ? 'bi-patch-check-fill text-success' : 'bi-patch-minus-fill text-warning' }} me-2"></i>Téléphone</span>
-        <strong>{{ verifications.telephone ? 'Vérifié' : 'Bientôt' }}</strong>
-      </div>
     </div>
 
     {% if isOwner and verifOk < verifTotal %}

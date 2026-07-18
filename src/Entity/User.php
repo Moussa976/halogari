@@ -689,9 +689,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $doc = $this->getDocumentByType("identite");
 
-        return $this->isVerified() && $this->hasVerifiedIdentity()
-            // && $this->hasVerifiedPhone() // Pour plus tard
-        ;
+        return $this->isVerified() && $this->hasVerifiedIdentity();
     }
 
     public function hasVerifiedIdentity(): bool
@@ -741,11 +739,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return false;
-    }
-
-    public function hasVerifiedPhone(): bool
-    {
-        return false; // à remplacer plus tard par vraie vérif
     }
 
     public function getDisabledAt(): ?\DateTimeImmutable

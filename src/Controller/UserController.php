@@ -83,7 +83,6 @@ class UserController extends AbstractController
         $verifications = [
             'identite' => $user->hasVerifiedIdentity(),
             'email' => $user->isVerified(),
-            'telephone' => $user->hasVerifiedPhone(), // ou false si pas encore actif
         ];
 
         $verifTotal = count($verifications);
@@ -137,7 +136,6 @@ class UserController extends AbstractController
         $verifications = [
             'identite' => $user->hasVerifiedIdentity(),
             'email' => $user->isVerified(),
-            'telephone' => $user->hasVerifiedPhone(), // ou false si pas encore actif
         ];
 
         $verifTotal = count($verifications);
