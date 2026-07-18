@@ -72,11 +72,11 @@
     <div class="app-drawer__actions">
       {% if app.user %}
         <a href="{{ path('app_profile', { id: app.user.id }) }}" class="{{ currentRoute == 'app_profile' ? 'is-active' : '' }}"><i class="bi bi-person"></i> Mon profil</a>
+        <a href="{{ path('app_compte') }}" class="{{ currentRoute == 'app_compte' or currentRoute == 'app_parametres' or currentRoute starts with 'app_mon_' ? 'is-active' : '' }}"><i class="bi bi-person-gear"></i> Mon compte</a>
         <a href="{{ path('app_mes_trajets') }}" class="{{ currentRoute == 'app_mes_trajets' ? 'is-active' : '' }}"><i class="bi bi-signpost-2"></i> Mes trajets</a>
         <a href="{{ path('app_mes_reservations') }}" class="app-drawer__mobile-redundant {{ currentRoute == 'app_mes_reservations' ? 'is-active' : '' }}"><i class="bi bi-calendar-check"></i> Mes réservations</a>
         <a href="{{ path('app_mes_paiements') }}" class="{{ currentRoute == 'app_mes_paiements' ? 'is-active' : '' }}"><i class="bi bi-credit-card"></i> Mes paiements</a>
         <a href="{{ path('app_documents') }}" class="{{ currentRoute == 'app_documents' ? 'is-active' : '' }}"><i class="bi bi-file-earmark-text"></i> Mes documents</a>
-        <a href="{{ path('app_compte') }}" class="{{ currentRoute == 'app_compte' or currentRoute == 'app_parametres' or currentRoute starts with 'app_mon_' ? 'is-active' : '' }}"><i class="bi bi-person-gear"></i> Mon compte</a>
         <a href="{{ path('app_logout') }}" class="app-drawer__logout" data-loading-button data-loading-label="Déconnexion"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
       {% else %}
         <button type="button" data-bs-toggle="modal" data-bs-target="#modalConnexion" data-bs-dismiss="offcanvas">
