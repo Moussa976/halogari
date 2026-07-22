@@ -6749,6 +6749,30 @@ textarea.form-control.app-message-textarea {
     color: #ee7911;
 }
 
+.local-seo-section .feature-card {
+    min-height: 0;
+}
+
+.local-seo-section .feature-card .app-panel__icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: .65rem;
+    font-size: 1rem;
+}
+
+.local-seo-section .feature-card h3 a {
+    color: #245c36;
+    text-decoration: none;
+}
+
+.local-seo-section .feature-card h3 a:hover,
+.local-seo-section .feature-card h3 a:focus-visible {
+    color: #ee7911;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .16em;
+}
+
 .site-footer {
     color: #fff;
     background: #245c36;

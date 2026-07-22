@@ -1,0 +1,27 @@
+{% set isEmbedded = embedded|default(false) %}
+<section class="{{ isEmbedded ? 'local-seo-section' : 'app-band app-band--light local-seo-section' }}">
+  <div class="{{ isEmbedded ? '' : 'container' }}">
+    <div class="app-section-heading">
+      <p class="app-kicker">Lignes locales</p>
+      <h2>Des trajets utiles à Mayotte.</h2>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <span class="app-panel__icon"><i class="bi bi-signpost-2-fill"></i></span>
+        <h3><a href="{{ path('app_covoiturage_koungou') }}">Covoiturage Koungou</a></h3>
+        <p>Rechercher ou proposer une place sur les trajets vers Koungou et les villages proches.</p>
+      </article>
+      <article class="feature-card">
+        <span class="app-panel__icon"><i class="bi bi-signpost-split-fill"></i></span>
+        <h3><a href="{{ path('app_covoiturage_mtsamboro') }}">Covoiturage M'Tsamboro</a></h3>
+        <p>Organiser les déplacements depuis ou vers M'Tsamboro, selon les trajets publiés.</p>
+      </article>
+      <article class="feature-card">
+        <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
+        <h3><a href="{{ path('app_covoiturage_dembeni') }}">Covoiturage Dembéni</a></h3>
+        <p>Trouver une place ou publier un trajet vers Dembéni pour les déplacements du quotidien.</p>
+      </article>
+    </div>
+  </div>
+</section>
