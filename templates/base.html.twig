@@ -15,6 +15,7 @@
   {% set seoGoogleVerification = platform_setting('seo.google_site_verification', '') %}
   {% set seoBingVerification = platform_setting('seo.bing_site_verification', '') %}
   {% set seoGoogleTagManagerId = platform_setting('seo.google_tag_manager_id', '') %}
+  {% set seoGoogleAnalyticsId = platform_setting('seo.google_analytics_id', '') %}
   {% set isPrivateSeoRoute =
     currentRoute starts with 'admin_'
     or currentRoute starts with 'api_'
@@ -55,6 +56,16 @@
       })(window,document,'script','dataLayer','{{ seoGoogleTagManagerId|e('js') }}');
     </script>
     <!-- End Google Tag Manager -->
+  {% endif %}
+  {% if seoGoogleAnalyticsId and not isPrivateSeoRoute %}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ seoGoogleAnalyticsId|e('html_attr') }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ seoGoogleAnalyticsId|e('js') }}');
+    </script>
   {% endif %}
   <meta property="og:site_name" content="HaloGari">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">

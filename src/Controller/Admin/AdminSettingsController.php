@@ -47,6 +47,7 @@ class AdminSettingsController extends AbstractController
     private const SEO_GOOGLE_SITE_VERIFICATION = 'seo.google_site_verification';
     private const SEO_BING_SITE_VERIFICATION = 'seo.bing_site_verification';
     private const SEO_GOOGLE_TAG_MANAGER_ID = 'seo.google_tag_manager_id';
+    private const SEO_GOOGLE_ANALYTICS_ID = 'seo.google_analytics_id';
     private const ANNOUNCEMENT_ENABLED = 'announcement.enabled';
     private const ANNOUNCEMENT_TYPE = 'announcement.type';
     private const ANNOUNCEMENT_TITLE = 'announcement.title';
@@ -189,6 +190,7 @@ class AdminSettingsController extends AbstractController
             'seoGoogleSiteVerification' => $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, ''),
             'seoBingSiteVerification' => $settings->getValue(self::SEO_BING_SITE_VERIFICATION, ''),
             'seoGoogleTagManagerId' => $settings->getValue(self::SEO_GOOGLE_TAG_MANAGER_ID, ''),
+            'seoGoogleAnalyticsId' => $settings->getValue(self::SEO_GOOGLE_ANALYTICS_ID, ''),
             'announcementEnabled' => $settings->getValue(self::ANNOUNCEMENT_ENABLED, '0') === '1',
             'announcementType' => $settings->getValue(self::ANNOUNCEMENT_TYPE, 'info'),
             'announcementTitle' => $settings->getValue(self::ANNOUNCEMENT_TITLE, ''),
@@ -221,6 +223,7 @@ class AdminSettingsController extends AbstractController
         $googleVerification = trim((string) $request->request->get('seo_google_site_verification'));
         $bingVerification = trim((string) $request->request->get('seo_bing_site_verification'));
         $googleTagManagerId = strtoupper(trim((string) $request->request->get('seo_google_tag_manager_id')));
+        $googleAnalyticsId = strtoupper(trim((string) $request->request->get('seo_google_analytics_id')));
 
         if ($canonicalBaseUrl !== '' && !filter_var($canonicalBaseUrl, FILTER_VALIDATE_URL)) {
             $this->addFlash('danger', 'URL canonique invalide.');
@@ -246,6 +249,12 @@ class AdminSettingsController extends AbstractController
             return $this->redirectToRoute('admin_settings');
         }
 
+        if ($googleAnalyticsId !== '' && !preg_match('/^G-[A-Z0-9]+$/', $googleAnalyticsId)) {
+            $this->addFlash('danger', 'Identifiant Google Analytics invalide. Exemple : G-111222MRBY.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
         $allowedRobots = ['index, follow', 'index, nofollow', 'noindex, follow', 'noindex, nofollow'];
         if (!in_array($robotsDefault, $allowedRobots, true)) {
             $robotsDefault = 'index, follow';
@@ -260,6 +269,7 @@ class AdminSettingsController extends AbstractController
         $settings->setValue(self::SEO_GOOGLE_SITE_VERIFICATION, $googleVerification);
         $settings->setValue(self::SEO_BING_SITE_VERIFICATION, $bingVerification);
         $settings->setValue(self::SEO_GOOGLE_TAG_MANAGER_ID, $googleTagManagerId);
+        $settings->setValue(self::SEO_GOOGLE_ANALYTICS_ID, $googleAnalyticsId);
 
         $em->flush();
 
@@ -271,6 +281,7 @@ class AdminSettingsController extends AbstractController
             'hasGoogleVerification' => $googleVerification !== '',
             'hasBingVerification' => $bingVerification !== '',
             'hasGoogleTagManager' => $googleTagManagerId !== '',
+            'hasGoogleAnalytics' => $googleAnalyticsId !== '',
         ]);
 
         $this->addFlash('success', 'Paramètres SEO enregistrés.');

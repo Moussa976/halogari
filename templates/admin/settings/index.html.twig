@@ -284,6 +284,12 @@
                 <div class="form-text">Renseignez uniquement l'identifiant du conteneur. Les scripts seront ajoutés automatiquement sur les pages publiques.</div>
               </div>
 
+              <div class="mt-3">
+                <label for="seo_google_analytics_id" class="form-label">Google Analytics GA4</label>
+                <input type="text" id="seo_google_analytics_id" name="seo_google_analytics_id" class="form-control" value="{{ seoGoogleAnalyticsId }}" placeholder="Ex : G-111222MRBY">
+                <div class="form-text">Renseignez uniquement l'identifiant de mesure. Si vous configurez GA4 dans Google Tag Manager, laissez ce champ vide pour éviter les doublons.</div>
+              </div>
+
               <div class="alert alert-light border small mt-3">
                 Les pages sensibles restent en <code>noindex</code> automatiquement : admin, compte, paiement, réservations, messages et publication.
               </div>
