@@ -46,6 +46,7 @@ class AdminSettingsController extends AbstractController
     private const SEO_FACEBOOK_URL = 'seo.facebook_url';
     private const SEO_GOOGLE_SITE_VERIFICATION = 'seo.google_site_verification';
     private const SEO_BING_SITE_VERIFICATION = 'seo.bing_site_verification';
+    private const SEO_GOOGLE_TAG_MANAGER_ID = 'seo.google_tag_manager_id';
     private const ANNOUNCEMENT_ENABLED = 'announcement.enabled';
     private const ANNOUNCEMENT_TYPE = 'announcement.type';
     private const ANNOUNCEMENT_TITLE = 'announcement.title';
@@ -187,6 +188,7 @@ class AdminSettingsController extends AbstractController
             'seoFacebookUrl' => $settings->getValue(self::SEO_FACEBOOK_URL, 'https://www.facebook.com/profile.php?id=1202754536249735'),
             'seoGoogleSiteVerification' => $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, ''),
             'seoBingSiteVerification' => $settings->getValue(self::SEO_BING_SITE_VERIFICATION, ''),
+            'seoGoogleTagManagerId' => $settings->getValue(self::SEO_GOOGLE_TAG_MANAGER_ID, ''),
             'announcementEnabled' => $settings->getValue(self::ANNOUNCEMENT_ENABLED, '0') === '1',
             'announcementType' => $settings->getValue(self::ANNOUNCEMENT_TYPE, 'info'),
             'announcementTitle' => $settings->getValue(self::ANNOUNCEMENT_TITLE, ''),
@@ -218,6 +220,7 @@ class AdminSettingsController extends AbstractController
         $facebookUrl = trim((string) $request->request->get('seo_facebook_url'));
         $googleVerification = trim((string) $request->request->get('seo_google_site_verification'));
         $bingVerification = trim((string) $request->request->get('seo_bing_site_verification'));
+        $googleTagManagerId = strtoupper(trim((string) $request->request->get('seo_google_tag_manager_id')));
 
         if ($canonicalBaseUrl !== '' && !filter_var($canonicalBaseUrl, FILTER_VALIDATE_URL)) {
             $this->addFlash('danger', 'URL canonique invalide.');
@@ -237,6 +240,12 @@ class AdminSettingsController extends AbstractController
             return $this->redirectToRoute('admin_settings');
         }
 
+        if ($googleTagManagerId !== '' && !preg_match('/^GTM-[A-Z0-9]+$/', $googleTagManagerId)) {
+            $this->addFlash('danger', 'Identifiant Google Tag Manager invalide. Exemple : GTM-WPN8CK8S.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
         $allowedRobots = ['index, follow', 'index, nofollow', 'noindex, follow', 'noindex, nofollow'];
         if (!in_array($robotsDefault, $allowedRobots, true)) {
             $robotsDefault = 'index, follow';
@@ -250,6 +259,7 @@ class AdminSettingsController extends AbstractController
         $settings->setValue(self::SEO_FACEBOOK_URL, $facebookUrl ?: 'https://www.facebook.com/profile.php?id=1202754536249735');
         $settings->setValue(self::SEO_GOOGLE_SITE_VERIFICATION, $googleVerification);
         $settings->setValue(self::SEO_BING_SITE_VERIFICATION, $bingVerification);
+        $settings->setValue(self::SEO_GOOGLE_TAG_MANAGER_ID, $googleTagManagerId);
 
         $em->flush();
 
@@ -260,6 +270,7 @@ class AdminSettingsController extends AbstractController
             'facebookUrl' => $facebookUrl,
             'hasGoogleVerification' => $googleVerification !== '',
             'hasBingVerification' => $bingVerification !== '',
+            'hasGoogleTagManager' => $googleTagManagerId !== '',
         ]);
 
         $this->addFlash('success', 'Paramètres SEO enregistrés.');
