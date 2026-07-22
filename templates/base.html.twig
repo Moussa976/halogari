@@ -88,6 +88,43 @@
         }
       }
     </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Chercher un trajet",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_chercher') }}"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Covoiturage à Mayotte",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_covoiturage_mayotte') }}"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Covoiturage Mamoudzou",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_covoiturage_mamoudzou') }}"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Sécurité et confiance",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_securite') }}"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "FAQ HaloGari",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_faq') }}"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Contact",
+            "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_contact') }}"
+          }
+        ]
+      }
+    </script>
   {% endif %}
 
   {% include 'partials/bootstrap-link.html.twig' %}
