@@ -16,6 +16,13 @@
 				</a>
 			</li>
 
+			<li class="sidebar-item {% if route == 'admin_visitor_stats' %}active{% endif %}">
+				<a class="sidebar-link" href="{{ path('admin_visitor_stats') }}">
+					<i class="align-middle" data-feather="trending-up"></i>
+					<span class="align-middle">Visiteurs</span>
+				</a>
+			</li>
+
 			<li class="sidebar-header">Gestion</li>
 
 			<li class="sidebar-item {% if route == 'admin_trajets' %}active{% endif %}">

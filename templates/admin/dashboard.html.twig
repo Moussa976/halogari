@@ -83,7 +83,7 @@
     </div>
 
     <div class="row g-3 mb-4">
-      <div class="col-md-4">
+      <div class="col-md-6 col-xl-3">
         <a href="{{ path('admin_reservations') }}" class="card h-100 text-decoration-none border-warning">
           <div class="card-body">
             <div class="text-muted small">Demandes à suivre</div>
@@ -95,7 +95,7 @@
           </div>
         </a>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6 col-xl-3">
         <a href="{{ path('admin_documents') }}" class="card h-100 text-decoration-none border-primary">
           <div class="card-body">
             <div class="text-muted small">Documents à vérifier</div>
@@ -107,7 +107,7 @@
           </div>
         </a>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6 col-xl-3">
         <a href="{{ path('admin_paiements') }}" class="card h-100 text-decoration-none border-success">
           <div class="card-body">
             <div class="text-muted small">Paiements confirmés</div>
@@ -116,6 +116,18 @@
               <span class="badge bg-success">{{ count_payments_captured }}</span>
             </div>
             <p class="text-muted small mb-0 mt-2">{{ count_payments_authorized }} enregistré{{ count_payments_authorized > 1 ? 's' : '' }}, {{ refunded_revenue|number_format(2, ',', ' ') }} € remboursés.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <a href="{{ path('admin_visitor_stats') }}" class="card h-100 text-decoration-none border-info">
+          <div class="card-body">
+            <div class="text-muted small">Visiteurs aujourd'hui</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">{{ today_unique_visitors }}</h3>
+              <span class="badge bg-info text-dark">{{ today_page_views }} vues</span>
+            </div>
+            <p class="text-muted small mb-0 mt-2">Machines anonymes comptées hors admins et hors pages d'administration.</p>
           </div>
         </a>
       </div>

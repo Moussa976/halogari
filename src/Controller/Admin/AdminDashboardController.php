@@ -8,6 +8,7 @@ use App\Repository\PaiementRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\TrajetRepository;
 use App\Repository\UserRepository;
+use App\Repository\VisitorDailyStatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ class AdminDashboardController extends AbstractController
         UserRepository $userRepo,
         DocumentRepository $docRepo,
         PaiementRepository $paiementRepo,
+        VisitorDailyStatRepository $visitorDailyStats,
         EntityManagerInterface $em
     ): Response {
         $lastTrajets = $trajetRepo->findBy([], ['createdAt' => 'DESC'], 10);
@@ -73,6 +75,7 @@ class AdminDashboardController extends AbstractController
             ->setParameter('status', 'rembourse')
             ->getQuery()
             ->getSingleScalarResult();
+        $todayVisitorStat = $visitorDailyStats->findOneForDay(new \DateTimeImmutable('today', new \DateTimeZone('Indian/Mayotte')));
 
         return $this->render('admin/dashboard.html.twig', [
             'count_trajets' => $trajetRepo->count([]),
@@ -86,6 +89,8 @@ class AdminDashboardController extends AbstractController
             'count_payments_refunded' => $paiementRepo->count(['statut' => 'rembourse']),
             'captured_revenue' => $capturedRevenue,
             'refunded_revenue' => $refundedRevenue,
+            'today_unique_visitors' => $todayVisitorStat ? $todayVisitorStat->getUniqueVisitors() : 0,
+            'today_page_views' => $todayVisitorStat ? $todayVisitorStat->getPageViews() : 0,
 
             'last_trajets' => $lastTrajets,
             'last_reservations' => $lastReservations,
