@@ -69,12 +69,19 @@ class TrajetController extends AbstractController
         }
 
         $today = new \DateTimeImmutable('today');
+        $displayDate = $dateRecherche
+            ? \DateTimeImmutable::createFromFormat('!Y-m-d', $dateRecherche)->format('d/m/Y')
+            : ($date ?: $today->format('d/m/Y'));
 
         return $this->render('trajet/chercher.html.twig', [
             'latestTrajets' => $trajetRepository->findRecentlyPublishedAvailable(3),
             'popularRoutes' => $trajetRepository->findMostReservedRoutes(3),
             'todaySearchDate' => $today->format('Y-m-d'),
             'todayDisplayDate' => $today->format('d/m/Y'),
+            'searchDeparture' => $depart ?: '',
+            'searchArrival' => $arrivee ?: '',
+            'searchDate' => $displayDate,
+            'searchPlaces' => (int) $places,
         ]);
     }
 
