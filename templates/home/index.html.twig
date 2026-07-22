@@ -178,26 +178,6 @@
 
 {% block javascripts %}
   {{ parent() }}
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "HaloGari",
-      "url": "{{ absolute_url(path('app_home')) }}",
-      "logo": "{{ absolute_url(asset('images/logo/logo-787x298.png')) }}",
-      "sameAs": [
-        "https://www.facebook.com/profile.php?id=61591126017246"
-      ]
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "HaloGari",
-      "url": "{{ absolute_url(path('app_home')) }}"
-    }
-  </script>
   <script>
     (() => {
       const trigger = document.querySelector('[data-home-search-open]');
