@@ -9,9 +9,10 @@
   { depart: 'Sada', arrivee: 'Mamoudzou', total: 1 }
 ] %}
 {% set trajetsAffiches = popularTrajets|length > 0 ? popularTrajets : trajetsFallback %}
+{% set homeHeroImage = platform_setting('home.hero_image', asset('images/fond-header.png')) %}
 
 {% block body %}
-<header class="app-hero home-hero">
+<header class="app-hero home-hero" style="--home-hero-image: url('{{ homeHeroImage|e('html_attr') }}');">
   <div class="container app-hero__inner">
     <div class="app-hero__content">
       <p class="app-kicker">Mayotte bouge ensemble</p>

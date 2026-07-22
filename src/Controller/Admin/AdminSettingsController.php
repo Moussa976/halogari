@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AdminSettingsController extends AbstractController
@@ -56,6 +57,7 @@ class AdminSettingsController extends AbstractController
     private const ANNOUNCEMENT_LINK_LABEL = 'announcement.link_label';
     private const ANNOUNCEMENT_START_DATE = 'announcement.start_date';
     private const ANNOUNCEMENT_END_DATE = 'announcement.end_date';
+    private const HOME_HERO_IMAGE = 'home.hero_image';
 
     /**
      * @Route("/admin/parametres", name="admin_settings", methods={"GET", "POST"})
@@ -95,6 +97,10 @@ class AdminSettingsController extends AbstractController
 
             if ($section === 'announcement') {
                 return $this->saveAnnouncementSettings($request, $settings, $em, $auditLogger);
+            }
+
+            if ($section === 'home') {
+                return $this->saveHomeSettings($request, $settings, $em, $auditLogger);
             }
 
             if (!$this->isCsrfTokenValid('admin_settings_facebook', (string) $request->request->get('_token'))) {
@@ -199,7 +205,84 @@ class AdminSettingsController extends AbstractController
             'announcementLinkLabel' => $settings->getValue(self::ANNOUNCEMENT_LINK_LABEL, ''),
             'announcementStartDate' => $settings->getValue(self::ANNOUNCEMENT_START_DATE, ''),
             'announcementEndDate' => $settings->getValue(self::ANNOUNCEMENT_END_DATE, ''),
+            'homeHeroImage' => $settings->getValue(self::HOME_HERO_IMAGE, '/images/fond-header.png'),
+            'homeHeroLibrary' => $this->homeHeroLibrary(),
         ]);
+    }
+
+    private function saveHomeSettings(
+        Request $request,
+        PlatformSettingRepository $settings,
+        EntityManagerInterface $em,
+        AdminAuditLogger $auditLogger
+    ): Response {
+        if (!$this->isCsrfTokenValid('admin_settings_home', (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide. Merci de réessayer.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $image = trim((string) $request->request->get('home_hero_image'));
+        $libraryImage = trim((string) $request->request->get('home_hero_library'));
+        $uploadedImage = $request->files->get('home_hero_upload');
+
+        if ($libraryImage !== '') {
+            $allowed = array_column($this->homeHeroLibrary(), 'path');
+            if (!in_array($libraryImage, $allowed, true)) {
+                $this->addFlash('danger', 'Image de bibliothèque invalide.');
+
+                return $this->redirectToRoute('admin_settings');
+            }
+
+            $image = $libraryImage;
+        }
+
+        if ($uploadedImage instanceof UploadedFile && $uploadedImage->isValid()) {
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array((string) $uploadedImage->getMimeType(), $allowedMimeTypes, true)) {
+                $this->addFlash('danger', 'Image non autorisée. Utilisez JPG, PNG ou WebP.');
+
+                return $this->redirectToRoute('admin_settings');
+            }
+
+            if ($uploadedImage->getSize() && $uploadedImage->getSize() > 4 * 1024 * 1024) {
+                $this->addFlash('danger', 'Image trop lourde. Maximum conseillé : 4 Mo.');
+
+                return $this->redirectToRoute('admin_settings');
+            }
+
+            $extension = $uploadedImage->guessExtension() ?: 'jpg';
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                $extension = 'jpg';
+            }
+
+            $directory = $this->getParameter('kernel.project_dir') . '/public/uploads/home';
+            if (!is_dir($directory)) {
+                mkdir($directory, 0775, true);
+            }
+
+            $filename = 'hero-' . (new \DateTimeImmutable())->format('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $extension;
+            $uploadedImage->move($directory, $filename);
+            $image = '/uploads/home/' . $filename;
+        }
+
+        if ($image !== '' && !str_starts_with($image, '/') && !filter_var($image, FILTER_VALIDATE_URL)) {
+            $this->addFlash('danger', 'Image d’accueil invalide. Utilisez un chemin commençant par / ou une URL complète.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        $settings->setValue(self::HOME_HERO_IMAGE, $image ?: '/images/fond-header.png');
+        $em->flush();
+
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_home_update', null, [
+            'heroImage' => $image,
+            'uploaded' => $uploadedImage instanceof UploadedFile,
+        ]);
+
+        $this->addFlash('success', 'Image d’accueil enregistrée.');
+
+        return $this->redirectToRoute('admin_settings');
     }
 
     private function saveSeoSettings(
@@ -287,6 +370,32 @@ class AdminSettingsController extends AbstractController
         $this->addFlash('success', 'Paramètres SEO enregistrés.');
 
         return $this->redirectToRoute('admin_settings');
+    }
+
+    private function homeHeroLibrary(): array
+    {
+        $images = [
+            ['label' => 'Route de Mayotte', 'path' => '/images/fond-header.png'],
+            ['label' => 'Carte des villages', 'path' => '/images/carte de mayotte aves tous les villages.png'],
+        ];
+
+        $directory = $this->getParameter('kernel.project_dir') . '/public/uploads/home';
+        $uploadedImages = [];
+
+        foreach (['jpg', 'jpeg', 'png', 'webp'] as $extension) {
+            $uploadedImages = array_merge($uploadedImages, glob($directory . '/hero-*.' . $extension) ?: []);
+        }
+
+        usort($uploadedImages, static fn (string $a, string $b): int => (int) filemtime($b) <=> (int) filemtime($a));
+
+        foreach ($uploadedImages as $path) {
+            $images[] = [
+                'label' => 'Image importée ' . date('d/m/Y H:i', (int) filemtime($path)),
+                'path' => '/uploads/home/' . basename($path),
+            ];
+        }
+
+        return $images;
     }
 
     private function saveAnnouncementSettings(

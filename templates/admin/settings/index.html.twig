@@ -18,6 +18,7 @@
 
     <div class="nav nav-pills flex-column flex-md-row gap-2 mb-4">
       <a class="nav-link active" href="#settings-stripe">Stripe</a>
+      <a class="nav-link" href="#settings-home">Accueil</a>
       <a class="nav-link" href="#settings-announcement">Annonce</a>
       <a class="nav-link" href="#settings-facebook">Facebook</a>
       <a class="nav-link" href="#settings-seo">SEO</a>
@@ -29,6 +30,61 @@
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
+        <div class="card mb-4" id="settings-home">
+          <div class="card-header">
+            <h2 class="h5 mb-1">Page d'accueil</h2>
+            <p class="text-muted mb-0">Photo principale affichée derrière le formulaire de recherche.</p>
+          </div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+              <input type="hidden" name="settings_section" value="home">
+              <input type="hidden" name="_token" value="{{ csrf_token('admin_settings_home') }}">
+
+              <div class="mb-3">
+                <label class="form-label">Image actuelle</label>
+                <div class="border rounded overflow-hidden bg-light" style="max-width: 520px;">
+                  <img src="{{ homeHeroImage }}" alt="Image actuelle de la page d'accueil" class="img-fluid w-100" style="aspect-ratio: 16 / 7; object-fit: cover;">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="home_hero_image" class="form-label">Chemin ou URL d'image</label>
+                <input type="text" id="home_hero_image" name="home_hero_image" class="form-control" value="{{ homeHeroImage }}" placeholder="/images/fond-header.png ou https://...">
+                <div class="form-text">Utile si l'image existe déjà sur le serveur ou si elle vient d'une URL externe.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="home_hero_upload" class="form-label">Importer depuis l'ordinateur</label>
+                <input type="file" id="home_hero_upload" name="home_hero_upload" class="form-control" accept="image/jpeg,image/png,image/webp">
+                <div class="form-text">Formats acceptés : JPG, PNG, WebP. Maximum : 4 Mo.</div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Bibliothèque rapide</label>
+                <select name="home_hero_library" class="form-select mb-2">
+                  <option value="">Ne pas remplacer par la bibliothèque</option>
+                  {% for image in homeHeroLibrary %}
+                    <option value="{{ image.path }}">{{ image.label }}</option>
+                  {% endfor %}
+                </select>
+                <div class="row g-2">
+                  {% for image in homeHeroLibrary %}
+                    <div class="col-6 col-md-4">
+                      <div class="border rounded p-2 h-100">
+                        <img src="{{ image.path }}" alt="" class="rounded w-100 mb-2" style="aspect-ratio: 16 / 9; object-fit: cover;">
+                        <span class="small fw-semibold d-block">{{ image.label }}</span>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                <div class="form-text">Choisir une image ici remplace le champ URL au moment de l'enregistrement.</div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enregistrer l'image d'accueil</button>
+            </form>
+          </div>
+        </div>
+
         <div class="card mb-4" id="settings-announcement">
           <div class="card-header">
             <h2 class="h5 mb-1">Annonce plateforme</h2>

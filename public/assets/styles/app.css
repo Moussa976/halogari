@@ -2120,6 +2120,9 @@ textarea.form-control.app-message-textarea {
 .home-hero {
     min-height: auto;
     padding-bottom: clamp(2rem, 4vw, 3.2rem);
+    background:
+        linear-gradient(120deg, rgba(14, 46, 32, .82), rgba(36, 92, 54, .54)),
+        var(--home-hero-image, url('../../images/fond-header.png')) center/cover no-repeat;
 }
 
 .home-hero .app-hero__inner {
