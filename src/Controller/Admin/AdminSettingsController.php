@@ -21,6 +21,8 @@ class AdminSettingsController extends AbstractController
     private const FACEBOOK_AUTO_POST = 'facebook.auto_post';
     private const PRODUCTION_PUBLIC_URL = 'production.public_url';
     private const PRODUCTION_SUPPORT_EMAIL = 'production.support_email';
+    private const PRODUCTION_PUBLIC_ENABLED = 'production.public_enabled';
+    private const PRODUCTION_OFFLINE_MESSAGE = 'production.offline_message';
     private const PRODUCTION_BACKUP_LAST_AT = 'production.database_backup_last_at';
     private const PRODUCTION_PRELAUNCH_CONFIRMED_AT = 'production.prelaunch_confirmed_at';
     private const STRIPE_PUBLIC_KEY = 'stripe.public_key';
@@ -41,6 +43,7 @@ class AdminSettingsController extends AbstractController
     private const SEO_OG_IMAGE = 'seo.og_image';
     private const SEO_CANONICAL_BASE_URL = 'seo.canonical_base_url';
     private const SEO_ROBOTS_DEFAULT = 'seo.robots_default';
+    private const SEO_FACEBOOK_URL = 'seo.facebook_url';
     private const SEO_GOOGLE_SITE_VERIFICATION = 'seo.google_site_verification';
     private const SEO_BING_SITE_VERIFICATION = 'seo.bing_site_verification';
     private const ANNOUNCEMENT_ENABLED = 'announcement.enabled';
@@ -145,6 +148,8 @@ class AdminSettingsController extends AbstractController
             'hasFacebookToken' => $token !== '',
             'productionPublicUrl' => $settings->getValue(self::PRODUCTION_PUBLIC_URL, 'https://halogari.yt'),
             'productionSupportEmail' => $settings->getValue(self::PRODUCTION_SUPPORT_EMAIL, 'contact@halogari.yt'),
+            'productionPublicEnabled' => $settings->getValue(self::PRODUCTION_PUBLIC_ENABLED, '1') === '1',
+            'productionOfflineMessage' => $settings->getValue(self::PRODUCTION_OFFLINE_MESSAGE, 'HaloGari est en préparation. La plateforme ouvrira prochainement au public.'),
             'databaseBackupLastAt' => $settings->getValue(self::PRODUCTION_BACKUP_LAST_AT, ''),
             'prelaunchConfirmedAt' => $settings->getValue(self::PRODUCTION_PRELAUNCH_CONFIRMED_AT, ''),
             'productionChecks' => $this->buildProductionChecks($settings),
@@ -179,6 +184,7 @@ class AdminSettingsController extends AbstractController
             'seoOgImage' => $settings->getValue(self::SEO_OG_IMAGE, 'https://halogari.yt/images/logo/logo-787x298.png'),
             'seoCanonicalBaseUrl' => $settings->getValue(self::SEO_CANONICAL_BASE_URL, 'https://halogari.yt'),
             'seoRobotsDefault' => $settings->getValue(self::SEO_ROBOTS_DEFAULT, 'index, follow'),
+            'seoFacebookUrl' => $settings->getValue(self::SEO_FACEBOOK_URL, 'https://www.facebook.com/profile.php?id=1202754536249735'),
             'seoGoogleSiteVerification' => $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, ''),
             'seoBingSiteVerification' => $settings->getValue(self::SEO_BING_SITE_VERIFICATION, ''),
             'announcementEnabled' => $settings->getValue(self::ANNOUNCEMENT_ENABLED, '0') === '1',
@@ -209,6 +215,7 @@ class AdminSettingsController extends AbstractController
         $ogImage = trim((string) $request->request->get('seo_og_image'));
         $canonicalBaseUrl = rtrim(trim((string) $request->request->get('seo_canonical_base_url')), '/');
         $robotsDefault = trim((string) $request->request->get('seo_robots_default', 'index, follow'));
+        $facebookUrl = trim((string) $request->request->get('seo_facebook_url'));
         $googleVerification = trim((string) $request->request->get('seo_google_site_verification'));
         $bingVerification = trim((string) $request->request->get('seo_bing_site_verification'));
 
@@ -224,6 +231,12 @@ class AdminSettingsController extends AbstractController
             return $this->redirectToRoute('admin_settings');
         }
 
+        if ($facebookUrl !== '' && !filter_var($facebookUrl, FILTER_VALIDATE_URL)) {
+            $this->addFlash('danger', 'URL Facebook invalide.');
+
+            return $this->redirectToRoute('admin_settings');
+        }
+
         $allowedRobots = ['index, follow', 'index, nofollow', 'noindex, follow', 'noindex, nofollow'];
         if (!in_array($robotsDefault, $allowedRobots, true)) {
             $robotsDefault = 'index, follow';
@@ -234,6 +247,7 @@ class AdminSettingsController extends AbstractController
         $settings->setValue(self::SEO_OG_IMAGE, $ogImage ?: 'https://halogari.yt/images/logo/logo-787x298.png');
         $settings->setValue(self::SEO_CANONICAL_BASE_URL, $canonicalBaseUrl ?: 'https://halogari.yt');
         $settings->setValue(self::SEO_ROBOTS_DEFAULT, $robotsDefault);
+        $settings->setValue(self::SEO_FACEBOOK_URL, $facebookUrl ?: 'https://www.facebook.com/profile.php?id=1202754536249735');
         $settings->setValue(self::SEO_GOOGLE_SITE_VERIFICATION, $googleVerification);
         $settings->setValue(self::SEO_BING_SITE_VERIFICATION, $bingVerification);
 
@@ -243,6 +257,7 @@ class AdminSettingsController extends AbstractController
             'title' => $title,
             'canonicalBaseUrl' => $canonicalBaseUrl,
             'robotsDefault' => $robotsDefault,
+            'facebookUrl' => $facebookUrl,
             'hasGoogleVerification' => $googleVerification !== '',
             'hasBingVerification' => $bingVerification !== '',
         ]);
@@ -417,6 +432,8 @@ class AdminSettingsController extends AbstractController
 
         $publicUrl = rtrim(trim((string) $request->request->get('production_public_url')), '/');
         $supportEmail = trim((string) $request->request->get('production_support_email'));
+        $publicEnabled = $request->request->getBoolean('production_public_enabled');
+        $offlineMessage = trim((string) $request->request->get('production_offline_message'));
 
         if ($publicUrl !== '' && !filter_var($publicUrl, FILTER_VALIDATE_URL)) {
             $this->addFlash('danger', 'URL publique invalide.');
@@ -432,6 +449,8 @@ class AdminSettingsController extends AbstractController
 
         $settings->setValue(self::PRODUCTION_PUBLIC_URL, $publicUrl ?: 'https://halogari.yt');
         $settings->setValue(self::PRODUCTION_SUPPORT_EMAIL, $supportEmail ?: 'contact@halogari.yt');
+        $settings->setValue(self::PRODUCTION_PUBLIC_ENABLED, $publicEnabled ? '1' : '0');
+        $settings->setValue(self::PRODUCTION_OFFLINE_MESSAGE, $offlineMessage ?: 'HaloGari est en préparation. La plateforme ouvrira prochainement au public.');
 
         $now = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
         $backupMarked = $request->request->getBoolean('mark_database_backup');
@@ -450,6 +469,7 @@ class AdminSettingsController extends AbstractController
         $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'platform_settings_production_update', null, [
             'publicUrl' => $publicUrl,
             'supportEmail' => $supportEmail,
+            'publicEnabled' => $publicEnabled,
             'backupMarked' => $backupMarked,
             'prelaunchConfirmed' => $prelaunchConfirmed,
         ]);
@@ -552,8 +572,10 @@ class AdminSettingsController extends AbstractController
         $facebookToken = (string) $settings->getValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, '');
         $facebookTokenExpiresAt = (string) $settings->getValue(self::FACEBOOK_TOKEN_EXPIRES_AT, '');
         $smsEnabled = $settings->getValue(self::SMS_ENABLED, '0') === '1';
+        $publicEnabled = $settings->getValue(self::PRODUCTION_PUBLIC_ENABLED, '1') === '1';
 
         return [
+            $this->check('Site public', $publicEnabled, $publicEnabled ? 'Ouvert' : 'Fermé aux visiteurs', 'Ouvrir le site seulement quand les tests et les obligations sont validés.'),
             $this->check('Environnement', $appEnv === 'prod', $appEnv ?: 'Non renseigné', 'APP_ENV doit valoir prod en production.'),
             $this->check('Mode debug', in_array(strtolower($appDebug), ['0', 'false', 'off', 'no', ''], true), $appDebug === '' ? 'Non forcé' : $appDebug, 'APP_DEBUG doit être désactivé en production.'),
             $this->check('Base de données', $this->env('DATABASE_URL') !== '', $this->maskDsn($this->env('DATABASE_URL')), 'DATABASE_URL doit pointer vers la base de production.'),

@@ -11,6 +11,7 @@
   {% set seoDefaultImage = platform_setting('seo.og_image', absolute_url(asset('images/logo/logo-787x298.png'))) %}
   {% set seoCanonicalBaseUrl = platform_setting('seo.canonical_base_url', '') %}
   {% set seoProductionRobots = platform_setting('seo.robots_default', 'index, follow') %}
+  {% set seoFacebookUrl = platform_setting('seo.facebook_url', 'https://www.facebook.com/profile.php?id=1202754536249735') %}
   {% set seoGoogleVerification = platform_setting('seo.google_site_verification', '') %}
   {% set seoBingVerification = platform_setting('seo.bing_site_verification', '') %}
   {% set isPrivateSeoRoute =
@@ -53,6 +54,41 @@
   <meta name="twitter:title" content="{{ block('og_title')|striptags|trim }}">
   <meta name="twitter:description" content="{{ block('og_description')|striptags|trim }}">
   <meta name="twitter:image" content="{{ block('og_image')|striptags|trim }}">
+  {% if not isPrivateSeoRoute %}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "HaloGari",
+        "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}",
+        "logo": "{{ absolute_url(asset('images/logo/logo-787x298.png'))|e('js') }}",
+        "description": "{{ seoDefaultDescription|e('js') }}",
+        "areaServed": {
+          "@type": "AdministrativeArea",
+          "name": "Mayotte"
+        }{% if seoFacebookUrl %},
+        "sameAs": [
+          "{{ seoFacebookUrl|e('js') }}"
+        ]{% endif %}
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "HaloGari",
+        "url": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "{{ (seoCanonicalBaseUrl ?: app.request.schemeAndHttpHost)|e('js') }}{{ path('app_chercher') }}?depart={depart}&arrivee={arrivee}",
+          "query-input": [
+            "required name=depart",
+            "required name=arrivee"
+          ]
+        }
+      }
+    </script>
+  {% endif %}
 
   {% include 'partials/bootstrap-link.html.twig' %}
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">

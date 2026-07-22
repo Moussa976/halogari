@@ -241,6 +241,12 @@
                 <div class="form-text">Image utilisée par défaut pour Facebook, WhatsApp et les aperçus sociaux.</div>
               </div>
 
+              <div class="mb-3">
+                <label for="seo_facebook_url" class="form-label">Page Facebook officielle</label>
+                <input type="url" id="seo_facebook_url" name="seo_facebook_url" class="form-control" value="{{ seoFacebookUrl }}" placeholder="https://www.facebook.com/...">
+                <div class="form-text">Utilisée dans les données structurées et les liens publics.</div>
+              </div>
+
               <div class="row g-3">
                 <div class="col-12 col-md-7">
                   <label for="seo_canonical_base_url" class="form-label">Domaine canonique</label>
@@ -476,6 +482,23 @@
               <div class="mb-3">
                 <label for="production_support_email" class="form-label">E-mail support</label>
                 <input type="email" id="production_support_email" name="production_support_email" class="form-control" value="{{ productionSupportEmail }}">
+              </div>
+
+              <div class="border rounded p-3 mb-3 {{ productionPublicEnabled ? 'border-success bg-success-subtle' : 'border-warning bg-warning-subtle' }}">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="production_public_enabled" name="production_public_enabled" value="1" {% if productionPublicEnabled %}checked{% endif %}>
+                  <label class="form-check-label fw-bold" for="production_public_enabled">
+                    Site public ouvert
+                  </label>
+                </div>
+                <div class="small text-muted mt-2">
+                  Désactivé : les visiteurs voient une page d’attente, tandis que l’admin reste accessible.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="production_offline_message" class="form-label">Message quand le site est fermé</label>
+                <textarea id="production_offline_message" name="production_offline_message" class="form-control" rows="3" maxlength="220">{{ productionOfflineMessage }}</textarea>
               </div>
 
               <div class="form-check mb-2">

@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class SeoController extends AbstractController
 {
     private const SEO_CANONICAL_BASE_URL = 'seo.canonical_base_url';
+    private const PRODUCTION_PUBLIC_ENABLED = 'production.public_enabled';
 
     /**
      * @Route("/robots.txt", name="app_robots", methods={"GET"})
@@ -17,6 +18,16 @@ class SeoController extends AbstractController
     public function robots(PlatformSettingRepository $settings): Response
     {
         $baseUrl = $this->canonicalBaseUrl($settings);
+
+        if ($settings->getValue(self::PRODUCTION_PUBLIC_ENABLED, '1') !== '1') {
+            return new Response(implode("\n", [
+                'User-agent: *',
+                'Disallow: /',
+                'Sitemap: ' . $baseUrl . '/sitemap.xml',
+                '',
+            ]), Response::HTTP_OK, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        }
+
         $content = implode("\n", [
             'User-agent: *',
             'Allow: /',
