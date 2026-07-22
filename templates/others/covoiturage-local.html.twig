@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Covoiturage {{ city }} | Trajets avec HaloGari{% endblock %}
+{% block meta_description %}{{ metaDescription }}{% endblock %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Trajets locaux</p>
+    <h1>Covoiturage {{ city }}</h1>
+    <p>{{ intro }}</p>
+  </div>
+</section>
+
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <span class="app-panel__icon"><i class="bi bi-signpost-split-fill"></i></span>
+    <h2>Rechercher une place vers {{ city }}</h2>
+    <p>
+      Indiquez votre village de départ, choisissez la date du trajet et envoyez une demande au conducteur.
+      Vous payez seulement si la demande est acceptée.
+    </p>
+
+    <h2>Publier un trajet depuis ou vers {{ city }}</h2>
+    <p>
+      Si vous conduisez déjà sur cette ligne et que vous avez des places libres, vous pouvez proposer votre trajet.
+      Les passagers vous contactent depuis HaloGari et vous restez libre d'accepter ou de refuser.
+    </p>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Lignes proches</h3>
+        <p>{{ nearVillages|join(', ') }} et les autres villages selon les trajets publiés.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Réservation claire</h3>
+        <p>Le prix, les places, la date, les messages et l'état de la réservation restent visibles dans votre espace.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Plateforme locale</h3>
+        <p>HaloGari est pensé pour les trajets du quotidien à Mayotte, avec des pages simples et un parcours sécurisé.</p>
+      </article>
+    </div>
+
+    <div class="hg-form-actions">
+      <a href="{{ path('app_chercher', { select_arrival: city, places_min: 1 }) }}" class="btn btn-orange">
+        <i class="bi bi-search"></i>
+        Chercher vers {{ city }}
+      </a>
+      <a href="{{ path('app_publier') }}" class="btn btn-outline-success">
+        <i class="bi bi-plus-circle"></i>
+        Publier un trajet
+      </a>
+    </div>
+  </article>
+
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-bell-fill"></i></span>
+    <h2>Être alerté</h2>
+    <p>
+      Si aucun trajet ne correspond à votre recherche, vous pouvez créer une alerte.
+      HaloGari vous prévient dès qu'un conducteur publie un trajet compatible.
+    </p>
+    <a href="{{ path('app_chercher', { select_arrival: city, places_min: 1 }) }}" class="btn btn-success w-100 mt-3">
+      <i class="bi bi-bell"></i>
+      Rechercher et créer une alerte
+    </a>
+  </aside>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Covoiturage {{ city|e('js') }}",
+      "description": "{{ metaDescription|e('js') }}",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "HaloGari",
+        "url": "{{ app.request.schemeAndHttpHost }}"
+      },
+      "about": {
+        "@type": "Service",
+        "name": "Trajets de covoiturage {{ city|e('js') }}",
+        "areaServed": "Mayotte"
+      }
+    }
+  </script>
+{% endblock %}

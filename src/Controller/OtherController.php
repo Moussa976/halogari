@@ -38,6 +38,59 @@ class OtherController extends AbstractController
     }
 
     /**
+     * @Route("/covoiturage-koungou", name="app_covoiturage_koungou", methods={"GET"})
+     */
+    public function covoiturageKoungou(): Response
+    {
+        return $this->renderLocalCovoituragePage(
+            'Koungou',
+            'app_covoiturage_koungou',
+            'Trouvez ou proposez un trajet de covoiturage vers Koungou avec HaloGari : demandes simples, conducteur libre de répondre et échanges depuis votre espace.',
+            'Koungou relie de nombreux trajets du nord-est et du quotidien. HaloGari aide les passagers à trouver une place et les conducteurs à proposer leurs places libres.',
+            ['Mamoudzou', 'Majicavo', 'Longoni', 'Dzoumogné', 'Mtsamboro']
+        );
+    }
+
+    /**
+     * @Route("/covoiturage-mtsamboro", name="app_covoiturage_mtsamboro", methods={"GET"})
+     */
+    public function covoiturageMtsamboro(): Response
+    {
+        return $this->renderLocalCovoituragePage(
+            "M'Tsamboro",
+            'app_covoiturage_mtsamboro',
+            "Recherchez ou publiez un trajet de covoiturage depuis ou vers M'Tsamboro avec HaloGari, la plateforme locale pensée pour Mayotte.",
+            "Depuis M'Tsamboro, les besoins de déplacement vers le nord, Koungou ou Mamoudzou sont fréquents. HaloGari permet de mieux organiser ces trajets entre particuliers.",
+            ['Acoua', 'Mtsahara', 'Koungou', 'Mamoudzou', 'Dzoumogné']
+        );
+    }
+
+    /**
+     * @Route("/covoiturage-dembeni", name="app_covoiturage_dembeni", methods={"GET"})
+     */
+    public function covoiturageDembeni(): Response
+    {
+        return $this->renderLocalCovoituragePage(
+            'Dembéni',
+            'app_covoiturage_dembeni',
+            'Organisez vos trajets de covoiturage vers Dembéni avec HaloGari : recherche, réservation, messages et paiement sécurisé.',
+            "Dembéni fait partie des lignes utiles pour les études, le travail et les rendez-vous du quotidien. HaloGari facilite les mises en relation locales.",
+            ['Mamoudzou', 'Tsararano', 'Iloni', 'Sada', 'Chirongui']
+        );
+    }
+
+    private function renderLocalCovoituragePage(string $city, string $routeName, string $metaDescription, string $intro, array $nearVillages): Response
+    {
+        return $this->render('others/covoiturage-local.html.twig', [
+            'city' => $city,
+            'routeName' => $routeName,
+            'metaDescription' => $metaDescription,
+            'intro' => $intro,
+            'nearVillages' => $nearVillages,
+        ]);
+    }
+
+    /**
      * @Route("/conditions-utilisation", name="app_conditionsutisation", methods={"GET"})
      */
     public function conditionsutisation(): Response
