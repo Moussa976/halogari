@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Covoiturage à Mayotte | HaloGari{% endblock %}
+{% block meta_description %}Découvrez HaloGari, une plateforme de covoiturage local à Mayotte pour chercher une place, publier un trajet et partager les déplacements entre villages.{% endblock %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Covoiturage local</p>
+    <h1>Covoiturage à Mayotte</h1>
+    <p>HaloGari aide les habitants à organiser des trajets entre villages, à partager les places disponibles et à voyager plus simplement au quotidien.</p>
+  </div>
+</section>
+
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
+    <h2>Une solution pensée pour les déplacements à Mayotte</h2>
+    <p>
+      À Mayotte, beaucoup de trajets se font entre les villages, les zones d’activité, les établissements scolaires,
+      les services publics et Mamoudzou. HaloGari facilite le covoiturage local en mettant en relation des conducteurs
+      qui ont des places libres et des passagers qui recherchent une solution simple.
+    </p>
+    <p>
+      La plateforme permet de rechercher un trajet, d’envoyer une demande de réservation, d’échanger avec le conducteur
+      et de suivre les étapes importantes depuis son espace personnel.
+    </p>
+
+    <h2>Comment fonctionne HaloGari ?</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Rechercher</h3>
+        <p>Indiquez votre village de départ, votre arrivée, la date et le nombre de places souhaitées.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Réserver</h3>
+        <p>Le conducteur reçoit votre demande et peut l’accepter ou la refuser selon ses disponibilités.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Voyager</h3>
+        <p>Les messages, notifications et informations du trajet aident chacun à s’organiser clairement.</p>
+      </article>
+    </div>
+
+    <h2>Des trajets entre villages</h2>
+    <p>
+      HaloGari s’adresse aux trajets du quotidien : Mamoudzou, Koungou, Mtsamboro, Sada, Chirongui,
+      Dembéni, Dzoumogné, Kawéni et les autres communes de Mayotte. L’objectif est de rendre les déplacements
+      plus accessibles sans remplacer les transports existants.
+    </p>
+
+    <div class="hg-form-actions">
+      <a href="{{ path('app_chercher') }}" class="btn btn-orange">
+        <i class="bi bi-search"></i>
+        Chercher un trajet
+      </a>
+      <a href="{{ path('app_publier') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i>
+        Publier un trajet
+      </a>
+    </div>
+  </article>
+
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-shield-check"></i></span>
+    <h2>Repères utiles</h2>
+    <div class="tip-list">
+      <span><i class="bi bi-check-circle-fill"></i> Covoiturage entre particuliers</span>
+      <span><i class="bi bi-check-circle-fill"></i> Recherche par village</span>
+      <span><i class="bi bi-check-circle-fill"></i> Paiement sécurisé si le conducteur accepte</span>
+      <span><i class="bi bi-check-circle-fill"></i> Documents conducteur vérifiés avant publication</span>
+    </div>
+    <a href="{{ path('app_securite') }}" class="btn btn-outline-success w-100 mt-3">
+      <i class="bi bi-shield-lock"></i>
+      Voir la sécurité
+    </a>
+  </aside>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Covoiturage à Mayotte",
+      "description": "HaloGari facilite le covoiturage local entre villages à Mayotte.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "HaloGari",
+        "url": "{{ app.request.schemeAndHttpHost }}"
+      },
+      "about": {
+        "@type": "Service",
+        "name": "Covoiturage local à Mayotte",
+        "areaServed": "Mayotte"
+      }
+    }
+  </script>
+{% endblock %}

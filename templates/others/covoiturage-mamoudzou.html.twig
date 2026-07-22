@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Covoiturage Mamoudzou | Trajets vers Mamoudzou avec HaloGari{% endblock %}
+{% block meta_description %}Trouvez ou proposez un trajet de covoiturage vers Mamoudzou avec HaloGari : départs depuis les villages de Mayotte, réservation simple et échanges avec le conducteur.{% endblock %}
+
+{% block body %}
+<section class="app-page-header app-page-header--compact">
+  <div class="container">
+    <p class="app-kicker">Ligne importante</p>
+    <h1>Covoiturage vers Mamoudzou</h1>
+    <p>Mamoudzou concentre de nombreux déplacements du quotidien. HaloGari aide à organiser les trajets partagés depuis les villages de Mayotte.</p>
+  </div>
+</section>
+
+<section class="container app-page-grid">
+  <article class="app-panel">
+    <span class="app-panel__icon"><i class="bi bi-signpost-2-fill"></i></span>
+    <h2>Rechercher une place vers Mamoudzou</h2>
+    <p>
+      Beaucoup d’habitants se déplacent vers Mamoudzou pour le travail, les démarches, les rendez-vous,
+      les études ou les achats. Avec HaloGari, vous pouvez rechercher un départ depuis votre village,
+      choisir une date et envoyer une demande au conducteur.
+    </p>
+
+    <h2>Proposer un trajet vers Mamoudzou</h2>
+    <p>
+      Si vous conduisez déjà vers Mamoudzou et que vous avez des places libres, vous pouvez publier votre trajet.
+      Les passagers intéressés vous envoient une demande et vous gardez la main pour accepter ou refuser.
+    </p>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Départs possibles</h3>
+        <p>Koungou, Mtsamboro, Dzoumogné, Dembéni, Sada, Chirongui et les autres villages selon les trajets publiés.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Organisation claire</h3>
+        <p>La date, l’heure, le prix, les places et les messages restent accessibles dans votre espace HaloGari.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Confiance</h3>
+        <p>Les conducteurs doivent disposer des documents nécessaires pour publier un trajet.</p>
+      </article>
+    </div>
+
+    <div class="hg-form-actions">
+      <a href="{{ path('app_chercher') }}" class="btn btn-orange">
+        <i class="bi bi-search"></i>
+        Chercher vers Mamoudzou
+      </a>
+      <a href="{{ path('app_covoiturage_mayotte') }}" class="btn btn-outline-success">
+        <i class="bi bi-arrow-left"></i>
+        Covoiturage à Mayotte
+      </a>
+    </div>
+  </article>
+
+  <aside class="app-panel app-tips-panel">
+    <span class="app-panel__icon"><i class="bi bi-geo-alt-fill"></i></span>
+    <h2>Conseil recherche</h2>
+    <p>Si aucun trajet direct n’est disponible, vous pouvez créer une alerte pour recevoir un e-mail lorsqu’un trajet correspondant est publié.</p>
+    <a href="{{ path('app_chercher') }}" class="btn btn-success w-100 mt-3">
+      <i class="bi bi-bell-fill"></i>
+      Créer une recherche
+    </a>
+  </aside>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Covoiturage vers Mamoudzou",
+      "description": "Rechercher ou proposer un trajet de covoiturage vers Mamoudzou avec HaloGari.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "HaloGari",
+        "url": "{{ app.request.schemeAndHttpHost }}"
+      },
+      "about": {
+        "@type": "Service",
+        "name": "Trajets de covoiturage vers Mamoudzou",
+        "areaServed": "Mayotte"
+      }
+    }
+  </script>
+{% endblock %}

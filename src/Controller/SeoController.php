@@ -56,6 +56,8 @@ class SeoController extends AbstractController
         $routes = [
             ['app_home', [], '1.0', 'daily'],
             ['app_chercher', [], '0.9', 'daily'],
+            ['app_covoiturage_mayotte', [], '0.9', 'weekly'],
+            ['app_covoiturage_mamoudzou', [], '0.8', 'weekly'],
             ['app_quisommesnous', [], '0.7', 'monthly'],
             ['app_securite', [], '0.8', 'monthly'],
             ['app_faq', [], '0.8', 'weekly'],
@@ -66,11 +68,14 @@ class SeoController extends AbstractController
         ];
 
         $urls = [];
+        $lastmod = (new \DateTimeImmutable())->format('Y-m-d');
+
         foreach ($routes as [$route, $parameters, $priority, $changefreq]) {
             $urls[] = [
                 'loc' => $baseUrl . $this->generateUrl($route, $parameters),
                 'priority' => $priority,
                 'changefreq' => $changefreq,
+                'lastmod' => $lastmod,
             ];
         }
 

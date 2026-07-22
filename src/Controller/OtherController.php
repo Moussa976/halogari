@@ -22,6 +22,22 @@ class OtherController extends AbstractController
     }
 
     /**
+     * @Route("/covoiturage-mayotte", name="app_covoiturage_mayotte", methods={"GET"})
+     */
+    public function covoiturageMayotte(): Response
+    {
+        return $this->render('others/covoiturage-mayotte.html.twig');
+    }
+
+    /**
+     * @Route("/covoiturage-mamoudzou", name="app_covoiturage_mamoudzou", methods={"GET"})
+     */
+    public function covoiturageMamoudzou(): Response
+    {
+        return $this->render('others/covoiturage-mamoudzou.html.twig');
+    }
+
+    /**
      * @Route("/conditions-utilisation", name="app_conditionsutisation", methods={"GET"})
      */
     public function conditionsutisation(): Response
