@@ -163,7 +163,7 @@
         return;
       }
 
-      let searchTop = 0;
+      let searchBottom = 0;
       let headerBottom = 0;
 
       const isDesktop = () => window.matchMedia('(min-width: 992px)').matches;
@@ -173,14 +173,16 @@
         const wasStuck = document.body.classList.contains('search-page-search-stuck');
         document.body.classList.remove('search-page-search-stuck');
         placeholder.style.height = '0px';
-        searchTop = form.getBoundingClientRect().top + window.scrollY;
-        headerBottom = header ? header.getBoundingClientRect().bottom + window.scrollY : searchTop;
+        const formRect = form.getBoundingClientRect();
+        searchBottom = formRect.bottom + window.scrollY;
+        headerBottom = header ? header.getBoundingClientRect().bottom + window.scrollY : formRect.top + window.scrollY;
         document.body.classList.toggle('search-page-search-stuck', wasStuck);
         placeholder.style.height = wasStuck && isDesktop() ? `${form.offsetHeight}px` : '0px';
       };
 
       const syncSticky = () => {
-        const stickyPoint = isMobile() ? headerBottom - 88 : searchTop - 88;
+        const stickyOffset = isMobile() ? 8 : 16;
+        const stickyPoint = searchBottom - headerBottom - stickyOffset;
         const shouldStick = window.scrollY > Math.max(0, stickyPoint);
         const canStick = !form.classList.contains('is-mobile-open');
         document.body.classList.toggle('search-page-search-stuck', shouldStick && canStick);
