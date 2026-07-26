@@ -1044,6 +1044,34 @@ main.pt-0 > .platform-announcement:first-child {
         border-radius: 0 12px 12px 0;
         box-shadow: none;
     }
+
+    body.search-page-search-stuck .search-page-form--wide {
+        position: fixed;
+        top: 84px;
+        left: 50%;
+        z-index: var(--hg-z-navbar);
+        width: min(calc(100% - 48px), 1120px);
+        margin: 0;
+        padding: 0;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transform: translateX(-50%);
+    }
+
+    body.search-page-search-stuck .search-page-form--wide .ride-scene,
+    body.search-page-search-stuck .search-page-form--wide .search-page-form__title {
+        display: none;
+    }
+
+    body.search-page-search-stuck .search-page-fields {
+        box-shadow: 0 16px 36px rgba(23, 33, 27, .16);
+    }
+
+    body.search-page-search-stuck .search-page-fields .quick-search__row {
+        display: contents;
+    }
 }
 
 @media screen and (max-width: 991.98px) {
@@ -1151,6 +1179,11 @@ main.pt-0 > .platform-announcement:first-child {
     }
 
     body.home-search-stuck .home-search-mobile-trigger {
+        display: grid;
+        animation: homeSearchDrop .24s ease forwards;
+    }
+
+    body.search-page-search-stuck .search-page-mobile-trigger {
         display: grid;
         animation: homeSearchDrop .24s ease forwards;
     }
@@ -1382,6 +1415,100 @@ main.pt-0 > .platform-announcement:first-child {
 
     .home-search-form.is-mobile-open {
         --hg-line: rgba(238, 121, 17, .32);
+    }
+
+    .search-page-form.is-mobile-open {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: var(--hg-z-modal);
+        display: block;
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+        margin: 0;
+        padding: clamp(2.4rem, 8dvh, 4.8rem) clamp(1rem, 4vw, 1.4rem) clamp(1rem, 4vw, 1.4rem);
+        overflow-y: auto;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: rgba(10, 28, 19, .56) !important;
+        box-shadow: none;
+        transform: none;
+        backdrop-filter: blur(8px);
+    }
+
+    .search-page-form.is-mobile-open > * {
+        width: min(100%, 540px);
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .search-page-form.is-mobile-open .search-page-form__mobile-head {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        margin-bottom: .75rem;
+        padding: .8rem .95rem;
+        border: 1px solid rgba(255, 255, 255, .7);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 18px 42px rgba(10, 28, 19, .18);
+    }
+
+    .search-page-form.is-mobile-open .search-page-form__mobile-head strong {
+        color: var(--hg-ink);
+        font-size: 1.35rem;
+        font-weight: 950;
+    }
+
+    .search-page-form.is-mobile-open .quick-search__title {
+        display: none;
+    }
+
+    .search-page-form.is-mobile-open .ride-scene {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+        box-shadow: 0 18px 42px rgba(10, 28, 19, .12);
+    }
+
+    .search-page-form.is-mobile-open .search-page-fields {
+        width: min(100%, 540px);
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .search-page-form.is-mobile-open .search-form-field,
+    .search-page-form.is-mobile-open .quick-search__row {
+        margin-bottom: 0;
+    }
+
+    .search-page-form.is-mobile-open .quick-search__row {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .search-page-form.is-mobile-open .input-group-text {
+        display: inline-flex;
+    }
+
+    .search-page-form.is-mobile-open .form-floating > .form-control,
+    .search-page-form.is-mobile-open .form-floating > .form-select,
+    .search-page-form.is-mobile-open .input-group > .form-floating > .form-control,
+    .search-page-form.is-mobile-open .input-group > .form-floating > .form-select {
+        min-height: 68px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .search-page-form.is-mobile-open .btn-orange {
+        min-height: 54px;
+        border-radius: 0 0 12px 12px;
+        background: linear-gradient(135deg, var(--hg-orange), var(--hg-gold));
+        box-shadow: none;
     }
 
     body.home-search-is-open {

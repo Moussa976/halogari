@@ -13,7 +13,24 @@
 </section>
 
 <section class="container search-page-layout">
-  <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="quick-search search-page-form search-page-form--wide" aria-label="Recherche rapide">
+  <button type="button" class="home-search-mobile-trigger search-page-mobile-trigger" data-search-page-open aria-controls="form-recherche" aria-expanded="false">
+    <i class="bi bi-search"></i>
+    <span>
+      <strong>{{ searchDeparture|default('Votre départ') ?: 'Votre départ' }} → {{ searchArrival|default('Votre destination') ?: 'Votre destination' }}</strong>
+      <small>{{ searchDate|default('Aujourd’hui') ?: 'Aujourd’hui' }}, {{ searchPlaces|default(1) }} passager{{ searchPlaces|default(1) > 1 ? 's' : '' }}</small>
+    </span>
+    <b>Rechercher</b>
+  </button>
+
+  <div class="search-page-placeholder" aria-hidden="true"></div>
+  <form method="GET" id="form-recherche" action="{{ path('app_chercher') }}" class="quick-search search-page-form search-page-form--wide" aria-label="Recherche rapide" data-search-page-sticky-form>
+    <div class="home-search-form__mobile-head search-page-form__mobile-head">
+      <button type="button" class="home-search-form__close" data-search-page-close aria-label="Fermer la recherche">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <strong>Où souhaitez-vous aller ?</strong>
+    </div>
+
     <div class="ride-scene" aria-hidden="true">
       <div class="ride-scene__sign ride-scene__sign--start">Départ</div>
       <div class="ride-scene__road"></div>
@@ -130,4 +147,76 @@
     </section>
   </div>
 </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (() => {
+      const trigger = document.querySelector('[data-search-page-open]');
+      const form = document.querySelector('[data-search-page-sticky-form]');
+      const close = document.querySelector('[data-search-page-close]');
+      const placeholder = document.querySelector('.search-page-placeholder');
+      const header = document.querySelector('.app-page-header');
+
+      if (!trigger || !form || !close || !placeholder) {
+        return;
+      }
+
+      let searchTop = 0;
+      let headerBottom = 0;
+
+      const isDesktop = () => window.matchMedia('(min-width: 992px)').matches;
+      const isMobile = () => window.matchMedia('(max-width: 991.98px)').matches;
+
+      const measure = () => {
+        const wasStuck = document.body.classList.contains('search-page-search-stuck');
+        document.body.classList.remove('search-page-search-stuck');
+        placeholder.style.height = '0px';
+        searchTop = form.getBoundingClientRect().top + window.scrollY;
+        headerBottom = header ? header.getBoundingClientRect().bottom + window.scrollY : searchTop;
+        document.body.classList.toggle('search-page-search-stuck', wasStuck);
+        placeholder.style.height = wasStuck && isDesktop() ? `${form.offsetHeight}px` : '0px';
+      };
+
+      const syncSticky = () => {
+        const stickyPoint = isMobile() ? headerBottom - 88 : searchTop - 88;
+        const shouldStick = window.scrollY > Math.max(0, stickyPoint);
+        const canStick = !form.classList.contains('is-mobile-open');
+        document.body.classList.toggle('search-page-search-stuck', shouldStick && canStick);
+        placeholder.style.height = shouldStick && canStick && isDesktop() ? `${form.offsetHeight}px` : '0px';
+      };
+
+      const open = () => {
+        form.classList.add('is-mobile-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('home-search-is-open');
+        document.body.classList.remove('search-page-search-stuck');
+        placeholder.style.height = '0px';
+        window.setTimeout(() => form.querySelector('.villages')?.focus(), 80);
+      };
+
+      const hide = () => {
+        form.classList.remove('is-mobile-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('home-search-is-open');
+        syncSticky();
+      };
+
+      measure();
+      syncSticky();
+      window.addEventListener('resize', () => {
+        measure();
+        syncSticky();
+      });
+      window.addEventListener('scroll', syncSticky, { passive: true });
+      trigger.addEventListener('click', open);
+      close.addEventListener('click', hide);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && form.classList.contains('is-mobile-open')) {
+          hide();
+        }
+      });
+    })();
+  </script>
 {% endblock %}
