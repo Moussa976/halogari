@@ -369,6 +369,12 @@
                 <button type="submit" class="btn btn-outline-success btn-sm">Promouvoir en admin</button>
               </form>
             {% endif %}
+            {% if is_granted('ROLE_SUPER_ADMIN') and 'ROLE_ADMIN' in user.roles and 'ROLE_SUPER_ADMIN' not in user.roles %}
+              <form method="post" action="{{ path('admin_user_demote', {id: user.id}) }}" onsubmit="return confirm('Remettre cet admin en utilisateur simple ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_demote_' ~ user.id) }}">
+                <button type="submit" class="btn btn-outline-warning btn-sm">Remettre en utilisateur</button>
+              </form>
+            {% endif %}
             <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Confirmer la suppression (anonymisation) de ce compte ?');">
               <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_' ~ user.id) }}">
               <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer ce compte</button>

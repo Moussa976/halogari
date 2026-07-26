@@ -268,7 +268,38 @@ class AdminUserController extends AbstractController
 
 
     /**
-     * Crée un compte Stripe Connect avec les infos fournies manuellement
+     * Retire le rôle ADMIN et remet l'utilisateur en compte simple.
+     * @Route("/admin/utilisateurs/{id}/retrograder", name="admin_user_demote", methods={"POST"})
+     */
+    public function demote(User $user, Request $request, EntityManagerInterface $em, AdminAuditLogger $auditLogger): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->assertValidUserToken($user, $request, 'demote');
+
+        if (in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true)) {
+            $this->addFlash('error', 'Un superadmin ne peut pas être remis en utilisateur simple depuis cette action.');
+
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+        }
+
+        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $this->addFlash('info', 'Cet utilisateur n\'est pas admin.');
+
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+        }
+
+        $roles = array_values(array_diff($user->getRoles(), ['ROLE_ADMIN', 'ROLE_USER']));
+        $user->setRoles($roles);
+        $em->flush();
+        $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'admin_user_demote', $user);
+
+        $this->addFlash('success', 'L\'admin a été remis en utilisateur simple.');
+
+        return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
+    }
+
+    /**
+     * Crée un compte Stripe Connect avec les infos fournies manuellement.
      * @Route("/admin/utilisateurs/{id}/stripe-connect", name="admin_user_create_stripe_custom", methods={"POST"})
      */
     public function createStripeCustom(
