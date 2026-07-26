@@ -32,4 +32,38 @@ class AdminAuditLogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return AdminAuditLog[]
+     */
+    public function findByActions(array $actions, int $limit = 80): array
+    {
+        if ($actions === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('l')
+            ->where('l.action IN (:actions)')
+            ->setParameter('actions', $actions)
+            ->orderBy('l.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByActionsSince(array $actions, \DateTimeImmutable $since): int
+    {
+        if ($actions === []) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('l')
+            ->select('COUNT(l.id)')
+            ->where('l.action IN (:actions)')
+            ->andWhere('l.createdAt >= :since')
+            ->setParameter('actions', $actions)
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

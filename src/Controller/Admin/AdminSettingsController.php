@@ -702,10 +702,29 @@ class AdminSettingsController extends AbstractController
         $stripeWebhook = $this->stripeSettingOrEnv($settings, self::STRIPE_WEBHOOK_SECRET, 'STRIPE_WEBHOOK_SECRET');
         $facebookToken = (string) $settings->getValue(self::FACEBOOK_PAGE_ACCESS_TOKEN, '');
         $facebookTokenExpiresAt = (string) $settings->getValue(self::FACEBOOK_TOKEN_EXPIRES_AT, '');
+        $facebookAutoPost = $settings->getValue(self::FACEBOOK_AUTO_POST, '0') === '1';
         $smsEnabled = $settings->getValue(self::SMS_ENABLED, '0') === '1';
         $publicEnabled = $settings->getValue(self::PRODUCTION_PUBLIC_ENABLED, '1') === '1';
+        $publicUrl = (string) $settings->getValue(self::PRODUCTION_PUBLIC_URL, 'https://halogari.yt');
+        $supportEmail = (string) $settings->getValue(self::PRODUCTION_SUPPORT_EMAIL, 'contact@halogari.yt');
+        $canonicalBaseUrl = (string) $settings->getValue(self::SEO_CANONICAL_BASE_URL, 'https://halogari.yt');
+        $robotsDefault = (string) $settings->getValue(self::SEO_ROBOTS_DEFAULT, 'index, follow');
+        $googleVerification = (string) $settings->getValue(self::SEO_GOOGLE_SITE_VERIFICATION, '');
+        $googleTagManagerId = (string) $settings->getValue(self::SEO_GOOGLE_TAG_MANAGER_ID, '');
+        $googleAnalyticsId = (string) $settings->getValue(self::SEO_GOOGLE_ANALYTICS_ID, '');
+        $backupLastAt = (string) $settings->getValue(self::PRODUCTION_BACKUP_LAST_AT, '');
+        $prelaunchConfirmedAt = (string) $settings->getValue(self::PRODUCTION_PRELAUNCH_CONFIRMED_AT, '');
 
         return [
+            $this->check('URL publique', $publicUrl === 'https://halogari.yt', $publicUrl, 'La production doit utiliser https://halogari.yt comme URL publique.'),
+            $this->check('E-mail support', $supportEmail === 'contact@halogari.yt', $supportEmail ?: 'Non renseigné', 'Utiliser contact@halogari.yt pour les messages publics et administratifs.'),
+            $this->check('SEO canonique', $canonicalBaseUrl === 'https://halogari.yt', $canonicalBaseUrl ?: 'Non renseigné', 'Le domaine canonique doit pointer vers https://halogari.yt.'),
+            $this->check('Indexation SEO', $robotsDefault === 'index, follow', $robotsDefault, 'Mettre index, follow uniquement quand le site public est prêt.'),
+            $this->check('Search Console', $googleVerification !== '', $googleVerification !== '' ? 'Code Google renseigné' : 'Code Google manquant', 'Ajouter le code google-site-verification pour valider le domaine.'),
+            $this->check('Analytics', $googleAnalyticsId !== '' || $googleTagManagerId !== '', $googleAnalyticsId ?: ($googleTagManagerId ?: 'Non renseigné'), 'Configurer GA4 ou Google Tag Manager pour suivre les visites.'),
+            $this->check('Publication Facebook', !$facebookAutoPost || ((string) $settings->getValue(self::FACEBOOK_PAGE_ID, '') !== '' && $facebookToken !== '' && $facebookTokenExpiresAt !== ''), $facebookAutoPost ? ($facebookToken !== '' ? ($facebookTokenExpiresAt !== '' ? 'Activée, token suivi jusqu’au ' . $facebookTokenExpiresAt : 'Expiration non renseignée') : 'Activée, token manquant') : 'Désactivée', 'Configurer la publication Meta ou laisser la publication automatique désactivée.'),
+            $this->check('Sauvegarde', $backupLastAt !== '', $backupLastAt ?: 'Jamais déclarée', 'Faire une sauvegarde BDD et fichiers avant ouverture.'),
+            $this->check('Checklist relue', $prelaunchConfirmedAt !== '', $prelaunchConfirmedAt ?: 'Jamais validée', 'Relire la checklist avant de rendre le site public.'),
             $this->check('Site public', $publicEnabled, $publicEnabled ? 'Ouvert' : 'Fermé aux visiteurs', 'Ouvrir le site seulement quand les tests et les obligations sont validés.'),
             $this->check('Environnement', $appEnv === 'prod', $appEnv ?: 'Non renseigné', 'APP_ENV doit valoir prod en production.'),
             $this->check('Mode debug', in_array(strtolower($appDebug), ['0', 'false', 'off', 'no', ''], true), $appDebug === '' ? 'Non forcé' : $appDebug, 'APP_DEBUG doit être désactivé en production.'),

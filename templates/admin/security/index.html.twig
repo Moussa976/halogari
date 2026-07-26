@@ -1,0 +1,160 @@
+{% extends 'base_admin.html.twig' %}
+{% import 'partials/avatar.html.twig' as avatar %}
+
+{% block title %}Sécurité admin | Admin{% endblock %}
+
+{% block body %}
+  <div class="container-fluid px-1">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">Sécurité admin</h1>
+        <p class="text-muted mb-0">Surveillez les connexions, les tentatives refusées et les comptes qui ont accès à l’administration.</p>
+      </div>
+      <a href="{{ path('admin_audit_logs') }}" class="btn btn-outline-secondary btn-sm align-self-start">
+        Voir l'historique complet
+      </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Connexions admin réussies</div>
+            <div class="display-6 fw-bold text-success">{{ successfulLast24h }}</div>
+            <div class="small text-muted">sur les dernières 24 h</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Tentatives refusées</div>
+            <div class="display-6 fw-bold {{ failedLast24h > 0 ? 'text-danger' : 'text-success' }}">{{ failedLast24h }}</div>
+            <div class="small text-muted">sur les dernières 24 h</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Tentatives refusées</div>
+            <div class="display-6 fw-bold {{ failedLast7d > 2 ? 'text-danger' : 'text-dark' }}">{{ failedLast7d }}</div>
+            <div class="small text-muted">sur les 7 derniers jours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-8">
+        <div class="card mb-4">
+          <div class="card-header">
+            <strong>Dernières connexions admin</strong>
+            <div class="small text-muted">Une tentative refusée n'est enregistrée ici que si l'adresse e-mail appartient à un admin ou superadmin.</div>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="table table-hover align-middle js-admin-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Compte</th>
+                  <th>Résultat</th>
+                  <th>IP</th>
+                  <th>Navigateur</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in recentLogs %}
+                  {% set user = log.actor ?: log.targetUser %}
+                  <tr>
+                    <td>{{ log.createdAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                      {% if user %}
+                        <div class="d-flex align-items-center gap-2">
+                          {{ avatar.formatSimple(user, 34, 0, 1) }}
+                          <a href="{{ path('admin_user_show', { id: user.id }) }}">{{ user.prenom }} {{ user.nom }}</a>
+                        </div>
+                      {% else %}
+                        <span class="text-muted">Compte supprimé</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if log.action == 'admin_login_failed' %}
+                        <span class="badge bg-danger">Refusée</span>
+                      {% else %}
+                        <span class="badge bg-success">Réussie</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ log.ipAddress ?: '-' }}</td>
+                    <td class="text-truncate" style="max-width: 360px;" title="{{ log.userAgent ?: '' }}">{{ log.userAgent ?: '-' }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">Aucune connexion admin enregistrée.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <strong>Contrôles rapides</strong>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush">
+              {% for check in securityChecks %}
+                <div class="list-group-item px-0">
+                  <div class="d-flex justify-content-between gap-2">
+                    <strong>{{ check.label }}</strong>
+                    <span class="badge {{ check.ok ? 'bg-success' : 'bg-warning text-dark' }}">{{ check.ok ? 'OK' : 'À vérifier' }}</span>
+                  </div>
+                  <div class="small text-muted">{{ check.value }}</div>
+                  {% if not check.ok and check.help %}
+                    <div class="small text-danger">{{ check.help }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <strong>Comptes administrateurs</strong>
+          </div>
+          <div class="card-body">
+            <h2 class="h6">Superadmin</h2>
+            {% for user in superAdmins %}
+              <div class="d-flex align-items-center justify-content-between gap-2 border rounded p-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  {{ avatar.formatSimple(user, 32, 0, 1) }}
+                  <a href="{{ path('admin_user_show', { id: user.id }) }}">{{ user.prenom }} {{ user.nom }}</a>
+                </div>
+                <span class="badge bg-success">Superadmin</span>
+              </div>
+            {% else %}
+              <p class="text-danger small">Aucun superadmin trouvé.</p>
+            {% endfor %}
+
+            <h2 class="h6 mt-3">Admins</h2>
+            {% for user in admins %}
+              <div class="d-flex align-items-center justify-content-between gap-2 border rounded p-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  {{ avatar.formatSimple(user, 32, 0, 1) }}
+                  <a href="{{ path('admin_user_show', { id: user.id }) }}">{{ user.prenom }} {{ user.nom }}</a>
+                </div>
+                <span class="badge bg-light text-dark border">Admin</span>
+              </div>
+            {% else %}
+              <p class="text-muted small mb-0">Aucun admin simple pour le moment.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

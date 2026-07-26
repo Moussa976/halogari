@@ -100,6 +100,13 @@
 
 			{% if is_granted('ROLE_SUPER_ADMIN') %}
 				<li class="sidebar-header">Superadmin</li>
+				<li class="sidebar-item {% if route == 'admin_security' %}active{% endif %}">
+					<a class="sidebar-link" href="{{ path('admin_security') }}">
+						<i class="align-middle" data-feather="shield"></i>
+						<span class="align-middle">Sécurité admin</span>
+					</a>
+				</li>
+
 				<li class="sidebar-item {% if route == 'admin_settings' %}active{% endif %}">
 					<a class="sidebar-link" href="{{ path('admin_settings') }}">
 						<i class="align-middle" data-feather="settings"></i>
