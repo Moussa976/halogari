@@ -355,6 +355,92 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const formatSearchDateSummary = (value) => {
+        const raw = String(value || '').trim();
+        if (!raw) {
+            return "Aujourd'hui";
+        }
+
+        const normalized = raw
+            .replace(/^aujourd['’]hui$/i, "Aujourd'hui")
+            .replace(/^demain$/i, 'Demain');
+
+        if (normalized === "Aujourd'hui" || normalized === 'Demain') {
+            return normalized;
+        }
+
+        const parts = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!parts) {
+            return normalized;
+        }
+
+        const [, day, month, year] = parts;
+        const selected = new Date(Number(year), Number(month) - 1, Number(day));
+        selected.setHours(0, 0, 0, 0);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        if (selected.getTime() === today.getTime()) {
+            return "Aujourd'hui";
+        }
+
+        if (selected.getTime() === tomorrow.getTime()) {
+            return 'Demain';
+        }
+
+        return normalized;
+    };
+
+    const refreshSearchTriggerSummary = (trigger) => {
+        const formId = trigger.getAttribute('aria-controls');
+        const form = formId ? document.getElementById(formId) : null;
+        if (!form) {
+            return;
+        }
+
+        const departure = form.querySelector('[name="select_departure"]')?.value.trim();
+        const arrival = form.querySelector('[name="select_arrival"]')?.value.trim();
+        const date = form.querySelector('[name="date_trajet"]')?.value;
+        const places = Number(form.querySelector('[name="places_min"]')?.value || 1);
+        const passengersLabel = `${places || 1} passager${places > 1 ? 's' : ''}`;
+
+        const title = trigger.querySelector('strong');
+        const details = trigger.querySelector('small');
+
+        if (title) {
+            title.textContent = `${departure || 'Votre départ'} → ${arrival || 'Votre destination'}`;
+        }
+
+        if (details) {
+            details.textContent = `${formatSearchDateSummary(date)}, ${passengersLabel}`;
+        }
+    };
+
+    document.querySelectorAll('.home-search-mobile-trigger[aria-controls]').forEach((trigger) => {
+        const formId = trigger.getAttribute('aria-controls');
+        const form = formId ? document.getElementById(formId) : null;
+        if (!form) {
+            return;
+        }
+
+        const refresh = () => refreshSearchTriggerSummary(trigger);
+        refresh();
+
+        form.querySelectorAll('[name="select_departure"], [name="select_arrival"], [name="date_trajet"], [name="places_min"]').forEach((field) => {
+            field.addEventListener('input', refresh);
+            field.addEventListener('change', refresh);
+            field.addEventListener('blur', refresh);
+        });
+
+        document.addEventListener('autocompletechange', refresh);
+        window.addEventListener('pageshow', refresh);
+        window.setTimeout(refresh, 250);
+    });
+
     const revealItems = document.querySelectorAll(
         '.card, .feature-card, .route-item, .list-group-item, .quick-search, .app-section-heading, .ride-card, .app-panel'
     );
