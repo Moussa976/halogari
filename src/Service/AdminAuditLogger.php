@@ -42,6 +42,9 @@ class AdminAuditLogger
         $labels = [
             'admin_login' => 'Connexion administrateur',
             'admin_login_failed' => 'Tentative de connexion admin refusée',
+            'admin_2fa_code_sent' => 'Code admin envoyé',
+            'admin_2fa_code_resent' => 'Code admin renvoyé',
+            'admin_2fa_failed' => 'Code admin refusé',
             'admin_user_delete' => 'Suppression utilisateur',
             'admin_user_promote' => 'Promotion administrateur',
             'stripe_connect_create' => 'Creation Stripe Connect',

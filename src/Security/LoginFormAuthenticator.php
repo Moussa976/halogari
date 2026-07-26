@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Service\AdminAuditLogger;
+use App\Service\AdminTwoFactorCodeManager;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,11 +26,17 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     private UrlGeneratorInterface $urlGenerator;
     private AdminAuditLogger $auditLogger;
+    private AdminTwoFactorCodeManager $adminTwoFactorCodeManager;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator, AdminAuditLogger $auditLogger)
+    public function __construct(
+        UrlGeneratorInterface $urlGenerator,
+        AdminAuditLogger $auditLogger,
+        AdminTwoFactorCodeManager $adminTwoFactorCodeManager
+    )
     {
         $this->urlGenerator = $urlGenerator;
         $this->auditLogger = $auditLogger;
+        $this->adminTwoFactorCodeManager = $adminTwoFactorCodeManager;
     }
 
     public function authenticate(Request $request): Passport
@@ -55,7 +62,12 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     {
         $user = $token->getUser();
         if ($user instanceof User && in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            $this->auditLogger->log($user, 'admin_login', $user);
+            $targetPath = $this->getTargetPath($request->getSession(), $firewallName) ?: '/admin';
+            $this->adminTwoFactorCodeManager->start($request, $user, $targetPath);
+            $this->auditLogger->log($user, 'admin_2fa_code_sent', $user);
+            $request->getSession()->getFlashBag()->add('success', 'Un code de sécurité vient de vous être envoyé par e-mail.');
+
+            return new RedirectResponse($this->urlGenerator->generate('admin_two_factor_verify'));
         }
 
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
