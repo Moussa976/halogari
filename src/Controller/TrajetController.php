@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Application\Trajet\TrajetSearchService;
 use App\Entity\Notes;
 use App\Entity\Reservation;
 use App\Entity\TrajetAlert;
@@ -35,7 +36,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/chercher", name="app_chercher", methods={"GET"})
      */
-    public function chercher(Request $request, TrajetRepository $trajetRepository): Response
+    public function chercher(Request $request, TrajetRepository $trajetRepository, TrajetSearchService $trajetSearch): Response
     {
         $depart = $request->query->get('select_departure');
         $arrivee = $request->query->get('select_arrival');
@@ -75,7 +76,7 @@ class TrajetController extends AbstractController
 
         return $this->render('trajet/chercher.html.twig', [
             'latestTrajets' => $trajetRepository->findRecentlyPublishedAvailable(3),
-            'popularRoutes' => $trajetRepository->findMostReservedRoutes(3),
+            'popularRoutes' => $trajetSearch->popularRoutes(),
             'todaySearchDate' => $today->format('Y-m-d'),
             'todayDisplayDate' => $today->format('d/m/Y'),
             'searchDeparture' => $depart ?: '',

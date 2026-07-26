@@ -3,6 +3,13 @@
 {% block title %}HaloGari | Chercher un trajet{% endblock %}
 {% block meta_description %}Recherchez un trajet de covoiturage entre villages à Mayotte. Choisissez le départ, l’arrivée, la date et le nombre de places souhaitées.{% endblock %}
 
+{% set routesFallback = [
+  { depart: 'Koungou', arrivee: 'Mamoudzou', total: 4 },
+  { depart: 'Chirongui', arrivee: 'Sada', total: 2 },
+  { depart: 'Sada', arrivee: 'Mamoudzou', total: 1 }
+] %}
+{% set routesAffichees = popularRoutes|length > 0 ? popularRoutes : routesFallback %}
+
 {% block body %}
 <section class="app-page-header">
   <div class="container">
@@ -127,11 +134,11 @@
 
     <section class="search-discovery__panel">
       <div class="search-discovery__header">
-        <p class="app-kicker">Fréquentés</p>
-        <h2>Lignes les plus demandées</h2>
+        <p class="app-kicker">Trajets populaires</p>
+        <h2>Les lignes les plus demandées.</h2>
       </div>
       <div class="search-mini-list">
-        {% for route in popularRoutes %}
+        {% for route in routesAffichees|slice(0, 3) %}
           <a class="search-mini-card" href="{{ path('app_chercher') ~ '?select_departure=' ~ route.depart|url_encode ~ '&select_arrival=' ~ route.arrivee|url_encode ~ '&date_trajet=' ~ todaySearchDate ~ '&places_min=1' }}">
             <span class="search-mini-card__icon"><i class="bi bi-signpost-2"></i></span>
             <span class="search-mini-card__main">
@@ -140,8 +147,6 @@
             </span>
             <i class="bi bi-chevron-right search-mini-card__arrow"></i>
           </a>
-        {% else %}
-          <div class="search-empty-line">Les lignes populaires apparaîtront après les premières réservations.</div>
         {% endfor %}
       </div>
     </section>
