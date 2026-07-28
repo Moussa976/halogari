@@ -5349,13 +5349,15 @@ textarea.form-control.app-message-textarea {
 
 .faq-install-guide {
     color: var(--hg-muted);
+    max-width: 100%;
 }
 
 .faq-install-steps {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
     gap: .9rem;
     margin: 1rem 0;
+    max-width: 100%;
 }
 
 .faq-install-step {
@@ -5367,11 +5369,14 @@ textarea.form-control.app-message-textarea {
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     background: rgba(36, 92, 54, .035);
+    min-width: 0;
 }
 
 .faq-install-step img {
     width: 100%;
-    height: 170px;
+    max-width: 260px;
+    height: 150px;
+    margin: 0 auto;
     object-fit: contain;
     border-radius: 8px;
     background: #fff;
@@ -5384,6 +5389,7 @@ textarea.form-control.app-message-textarea {
     color: var(--hg-muted);
     font-size: .92rem;
     line-height: 1.35;
+    min-width: 0;
 }
 
 .faq-install-step strong {
@@ -5406,31 +5412,33 @@ textarea.form-control.app-message-textarea {
 
 @media screen and (max-width: 991.98px) {
     .faq-install-steps {
-        grid-template-columns: 1fr;
-    }
-
-    .faq-install-step {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .faq-install-step img {
-        width: 130px;
-        height: 110px;
-        flex: 0 0 130px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     }
 }
 
 @media screen and (max-width: 575.98px) {
-    .faq-install-step {
-        flex-direction: column;
-        align-items: stretch;
+    .app-main .accordion-body {
+        padding: .95rem;
+    }
+
+    .faq-install-steps {
+        grid-template-columns: 1fr;
+        gap: .75rem;
+        margin: .85rem 0;
     }
 
     .faq-install-step img {
-        width: 100%;
-        height: 150px;
-        flex-basis: auto;
+        max-width: 220px;
+        height: 130px;
+    }
+
+    .faq-install-step figcaption {
+        font-size: .88rem;
+    }
+
+    .faq-install-note {
+        padding: .75rem .85rem;
+        font-size: .9rem;
     }
 }
 
