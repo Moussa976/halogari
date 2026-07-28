@@ -5347,8 +5347,91 @@ textarea.form-control.app-message-textarea {
     font-weight: 900;
 }
 
+.faq-install-guide {
+    color: var(--hg-muted);
+}
+
+.faq-install-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .9rem;
+    margin: 1rem 0;
+}
+
+.faq-install-step {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    margin: 0;
+    padding: .8rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .035);
+}
+
+.faq-install-step img {
+    width: 100%;
+    height: 170px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(23, 33, 27, .08);
+}
+
+.faq-install-step figcaption {
+    display: grid;
+    gap: .25rem;
+    color: var(--hg-muted);
+    font-size: .92rem;
+    line-height: 1.35;
+}
+
+.faq-install-step strong {
+    color: var(--hg-ink);
+    font-size: .98rem;
+}
+
+.faq-install-note {
+    margin: 1rem 0 0;
+    padding: .8rem .95rem;
+    border-left: 4px solid var(--hg-orange);
+    border-radius: 8px;
+    background: rgba(238, 121, 17, .09);
+    color: var(--hg-ink);
+}
+
 .app-main .modal-content {
     overflow: hidden;
+}
+
+@media screen and (max-width: 991.98px) {
+    .faq-install-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-install-step {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .faq-install-step img {
+        width: 130px;
+        height: 110px;
+        flex: 0 0 130px;
+    }
+}
+
+@media screen and (max-width: 575.98px) {
+    .faq-install-step {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .faq-install-step img {
+        width: 100%;
+        height: 150px;
+        flex-basis: auto;
+    }
 }
 
 .offcanvas-backdrop {

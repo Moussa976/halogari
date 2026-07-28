@@ -14,6 +14,44 @@
 
 <section class="container app-page-grid">
   <div class="app-panel">
+    {% set installIosGuide %}
+      <div class="faq-install-guide">
+        <p class="mb-3">
+          Sur iPhone, HaloGari s'installe depuis le navigateur que vous utilisez, comme Safari, Chrome ou Firefox. Une fois ajoutée, l'icône apparaît sur votre écran d'accueil comme une application.
+        </p>
+
+        <div class="faq-install-steps">
+          <figure class="faq-install-step">
+            <img src="{{ asset('images/faq/installer-ios-1-partage.jpg') }}" alt="Bouton de partage sur iPhone" loading="lazy">
+            <figcaption>
+              <strong>1. Appuyez sur partager</strong>
+              Ouvrez halogari.yt sur votre navigateur, puis touchez l'icône de partage.
+            </figcaption>
+          </figure>
+
+          <figure class="faq-install-step">
+            <img src="{{ asset('images/faq/installer-ios-2-en-voir-plus.jpg') }}" alt="Bouton En voir plus dans le menu de partage iPhone" loading="lazy">
+            <figcaption>
+              <strong>2. Ouvrez plus d'options</strong>
+              Si l'option n'est pas visible tout de suite, touchez « En voir plus ».
+            </figcaption>
+          </figure>
+
+          <figure class="faq-install-step">
+            <img src="{{ asset('images/faq/installer-ios-3-ecran-accueil.jpg') }}" alt="Option Sur l'écran d'accueil sur iPhone" loading="lazy">
+            <figcaption>
+              <strong>3. Ajoutez à l'écran d'accueil</strong>
+              Choisissez « Sur l'écran d'accueil », puis validez l'ajout de HaloGari.
+            </figcaption>
+          </figure>
+        </div>
+
+        <p class="faq-install-note">
+          Sur Android, utilisez le bouton « Installer HaloGari » lorsqu'il apparaît, ou ouvrez le menu du navigateur puis choisissez « Installer l'application ».
+        </p>
+      </div>
+    {% endset %}
+
     {% set faq = [
       {
         question: "Qui crée HaloGari ?",
@@ -41,7 +79,7 @@
       },
       {
         question: "Comment installer HaloGari sur mon téléphone ?",
-        reponse: "Sur iPhone, ouvrez HaloGari dans Safari, appuyez sur le bouton de partage, puis choisissez « Sur l'écran d'accueil ». Sur Android, utilisez le bouton « Installer HaloGari » quand il apparaît, ou le menu du navigateur puis « Installer l'application ». Si HaloGari est déjà installée, utilisez simplement l'icône ajoutée sur votre écran d'accueil."
+        reponse: installIosGuide
       },
       {
         question: "Les paiements sont-ils sécurisés ?",
