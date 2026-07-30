@@ -59,7 +59,7 @@ class DocumentDecisionNotifier
         $notification = new Notification();
         $notification->setUser($user);
         $notification->setType('document');
-        $notification->setTitre($subject);
+        $notification->setTitre($this->notificationTitle($document));
         $notification->setContenu($this->notificationMessage($document, $decision));
         $notification->setLien('/user/documents');
 
@@ -68,14 +68,29 @@ class DocumentDecisionNotifier
         $this->notificationPushSender->send($notification);
     }
 
+    private function notificationTitle(Document $document): string
+    {
+        return sprintf('Type de document : %s', $this->documentLabel($document));
+    }
+
     private function notificationMessage(Document $document, string $decision): string
     {
-        $type = ucfirst(str_replace(['_', '-'], ' ', (string) $document->getTypeDocument()));
-
         return match ($decision) {
-            Document::STATUS_APPROVED => sprintf('%s : votre document a été validé.', $type),
-            Document::STATUS_REJECTED => sprintf('%s : votre document a été refusé. Motif : %s', $type, $document->getRejectionReason() ?: 'non précisé'),
-            default => sprintf('%s : votre document est de nouveau en attente de vérification.', $type),
+            Document::STATUS_APPROVED => 'Appuyez pour afficher les détails.',
+            Document::STATUS_REJECTED => sprintf('Document refusé. Motif : %s', $document->getRejectionReason() ?: 'non précisé'),
+            default => 'Document remis en attente. Appuyez pour afficher les détails.',
+        };
+    }
+
+    private function documentLabel(Document $document): string
+    {
+        $type = strtolower(trim((string) $document->getTypeDocument()));
+
+        return match ($type) {
+            'identite', 'piece_identite', 'piece-identite' => 'Identité',
+            'rib' => 'RIB',
+            'autre' => 'Autre',
+            default => ucfirst(str_replace(['_', '-'], ' ', $type ?: 'document')),
         };
     }
 }
