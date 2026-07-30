@@ -29,7 +29,6 @@ class StripeConnectService
         }
     }
 
-    // Vérification du statut account
     public function getStatutCompte(User $user): ?array
     {
         if (!$user->getStripeAccountId()) {
@@ -46,7 +45,6 @@ class StripeConnectService
                 'email' => $account->email,
                 'type' => $account->type,
                 'verification_document' => $account->individual->verification->document->front ?? null,
-
             ];
         } catch (ApiErrorException $e) {
             $message = $e->getMessage();
@@ -69,13 +67,6 @@ class StripeConnectService
         }
     }
 
-    /**
-     * Crée un compte Stripe Connect Custom avec les données bancaires (IBAN)
-     * @param User $user
-     * @param array $donneesAdresse [line1, city, postal_code, country]
-     * @param string $iban
-     * @return string|null ID du compte Stripe ou null en cas d'échec
-     */
     public function creerCompteAvecRIB(
         User $user,
         array $adresse,
@@ -83,63 +74,66 @@ class StripeConnectService
         string $titulaire,
         string $telephone,
         string $secteur,
-        string $siteWeb
+        string $siteWeb,
+        ?string $tosIp = null,
+        ?string $tosUserAgent = null
     ): void {
         if ($user->getStripeAccountId()) {
             throw new \RuntimeException("L'utilisateur a déjà un compte Stripe.");
         }
 
-        // Formatage du téléphone au format E.164
-        $telephone = preg_replace('/\s+/', '', $telephone); // Supprimer les espaces
-        if (preg_match('/^0(639|692|693)/', $telephone)) {
-            $telephone = '+262' . substr($telephone, 1); // Mayotte ou Réunion
-        } elseif (preg_match('/^0\d+/', $telephone)) {
-            $telephone = '+33' . substr($telephone, 1); // France métropolitaine
+        if (!$user->getDateNaissance()) {
+            throw new \RuntimeException("La date de naissance est obligatoire pour créer le compte Stripe Connect.");
         }
 
-        // 1. Créer le token de compte avec les données personnelles et adresse
-        $accountToken = \Stripe\Token::create([
-            'account' => [
-                'business_type' => 'individual',
-                'individual' => [
-                    'first_name' => $user->getPrenom(),
-                    'last_name' => $user->getNom(),
-                    'email' => $user->getEmail(),
-                    'phone' => $telephone,
-                    'dob' => [
-                        'day' => (int) $user->getDateNaissance()->format('d'),
-                        'month' => (int) $user->getDateNaissance()->format('m'),
-                        'year' => (int) $user->getDateNaissance()->format('Y'),
-                    ],
-                    'address' => [
-                        'line1' => $adresse['line1'],
-                        'city' => $adresse['city'],
-                        'postal_code' => $adresse['postal_code'],
-                        'country' => $adresse['country'] ?? 'FR',
-                    ],
-                ],
-                'tos_shown_and_accepted' => true,
-            ]
-        ]);
+        $telephone = $this->normalizePhone($telephone);
 
-        // 2. Créer le compte Stripe avec ce token
-        $account = \Stripe\Account::create([
+        $accountData = [
             'type' => 'custom',
             'country' => 'FR',
             'email' => $user->getEmail(),
-            'account_token' => $accountToken->id,
+            'business_type' => 'individual',
+            'individual' => [
+                'first_name' => $user->getPrenom(),
+                'last_name' => $user->getNom(),
+                'email' => $user->getEmail(),
+                'phone' => $telephone,
+                'dob' => [
+                    'day' => (int) $user->getDateNaissance()->format('d'),
+                    'month' => (int) $user->getDateNaissance()->format('m'),
+                    'year' => (int) $user->getDateNaissance()->format('Y'),
+                ],
+                'address' => [
+                    'line1' => $adresse['line1'],
+                    'city' => $adresse['city'],
+                    'postal_code' => $adresse['postal_code'],
+                    'country' => $adresse['country'] ?? 'FR',
+                ],
+            ],
             'capabilities' => [
                 'transfers' => ['requested' => true],
-                'card_payments' => ['requested' => true],
             ],
             'business_profile' => [
                 'url' => $siteWeb,
-                'mcc' => '4789', // Transport services (optionnel mais recommandé)
+                'mcc' => '4789',
                 'product_description' => $secteur,
             ],
-        ]);
+        ];
 
-        // 3. Créer le token bancaire (RIB)
+        if ($tosIp) {
+            $accountData['tos_acceptance'] = [
+                'date' => time(),
+                'ip' => $tosIp,
+            ];
+
+            if ($tosUserAgent) {
+                $accountData['tos_acceptance']['user_agent'] = mb_substr($tosUserAgent, 0, 500);
+            }
+        }
+
+        // En mode live, Stripe refuse les account_token créés côté serveur.
+        $account = \Stripe\Account::create($accountData);
+
         $bankToken = \Stripe\Token::create([
             'bank_account' => [
                 'country' => 'FR',
@@ -150,37 +144,29 @@ class StripeConnectService
             ],
         ]);
 
-        // 4. Lier le RIB au compte
         \Stripe\Account::update($account->id, [
             'external_account' => $bankToken->id,
         ]);
 
-        // 5. Sauvegarde
         $user->setStripeAccountId($account->id);
         $this->em->flush();
     }
 
-    /*
-     * Supprimer compte stripe
-     */
     public function supprimerCompteStripe(User $user): string
     {
         if (!$user->getStripeAccountId()) {
-            throw new \RuntimeException("Aucun compte Stripe associé à cet utilisateur.");
+            throw new \RuntimeException('Aucun compte Stripe associé à cet utilisateur.');
         }
 
         $stripeAccountId = $user->getStripeAccountId();
 
         try {
-            // 1. Récupère le compte existant
             $account = \Stripe\Account::retrieve($stripeAccountId);
-
-            // 2. Supprime via l'objet
             $account->delete();
 
-            // 3. Nettoie la base
             $user->setStripeAccountId(null);
             $this->em->flush();
+
             return 'Compte Stripe supprimé avec succès.';
         } catch (ApiErrorException $e) {
             $message = $e->getMessage();
@@ -192,9 +178,9 @@ class StripeConnectService
                 return sprintf('Compte Stripe délié de HaloGari. L’ancien identifiant %s n’est pas utilisable avec la clé Stripe actuelle.', $stripeAccountId);
             }
 
-            throw new \RuntimeException("Erreur Stripe : " . $message);
+            throw new \RuntimeException('Erreur Stripe : ' . $message);
         } catch (\Exception $e) {
-            throw new \RuntimeException("Erreur Stripe : " . $e->getMessage());
+            throw new \RuntimeException('Erreur Stripe : ' . $e->getMessage());
         }
     }
 
@@ -206,28 +192,35 @@ class StripeConnectService
 
         Stripe::setApiKey($this->stripeConfig->secretKey());
 
-        // 1. Upload du fichier d'identité
         $fichier = \Stripe\File::create([
             'purpose' => 'identity_document',
             'file' => fopen($cheminFichier, 'r'),
         ]);
 
-        // 2. Création d’un token avec ce document
-        $accountToken = \Stripe\Token::create([
-            'account' => [
-                'individual' => [
-                    'verification' => [
-                        'document' => [
-                            'front' => $fichier->id,
-                        ]
-                    ]
-                ]
-            ]
-        ]);
-
-        // 3. Mise à jour du compte avec ce token
+        // En mode live, Stripe refuse les account_token créés côté serveur.
         \Stripe\Account::update($user->getStripeAccountId(), [
-            'account_token' => $accountToken->id,
+            'individual' => [
+                'verification' => [
+                    'document' => [
+                        'front' => $fichier->id,
+                    ],
+                ],
+            ],
         ]);
+    }
+
+    private function normalizePhone(string $telephone): string
+    {
+        $telephone = preg_replace('/\s+/', '', $telephone);
+
+        if (preg_match('/^0(639|692|693)/', $telephone)) {
+            return '+262' . substr($telephone, 1);
+        }
+
+        if (preg_match('/^0\d+/', $telephone)) {
+            return '+33' . substr($telephone, 1);
+        }
+
+        return $telephone;
     }
 }

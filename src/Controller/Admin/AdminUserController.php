@@ -332,7 +332,17 @@ class AdminUserController extends AbstractController
         }
 
         try {
-            $stripeService->creerCompteAvecRIB($user, $adresse, $iban, $nomComplet, $telephone, $secteur, $siteWeb);
+            $stripeService->creerCompteAvecRIB(
+                $user,
+                $adresse,
+                $iban,
+                $nomComplet,
+                $telephone,
+                $secteur,
+                $siteWeb,
+                $request->getClientIp(),
+                $request->headers->get('User-Agent')
+            );
             // Mise à jour des champs supplémentaires dans User si tu veux les conserver
             $user->setTelephone($telephone);
             $em->flush();
