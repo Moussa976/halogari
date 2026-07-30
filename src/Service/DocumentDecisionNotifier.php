@@ -59,7 +59,7 @@ class DocumentDecisionNotifier
         $notification = new Notification();
         $notification->setUser($user);
         $notification->setType('document');
-        $notification->setTitre($this->notificationTitle($document));
+        $notification->setTitre($subject);
         $notification->setContenu($this->notificationMessage($document, $decision));
         $notification->setLien('/user/documents');
 
@@ -68,17 +68,14 @@ class DocumentDecisionNotifier
         $this->notificationPushSender->send($notification);
     }
 
-    private function notificationTitle(Document $document): string
-    {
-        return sprintf('Type de document : %s', $this->documentLabel($document));
-    }
-
     private function notificationMessage(Document $document, string $decision): string
     {
+        $details = sprintf("Type de document : %s.\nAppuyez pour afficher les détails.", $this->documentLabel($document));
+
         return match ($decision) {
-            Document::STATUS_APPROVED => 'Appuyez pour afficher les détails.',
-            Document::STATUS_REJECTED => sprintf('Document refusé. Motif : %s', $document->getRejectionReason() ?: 'non précisé'),
-            default => 'Document remis en attente. Appuyez pour afficher les détails.',
+            Document::STATUS_APPROVED => $details,
+            Document::STATUS_REJECTED => sprintf("Type de document : %s.\nDocument refusé. Motif : %s", $this->documentLabel($document), $document->getRejectionReason() ?: 'non précisé'),
+            default => sprintf("Type de document : %s.\nAppuyez pour afficher les détails.", $this->documentLabel($document)),
         };
     }
 
