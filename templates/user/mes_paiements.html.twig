@@ -89,7 +89,7 @@
                     </td>
                     <td data-label="Montant reçu">
                       <strong>{{ commissionVersement.montantConducteur|number_format(2, ',', ' ') }} €</strong><br>
-                      <small class="text-muted">Trajet {{ commissionVersement.montantBrut|number_format(2, ',', ' ') }} € · Frais {{ commissionVersement.fraisStripe|number_format(2, ',', ' ') }} € · HaloGari {{ commissionVersement.commissionHaloGari|number_format(2, ',', ' ') }} €</small>
+                      <small class="text-muted">Trajet {{ commissionVersement.montantBrut|number_format(2, ',', ' ') }} € · Frais de paiement {{ commissionVersement.fraisStripe|number_format(2, ',', ' ') }} € · HaloGari {{ commissionVersement.commissionHaloGari|number_format(2, ',', ' ') }} €</small>
                     </td>
                   </tr>
                 {% endfor %}

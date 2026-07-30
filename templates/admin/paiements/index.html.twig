@@ -278,7 +278,7 @@
                     <strong>{{ repartitionCommission|number_format(2, ',', ' ') }} €</strong>
                   </div>
                   <div class="col-md-3">
-                    <div class="small text-muted">{{ commissionVersement ? 'Frais Stripe' : 'Frais estimés' }}</div>
+                    <div class="small text-muted">{{ commissionVersement ? 'Frais de paiement réels' : 'Frais de paiement estimés' }}</div>
                     <strong>{{ repartitionFraisStripe|number_format(2, ',', ' ') }} €</strong>
                   </div>
                   <div class="col-md-3">
@@ -286,6 +286,9 @@
                     <strong>{{ repartitionConducteur|number_format(2, ',', ' ') }} €</strong>
                   </div>
                 </div>
+                <p class="small text-muted mb-0 mt-3">
+                  Les frais de paiement peuvent varier selon la carte et son pays d’émission. Avant le versement conducteur, le montant affiché reste une estimation.
+                </p>
               </div>
 
               {% if remboursementMessage %}

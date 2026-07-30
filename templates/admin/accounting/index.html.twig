@@ -21,7 +21,7 @@
       <div>
         <strong>Lecture rapide</strong>
         <div class="small text-muted">
-          Les frais Stripe sont enregistrés quand le versement conducteur existe. Pour les paiements encore à traiter, HaloGari affiche une estimation.
+          Les frais de paiement sont enregistrés quand le versement conducteur existe. Pour les paiements encore à traiter, HaloGari affiche une estimation.
         </div>
       </div>
       <span class="badge bg-primary align-self-start">{{ counts.paid }} paiement{{ counts.paid > 1 ? 's' : '' }} capturé{{ counts.paid > 1 ? 's' : '' }}</span>
@@ -34,7 +34,7 @@
         {'label': 'Net après remboursements', 'value': totals.net_after_refunds, 'desc': 'Montant restant dans le circuit', 'class': 'success'},
         {'label': 'Gain HaloGari enregistré', 'value': totals.halo_commission_recorded, 'desc': 'Commission déjà comptabilisée', 'class': 'dark'},
         {'label': 'Gain HaloGari estimé', 'value': totals.halo_commission_pending, 'desc': 'Sur paiements à traiter', 'class': 'warning text-dark'},
-        {'label': 'Frais Stripe', 'value': totals.payment_fees_recorded + totals.payment_fees_estimated, 'desc': totals.payment_fees_recorded|number_format(2, ',', ' ') ~ ' € enregistrés + estimation', 'class': 'info text-dark'},
+        {'label': 'Frais de paiement', 'value': totals.payment_fees_recorded + totals.payment_fees_estimated, 'desc': totals.payment_fees_recorded|number_format(2, ',', ' ') ~ ' € réels enregistrés + estimation', 'class': 'info text-dark'},
         {'label': 'Versé aux conducteurs', 'value': totals.driver_paid, 'desc': counts.driver_paid ~ ' versement(s) enregistré(s)', 'class': 'success'},
         {'label': 'Paiements enregistrés', 'value': totals.authorized, 'desc': counts.authorized ~ ' paiement(s) non capturé(s)', 'class': 'secondary'}
       ] %}
@@ -199,7 +199,7 @@
                 <tr>
                   <th>Réservation</th>
                   <th>HaloGari</th>
-                  <th>Frais</th>
+                  <th>Frais de paiement</th>
                   <th>Conducteur</th>
                 </tr>
               </thead>
