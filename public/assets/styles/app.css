@@ -3171,6 +3171,27 @@ textarea.form-control.app-message-textarea {
     border-bottom: 1px solid var(--hg-line);
 }
 
+.reservation-hero__tools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .55rem;
+}
+
+.reservation-map-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-height: 36px;
+    padding: .38rem .68rem;
+    border-radius: 8px;
+    font-size: .84rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
 .reservation-route-kicker,
 .reservation-stat span,
 .reservation-info-list dt,
@@ -3563,13 +3584,62 @@ textarea.form-control.app-message-textarea {
 }
 
 .reservation-vehicle-card__photo {
+    display: block;
     width: 100%;
-    max-height: 160px;
+    aspect-ratio: 16 / 9;
+    max-height: 190px;
     object-fit: cover;
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     margin-bottom: .75rem;
     background: #fff;
+}
+
+.reservation-map-modal .modal-content {
+    border: 1px solid rgba(36, 92, 54, .14);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.reservation-route-map {
+    width: 100%;
+    min-height: 420px;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #eef4ed;
+}
+
+.reservation-route-map--error {
+    display: grid;
+    place-items: center;
+}
+
+.reservation-map-error {
+    display: grid;
+    justify-items: center;
+    gap: .35rem;
+    padding: 1rem;
+    color: var(--hg-muted);
+    text-align: center;
+}
+
+.reservation-map-error i {
+    color: var(--hg-orange);
+    font-size: 1.5rem;
+}
+
+.reservation-map-error strong {
+    color: var(--hg-ink);
+}
+
+.reservation-map-help {
+    display: flex;
+    gap: .4rem;
+    align-items: center;
+    margin: .75rem 0 0;
+    color: var(--hg-muted);
+    font-size: .9rem;
 }
 
 .reservation-passenger-list {
@@ -5728,7 +5798,7 @@ textarea.form-control.app-message-textarea {
 }
 
 .modal-backdrop:has(+ .ride-progress-modal),
-body.modal-open .modal-backdrop.show {
+body:has(.ride-progress-modal.show) .modal-backdrop.show {
     z-index: calc(var(--hg-z-swal) - 30) !important;
 }
 
@@ -6751,8 +6821,17 @@ body.modal-open .modal-backdrop.show {
         display: grid;
     }
 
+    .reservation-hero__tools {
+        justify-content: stretch;
+    }
+
+    .reservation-map-button,
     .reservation-status {
         width: 100%;
+    }
+
+    .reservation-route-map {
+        min-height: 320px;
     }
 
     .reservation-actions {

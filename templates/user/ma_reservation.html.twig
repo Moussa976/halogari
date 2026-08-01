@@ -89,10 +89,16 @@
           <h2>{{ trajet.depart }} <i class="bi bi-arrow-right-short"></i> {{ trajet.arrivee }}</h2>
           <p>{{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
         </div>
-        <span class="reservation-status reservation-status--{{ statutResa }}">
-          <i class="bi {{ reservationIcons[statutResa]|default('bi-question-circle') }}"></i>
-          {{ reservationLabel }}
-        </span>
+        <div class="reservation-hero__tools">
+          <button type="button" class="btn btn-outline-success btn-sm reservation-map-button" data-bs-toggle="modal" data-bs-target="#reservationMapModal">
+            <i class="bi bi-map"></i>
+            Voir la carte
+          </button>
+          <span class="reservation-status reservation-status--{{ statutResa }}">
+            <i class="bi {{ reservationIcons[statutResa]|default('bi-question-circle') }}"></i>
+            {{ reservationLabel }}
+          </span>
+        </div>
       </div>
 
       <div class="reservation-stats">
@@ -266,13 +272,39 @@
         {% endif %}
       </article>
 
+      {% if reservation.statut in ['acceptee', 'payee'] %}
+        <article class="app-panel reservation-passengers">
+          <div class="app-panel__header">
+            <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
+            <div>
+              <h2>Passagers</h2>
+              <p>Autres passagers sur ce trajet.</p>
+            </div>
+          </div>
+
+          {% set autresPassagers = trajet.reservations|filter(r => r.passager.id != app.user.id and r.statut in ['acceptee', 'payee']) %}
+          {% if autresPassagers|length > 0 %}
+            <div class="reservation-passenger-list">
+              {% for autre in autresPassagers %}
+                <a class="reservation-passenger" href="{{ path('app_profile', { id: autre.passager.id }) }}">
+                  {{ avatar.formatSimple(autre.passager, 42, 0, 1) }}
+                  <span>{{ autre.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : autre.passager.prenom }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="mb-0 text-muted">Pour l’instant, vous êtes le seul passager.</p>
+          {% endif %}
+        </article>
+      {% endif %}
+
       {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.hasVehicleInfo %}
         <article class="app-panel reservation-vehicle-card">
           <div class="app-panel__header">
             <span class="app-panel__icon"><i class="bi bi-car-front-fill"></i></span>
             <div>
               <h2>V&eacute;hicule</h2>
-              <p>Rep&egrave;res utiles pour le d&eacute;part.</p>
+              <p>Rep&egrave;res utiles au point de d&eacute;part.</p>
             </div>
           </div>
           {% if trajet.conducteur.vehiclePhoto %}
@@ -300,33 +332,130 @@
           </dl>
         </article>
       {% endif %}
-
-      {% if reservation.statut in ['acceptee', 'payee'] %}
-        <article class="app-panel reservation-passengers">
-          <div class="app-panel__header">
-            <span class="app-panel__icon"><i class="bi bi-people-fill"></i></span>
-            <div>
-              <h2>Passagers</h2>
-              <p>Autres passagers sur ce trajet.</p>
-            </div>
-          </div>
-
-          {% set autresPassagers = trajet.reservations|filter(r => r.passager.id != app.user.id and r.statut in ['acceptee', 'payee']) %}
-          {% if autresPassagers|length > 0 %}
-            <div class="reservation-passenger-list">
-              {% for autre in autresPassagers %}
-                <a class="reservation-passenger" href="{{ path('app_profile', { id: autre.passager.id }) }}">
-                  {{ avatar.formatSimple(autre.passager, 42, 0, 1) }}
-                  <span>{{ autre.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : autre.passager.prenom }}</span>
-                </a>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="mb-0 text-muted">Pour l’instant, vous êtes le seul passager.</p>
-          {% endif %}
-        </article>
-      {% endif %}
     </aside>
   </div>
 </section>
+
+<div class="modal fade reservation-map-modal" id="reservationMapModal" tabindex="-1" aria-labelledby="reservationMapModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="app-kicker mb-1">Carte du trajet</p>
+          <h5 class="modal-title" id="reservationMapModalLabel">{{ trajet.depart }} <i class="bi bi-arrow-right-short"></i> {{ trajet.arrivee }}</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div
+          id="reservationRouteMap"
+          class="reservation-route-map"
+          data-depart="{{ trajet.depart|e('html_attr') }}"
+          data-arrivee="{{ trajet.arrivee|e('html_attr') }}"
+          data-depart-icon="{{ asset('images/marker_depart_25_41.png') }}"
+          data-arrivee-icon="{{ asset('images/marker_arrivee_25_41.png') }}"
+        ></div>
+        <p class="reservation-map-help">
+          <i class="bi bi-info-circle"></i>
+          Carte indicative bas&eacute;e sur OpenStreetMap.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('reservationMapModal');
+      const mapElement = document.getElementById('reservationRouteMap');
+
+      if (!modal || !mapElement || typeof L === 'undefined') {
+        return;
+      }
+
+      let map = null;
+      let routeLoaded = false;
+
+      const createIcon = (url) => L.icon({
+        iconUrl: url,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        shadowSize: [41, 41]
+      });
+
+      const showMapError = () => {
+        mapElement.classList.add('reservation-route-map--error');
+        mapElement.innerHTML = `<div class="reservation-map-error"><i class="bi bi-exclamation-triangle"></i><strong>Carte indisponible</strong><span>Impossible d'afficher le trajet pour le moment.</span></div>`;
+      };
+
+      const geocodeVillage = async (village) => {
+        const query = encodeURIComponent(`${village}, Mayotte`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error('Geocoding failed');
+        }
+
+        const results = await response.json();
+        if (!results.length) {
+          throw new Error('Village not found');
+        }
+
+        return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+      };
+
+      const loadRoute = async () => {
+        if (routeLoaded) {
+          return;
+        }
+
+        routeLoaded = true;
+        const depart = mapElement.dataset.depart || '';
+        const arrivee = mapElement.dataset.arrivee || '';
+
+        try {
+          const [from, to] = await Promise.all([
+            geocodeVillage(depart),
+            geocodeVillage(arrivee)
+          ]);
+
+          const departIcon = createIcon(mapElement.dataset.departIcon);
+          const arriveeIcon = createIcon(mapElement.dataset.arriveeIcon);
+
+          L.marker(from, { icon: departIcon }).addTo(map).bindPopup(`<strong>D&eacute;part</strong><br>${depart}`);
+          L.marker(to, { icon: arriveeIcon }).addTo(map).bindPopup(`<strong>Arriv&eacute;e</strong><br>${arrivee}`);
+
+          const route = L.polyline([from, to], {
+            color: '#ff8000',
+            dashArray: '8 8',
+            opacity: 0.9,
+            weight: 5
+          }).addTo(map);
+
+          map.fitBounds(route.getBounds(), { padding: [34, 34] });
+        } catch (error) {
+          showMapError();
+        }
+      };
+
+      modal.addEventListener('shown.bs.modal', () => {
+        if (!map) {
+          map = L.map(mapElement, { scrollWheelZoom: false }).setView([-12.8275, 45.1662], 10);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+        }
+
+        setTimeout(() => map.invalidateSize(), 120);
+        loadRoute();
+      });
+    });
+  </script>
 {% endblock %}
