@@ -3869,19 +3869,29 @@ textarea.form-control.app-message-textarea {
     gap: .35rem;
 }
 
-.ride-payment-summary .reservation-info-list {
-    gap: .85rem;
+.ride-reservation-actions-menu .dropdown-toggle {
+    min-width: 7.25rem;
+    justify-content: center;
 }
 
-.ride-payment-summary__note {
-    grid-column: 1 / -1;
-    padding: .75rem .85rem;
+.ride-reservation-actions-menu .dropdown-menu {
+    min-width: 13rem;
+    padding: .45rem;
+    border: 1px solid var(--hg-line);
     border-radius: 8px;
-    background: rgba(36, 92, 54, .06);
-    color: var(--hg-muted);
-    font-size: .92rem;
-    font-weight: 700;
-    line-height: 1.35;
+    box-shadow: 0 16px 45px rgba(23, 33, 27, .16);
+}
+
+.ride-reservation-actions-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    border-radius: 6px;
+    font-weight: 800;
+}
+
+.ride-reservation-actions-menu form {
+    margin: 0;
 }
 
 .ride-progress-steps {
@@ -5541,6 +5551,15 @@ textarea.form-control.app-message-textarea {
     z-index: var(--hg-z-modal) !important;
 }
 
+.ride-progress-modal {
+    z-index: calc(var(--hg-z-swal) - 20) !important;
+}
+
+.modal-backdrop:has(+ .ride-progress-modal),
+body.modal-open .modal-backdrop.show {
+    z-index: calc(var(--hg-z-swal) - 30) !important;
+}
+
 .flatpickr-calendar {
     z-index: var(--hg-z-floating-control) !important;
     border: 1px solid var(--hg-line) !important;
@@ -6654,7 +6673,7 @@ textarea.form-control.app-message-textarea {
 
     .ride-cancel-form .btn,
     .ride-reservation-card__actions .btn,
-    .ride-reservation-card__actions form {
+    .ride-reservation-card__actions > form {
         width: 100%;
     }
 
@@ -6665,7 +6684,7 @@ textarea.form-control.app-message-textarea {
         font-size: .82rem;
     }
 
-    .ride-reservation-card__actions form {
+    .ride-reservation-card__actions > form {
         display: contents;
     }
 
@@ -6679,10 +6698,6 @@ textarea.form-control.app-message-textarea {
 
     .ride-reservation-card__code-form .form-control {
         width: 100%;
-    }
-
-    .ride-payment-summary__note {
-        font-size: .88rem;
     }
 
     .ride-progress-step {

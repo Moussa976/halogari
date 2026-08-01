@@ -23,10 +23,7 @@
 
 {% set activeReservations = reservations|filter(r => r.statut in ['en_attente', 'acceptee', 'payee']) %}
 {% set pendingReservations = reservations|filter(r => r.statut == 'en_attente') %}
-{% set confirmedReservations = reservations|filter(r => r.statut in ['acceptee', 'payee']) %}
 {% set reservedPlaces = activeReservations|reduce((carry, r) => carry + r.places, 0) %}
-{% set totalAutorise = reservations|reduce((carry, r) => carry + (r.paiement and r.paiement.statut == 'autorise' ? r.prixTotal : 0), 0) %}
-{% set totalConfirme = reservations|reduce((carry, r) => carry + (r.paiement and r.paiement.statut == 'capture' ? r.prixTotal : 0), 0) %}
 
 {% block body %}
 <section class="app-page-header app-page-header--compact">
@@ -134,33 +131,6 @@
     </article>
 
     <aside class="ride-detail-side">
-      <article class="app-panel ride-payment-summary">
-        <div class="app-panel__header">
-          <span class="app-panel__icon"><i class="bi bi-cash-coin"></i></span>
-          <div>
-            <h2>Suivi du paiement</h2>
-            <p>Le versement arrive après le trajet.</p>
-          </div>
-        </div>
-        <dl class="reservation-info-list">
-          <div>
-            <dt>Paiements enregistrés</dt>
-            <dd>{{ totalAutorise|number_format(2, ',', ' ') }} €</dd>
-          </div>
-          <div>
-            <dt>Paiements confirmés</dt>
-            <dd>{{ totalConfirme|number_format(2, ',', ' ') }} €</dd>
-          </div>
-          <div>
-            <dt>Passagers acceptés</dt>
-            <dd>{{ confirmedReservations|length }}</dd>
-          </div>
-          <div class="ride-payment-summary__note">
-            HaloGari verse la part conducteur quand le trajet est terminé et que le code de montée a été validé.
-          </div>
-        </dl>
-      </article>
-
       <article class="app-panel">
         <div class="app-panel__header">
           <span class="app-panel__icon"><i class="bi bi-person-badge-fill"></i></span>
@@ -239,57 +209,68 @@
             </div>
 
             <div class="ride-reservation-card__actions">
-              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reservationProgress{{ reservation.id }}">
-                <i class="bi bi-list-check"></i>
-                Progression
-              </button>
+              <div class="dropdown ride-reservation-actions-menu">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Actions
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#reservationProgress{{ reservation.id }}">
+                    <i class="bi bi-list-check"></i>
+                    Voir la progression
+                  </button>
 
-              {% if reservation.statut == 'en_attente' %}
-                {% if not datePasse and not enCours %}
-                  <form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
-                    <button type="submit" class="btn btn-success btn-sm">
-                      <i class="bi bi-check-lg"></i>
-                      Accepter
-                    </button>
-                  </form>
-                  <form method="post" action="{{ path('reservation_refuser', { id: reservation.id }) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                      <i class="bi bi-x-lg"></i>
-                      Refuser
-                    </button>
-                  </form>
-                {% else %}
-                  <span class="text-muted small">Action indisponible</span>
-                {% endif %}
-              {% elseif datePasse and reservation.statut in ['acceptee', 'payee'] %}
-                {% set noteExistante = false %}
-                {% for note in reservation.passager.notesPour %}
-                  {% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
-                    {% set noteExistante = true %}
-                  {% endif %}
-                {% endfor %}
-                {% if not noteExistante %}
-                  <a href="{{ path('app_noter_passager', { trajetId: trajet.id, passagerId: reservation.passager.id }) }}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-star"></i>
-                    Noter
+                  <a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="dropdown-item">
+                    <i class="bi bi-chat-dots"></i>
+                    Écrire
                   </a>
-                {% else %}
-                  <span class="text-muted small">Déjà noté</span>
-                {% endif %}
-              {% endif %}
 
-              <a href="{{ path('app_conversation', { userId: reservation.passager.id, trajetId: trajet.id }) }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-chat-dots"></i>
-                Écrire
-              </a>
-              {% if reservation.statut in ['acceptee', 'payee'] and reservation.passager.telephone %}
-                <a href="tel:{{ reservation.passager.telephone }}" class="btn btn-orange btn-sm">
-                  <i class="bi bi-telephone"></i>
-                  Appeler
-                </a>
-              {% endif %}
+                  {% if reservation.statut in ['acceptee', 'payee'] and reservation.passager.telephone %}
+                    <a href="tel:{{ reservation.passager.telephone }}" class="dropdown-item">
+                      <i class="bi bi-telephone"></i>
+                      Appeler
+                    </a>
+                  {% endif %}
+
+                  {% if reservation.statut == 'en_attente' %}
+                    {% if not datePasse and not enCours %}
+                      <div class="dropdown-divider"></div>
+                      <form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+                        <button type="submit" class="dropdown-item text-success">
+                          <i class="bi bi-check-lg"></i>
+                          Accepter
+                        </button>
+                      </form>
+                      <form method="post" action="{{ path('reservation_refuser', { id: reservation.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reservation_action_' ~ reservation.id) }}">
+                        <button type="submit" class="dropdown-item text-danger">
+                          <i class="bi bi-x-lg"></i>
+                          Refuser
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="dropdown-item disabled">Action indisponible</span>
+                    {% endif %}
+                  {% elseif datePasse and reservation.statut in ['acceptee', 'payee'] %}
+                    {% set noteExistante = false %}
+                    {% for note in reservation.passager.notesPour %}
+                      {% if note.noteur.id == app.user.id and note.trajet.id == trajet.id %}
+                        {% set noteExistante = true %}
+                      {% endif %}
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    {% if not noteExistante %}
+                      <a href="{{ path('app_noter_passager', { trajetId: trajet.id, passagerId: reservation.passager.id }) }}" class="dropdown-item">
+                        <i class="bi bi-star"></i>
+                        Noter
+                      </a>
+                    {% else %}
+                      <span class="dropdown-item disabled">Déjà noté</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+
               {% if reservation.boardingCode and not reservation.boardingValidatedAt %}
                 <form method="post" action="{{ path('reservation_boarding_validate', { id: reservation.id }) }}" class="ride-reservation-card__code-form">
                   <input type="hidden" name="_token" value="{{ csrf_token('boarding_validate_' ~ reservation.id) }}">
@@ -312,59 +293,6 @@
               {% endif %}
             </div>
           </div>
-
-          <div class="modal fade ride-progress-modal" id="reservationProgress{{ reservation.id }}" tabindex="-1" aria-labelledby="reservationProgressLabel{{ reservation.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <div>
-                    <h3 class="modal-title h5" id="reservationProgressLabel{{ reservation.id }}">Progression de {{ passengerName }}</h3>
-                    <p class="mb-0 text-muted">{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</p>
-                  </div>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                  <div class="ride-progress-steps">
-                    <div class="ride-progress-step is-done">
-                      <span><i class="bi bi-send-check"></i></span>
-                      <div>
-                        <strong>Demande reçue</strong>
-                        <p>La demande du passager est enregistrée.</p>
-                      </div>
-                    </div>
-                    <div class="ride-progress-step {{ reservation.statut in ['acceptee', 'payee'] ? 'is-done' : (reservation.statut == 'en_attente' ? 'is-current' : '') }}">
-                      <span><i class="bi bi-person-check"></i></span>
-                      <div>
-                        <strong>Demande acceptée</strong>
-                        <p>Le passager peut payer uniquement après votre acceptation.</p>
-                      </div>
-                    </div>
-                    <div class="ride-progress-step {{ paiementEnregistre ? 'is-done' : (reservation.statut in ['acceptee', 'payee'] ? 'is-current' : '') }}">
-                      <span><i class="bi bi-credit-card"></i></span>
-                      <div>
-                        <strong>Paiement enregistré</strong>
-                        <p>HaloGari protège le paiement jusqu’au bon moment.</p>
-                      </div>
-                    </div>
-                    <div class="ride-progress-step {{ codeValide ? 'is-done' : (codeEnvoye ? 'is-current' : '') }}">
-                      <span><i class="bi bi-shield-check"></i></span>
-                      <div>
-                        <strong>Code de montée</strong>
-                        <p>{{ codeValide ? 'Le code a été validé.' : (codeEnvoye ? 'Demandez le code au passager au moment de monter.' : 'Le code sera envoyé au passager après le paiement.') }}</p>
-                      </div>
-                    </div>
-                    <div class="ride-progress-step {{ versementEnvoye ? 'is-done' : (codeValide ? 'is-current' : '') }}">
-                      <span><i class="bi bi-wallet2"></i></span>
-                      <div>
-                        <strong>Versement conducteur</strong>
-                        <p>{{ versementEnvoye ? 'La part conducteur a été envoyée.' : 'Le versement est traité après la fin du trajet.' }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         {% endfor %}
       </div>
     {% else %}
@@ -372,4 +300,65 @@
     {% endif %}
   </article>
 </section>
+
+{% for reservation in reservations %}
+  {% set passengerName = reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom %}
+  {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
+  {% set paiementEnregistre = reservation.paiement and statutPaiement in ['autorise', 'capture', 'rembourse_partiel', 'rembourse'] %}
+  {% set codeEnvoye = reservation.boardingCode is not empty %}
+  {% set codeValide = reservation.boardingValidatedAt is not empty %}
+  {% set versementEnvoye = reservation.paiement and (reservation.paiement.evenements|filter(e => e.type == 'versement_conducteur')|length > 0) %}
+  <div class="modal fade ride-progress-modal" id="reservationProgress{{ reservation.id }}" tabindex="-1" aria-labelledby="reservationProgressLabel{{ reservation.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title h5" id="reservationProgressLabel{{ reservation.id }}">Progression de {{ passengerName }}</h3>
+            <p class="mb-0 text-muted">{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="ride-progress-steps">
+            <div class="ride-progress-step is-done">
+              <span><i class="bi bi-send-check"></i></span>
+              <div>
+                <strong>Demande reçue</strong>
+                <p>La demande du passager est enregistrée.</p>
+              </div>
+            </div>
+            <div class="ride-progress-step {{ reservation.statut in ['acceptee', 'payee'] ? 'is-done' : (reservation.statut == 'en_attente' ? 'is-current' : '') }}">
+              <span><i class="bi bi-person-check"></i></span>
+              <div>
+                <strong>Demande acceptée</strong>
+                <p>Le passager peut payer uniquement après votre acceptation.</p>
+              </div>
+            </div>
+            <div class="ride-progress-step {{ paiementEnregistre ? 'is-done' : (reservation.statut in ['acceptee', 'payee'] ? 'is-current' : '') }}">
+              <span><i class="bi bi-credit-card"></i></span>
+              <div>
+                <strong>Paiement enregistré</strong>
+                <p>HaloGari protège le paiement jusqu’au bon moment.</p>
+              </div>
+            </div>
+            <div class="ride-progress-step {{ codeValide ? 'is-done' : (codeEnvoye ? 'is-current' : '') }}">
+              <span><i class="bi bi-shield-check"></i></span>
+              <div>
+                <strong>Code de montée</strong>
+                <p>{{ codeValide ? 'Le code a été validé.' : (codeEnvoye ? 'Demandez le code au passager au moment de monter.' : 'Le code sera envoyé au passager après le paiement.') }}</p>
+              </div>
+            </div>
+            <div class="ride-progress-step {{ versementEnvoye ? 'is-done' : (codeValide ? 'is-current' : '') }}">
+              <span><i class="bi bi-wallet2"></i></span>
+              <div>
+                <strong>Versement conducteur</strong>
+                <p>{{ versementEnvoye ? 'La part conducteur a été envoyée.' : 'Le versement est traité après la fin du trajet.' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
 {% endblock %}
