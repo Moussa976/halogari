@@ -638,3 +638,137 @@ document.addEventListener('DOMContentLoaded', () => {
         activateTab(activeTab);
     }
 });
+
+(() => {
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+    }[char]));
+
+    const createRouteIcon = (url) => L.icon({
+        iconUrl: url,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        shadowSize: [41, 41],
+    });
+
+    const geocodeRouteVillage = async (village) => {
+        const query = encodeURIComponent(`${village}, Mayotte`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`, {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error('Geocoding failed');
+        }
+
+        const results = await response.json();
+        if (!results.length) {
+            throw new Error('Village not found');
+        }
+
+        return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+    };
+
+    const fetchRouteGeometry = async (from, to) => {
+        const coords = `${from[1]},${from[0]};${to[1]},${to[0]}`;
+        const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`, {
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error('Route unavailable');
+        }
+
+        const payload = await response.json();
+        const geometry = payload.routes?.[0]?.geometry;
+
+        if (!geometry) {
+            throw new Error('Route missing');
+        }
+
+        return geometry;
+    };
+
+    const initRouteMap = (mapElement) => {
+        const modal = mapElement.closest('.modal');
+        if (!modal || mapElement.dataset.routeMapBound === '1') {
+            return;
+        }
+
+        mapElement.dataset.routeMapBound = '1';
+
+        let map = null;
+        let routeLoaded = false;
+
+        const showMapError = () => {
+            mapElement.classList.add('reservation-route-map--error');
+            mapElement.innerHTML = "<div class=\"reservation-map-error\"><i class=\"bi bi-exclamation-triangle\"></i><strong>Carte indisponible</strong><span>Impossible d'afficher le trajet pour le moment.</span></div>";
+        };
+
+        const loadRoute = async () => {
+            if (routeLoaded) {
+                return;
+            }
+
+            routeLoaded = true;
+            const depart = mapElement.dataset.depart || '';
+            const arrivee = mapElement.dataset.arrivee || '';
+
+            try {
+                const [from, to] = await Promise.all([
+                    geocodeRouteVillage(depart),
+                    geocodeRouteVillage(arrivee),
+                ]);
+
+                L.marker(from, { icon: createRouteIcon(mapElement.dataset.departIcon) })
+                    .addTo(map)
+                    .bindPopup(`<strong>Départ</strong><br>${escapeHtml(depart)}`);
+
+                L.marker(to, { icon: createRouteIcon(mapElement.dataset.arriveeIcon) })
+                    .addTo(map)
+                    .bindPopup(`<strong>Arrivée</strong><br>${escapeHtml(arrivee)}`);
+
+                const geometry = await fetchRouteGeometry(from, to);
+                const route = L.geoJSON(geometry, {
+                    style: () => ({
+                        color: '#ff8000',
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        opacity: 0.95,
+                        weight: 5,
+                    }),
+                }).addTo(map);
+
+                map.fitBounds(route.getBounds(), { padding: [34, 34] });
+            } catch (error) {
+                showMapError();
+            }
+        };
+
+        modal.addEventListener('shown.bs.modal', () => {
+            if (!map) {
+                map = L.map(mapElement, { scrollWheelZoom: false }).setView([-12.8275, 45.1662], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                }).addTo(map);
+            }
+
+            window.setTimeout(() => map.invalidateSize(), 120);
+            loadRoute();
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof L === 'undefined') {
+            return;
+        }
+
+        document.querySelectorAll('.js-route-map').forEach(initRouteMap);
+    });
+})();

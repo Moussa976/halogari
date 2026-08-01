@@ -54,6 +54,11 @@
           <h2>{{ trajet.depart }} <i class="bi bi-arrow-right-short"></i> {{ trajet.arrivee }}</h2>
           <p>{{ ladateTrajet }} à {{ trajet.heureTrajet|date('H:i') }}</p>
         </div>
+        <div class="reservation-hero__tools">
+          <button type="button" class="btn btn-outline-success btn-sm reservation-map-button" data-bs-toggle="modal" data-bs-target="#trajetMapModal">
+            <i class="bi bi-map"></i>
+            Voir la carte
+          </button>
         {% if trajet.isAnnule() %}
           <span class="reservation-status reservation-status--annulee">
             <i class="bi bi-slash-circle-fill"></i>
@@ -75,6 +80,7 @@
             Ouvert
           </span>
         {% endif %}
+        </div>
       </div>
 
       <div class="reservation-stats ride-detail-stats">
@@ -304,6 +310,14 @@
     {% endif %}
   </article>
 </section>
+
+{% include 'components/ride/_route_map_modal.html.twig' with {
+  modal_id: 'trajetMapModal',
+  modal_label_id: 'trajetMapModalLabel',
+  map_id: 'trajetRouteMap',
+  depart: trajet.depart,
+  arrivee: trajet.arrivee
+} only %}
 
 {% for reservation in reservations %}
   {% set passengerName = reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom %}

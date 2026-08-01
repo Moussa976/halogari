@@ -1,0 +1,31 @@
+{% set modalId = modal_id|default('routeMapModal') %}
+{% set labelId = modal_label_id|default(modalId ~ 'Label') %}
+{% set mapId = map_id|default(modalId ~ 'Map') %}
+
+<div class="modal fade reservation-map-modal" id="{{ modalId }}" tabindex="-1" aria-labelledby="{{ labelId }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="app-kicker mb-1">Carte du trajet</p>
+          <h5 class="modal-title" id="{{ labelId }}">{{ depart }} <i class="bi bi-arrow-right-short"></i> {{ arrivee }}</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div
+          id="{{ mapId }}"
+          class="reservation-route-map js-route-map"
+          data-depart="{{ depart|e('html_attr') }}"
+          data-arrivee="{{ arrivee|e('html_attr') }}"
+          data-depart-icon="{{ asset('images/marker_depart_25_41.png') }}"
+          data-arrivee-icon="{{ asset('images/marker_arrivee_25_41.png') }}"
+        ></div>
+        <p class="reservation-map-help">
+          <i class="bi bi-info-circle"></i>
+          Carte indicative basée sur OpenStreetMap.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
