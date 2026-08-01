@@ -3223,6 +3223,12 @@ textarea.form-control.app-message-textarea {
     border-color: rgba(255, 193, 7, .38);
 }
 
+.reservation-status--action-required {
+    color: #8a3d00;
+    background: rgba(255, 128, 13, .18);
+    border-color: rgba(255, 128, 13, .42);
+}
+
 .reservation-status--acceptee,
 .reservation-status--payee,
 .reservation-status--payment-capture {
@@ -3851,18 +3857,6 @@ textarea.form-control.app-message-textarea {
     margin: 0;
 }
 
-.ride-reservation-card__code-form {
-    display: inline-flex;
-    align-items: center;
-    gap: .45rem;
-}
-
-.ride-reservation-card__code-form .form-control {
-    width: 8.75rem;
-    min-height: 2.25rem;
-    font-weight: 700;
-}
-
 .ride-reservation-card__actions .btn {
     display: inline-flex;
     align-items: center;
@@ -3875,7 +3869,7 @@ textarea.form-control.app-message-textarea {
 }
 
 .ride-reservation-actions-menu .dropdown-menu {
-    min-width: 13rem;
+    min-width: 16rem;
     padding: .45rem;
     border: 1px solid var(--hg-line);
     border-radius: 8px;
@@ -3892,6 +3886,31 @@ textarea.form-control.app-message-textarea {
 
 .ride-reservation-actions-menu form {
     margin: 0;
+}
+
+.ride-reservation-menu-code-form {
+    padding: .35rem .35rem .25rem;
+}
+
+.ride-reservation-menu-code-form label {
+    display: block;
+    margin: 0 0 .35rem;
+    color: var(--hg-green);
+    font-size: .78rem;
+    font-weight: 900;
+}
+
+.ride-reservation-menu-code-form .input-group {
+    flex-wrap: nowrap;
+}
+
+.ride-reservation-menu-code-form .form-control {
+    min-width: 0;
+    font-weight: 800;
+}
+
+.ride-reservation-menu-code-form .btn {
+    font-weight: 900;
 }
 
 .ride-progress-steps {
@@ -6686,18 +6705,6 @@ body.modal-open .modal-backdrop.show {
 
     .ride-reservation-card__actions > form {
         display: contents;
-    }
-
-    .ride-reservation-card__actions .ride-reservation-card__code-form {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: .5rem;
-        grid-column: 1 / -1;
-    }
-
-    .ride-reservation-card__code-form .form-control {
-        width: 100%;
     }
 
     .ride-progress-step {
