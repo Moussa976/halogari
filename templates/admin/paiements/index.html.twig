@@ -245,7 +245,7 @@
                     {% if reservation.boardingCode %}
                       <span class="badge bg-success align-self-start">Créé</span>
                     {% else %}
-                      <span class="badge bg-secondary align-self-start">Après paiement confirmé</span>
+                      <span class="badge bg-secondary align-self-start">Après paiement enregistré</span>
                     {% endif %}
                   </div>
                   {% if reservation.boardingCode %}
@@ -261,7 +261,7 @@
                       <div class="small text-muted mt-1">Pas encore validé côté conducteur.</div>
                     {% endif %}
                   {% else %}
-                    <p class="text-muted mb-0 mt-2">Le code sera généré et envoyé par SMS quand le paiement sera confirmé.</p>
+                    <p class="text-muted mb-0 mt-2">Le code sera généré et envoyé par SMS quand le paiement sera enregistré.</p>
                   {% endif %}
                 </div>
               {% endif %}
@@ -347,6 +347,14 @@
                 {% if not reservation %}
                   <span class="text-muted">Aucune action disponible</span>
                 {% elseif paiement.statut == 'autorise' %}
+                  <form method="post" action="{{ path('admin_paiement_send_boarding_code', {id: paiement.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_send_boarding_code_' ~ paiement.id) }}">
+                    <input type="hidden" name="mode" value="{{ mode }}">
+                    <button class="btn btn-outline-success">
+                      <i class="bi bi-qr-code"></i>
+                      Envoyer le code
+                    </button>
+                  </form>
                   <form method="post" action="{{ path('admin_paiement_capture', {id: paiement.id}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_capture_' ~ paiement.id) }}">
                     <input type="hidden" name="mode" value="{{ mode }}">

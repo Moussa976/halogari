@@ -116,12 +116,15 @@ class NotificationService
 
     public function envoyerConfirmationPaiement(Reservation $reservation): void
     {
+        $boardingCode = $reservation->ensureBoardingCode();
+
         $email = (new Email())
             ->from(MailAddressProvider::publicSender())
             ->to($reservation->getPassager()->getEmail())
             ->subject('Paiement enregistré - Réservation HaloGari')
             ->html($this->twig->render('emails/paiement_confirme.html.twig', [
                 'reservation' => $reservation,
+                'boardingCode' => $boardingCode,
             ]))
             ->embedFromPath(__DIR__ . '/../../public/images/logo.png', 'logo_halogari');
 

@@ -61,8 +61,14 @@ class PaiementService
             }
 
             if ($intent->status === 'requires_capture') {
+                $wasAuthorized = $paiement->getStatut() === 'autorise';
                 $paiement->setStatut('autorise');
-                $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Le montant est sécurisé pour cette réservation.');
+                $reservation->ensureBoardingCode();
+
+                if (!$wasAuthorized) {
+                    $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Le montant est sécurisé pour cette réservation.');
+                }
+
                 $this->em->flush();
 
                 throw new \RuntimeException('Ce paiement est déjà enregistré.');
@@ -163,8 +169,14 @@ class PaiementService
         }
 
         if ($intent->status === 'requires_capture') {
+            $wasAuthorized = $paiement->getStatut() === 'autorise';
             $paiement->setStatut('autorise');
-            $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Statut enregistré par Stripe.');
+            $reservation->ensureBoardingCode();
+
+            if (!$wasAuthorized) {
+                $this->eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Statut enregistré par Stripe.');
+            }
+
             $this->em->flush();
         }
 

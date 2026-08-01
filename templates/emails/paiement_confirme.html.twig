@@ -29,6 +29,18 @@
                     Montant sécurisé : {{ reservation.prixTotal|number_format(2, ',', '.') }} €
                 </div>
 
+                <div style="margin-top: 18px; background-color: #eef8f1; border: 1px solid #b9e6c6; padding: 16px; border-radius: 6px; text-align: center;">
+                    <p style="margin: 0 0 8px; color: #1f6b3a; font-size: 15px; font-weight: bold;">
+                        Code de montée
+                    </p>
+                    <p style="margin: 0; font-size: 28px; letter-spacing: 4px; font-weight: bold; color: #122018;">
+                        {{ boardingCode|default(reservation.boardingCode) }}
+                    </p>
+                    <p style="margin: 8px 0 0; color: #555; font-size: 14px;">
+                        Montrez ce code au conducteur au moment de monter.
+                    </p>
+                </div>
+
                 <p style="margin-top: 20px; font-size: 14px; text-align: center; color: #666;">
                     Merci pour votre confiance.<br>
                     L'équipe HaloGari

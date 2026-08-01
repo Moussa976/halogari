@@ -62,6 +62,16 @@
       </div>
     </div>
 
+    {% if reservation.boardingCode %}
+      <div class="reservation-note reservation-note--success">
+        <i class="bi bi-qr-code"></i>
+        <p>
+          <strong>Code de montée : {{ reservation.boardingCode }}</strong>
+          Montrez ce code au conducteur au moment de monter.
+        </p>
+      </div>
+    {% endif %}
+
     <div class="reservation-confirmation__driver">
       {{ avatar.formatSimple(reservation.trajet.conducteur, 52, 0, 1) }}
       <div>

@@ -44,7 +44,7 @@ class SmsService
 
     public function envoyerReservationAcceptee(Reservation $reservation): void
     {
-        // L'acceptation simple ne déclenche plus de SMS : le SMS utile part après paiement confirmé avec le code de montée.
+        // L'acceptation simple ne déclenche plus de SMS : le SMS utile part après paiement enregistré avec le code de montée.
     }
 
     public function envoyerPlaceConfirmeeAvecCode(Reservation $reservation): void
@@ -67,7 +67,7 @@ class SmsService
         $code = $reservation->ensureBoardingCode();
         $schedule = $this->formatSchedule($trajet->getDateTrajet(), $trajet->getHeureTrajet());
         $message = sprintf(
-            'HaloGari : votre place %s -> %s du %s est confirmée. Code montée : %s. Montrez ce code au conducteur.',
+            'HaloGari : paiement enregistré pour %s -> %s du %s. Code montée : %s. Montrez ce code au conducteur.',
             $trajet->getDepart(),
             $trajet->getArrivee(),
             $schedule,
@@ -81,7 +81,7 @@ class SmsService
                 $reservation->getPaiement(),
                 'code_montee_envoye',
                 'Code de montée envoyé',
-                'Le code de montée a été transmis au passager par SMS.'
+                'Le code de montée a été transmis au passager après paiement enregistré.'
             );
             $this->em->flush();
         }

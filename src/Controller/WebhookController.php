@@ -87,9 +87,17 @@ class WebhookController extends AbstractController
 
         switch ($event->type) {
             case 'payment_intent.amount_capturable_updated':
-                if ($paiement && $paiement->getStatut() !== 'autorise') {
+                if ($paiement) {
+                    $wasAuthorized = $paiement->getStatut() === 'autorise';
                     $paiement->setStatut('autorise');
-                    $eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Confirmation reçue depuis Stripe.');
+                    $reservation->ensureBoardingCode();
+
+                    if (!$wasAuthorized) {
+                        $eventLogger->log($paiement, 'paiement_enregistre', 'Paiement enregistré', 'Confirmation reçue depuis Stripe.');
+                        $this->notifier->envoyerConfirmationPaiement($reservation);
+                    }
+
+                    $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
                     $em->flush();
                 }
                 break;

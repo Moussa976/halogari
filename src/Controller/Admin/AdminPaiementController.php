@@ -66,6 +66,35 @@ class AdminPaiementController extends AbstractController
     }
 
     /**
+     * @Route("/admin/paiements/{id}/code-montee/envoyer", name="admin_paiement_send_boarding_code", methods={"POST"})
+     */
+    public function sendBoardingCode(Paiement $paiement, Request $request, AdminAuditLogger $auditLogger, SmsService $smsService): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+        $this->assertValidPaymentToken($paiement, $request, 'send_boarding_code');
+
+        try {
+            $reservation = $paiement->getReservation();
+            if (!$reservation) {
+                throw new \RuntimeException('Réservation introuvable pour ce paiement.');
+            }
+
+            if (!in_array($paiement->getStatut(), ['autorise', 'capture'], true)) {
+                throw new \RuntimeException('Le code peut être envoyé uniquement après paiement enregistré.');
+            }
+
+            $reservation->ensureBoardingCode();
+            $smsService->envoyerPlaceConfirmeeAvecCode($reservation);
+            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'payment_send_boarding_code', $reservation->getPassager(), ['paiementId' => $paiement->getId(), 'reservationId' => $reservation->getId()]);
+            $this->addFlash('success', 'Code de montée généré. L’envoi SMS a été traité selon les paramètres SMS.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
+
+        return $this->redirectBackToPayments($request);
+    }
+
+    /**
      * @Route("/admin/paiements/{id}/transfer", name="admin_paiement_transfer", methods={"POST"})
      */
     public function transfer(Paiement $paiement, Request $request, PaiementService $paiementService, AdminAuditLogger $auditLogger): RedirectResponse
