@@ -86,6 +86,10 @@
         reponse: "Oui. Les paiements sont gérés via Stripe. Après acceptation du conducteur, vous enregistrez votre paiement, puis HaloGari le finalise selon le déroulement du trajet. HaloGari ne stocke pas les numéros complets de carte bancaire."
       },
       {
+        question: "Quand le conducteur reçoit-il son argent ?",
+        reponse: "Le conducteur ne reçoit pas sa part tout de suite. HaloGari attend que le trajet soit terminé, que le dossier soit cohérent et que le solde du paiement soit disponible avant de lancer le versement conducteur."
+      },
+      {
         question: "Quelle est la politique de remboursement ?",
         reponse: 'Elle dépend du moment de l\'annulation et de la personne qui annule. Consultez la <a href="' ~ path('app_conditionsutisation') ~ '#remboursement">politique de remboursement</a>.'
       },
@@ -156,6 +160,14 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Oui. Les paiements sont gérés via Stripe et HaloGari ne stocke pas les numéros complets de carte bancaire."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quand le conducteur reçoit-il son argent ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Le conducteur reçoit sa part après la fin du trajet, les contrôles nécessaires et la disponibilité du solde du paiement."
           }
         }
       ]

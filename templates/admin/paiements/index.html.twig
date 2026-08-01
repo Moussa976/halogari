@@ -288,6 +288,7 @@
                 </div>
                 <p class="small text-muted mb-0 mt-3">
                   Les frais de paiement peuvent varier selon la carte et son pays d’émission. Avant le versement conducteur, le montant affiché reste une estimation.
+                  Le versement ne peut être lancé que lorsque le solde HaloGari est disponible côté paiement.
                 </p>
               </div>
 
@@ -368,6 +369,9 @@
                 {% elseif paiement.statut == 'capture' %}
                   {% if not dejaVerse %}
                     {% if trajetTermine %}
+                      <div class="alert alert-info small mb-2 w-100">
+                        Avant de verser, vérifiez dans le compte de paiement HaloGari que le montant est bien disponible. Un solde “en attente” ne peut pas encore être envoyé au conducteur.
+                      </div>
                       <form method="post" action="{{ path('admin_paiement_transfer', {id: paiement.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin_paiement_transfer_' ~ paiement.id) }}">
                         <input type="hidden" name="mode" value="{{ mode }}">

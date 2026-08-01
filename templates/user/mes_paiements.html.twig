@@ -26,7 +26,7 @@
     <div class="app-panel__header">
       <div>
         <h2>Historique</h2>
-        <p>HaloGari protège l’argent jusqu’au bon moment.</p>
+        <p>Les gains affichés ici correspondent aux montants déjà versés.</p>
       </div>
       {% set visiblePaymentsCount = paiementsReservations|length + paiementsGains|length %}
       <span class="badge bg-light text-dark border">{{ visiblePaymentsCount }} opération{{ visiblePaymentsCount > 1 ? 's' : '' }}</span>
@@ -54,6 +54,9 @@
             <div class="border rounded p-3 h-100">
               <span class="text-muted d-block">Argent reçu</span>
               <strong class="fs-4">{{ totalGainsVerses|number_format(2, ',', ' ') }} €</strong>
+              <small class="text-muted d-block mt-2">
+                Un paiement peut être enregistré ou confirmé sans être encore versé : HaloGari attend la fin du trajet, les contrôles éventuels et le solde disponible côté paiement.
+              </small>
             </div>
           </div>
         </div>
@@ -167,7 +170,7 @@
     <h2>À savoir</h2>
     <div class="tip-list">
       <span><i class="bi bi-check-circle-fill"></i> Vos paiements de passager sont dans l’onglet réservations</span>
-      <span><i class="bi bi-check-circle-fill"></i> Vos gains conducteur arrivent après validation du trajet</span>
+      <span><i class="bi bi-check-circle-fill"></i> Vos gains conducteur sont versés après le trajet, pas immédiatement après le paiement</span>
       <span><i class="bi bi-check-circle-fill"></i> Les remboursements suivent la politique HaloGari</span>
     </div>
     <a class="btn btn-outline-primary w-100 mt-3" href="{{ path('app_conditionsutisation') }}#remboursement">

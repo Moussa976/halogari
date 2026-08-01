@@ -568,13 +568,13 @@ class PaiementService
             return new \RuntimeException('Stripe ne retrouve pas le compte Connect du conducteur avec la clé actuelle. Le compte a été retiré de sa fiche admin : le conducteur doit relancer le parcours Stripe Express, puis vous pourrez relancer le versement.', 0, $exception);
         }
 
-        if (str_contains($message, 'insufficient available funds') || str_contains($message, 'available balance')) {
+        if (str_contains($message, 'insufficient available funds') || str_contains($message, 'available balance') || str_contains($message, 'insufficient funds')) {
             $this->eventLogger->log($paiement, 'stripe_connect_solde_insuffisant', 'Solde Stripe test insuffisant', 'Le compte Stripe HaloGari n’a pas assez de solde disponible pour envoyer la part conducteur.', null, [
                 'stripeAccountId' => $stripeAccountId,
             ]);
             $this->em->flush();
 
-            return new \RuntimeException('Le solde disponible du compte Stripe HaloGari est insuffisant pour verser le conducteur. En mode test, ajoutez du solde avec une carte de test Stripe, par exemple 4000000000000077, puis relancez le versement.', 0, $exception);
+            return new \RuntimeException('Le solde disponible du compte de paiement HaloGari est insuffisant pour verser le conducteur. Attendez que le montant passe de “en attente” à “disponible”, ou désactivez les virements automatiques côté Stripe pour garder le solde disponible avant le versement.', 0, $exception);
         }
 
         $this->eventLogger->log($paiement, 'stripe_connect_erreur', 'Versement conducteur refusé par Stripe', $message, null, [

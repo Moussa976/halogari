@@ -1,3 +1,32 @@
+{% if stripeBalance is defined %}
+  <li class="nav-item dropdown d-none d-md-block">
+    <a class="nav-link dropdown-toggle admin-stripe-balance {{ stripeBalance.error ? 'is-warning' : '' }}" href="#" id="stripeBalanceDropdown" data-bs-toggle="dropdown" aria-label="Solde HaloGari">
+      <span class="admin-stripe-balance__label">Solde</span>
+      <strong>{{ stripeBalance.available|number_format(2, ',', ' ') }} €</strong>
+      {% if stripeBalance.pending > 0 %}
+        <small>+ {{ stripeBalance.pending|number_format(2, ',', ' ') }} € en attente</small>
+      {% endif %}
+    </a>
+    <div class="dropdown-menu dropdown-menu-end p-3 admin-stripe-balance-menu" aria-labelledby="stripeBalanceDropdown">
+      <div class="d-flex justify-content-between gap-3 mb-2">
+        <span class="text-muted">Disponible</span>
+        <strong>{{ stripeBalance.available|number_format(2, ',', ' ') }} €</strong>
+      </div>
+      <div class="d-flex justify-content-between gap-3 mb-2">
+        <span class="text-muted">En attente</span>
+        <strong>{{ stripeBalance.pending|number_format(2, ',', ' ') }} €</strong>
+      </div>
+      <div class="small text-muted border-top pt-2">
+        Mode {{ stripeBalance.mode }}. Les versements conducteur utilisent uniquement le solde disponible.
+      </div>
+      {% if stripeBalance.error %}
+        <div class="alert alert-warning small mb-0 mt-2">{{ stripeBalance.error }}</div>
+      {% endif %}
+      <a class="btn btn-outline-primary btn-sm w-100 mt-2" href="{{ path('admin_comptabilite') }}">Voir la comptabilité</a>
+    </div>
+  </li>
+{% endif %}
+
 <li class="nav-item dropdown">
   <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown" aria-label="Notifications admin">
     <div class="position-relative">

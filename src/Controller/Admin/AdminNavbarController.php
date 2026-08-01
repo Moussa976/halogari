@@ -9,6 +9,7 @@ use App\Repository\AdminSeenActionRepository;
 use App\Repository\DocumentRepository;
 use App\Repository\PaiementRepository;
 use App\Repository\ReservationRepository;
+use App\Service\StripeBalanceService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,7 +19,8 @@ class AdminNavbarController extends AbstractController
         ReservationRepository $reservationRepository,
         DocumentRepository $documentRepository,
         PaiementRepository $paiementRepository,
-        AdminSeenActionRepository $seenActionRepository
+        AdminSeenActionRepository $seenActionRepository,
+        StripeBalanceService $stripeBalanceService
     ): Response {
         $admin = $this->getUser();
         $pendingReservationsAll = $reservationRepository->findBy(['statut' => 'en_attente'], ['createdAt' => 'DESC']);
@@ -58,6 +60,7 @@ class AdminNavbarController extends AbstractController
             'paymentActionCount' => count($paymentActionsAll),
             'paymentSeen' => $paymentSeen,
             'pendingCount' => $pendingUnreadCount,
+            'stripeBalance' => $stripeBalanceService->platformBalance(),
         ]);
     }
 }
