@@ -142,6 +142,21 @@
             <p>{{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}{% if peutPayer %} · action requise{% endif %}</p>
           </div>
         </div>
+        <div class="reservation-timeline__item {{ reservation.boardingValidatedAt ? 'is-done' : (reservation.boardingCode ? 'is-current' : 'is-muted') }}">
+          <span><i class="bi bi-shield-check"></i></span>
+          <div>
+            <strong>Code de montée</strong>
+            <p>
+              {% if reservation.boardingValidatedAt %}
+                Code validé par le conducteur.
+              {% elseif reservation.boardingCode %}
+                Montrez le code au conducteur avant de monter.
+              {% else %}
+                Le code sera envoyé après le paiement enregistré.
+              {% endif %}
+            </p>
+          </div>
+        </div>
       </div>
 
       {% if reservation.boardingCode %}

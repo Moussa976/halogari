@@ -3289,12 +3289,13 @@ textarea.form-control.app-message-textarea {
 .reservation-next-steps,
 .reservation-info-list {
     display: grid;
-    gap: .75rem;
+    gap: 1rem;
     margin-top: 1rem;
 }
 
 .reservation-timeline__item,
 .reservation-next-step {
+    position: relative;
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr);
     gap: .75rem;
@@ -3303,6 +3304,25 @@ textarea.form-control.app-message-textarea {
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     background: rgba(255, 255, 255, .68);
+}
+
+.reservation-timeline__item:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    left: calc(.9rem + 22px);
+    bottom: -1rem;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--hg-line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--hg-muted);
+    font-size: .88rem;
+    font-weight: 900;
+    line-height: 20px;
+    text-align: center;
+    transform: translate(-50%, 50%);
+    z-index: 1;
 }
 
 .reservation-timeline__item > span,
@@ -3319,16 +3339,40 @@ textarea.form-control.app-message-textarea {
     font-size: 1.15rem;
 }
 
-.reservation-timeline__item.is-done > span,
+.reservation-timeline__item.is-done > span {
+    color: #7a837c;
+    background: rgba(108, 117, 125, .12);
+}
+
 .reservation-next-step.is-active > span,
 .reservation-success-icon {
     color: #fff;
     background: linear-gradient(135deg, var(--hg-green), #4aa763);
 }
 
+.reservation-timeline__item.is-done {
+    border-color: rgba(108, 117, 125, .14);
+    background: rgba(247, 249, 245, .78);
+}
+
+.reservation-timeline__item.is-done strong,
+.reservation-timeline__item.is-done p {
+    color: #7a837c;
+}
+
 .reservation-timeline__item.is-current {
-    border-color: rgba(255, 193, 7, .55);
-    background: rgba(255, 249, 232, .78);
+    border-color: rgba(255, 128, 0, .45);
+    background: rgba(255, 128, 0, .06);
+}
+
+.reservation-timeline__item.is-current > span {
+    color: #fff;
+    background: var(--hg-orange);
+}
+
+.reservation-timeline__item.is-current:not(:last-child)::after {
+    border-color: rgba(255, 128, 0, .45);
+    color: var(--hg-orange);
 }
 
 .reservation-timeline__item.is-muted {
@@ -3915,10 +3959,11 @@ textarea.form-control.app-message-textarea {
 
 .ride-progress-steps {
     display: grid;
-    gap: .65rem;
+    gap: 1rem;
 }
 
 .ride-progress-step {
+    position: relative;
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr);
     gap: .75rem;
@@ -3927,6 +3972,25 @@ textarea.form-control.app-message-textarea {
     border: 1px solid var(--hg-line);
     border-radius: 8px;
     background: #fff;
+}
+
+.ride-progress-step:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    left: calc(.8rem + 21px);
+    bottom: -1rem;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--hg-line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--hg-muted);
+    font-size: .88rem;
+    font-weight: 900;
+    line-height: 20px;
+    text-align: center;
+    transform: translate(-50%, 50%);
+    z-index: 1;
 }
 
 .ride-progress-step span {
@@ -3952,8 +4016,18 @@ textarea.form-control.app-message-textarea {
 }
 
 .ride-progress-step.is-done span {
-    background: rgba(36, 92, 54, .12);
-    color: var(--hg-green);
+    background: rgba(108, 117, 125, .12);
+    color: #7a837c;
+}
+
+.ride-progress-step.is-done {
+    border-color: rgba(108, 117, 125, .14);
+    background: rgba(247, 249, 245, .78);
+}
+
+.ride-progress-step.is-done strong,
+.ride-progress-step.is-done p {
+    color: #7a837c;
 }
 
 .ride-progress-step.is-current {
@@ -3964,6 +4038,11 @@ textarea.form-control.app-message-textarea {
 .ride-progress-step.is-current span {
     background: var(--hg-orange);
     color: #fff;
+}
+
+.ride-progress-step.is-current:not(:last-child)::after {
+    border-color: rgba(255, 128, 0, .45);
+    color: var(--hg-orange);
 }
 
 .hg-photo-preview-row {
@@ -6686,8 +6765,13 @@ body.modal-open .modal-backdrop.show {
     }
 
     .ride-reservation-card__actions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         gap: .5rem;
+    }
+
+    .ride-reservation-actions-menu,
+    .ride-reservation-actions-menu .dropdown-toggle {
+        width: 100%;
     }
 
     .ride-cancel-form .btn,
@@ -6712,6 +6796,10 @@ body.modal-open .modal-backdrop.show {
         padding: .72rem;
     }
 
+    .ride-progress-step:not(:last-child)::after {
+        left: calc(.72rem + 19px);
+    }
+
     .ride-progress-step span {
         width: 38px;
         height: 38px;
@@ -6721,6 +6809,10 @@ body.modal-open .modal-backdrop.show {
     .reservation-next-step {
         grid-template-columns: 40px minmax(0, 1fr);
         padding: .8rem;
+    }
+
+    .reservation-timeline__item:not(:last-child)::after {
+        left: calc(.8rem + 20px);
     }
 
     .reservation-timeline__item > span,
