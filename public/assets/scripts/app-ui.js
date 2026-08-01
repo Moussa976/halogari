@@ -753,6 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.addEventListener('shown.bs.modal', () => {
             if (!map) {
+                mapElement.innerHTML = '';
                 map = L.map(mapElement, { scrollWheelZoom: false }).setView([-12.8275, 45.1662], 10);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap contributors',

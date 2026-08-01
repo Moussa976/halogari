@@ -20,7 +20,12 @@
           data-arrivee="{{ arrivee|e('html_attr') }}"
           data-depart-icon="{{ asset('images/marker_depart_25_41.png') }}"
           data-arrivee-icon="{{ asset('images/marker_arrivee_25_41.png') }}"
-        ></div>
+        >
+          <div class="reservation-map-loading">
+            <i class="bi bi-map"></i>
+            <span>Chargement de la carte...</span>
+          </div>
+        </div>
         <p class="reservation-map-help">
           <i class="bi bi-info-circle"></i>
           Carte indicative basée sur OpenStreetMap.

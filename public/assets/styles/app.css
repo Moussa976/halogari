@@ -3610,6 +3610,20 @@ textarea.form-control.app-message-textarea {
     background: #eef4ed;
 }
 
+.reservation-map-loading {
+    display: grid;
+    min-height: 420px;
+    place-items: center;
+    gap: .35rem;
+    color: var(--hg-muted);
+    text-align: center;
+}
+
+.reservation-map-loading i {
+    color: var(--hg-green);
+    font-size: 1.5rem;
+}
+
 .reservation-route-map--error {
     display: grid;
     place-items: center;
