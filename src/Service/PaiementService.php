@@ -197,7 +197,7 @@ class PaiementService
 
         $conducteur = $reservation->getTrajet()->getConducteur();
         if (!$conducteur->getStripeAccountId()) {
-            throw new \RuntimeException("Ce conducteur n'a pas encore de compte Stripe Connect lié.");
+            throw new \RuntimeException("Ce conducteur n'a pas encore activé Stripe Express.");
         }
 
         $this->assertCompteStripeConnectPret($paiement, $conducteur, $conducteur->getStripeAccountId());
@@ -514,13 +514,13 @@ class PaiementService
 
         $transfersCapability = $account->capabilities->transfers ?? null;
         if ($transfersCapability && $transfersCapability !== 'active') {
-            $this->eventLogger->log($paiement, 'stripe_connect_bloque', 'Versement conducteur bloqué', 'Le compte Stripe Connect du conducteur n’a pas encore la capacité de recevoir des virements.', null, [
+            $this->eventLogger->log($paiement, 'stripe_connect_bloque', 'Versement conducteur bloqué', 'Le compte Stripe Express du conducteur n’a pas encore la capacité de recevoir des virements.', null, [
                 'stripeAccountId' => $stripeAccountId,
                 'transfersCapability' => $transfersCapability,
             ]);
             $this->em->flush();
 
-            throw new \RuntimeException('Le compte Stripe Connect du conducteur existe, mais il n’est pas encore validé pour recevoir un versement. Complétez ses informations Stripe avant de relancer.');
+            throw new \RuntimeException('Le compte Stripe Express du conducteur existe, mais il n’est pas encore validé pour recevoir un versement. Le conducteur doit compléter ses informations Stripe avant de relancer.');
         }
 
         if (empty($account->payouts_enabled)) {
@@ -529,7 +529,7 @@ class PaiementService
             ]);
             $this->em->flush();
 
-            throw new \RuntimeException('Le compte Stripe Connect du conducteur existe, mais ses paiements sortants ne sont pas encore activés par Stripe. Complétez ses informations Stripe avant de relancer.');
+            throw new \RuntimeException('Le compte Stripe Express du conducteur existe, mais ses paiements sortants ne sont pas encore activés par Stripe. Le conducteur doit compléter ses informations Stripe avant de relancer.');
         }
     }
 
@@ -543,17 +543,17 @@ class PaiementService
             ]);
             $this->em->flush();
 
-            return new \RuntimeException('Stripe Connect n’est pas activé ou pas configuré sur le compte Stripe utilisé par HaloGari. Activez Stripe Connect dans le dashboard Stripe, puis recréez ou vérifiez le compte conducteur avant de relancer le versement.', 0, $exception);
+            return new \RuntimeException('Stripe Connect n’est pas activé ou pas configuré sur le compte Stripe utilisé par HaloGari. Activez Stripe Connect dans le dashboard Stripe, puis demandez au conducteur de relancer Stripe Express avant de relancer le versement.', 0, $exception);
         }
 
         if (str_contains($message, 'No such destination') || str_contains($message, 'No such account')) {
             $conducteur->setStripeAccountId(null);
-            $this->eventLogger->log($paiement, 'stripe_connect_invalide', 'Compte Stripe Connect invalide', 'Stripe ne reconnaît plus le compte Connect du conducteur. L’identifiant a été retiré du profil pour pouvoir le recréer proprement.', null, [
+            $this->eventLogger->log($paiement, 'stripe_connect_invalide', 'Compte Stripe Express invalide', 'Stripe ne reconnaît plus le compte Express du conducteur. L’identifiant a été retiré du profil pour pouvoir le relancer proprement.', null, [
                 'stripeAccountId' => $stripeAccountId,
             ]);
             $this->em->flush();
 
-            return new \RuntimeException('Stripe ne retrouve pas le compte Connect du conducteur avec la clé actuelle. Le compte a été retiré de sa fiche admin : recréez-le avec le RIB validé, puis relancez le versement.', 0, $exception);
+            return new \RuntimeException('Stripe ne retrouve pas le compte Connect du conducteur avec la clé actuelle. Le compte a été retiré de sa fiche admin : le conducteur doit relancer le parcours Stripe Express, puis vous pourrez relancer le versement.', 0, $exception);
         }
 
         if (str_contains($message, 'insufficient available funds') || str_contains($message, 'available balance')) {

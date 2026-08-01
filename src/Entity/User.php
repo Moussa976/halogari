@@ -702,9 +702,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->hasApprovedDocumentByTypes(['rib']);
     }
 
+    public function hasPhoneNumber(): bool
+    {
+        return trim((string) $this->telephone) !== '';
+    }
+
+    public function hasStripeConnectAccount(): bool
+    {
+        return trim((string) $this->stripeAccountId) !== '';
+    }
+
     public function canPublishRide(): bool
     {
-        return $this->hasVerifiedIdentity() && $this->hasVerifiedRib() && $this->hasPostalAddress();
+        return $this->isVerified()
+            && $this->hasVerifiedIdentity()
+            && $this->hasPhoneNumber()
+            && $this->hasPostalAddress()
+            && $this->hasStripeConnectAccount();
     }
 
     public function hasPostalAddress(): bool

@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\StripeConnectService;
 
 use Stripe\Stripe;
 use Stripe\Account;
@@ -261,7 +262,7 @@ class TrajetController extends AbstractController
     /**
      * @Route("/publier", name="app_publier", methods={"GET", "POST"})
      */
-    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MessageBusInterface $bus): Response
+    public function publier(Request $request, SessionInterface $session, EntityManagerInterface $em, MessageBusInterface $bus, StripeConnectService $stripeConnectService): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             $session->set('_security.main.target_path', $request->getUri());
@@ -270,29 +271,39 @@ class TrajetController extends AbstractController
         }
 
         $user = $this->getUser();
-        $rib = $this->findDocumentByTypes($user, ['rib']);
         $identite = $this->findDocumentByTypes($user, ['identite', 'piece_identite', 'piece-identite']);
+        $emailReady = $user->isVerified();
+        $phoneReady = $user->hasPhoneNumber();
         $postalAddressReady = $user->hasPostalAddress();
-        $documentsReady = $user->hasVerifiedIdentity() && $user->hasVerifiedRib();
+        $identityReady = $user->hasVerifiedIdentity();
+        $stripeStatus = $stripeConnectService->getStatutCompte($user);
+        $stripeReady = $stripeStatus && empty($stripeStatus['invalid']) && !empty($stripeStatus['payouts_enabled']);
+        $driverReady = $emailReady && $phoneReady && $postalAddressReady && $identityReady && $stripeReady;
 
         if ($request->isMethod('POST')) {
+            if (!$emailReady) {
+                $this->addFlash('error', 'Confirmez votre adresse e-mail avant de publier un trajet.');
+                return $this->redirectToRoute('app_compte', ['section' => 'informations']);
+            }
+
+            if (!$phoneReady) {
+                $this->addFlash('error', 'Ajoutez votre numéro de téléphone avant de publier un trajet.');
+                return $this->redirectToRoute('app_compte', ['section' => 'informations']);
+            }
 
             if (!$postalAddressReady) {
                 $this->addFlash('error', 'Complétez votre adresse postale avant de publier un trajet.');
                 return $this->redirectToRoute('app_compte', ['section' => 'adresse']);
             }
 
-            if (!$rib || !$identite) {
-                if (!$rib)
-                    $this->addFlash('error', 'Vous devez ajouter un RIB.');
-                if (!$identite)
-                    $this->addFlash('error', 'Vous devez ajouter une pièce d’identité.');
+            if (!$identite || !$identityReady) {
+                $this->addFlash('error', 'Votre pièce d’identité doit être validée avant de publier un trajet.');
                 return $this->redirectToRoute('app_documents');
             }
 
-            if (!$documentsReady) {
-                $this->addFlash('error', 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.');
-                return $this->redirectToRoute('app_documents');
+            if (!$stripeReady) {
+                $this->addFlash('error', 'Activez vos versements via Stripe Express avant de publier un trajet.');
+                return $this->redirectToRoute('app_publier');
             }
 
             $dateInput = $this->normalizeSearchDate((string) $request->request->get('date'));
@@ -358,8 +369,14 @@ class TrajetController extends AbstractController
         }
 
         return $this->render('trajet/publier.html.twig', [
-            'documentsReady' => (bool) $documentsReady,
+            'documentsReady' => (bool) $identityReady,
+            'emailReady' => (bool) $emailReady,
+            'phoneReady' => (bool) $phoneReady,
+            'identityReady' => (bool) $identityReady,
             'postalAddressReady' => (bool) $postalAddressReady,
+            'stripeReady' => (bool) $stripeReady,
+            'driverReady' => (bool) $driverReady,
+            'stripeStatus' => $stripeStatus,
         ]);
     }
 
@@ -615,4 +632,3 @@ class TrajetController extends AbstractController
         return $searchedDate < new \DateTimeImmutable('today');
     }
 }
-

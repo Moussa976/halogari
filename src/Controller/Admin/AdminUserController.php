@@ -137,7 +137,7 @@ class AdminUserController extends AbstractController
             ->setVehicleColor($request->request->get('vehicleColor'))
             ->setVehicleSeats((int) $request->request->get('vehicleSeats', 0) ?: null);
 
-        // 🔴 Suppression photo si demandé
+        //  Suppression photo si demandé
         if ($request->get('remove_photo') && $user->getPhoto()) {
             $oldPath = $this->getParameter('photos_directory') . '/' . $user->getPhoto();
             if (file_exists($oldPath)) {
@@ -149,7 +149,7 @@ class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
         }
 
-        // 📤 Upload nouvelle photo si envoyée
+        //  Upload nouvelle photo si envoyée
         $photoFile = $request->files->get('photo');
 
         if ($photoFile) {
@@ -299,7 +299,7 @@ class AdminUserController extends AbstractController
     }
 
     /**
-     * Crée un compte Stripe Connect avec les infos fournies manuellement.
+     * Ancien flux de création manuelle Stripe Connect désactivé.
      * @Route("/admin/utilisateurs/{id}/stripe-connect", name="admin_user_create_stripe_custom", methods={"POST"})
      */
     public function createStripeCustom(
@@ -312,50 +312,10 @@ class AdminUserController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'stripe_create');
 
-        // Récupération des données POST
-        $nomComplet = $request->request->get('nom_complet');
-        $iban = strtoupper(preg_replace('/\s+/', '', (string) $request->request->get('iban')));
-        $telephone = $request->request->get('telephone');
-        $siteWeb = $request->request->get('site_web');
-        $secteur = $request->request->get('secteur');
-
-        $adresse = [
-            'line1' => $request->request->get('line1'),
-            'city' => $request->request->get('city'),
-            'postal_code' => $request->request->get('postal_code'),
-            'country' => $request->request->get('country'),
-        ];
-
-        if (!$iban) {
-            $this->addFlash('error', 'IBAN obligatoire pour créer le compte Stripe Connect.');
-            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
-        }
-
-        try {
-            $stripeService->creerCompteAvecRIB(
-                $user,
-                $adresse,
-                $iban,
-                $nomComplet,
-                $telephone,
-                $secteur,
-                $siteWeb,
-                $request->getClientIp(),
-                $request->headers->get('User-Agent')
-            );
-            // Mise à jour des champs supplémentaires dans User si tu veux les conserver
-            $user->setTelephone($telephone);
-            $em->flush();
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_connect_create', $user);
-
-            $this->addFlash('success', '✅ Compte Stripe Connect créé avec succès.');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur Stripe : ' . $e->getMessage());
-        }
+        $this->addFlash('warning', 'La création manuelle est désactivée. Le conducteur doit activer Stripe Express depuis son espace HaloGari.');
 
         return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
     }
-
     /**
      * Supprime (ferme) le compte Stripe d’un utilisateur
      * @Route("/admin/utilisateurs/{id}/stripe-supprimer", name="admin_user_delete_stripe", methods={"POST"})
@@ -377,7 +337,7 @@ class AdminUserController extends AbstractController
     }
 
     /**
-     * Envoie la pièce d'identité à Stripe
+     * Ancien envoi manuel de justificatif à Stripe désactivé.
      * @Route("/admin/utilisateurs/{id}/envoyer-identite-stripe", name="admin_user_stripe_upload_identity", methods={"POST"})
      */
     public function envoyerIdentiteStripe(User $user, Request $request, StripeConnectService $stripeService, AdminAuditLogger $auditLogger, DocumentStorage $documentStorage): RedirectResponse
@@ -385,31 +345,10 @@ class AdminUserController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->assertValidUserToken($user, $request, 'stripe_identity');
 
-        // Récupération du document de type "identite"
-        $doc = $user->getDocumentByType('identite');
-
-        if (!$doc || $doc->getStatus() !== 'approved') {
-            $this->addFlash('error', 'Aucun document d’identité validé n’a été trouvé pour cet utilisateur.');
-            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
-        }
-
-        $cheminFichier = $documentStorage->resolvePath($doc);
-        if (!$cheminFichier) {
-            $this->addFlash('error', 'Le fichier de pièce d’identité est introuvable.');
-            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
-        }
-
-        try {
-            $stripeService->ajouterPieceIdentite($user, $cheminFichier);
-            $auditLogger->log($this->getUser() instanceof User ? $this->getUser() : null, 'stripe_identity_upload', $user);
-            $this->addFlash('success', '✅ Pièce d’identité envoyée avec succès à Stripe.');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de l\'envoi de la pièce d\'identité : ' . $e->getMessage());
-        }
+        $this->addFlash('warning', 'Les justificatifs demandés par Stripe sont ajoutés directement dans le parcours sécurisé Stripe Express.');
 
         return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
     }
-
     /**
      * Renvoyer l’e-mail de confirmation à l’utilisateur
      * @Route("/admin/utilisateurs/{id}/resend-confirmation", name="admin_user_resend_confirmation", methods={"POST"})
@@ -441,7 +380,7 @@ class AdminUserController extends AbstractController
                 ->embedFromPath($this->getParameter('kernel.project_dir') . '/public/images/logo.png', 'logo_halogari')
         );
 
-        $this->addFlash('success', "📤 L’e-mail de confirmation a été renvoyé à {$user->getEmail()}.");
+        $this->addFlash('success', " L’e-mail de confirmation a été renvoyé à {$user->getEmail()}.");
     } catch (\Exception $e) {
         $this->addFlash('error', "Erreur lors de l’envoi de l’e-mail : " . $e->getMessage());
     }

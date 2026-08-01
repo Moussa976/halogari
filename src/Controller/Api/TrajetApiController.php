@@ -129,7 +129,7 @@ class TrajetApiController extends AbstractController
 
         if (!$user->canPublishRide()) {
             return $this->json([
-                'message' => 'Pour publier un trajet, votre pièce d’identité et votre RIB doivent être validés.',
+                'message' => 'Pour publier un trajet, confirmez votre e-mail, ajoutez votre téléphone et votre adresse, faites valider votre pièce d’identité puis activez Stripe Express.',
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 

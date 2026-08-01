@@ -186,15 +186,22 @@
 <div class="container py-5">
 	<div class="row justify-content-center mt-3">
 		<div class="col-lg-8">
-			{% if documentsReady is defined and not documentsReady %}
+			{% if driverReady is defined and not driverReady %}
 				<div class="alert alert-warning">
-					<strong>Avant de publier :</strong> vous devez ajouter et faire valider votre RIB et votre pièce d'identité.
-					<a href="{{ path('app_documents') }}" class="alert-link">Ajouter mes documents</a>.
-				</div>
-			{% elseif postalAddressReady is defined and not postalAddressReady %}
-				<div class="alert alert-warning">
-					<strong>Avant de publier :</strong> complétez votre adresse postale dans vos paramètres.
-					<a href="{{ path('app_compte', { section: 'adresse' }) }}" class="alert-link">Compléter mon adresse</a>.
+					<strong>Avant de publier :</strong> complétez votre dossier conducteur.
+					<div class="d-flex flex-wrap gap-2 mt-3">
+						<span class="badge {{ emailReady ? 'bg-success' : 'bg-warning text-dark' }}">E-mail confirmé</span>
+						<span class="badge {{ phoneReady ? 'bg-success' : 'bg-warning text-dark' }}">Téléphone renseigné</span>
+						<span class="badge {{ postalAddressReady ? 'bg-success' : 'bg-warning text-dark' }}">Adresse postale</span>
+						<span class="badge {{ identityReady ? 'bg-success' : 'bg-warning text-dark' }}">Pièce d'identité validée</span>
+						<span class="badge {{ stripeReady ? 'bg-success' : 'bg-warning text-dark' }}">Versements Stripe Express</span>
+					</div>
+					<div class="d-flex flex-wrap gap-2 mt-3">
+						{% if not phoneReady %}<a href="{{ path('app_compte', { section: 'informations' }) }}" class="btn btn-sm btn-outline-dark">Ajouter mon téléphone</a>{% endif %}
+						{% if not postalAddressReady %}<a href="{{ path('app_compte', { section: 'adresse' }) }}" class="btn btn-sm btn-outline-dark">Compléter mon adresse</a>{% endif %}
+						{% if not identityReady %}<a href="{{ path('app_documents') }}" class="btn btn-sm btn-outline-dark">Ajouter ma pièce d'identité</a>{% endif %}
+						{% if not stripeReady %}<a href="{{ path('app_stripe_express_onboarding') }}" class="btn btn-sm btn-orange">Activer mes versements</a>{% endif %}
+					</div>
 				</div>
 			{% else %}
 				<div class="alert alert-success">

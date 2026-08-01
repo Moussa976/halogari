@@ -19,7 +19,7 @@ class AdminStripeConnectController extends AbstractController
 
         $users = array_filter($userRepository->findAll(), static function (User $user): bool {
             return $user->getStripeAccountId()
-                || $user->hasVerifiedRib()
+                || $user->hasVerifiedIdentity()
                 || count($user->getTrajets()) > 0;
         });
 

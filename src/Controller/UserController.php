@@ -21,6 +21,7 @@ use App\Service\DocumentVerificationService;
 use App\Service\DocumentStorage;
 use App\Service\MailAddressProvider;
 use App\Service\PhoneNumberService;
+use App\Service\StripeConnectService;
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -34,6 +35,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Utils\DateHelper;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
@@ -290,6 +292,71 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/user/stripe-express/onboarding", name="app_stripe_express_onboarding", methods={"GET"})
+     */
+    public function stripeExpressOnboarding(Request $request, StripeConnectService $stripeConnectService): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if (!$user->isVerified()) {
+            $this->addFlash('error', 'Confirmez votre adresse e-mail avant d’activer vos versements.');
+            return $this->redirectToRoute('app_compte');
+        }
+
+        if (!$user->hasPhoneNumber()) {
+            $this->addFlash('error', 'Ajoutez votre numéro de téléphone avant d’activer vos versements.');
+            return $this->redirectToRoute('app_compte', ['section' => 'informations']);
+        }
+
+        if (!$user->hasPostalAddress()) {
+            $this->addFlash('error', 'Complétez votre adresse postale avant d’activer vos versements.');
+            return $this->redirectToRoute('app_compte', ['section' => 'adresse']);
+        }
+
+        if (!$user->hasVerifiedIdentity()) {
+            $this->addFlash('error', 'Votre pièce d’identité doit être validée avant d’activer vos versements.');
+            return $this->redirectToRoute('app_documents');
+        }
+
+        try {
+            $refreshUrl = $this->generateUrl('app_stripe_express_onboarding', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $returnUrl = $this->generateUrl('app_stripe_express_return', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            return $this->redirect($stripeConnectService->creerLienOnboardingExpress($user, $refreshUrl, $returnUrl));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Stripe Express n’a pas pu être ouvert : ' . $e->getMessage());
+            return $this->redirectToRoute('app_publier');
+        }
+    }
+
+    /**
+     * @Route("/user/stripe-express/retour", name="app_stripe_express_return", methods={"GET"})
+     */
+    public function stripeExpressReturn(StripeConnectService $stripeConnectService): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $status = $stripeConnectService->getStatutCompte($user);
+        if ($status && empty($status['invalid']) && !empty($status['payouts_enabled'])) {
+            $this->addFlash('success', 'Vos versements Stripe Express sont activés. Vous pouvez publier un trajet.');
+        } else {
+            $this->addFlash('warning', 'Stripe Express est créé, mais il reste peut-être des informations à compléter avant les versements.');
+        }
+
+        return $this->redirectToRoute('app_publier');
+    }
+
+    /**
      * @Route("/user/documents", name="app_documents", methods={"GET", "POST"})
      */
     public function mesDocuments(
@@ -324,12 +391,8 @@ class UserController extends AbstractController
             $ribIban = null;
 
             if ($finalType === 'rib') {
-                $ribIban = strtoupper(preg_replace('/\s+/', '', (string) $request->request->get('rib_iban')));
-
-                if (!$this->isValidIban($ribIban)) {
-                    $this->addFlash('error', 'Merci de saisir un IBAN valide pour votre RIB.');
-                    return $this->redirectToRoute('app_documents');
-                }
+                $this->addFlash('error', 'Le RIB n’est plus envoyé sur HaloGari. Activez vos versements via Stripe Express depuis la page Publier.');
+                return $this->redirectToRoute('app_documents');
             }
 
             // Vérification du type MIME

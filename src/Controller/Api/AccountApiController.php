@@ -189,6 +189,9 @@ class AccountApiController extends AbstractController
                 'canPublishRide' => $user->canPublishRide(),
                 'hasRib' => $this->hasApprovedDocument($user, ['rib']),
                 'hasIdentity' => $this->hasApprovedDocument($user, ['identite', 'piece_identite', 'piece-identite']),
+                'hasPhoneNumber' => $user->hasPhoneNumber(),
+                'hasPostalAddress' => $user->hasPostalAddress(),
+                'hasStripeConnect' => $user->hasStripeConnectAccount(),
                 'documents' => array_map(fn (Document $document) => $this->documentPayload($document), $documents),
             ],
         ]);

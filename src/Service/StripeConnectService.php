@@ -19,14 +19,66 @@ class StripeConnectService
         Stripe::setApiKey($stripeConfig->secretKey());
     }
 
-    /**
-     * Le compte Connect doit être créé depuis l'admin, avec l'IBAN du conducteur.
-     */
     public function creerCompteSiBesoin(User $user): void
     {
         if (!$user->getStripeAccountId()) {
-            throw new \RuntimeException("Le compte Stripe Connect doit être créé depuis l'administration avec l'IBAN du conducteur.");
+            throw new \RuntimeException('Le conducteur doit activer ses versements via Stripe Express avant de recevoir sa part.');
         }
+    }
+
+    public function creerCompteExpress(User $user): string
+    {
+        if ($user->getStripeAccountId()) {
+            return $user->getStripeAccountId();
+        }
+
+        $account = \Stripe\Account::create([
+            'type' => 'express',
+            'country' => 'FR',
+            'email' => $user->getEmail(),
+            'business_type' => 'individual',
+            'capabilities' => [
+                'transfers' => ['requested' => true],
+            ],
+            'business_profile' => [
+                'url' => 'https://halogari.yt',
+                'mcc' => '4789',
+                'product_description' => 'Covoiturage local entre particuliers à Mayotte',
+            ],
+            'metadata' => [
+                'platform' => 'halogari',
+                'user_id' => (string) $user->getId(),
+            ],
+        ]);
+
+        $user->setStripeAccountId($account->id);
+        $this->em->flush();
+
+        return $account->id;
+    }
+
+    public function creerLienOnboardingExpress(User $user, string $refreshUrl, string $returnUrl): string
+    {
+        $accountId = $this->creerCompteExpress($user);
+        $accountLink = \Stripe\AccountLink::create([
+            'account' => $accountId,
+            'refresh_url' => $refreshUrl,
+            'return_url' => $returnUrl,
+            'type' => 'account_onboarding',
+        ]);
+
+        return $accountLink->url;
+    }
+
+    public function creerLienDashboardExpress(User $user): string
+    {
+        if (!$user->getStripeAccountId()) {
+            throw new \RuntimeException('Aucun compte Stripe Express associé à cet utilisateur.');
+        }
+
+        $loginLink = \Stripe\Account::createLoginLink($user->getStripeAccountId());
+
+        return $loginLink->url;
     }
 
     public function getStatutCompte(User $user): ?array
@@ -39,12 +91,13 @@ class StripeConnectService
             $account = \Stripe\Account::retrieve($user->getStripeAccountId());
 
             return [
-                'charges_enabled' => $account->charges_enabled,
-                'payouts_enabled' => $account->payouts_enabled,
-                'details_submitted' => $account->details_submitted,
+                'charges_enabled' => (bool) $account->charges_enabled,
+                'payouts_enabled' => (bool) $account->payouts_enabled,
+                'details_submitted' => (bool) $account->details_submitted,
                 'email' => $account->email,
                 'type' => $account->type,
-                'verification_document' => $account->individual->verification->document->front ?? null,
+                'requirements_due' => $account->requirements->currently_due ?? [],
+                'requirements_past_due' => $account->requirements->past_due ?? [],
             ];
         } catch (ApiErrorException $e) {
             $message = $e->getMessage();
@@ -52,7 +105,7 @@ class StripeConnectService
             if (str_contains($message, 'Only Stripe Connect platforms')) {
                 $message = 'Stripe Connect n’est pas activé ou pas configuré sur le compte Stripe utilisé par HaloGari.';
             } elseif (str_contains($message, 'No such account')) {
-                $message = 'Stripe ne retrouve pas ce compte Connect avec la clé actuelle.';
+                $message = 'Stripe ne retrouve pas ce compte Express avec la clé actuelle.';
             }
 
             return [
@@ -78,78 +131,7 @@ class StripeConnectService
         ?string $tosIp = null,
         ?string $tosUserAgent = null
     ): void {
-        if ($user->getStripeAccountId()) {
-            throw new \RuntimeException("L'utilisateur a déjà un compte Stripe.");
-        }
-
-        if (!$user->getDateNaissance()) {
-            throw new \RuntimeException("La date de naissance est obligatoire pour créer le compte Stripe Connect.");
-        }
-
-        $telephone = $this->normalizePhone($telephone);
-
-        $accountData = [
-            'type' => 'custom',
-            'country' => 'FR',
-            'email' => $user->getEmail(),
-            'business_type' => 'individual',
-            'individual' => [
-                'first_name' => $user->getPrenom(),
-                'last_name' => $user->getNom(),
-                'email' => $user->getEmail(),
-                'phone' => $telephone,
-                'dob' => [
-                    'day' => (int) $user->getDateNaissance()->format('d'),
-                    'month' => (int) $user->getDateNaissance()->format('m'),
-                    'year' => (int) $user->getDateNaissance()->format('Y'),
-                ],
-                'address' => [
-                    'line1' => $adresse['line1'],
-                    'city' => $adresse['city'],
-                    'postal_code' => $adresse['postal_code'],
-                    'country' => $adresse['country'] ?? 'FR',
-                ],
-            ],
-            'capabilities' => [
-                'transfers' => ['requested' => true],
-            ],
-            'business_profile' => [
-                'url' => $siteWeb,
-                'mcc' => '4789',
-                'product_description' => $secteur,
-            ],
-        ];
-
-        if ($tosIp) {
-            $accountData['tos_acceptance'] = [
-                'date' => time(),
-                'ip' => $tosIp,
-            ];
-
-            if ($tosUserAgent) {
-                $accountData['tos_acceptance']['user_agent'] = mb_substr($tosUserAgent, 0, 500);
-            }
-        }
-
-        // En mode live, Stripe refuse les account_token créés côté serveur.
-        $account = \Stripe\Account::create($accountData);
-
-        $bankToken = \Stripe\Token::create([
-            'bank_account' => [
-                'country' => 'FR',
-                'currency' => 'eur',
-                'account_holder_name' => $titulaire,
-                'account_holder_type' => 'individual',
-                'account_number' => $iban,
-            ],
-        ]);
-
-        \Stripe\Account::update($account->id, [
-            'external_account' => $bankToken->id,
-        ]);
-
-        $user->setStripeAccountId($account->id);
-        $this->em->flush();
+        throw new \RuntimeException('L’ancien flux manuel dans HaloGari est désactivé. Utilisez Stripe Express pour collecter les coordonnées bancaires du conducteur.');
     }
 
     public function supprimerCompteStripe(User $user): string
@@ -186,41 +168,6 @@ class StripeConnectService
 
     public function ajouterPieceIdentite(User $user, string $cheminFichier): void
     {
-        if (!$user->getStripeAccountId()) {
-            throw new \RuntimeException("Ce compte n'a pas encore de compte Stripe.");
-        }
-
-        Stripe::setApiKey($this->stripeConfig->secretKey());
-
-        $fichier = \Stripe\File::create([
-            'purpose' => 'identity_document',
-            'file' => fopen($cheminFichier, 'r'),
-        ]);
-
-        // En mode live, Stripe refuse les account_token créés côté serveur.
-        \Stripe\Account::update($user->getStripeAccountId(), [
-            'individual' => [
-                'verification' => [
-                    'document' => [
-                        'front' => $fichier->id,
-                    ],
-                ],
-            ],
-        ]);
-    }
-
-    private function normalizePhone(string $telephone): string
-    {
-        $telephone = preg_replace('/\s+/', '', $telephone);
-
-        if (preg_match('/^0(639|692|693)/', $telephone)) {
-            return '+262' . substr($telephone, 1);
-        }
-
-        if (preg_match('/^0\d+/', $telephone)) {
-            return '+33' . substr($telephone, 1);
-        }
-
-        return $telephone;
+        throw new \RuntimeException('Avec Stripe Express, les pièces demandées par Stripe sont ajoutées directement dans le parcours sécurisé Stripe.');
     }
 }

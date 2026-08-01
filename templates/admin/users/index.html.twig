@@ -83,7 +83,7 @@
                 <td>
                   <span class="badge {{ user.isVerified ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.isVerified ? 'Email vérifié' : 'Email à confirmer' }}</span>
                   <span class="badge {{ user.hasVerifiedIdentity ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedIdentity ? 'Identité validée' : 'Identité non validée' }}</span>
-                  <span class="badge {{ user.hasVerifiedRib ? 'bg-success' : 'bg-secondary' }}">{{ user.hasVerifiedRib ? 'RIB validé' : 'RIB non validé' }}</span>
+                  <span class="badge {{ user.hasPhoneNumber ? 'bg-success' : 'bg-warning text-dark' }}">{{ user.hasPhoneNumber ? 'Téléphone renseigné' : 'Téléphone manquant' }}</span>
                 </td>
                 <td>
                   {% if user.isDisabled %}
