@@ -640,6 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 (() => {
+    const MAYOTTE_CENTER = [-12.8275, 45.1662];
+    let villageCoordinatesPromise = null;
+
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
         '<': '&lt;',
@@ -647,6 +650,14 @@ document.addEventListener('DOMContentLoaded', () => {
         '"': '&quot;',
         "'": '&#039;',
     }[char]));
+
+    const normalizeVillageName = (value) => String(value ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[’`]/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
 
     const createRouteIcon = (url) => L.icon({
         iconUrl: url,
@@ -657,7 +668,46 @@ document.addEventListener('DOMContentLoaded', () => {
         shadowSize: [41, 41],
     });
 
+    const loadVillageCoordinates = async () => {
+        if (!villageCoordinatesPromise) {
+            villageCoordinatesPromise = fetch('/cities.json', {
+                headers: { Accept: 'application/json' },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Village catalog unavailable');
+                    }
+
+                    return response.json();
+                })
+                .then((cities) => {
+                    const coordinates = new Map();
+
+                    cities.forEach((city) => {
+                        const point = [Number(city.lat), Number(city.lon)];
+                        if (!Number.isFinite(point[0]) || !Number.isFinite(point[1])) {
+                            return;
+                        }
+
+                        [city.name, city.name_2].filter(Boolean).forEach((name) => {
+                            coordinates.set(normalizeVillageName(name), point);
+                        });
+                    });
+
+                    return coordinates;
+                });
+        }
+
+        return villageCoordinatesPromise;
+    };
+
     const geocodeRouteVillage = async (village) => {
+        const villages = await loadVillageCoordinates().catch(() => new Map());
+        const localPoint = villages.get(normalizeVillageName(village));
+        if (localPoint) {
+            return localPoint;
+        }
+
         const query = encodeURIComponent(`${village}, Mayotte`);
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`, {
             headers: { Accept: 'application/json' },
@@ -705,18 +755,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let map = null;
         let routeLoaded = false;
+        let routeLayer = null;
+        let markers = [];
 
         const showMapError = () => {
             mapElement.classList.add('reservation-route-map--error');
             mapElement.innerHTML = "<div class=\"reservation-map-error\"><i class=\"bi bi-exclamation-triangle\"></i><strong>Carte indisponible</strong><span>Impossible d'afficher le trajet pour le moment.</span></div>";
         };
 
+        const clearRoute = () => {
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+
+            markers.forEach((marker) => marker.remove());
+            markers = [];
+        };
+
         const loadRoute = async () => {
-            if (routeLoaded) {
+            if (routeLoaded || !map) {
                 return;
             }
 
             routeLoaded = true;
+            clearRoute();
             const depart = mapElement.dataset.depart || '';
             const arrivee = mapElement.dataset.arrivee || '';
 
@@ -726,16 +789,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     geocodeRouteVillage(arrivee),
                 ]);
 
-                L.marker(from, { icon: createRouteIcon(mapElement.dataset.departIcon) })
+                const departMarker = L.marker(from, { icon: createRouteIcon(mapElement.dataset.departIcon) })
                     .addTo(map)
                     .bindPopup(`<strong>Départ</strong><br>${escapeHtml(depart)}`);
 
-                L.marker(to, { icon: createRouteIcon(mapElement.dataset.arriveeIcon) })
+                const arriveeMarker = L.marker(to, { icon: createRouteIcon(mapElement.dataset.arriveeIcon) })
                     .addTo(map)
                     .bindPopup(`<strong>Arrivée</strong><br>${escapeHtml(arrivee)}`);
 
+                markers.push(departMarker, arriveeMarker);
+
                 const geometry = await fetchRouteGeometry(from, to);
-                const route = L.geoJSON(geometry, {
+                routeLayer = L.geoJSON(geometry, {
                     style: () => ({
                         color: '#ff8000',
                         lineCap: 'round',
@@ -745,8 +810,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }),
                 }).addTo(map);
 
-                map.fitBounds(route.getBounds(), { padding: [34, 34] });
+                map.fitBounds(routeLayer.getBounds(), { padding: [34, 34] });
+                window.setTimeout(() => map.invalidateSize(), 80);
             } catch (error) {
+                routeLoaded = false;
                 showMapError();
             }
         };
@@ -754,14 +821,17 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.addEventListener('shown.bs.modal', () => {
             if (!map) {
                 mapElement.innerHTML = '';
-                map = L.map(mapElement, { scrollWheelZoom: false }).setView([-12.8275, 45.1662], 10);
+                map = L.map(mapElement, { scrollWheelZoom: false }).setView(MAYOTTE_CENTER, 10);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap contributors',
                 }).addTo(map);
             }
 
-            window.setTimeout(() => map.invalidateSize(), 120);
-            loadRoute();
+            window.setTimeout(() => map.invalidateSize(), 80);
+            window.setTimeout(() => {
+                map.invalidateSize();
+                loadRoute();
+            }, 220);
         });
     };
 
