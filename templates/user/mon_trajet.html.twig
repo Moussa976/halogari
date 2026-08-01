@@ -134,26 +134,29 @@
     </article>
 
     <aside class="ride-detail-side">
-      <article class="app-panel">
+      <article class="app-panel ride-payment-summary">
         <div class="app-panel__header">
           <span class="app-panel__icon"><i class="bi bi-cash-coin"></i></span>
           <div>
-            <h2>Revenus</h2>
-            <p>Montants liés à ce trajet.</p>
+            <h2>Suivi du paiement</h2>
+            <p>Le versement arrive après le trajet.</p>
           </div>
         </div>
         <dl class="reservation-info-list">
           <div>
-            <dt>À confirmer</dt>
+            <dt>Paiements enregistrés</dt>
             <dd>{{ totalAutorise|number_format(2, ',', ' ') }} €</dd>
           </div>
           <div>
-            <dt>Payé</dt>
+            <dt>Paiements confirmés</dt>
             <dd>{{ totalConfirme|number_format(2, ',', ' ') }} €</dd>
           </div>
           <div>
             <dt>Passagers acceptés</dt>
             <dd>{{ confirmedReservations|length }}</dd>
+          </div>
+          <div class="ride-payment-summary__note">
+            HaloGari verse la part conducteur quand le trajet est terminé et que le code de montée a été validé.
           </div>
         </dl>
       </article>
@@ -191,39 +194,56 @@
         {% for reservation in reservations %}
           {% set passengerName = reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom %}
           {% set statutPaiement = reservation.paiement ? reservation.paiement.statut : 'en_attente' %}
-          {% set showPaymentBadge = (statutPaiement != 'en_attente' or reservation.statut == 'acceptee') and not (reservation.statut == 'payee' and statutPaiement == 'capture') %}
+          {% set paiementEnregistre = reservation.paiement and statutPaiement in ['autorise', 'capture', 'rembourse_partiel', 'rembourse'] %}
+          {% set codeEnvoye = reservation.boardingCode is not empty %}
+          {% set codeValide = reservation.boardingValidatedAt is not empty %}
+          {% set versementEnvoye = reservation.paiement and (reservation.paiement.evenements|filter(e => e.type == 'versement_conducteur')|length > 0) %}
+          {% set nextBadgeLabel = null %}
+          {% set nextBadgeClass = null %}
+          {% if versementEnvoye %}
+            {% set nextBadgeLabel = 'Versement envoyé' %}
+            {% set nextBadgeClass = 'payee' %}
+          {% elseif codeValide %}
+            {% set nextBadgeLabel = 'Code vérifié' %}
+            {% set nextBadgeClass = 'payee' %}
+          {% elseif codeEnvoye %}
+            {% set nextBadgeLabel = 'Code à vérifier' %}
+            {% set nextBadgeClass = 'payment-capture' %}
+          {% elseif paiementEnregistre %}
+            {% set nextBadgeLabel = 'Paiement enregistré' %}
+            {% set nextBadgeClass = 'payment-autorise' %}
+          {% elseif reservation.statut in ['acceptee', 'payee'] %}
+            {% set nextBadgeLabel = 'Paiement à venir' %}
+            {% set nextBadgeClass = 'payment-autorise' %}
+          {% endif %}
           <div class="ride-reservation-card">
-            <a class="ride-reservation-card__user" href="{{ path('app_profile', { id: reservation.passager.id }) }}">
-              {{ avatar.formatSimple(reservation.passager, 48, 0, 1) }}
-              <div>
-                <strong>{{ passengerName }}</strong>
-                <span>{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</span>
-              </div>
-            </a>
+            <div class="ride-reservation-card__main">
+              <a class="ride-reservation-card__user" href="{{ path('app_profile', { id: reservation.passager.id }) }}">
+                {{ avatar.formatSimple(reservation.passager, 48, 0, 1) }}
+                <div>
+                  <strong>{{ passengerName }}</strong>
+                  <span>{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</span>
+                </div>
+              </a>
 
-            <div class="ride-reservation-card__badges">
-              <span class="reservation-status reservation-status--{{ reservation.statut }}">
-                {{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}
-              </span>
-              {% if showPaymentBadge %}
-                <span class="reservation-status reservation-status--payment-{{ statutPaiement }}">
-                  {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
+              <div class="ride-reservation-card__badges">
+                <span class="reservation-status reservation-status--{{ reservation.statut }}">
+                  {{ reservationLabels[reservation.statut]|default(reservation.statut|capitalize) }}
                 </span>
-              {% endif %}
-              {% if reservation.boardingCode %}
-                {% if reservation.boardingValidatedAt %}
-                  <span class="reservation-status reservation-status--payee">
-                    Code vérifié
-                  </span>
-                {% else %}
-                  <span class="reservation-status reservation-status--payment-capture" title="Le passager doit vous montrer son code avant la montée">
-                    Code à vérifier
+                {% if nextBadgeLabel %}
+                  <span class="reservation-status reservation-status--{{ nextBadgeClass }}">
+                    {{ nextBadgeLabel }}
                   </span>
                 {% endif %}
-              {% endif %}
+              </div>
             </div>
 
             <div class="ride-reservation-card__actions">
+              <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reservationProgress{{ reservation.id }}">
+                <i class="bi bi-list-check"></i>
+                Progression
+              </button>
+
               {% if reservation.statut == 'en_attente' %}
                 {% if not datePasse and not enCours %}
                   <form method="post" action="{{ path('reservation_accepter', { id: reservation.id }) }}">
@@ -290,6 +310,59 @@
                   </button>
                 </form>
               {% endif %}
+            </div>
+          </div>
+
+          <div class="modal fade ride-progress-modal" id="reservationProgress{{ reservation.id }}" tabindex="-1" aria-labelledby="reservationProgressLabel{{ reservation.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div>
+                    <h3 class="modal-title h5" id="reservationProgressLabel{{ reservation.id }}">Progression de {{ passengerName }}</h3>
+                    <p class="mb-0 text-muted">{{ reservation.places }} place{{ reservation.places > 1 ? 's' : '' }} · {{ reservation.prixTotal|number_format(2, ',', ' ') }} €</p>
+                  </div>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="ride-progress-steps">
+                    <div class="ride-progress-step is-done">
+                      <span><i class="bi bi-send-check"></i></span>
+                      <div>
+                        <strong>Demande reçue</strong>
+                        <p>La demande du passager est enregistrée.</p>
+                      </div>
+                    </div>
+                    <div class="ride-progress-step {{ reservation.statut in ['acceptee', 'payee'] ? 'is-done' : (reservation.statut == 'en_attente' ? 'is-current' : '') }}">
+                      <span><i class="bi bi-person-check"></i></span>
+                      <div>
+                        <strong>Demande acceptée</strong>
+                        <p>Le passager peut payer uniquement après votre acceptation.</p>
+                      </div>
+                    </div>
+                    <div class="ride-progress-step {{ paiementEnregistre ? 'is-done' : (reservation.statut in ['acceptee', 'payee'] ? 'is-current' : '') }}">
+                      <span><i class="bi bi-credit-card"></i></span>
+                      <div>
+                        <strong>Paiement enregistré</strong>
+                        <p>HaloGari protège le paiement jusqu’au bon moment.</p>
+                      </div>
+                    </div>
+                    <div class="ride-progress-step {{ codeValide ? 'is-done' : (codeEnvoye ? 'is-current' : '') }}">
+                      <span><i class="bi bi-shield-check"></i></span>
+                      <div>
+                        <strong>Code de montée</strong>
+                        <p>{{ codeValide ? 'Le code a été validé.' : (codeEnvoye ? 'Demandez le code au passager au moment de monter.' : 'Le code sera envoyé au passager après le paiement.') }}</p>
+                      </div>
+                    </div>
+                    <div class="ride-progress-step {{ versementEnvoye ? 'is-done' : (codeValide ? 'is-current' : '') }}">
+                      <span><i class="bi bi-wallet2"></i></span>
+                      <div>
+                        <strong>Versement conducteur</strong>
+                        <p>{{ versementEnvoye ? 'La part conducteur a été envoyée.' : 'Le versement est traité après la fin du trajet.' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         {% endfor %}

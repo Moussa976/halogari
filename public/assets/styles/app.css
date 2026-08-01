@@ -3793,7 +3793,7 @@ textarea.form-control.app-message-textarea {
 
 .ride-reservation-card {
     display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(220px, auto) minmax(260px, auto);
+    grid-template-columns: minmax(260px, 1fr) minmax(360px, auto);
     gap: .9rem;
     align-items: center;
     padding: .9rem;
@@ -3801,6 +3801,13 @@ textarea.form-control.app-message-textarea {
     border-radius: 8px;
     background: rgba(255, 255, 255, .72);
     box-shadow: 0 12px 32px rgba(23, 33, 27, .06);
+}
+
+.ride-reservation-card__main {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    min-width: 0;
 }
 
 .ride-reservation-card__user {
@@ -3829,6 +3836,14 @@ textarea.form-control.app-message-textarea {
     display: flex;
     flex-wrap: wrap;
     gap: .5rem;
+    align-items: center;
+}
+
+.ride-reservation-card__badges {
+    justify-content: flex-start;
+}
+
+.ride-reservation-card__actions {
     justify-content: flex-end;
 }
 
@@ -3852,6 +3867,74 @@ textarea.form-control.app-message-textarea {
     display: inline-flex;
     align-items: center;
     gap: .35rem;
+}
+
+.ride-payment-summary .reservation-info-list {
+    gap: .85rem;
+}
+
+.ride-payment-summary__note {
+    grid-column: 1 / -1;
+    padding: .75rem .85rem;
+    border-radius: 8px;
+    background: rgba(36, 92, 54, .06);
+    color: var(--hg-muted);
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.ride-progress-steps {
+    display: grid;
+    gap: .65rem;
+}
+
+.ride-progress-step {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .8rem;
+    border: 1px solid var(--hg-line);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.ride-progress-step span {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(108, 117, 125, .12);
+    color: var(--hg-muted);
+}
+
+.ride-progress-step strong {
+    display: block;
+    color: var(--hg-ink);
+}
+
+.ride-progress-step p {
+    margin: .15rem 0 0;
+    color: var(--hg-muted);
+    font-size: .92rem;
+}
+
+.ride-progress-step.is-done span {
+    background: rgba(36, 92, 54, .12);
+    color: var(--hg-green);
+}
+
+.ride-progress-step.is-current {
+    border-color: rgba(255, 128, 0, .45);
+    background: rgba(255, 128, 0, .06);
+}
+
+.ride-progress-step.is-current span {
+    background: var(--hg-orange);
+    color: #fff;
 }
 
 .hg-photo-preview-row {
@@ -6340,6 +6423,12 @@ textarea.form-control.app-message-textarea {
         justify-content: flex-start;
     }
 
+    .ride-reservation-card__main {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .65rem;
+    }
+
     .hg-profile-grid {
         grid-template-areas:
             "main"
@@ -6537,6 +6626,10 @@ textarea.form-control.app-message-textarea {
         align-items: center;
     }
 
+    .ride-reservation-card__main {
+        width: 100%;
+    }
+
     .ride-reservation-card__badges {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6581,10 +6674,25 @@ textarea.form-control.app-message-textarea {
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: .5rem;
+        grid-column: 1 / -1;
     }
 
     .ride-reservation-card__code-form .form-control {
         width: 100%;
+    }
+
+    .ride-payment-summary__note {
+        font-size: .88rem;
+    }
+
+    .ride-progress-step {
+        grid-template-columns: 38px minmax(0, 1fr);
+        padding: .72rem;
+    }
+
+    .ride-progress-step span {
+        width: 38px;
+        height: 38px;
     }
 
     .reservation-timeline__item,
