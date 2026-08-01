@@ -3469,6 +3469,7 @@ textarea.form-control.app-message-textarea {
 .reservation-driver-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: .5rem;
     margin-top: 1rem;
     padding-top: .8rem;

@@ -243,15 +243,6 @@
             <dt>Réservé le</dt>
             <dd>{{ reservation.createdAt|date_fr('d F Y à H:i') }}</dd>
           </div>
-          <div>
-            <dt>Paiement</dt>
-            <dd>
-              <span class="reservation-status reservation-status--payment-{{ statutPaiement }}">
-                <i class="bi {{ paymentIcons[statutPaiement]|default('bi-credit-card') }}"></i>
-                {{ paymentLabels[statutPaiement]|default(statutPaiement|capitalize) }}
-              </span>
-            </dd>
-          </div>
         </dl>
         {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.nom != 'Utilisateur supprimé' %}
           <div class="reservation-driver-actions" aria-label="Actions avec le conducteur">
