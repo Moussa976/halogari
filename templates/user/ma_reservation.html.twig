@@ -110,6 +110,16 @@
         </div>
       </div>
 
+      {% if reservation.boardingCode %}
+        <div class="reservation-boarding-code {{ reservation.boardingValidatedAt ? 'is-validated' : '' }}">
+          <span><i class="bi bi-qr-code"></i></span>
+          <div>
+            <strong>Code de montée : {{ reservation.boardingCode }}</strong>
+            <p>{{ reservation.boardingValidatedAt ? 'Code déjà validé par le conducteur.' : 'Montrez ce code au conducteur avant de monter.' }}</p>
+          </div>
+        </div>
+      {% endif %}
+
       <div class="reservation-timeline" aria-label="Suivi de la réservation">
         <div class="reservation-timeline__item is-done">
           <span><i class="bi bi-send-check-fill"></i></span>
@@ -159,41 +169,12 @@
         </div>
       </div>
 
-      {% if reservation.boardingCode %}
-        <div class="reservation-note reservation-note--success">
-          <i class="bi bi-qr-code"></i>
-          <p>
-            <strong>Code de montée : {{ reservation.boardingCode }}</strong>
-            Montrez ce code au conducteur avant de monter.
-          </p>
-        </div>
-      {% endif %}
-
-      <div class="reservation-actions">
+      {% if peutPayer or peutAnnuler %}
+      <div class="reservation-actions reservation-actions--main">
         {% if peutPayer %}
           <a href="{{ path('paiement_form', { id: reservation.id }) }}" class="btn btn-success">
             <i class="bi bi-credit-card-2-front"></i>
             Enregistrer le paiement
-          </a>
-        {% endif %}
-
-        {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.nom != 'Utilisateur supprimé' %}
-          <a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}" class="btn btn-outline-primary">
-            <i class="bi bi-chat-dots"></i>
-            Écrire au conducteur
-          </a>
-          {% if trajet.conducteur.telephone %}
-            <a href="tel:{{ trajet.conducteur.telephone }}" class="btn btn-outline-success">
-              <i class="bi bi-telephone"></i>
-              Appeler
-            </a>
-          {% endif %}
-        {% endif %}
-
-        {% if reservation.statut == 'payee' and trajetPasse and not dejaNote %}
-          <a href="{{ path('app_noter_conducteur', { id: trajet.id }) }}" class="btn btn-outline-warning">
-            <i class="bi bi-star"></i>
-            Noter le conducteur
           </a>
         {% endif %}
 
@@ -207,6 +188,7 @@
           </form>
         {% endif %}
       </div>
+      {% endif %}
 
       {% if peutPayer %}
         <div class="reservation-note">
@@ -271,6 +253,26 @@
             </dd>
           </div>
         </dl>
+        {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.nom != 'Utilisateur supprimé' %}
+          <div class="reservation-driver-actions" aria-label="Actions avec le conducteur">
+            <a href="{{ path('app_conversation', { userId: trajet.conducteur.id, trajetId: trajet.id }) }}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-chat-dots"></i>
+              Écrire
+            </a>
+            {% if trajet.conducteur.telephone %}
+              <a href="tel:{{ trajet.conducteur.telephone }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-telephone"></i>
+                Appeler
+              </a>
+            {% endif %}
+            {% if reservation.statut == 'payee' and trajetPasse and not dejaNote %}
+              <a href="{{ path('app_noter_conducteur', { id: trajet.id }) }}" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-star"></i>
+                Noter
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
       </article>
 
       {% if reservation.statut in ['acceptee', 'payee'] and trajet.conducteur.hasVehicleInfo %}

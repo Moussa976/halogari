@@ -3285,6 +3285,59 @@ textarea.form-control.app-message-textarea {
     overflow-wrap: anywhere;
 }
 
+.reservation-boarding-code {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: .8rem;
+    align-items: center;
+    margin-top: 1rem;
+    padding: .85rem;
+    border: 1px solid rgba(255, 128, 0, .42);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(255, 128, 0, .14), rgba(255, 193, 7, .12));
+    color: #7c3900;
+    box-shadow: 0 16px 35px rgba(255, 128, 0, .12);
+}
+
+.reservation-boarding-code > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    color: #fff;
+    background: var(--hg-orange);
+    font-size: 1.25rem;
+}
+
+.reservation-boarding-code strong {
+    display: block;
+    color: var(--hg-ink);
+    font-size: 1.06rem;
+    font-weight: 900;
+}
+
+.reservation-boarding-code p {
+    margin: .12rem 0 0;
+    color: #7c3900;
+}
+
+.reservation-boarding-code.is-validated {
+    border-color: rgba(34, 139, 72, .3);
+    background: rgba(34, 139, 72, .09);
+    color: var(--hg-green-2);
+    box-shadow: none;
+}
+
+.reservation-boarding-code.is-validated > span {
+    background: var(--hg-green);
+}
+
+.reservation-boarding-code.is-validated p {
+    color: var(--hg-green-2);
+}
+
 .reservation-timeline,
 .reservation-next-steps,
 .reservation-info-list {
@@ -3411,6 +3464,26 @@ textarea.form-control.app-message-textarea {
 
 .reservation-actions form {
     margin: 0;
+}
+
+.reservation-driver-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: 1rem;
+    padding-top: .8rem;
+    border-top: 1px solid var(--hg-line);
+}
+
+.reservation-driver-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    min-height: 34px;
+    padding: .35rem .62rem;
+    font-size: .82rem;
+    font-weight: 900;
 }
 
 .reservation-note,
@@ -6686,6 +6759,33 @@ body.modal-open .modal-backdrop.show {
     }
 
     .reservation-actions .btn {
+        width: 100%;
+    }
+
+    .reservation-boarding-code {
+        grid-template-columns: 42px minmax(0, 1fr);
+        padding: .75rem;
+    }
+
+    .reservation-boarding-code > span {
+        width: 42px;
+        height: 42px;
+    }
+
+    .reservation-boarding-code strong {
+        font-size: .96rem;
+    }
+
+    .reservation-boarding-code p {
+        font-size: .88rem;
+    }
+
+    .reservation-driver-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reservation-driver-actions .btn {
         width: 100%;
     }
 
