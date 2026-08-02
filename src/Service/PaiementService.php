@@ -97,10 +97,17 @@ class PaiementService
         return PaymentIntent::create([
             'amount' => (int) round($montant * 100),
             'currency' => 'eur',
+            'description' => sprintf(
+                'Réservation HaloGari : %s vers %s',
+                $trajet->getDepart(),
+                $trajet->getArrivee()
+            ),
             'payment_method_types' => ['card'],
             'capture_method' => 'manual',
             'metadata' => [
                 'reservation_id' => $reservation->getId(),
+                'service' => 'HaloGari',
+                'organisation' => 'WEB976',
                 'trajet' => $trajet->getDepart() . ' -> ' . $trajet->getArrivee(),
                 'nom_passager' => $user->getNom() . ' ' . $user->getPrenom(),
                 'email_passager' => $user->getEmail(),

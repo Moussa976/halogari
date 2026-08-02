@@ -4,44 +4,66 @@
     <meta charset="UTF-8">
     <title>Paiement enregistré - HaloGari</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px; color: #333;">
+<body style="font-family: Arial, sans-serif; background-color: #f3f6f1; padding: 30px; color: #17221b;">
     <div style="text-align: center; margin-bottom: 20px;">
         <img src="cid:logo_halogari" alt="HaloGari" style="width: 180px; height: auto;">
     </div>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 640px; margin: auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 16px 40px rgba(23, 34, 27, 0.08); overflow: hidden;">
         <tr>
-            <td style="padding: 30px;">
-                <h2 style="color: #28a745; text-align: center;">Paiement enregistré</h2>
+            <td style="height: 7px; background: linear-gradient(90deg, #ff7900, #176b3a); font-size: 0; line-height: 0;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="padding: 34px;">
+                <p style="margin: 0 0 10px; color: #ff7900; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: .04em;">
+                    Réservation confirmée
+                </p>
+                <h1 style="margin: 0 0 18px; color: #176b3a; font-size: 30px; line-height: 1.15;">
+                    Votre paiement est enregistré.
+                </h1>
 
-                <p style="font-size: 16px;">
+                <p style="font-size: 16px; line-height: 1.6; margin: 0 0 14px;">
                     Bonjour {{ reservation.passager.prenom == 'Utilisateur supprimé' ? 'Utilisateur supprimé' : reservation.passager.prenom }},
                 </p>
 
-                <p style="font-size: 16px;">
-                    Votre paiement a bien été enregistré pour le trajet ci-dessous. HaloGari le finalisera selon le déroulement du trajet et les règles d'annulation.
+                <p style="font-size: 16px; line-height: 1.6; margin: 0 0 22px;">
+                    Votre place est réservée. HaloGari protège le paiement jusqu'au bon moment : le conducteur sera payé après le trajet, selon les règles de la plateforme.
                 </p>
 
-                <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; font-size: 15px;">
-                    <strong>{{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}</strong><br>
-                    Départ : {{ reservation.trajet.dateTrajet|date_fr('d F Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}<br>
-                    Nombre de places : {{ reservation.places }}<br>
-                    Montant sécurisé : {{ reservation.prixTotal|number_format(2, ',', '.') }} €
-                </div>
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fbf7; border: 1px solid #dbe8df; border-radius: 10px; margin: 0 0 18px;">
+                    <tr>
+                        <td style="padding: 18px; font-size: 15px; line-height: 1.6;">
+                            <strong style="font-size: 18px; color: #17221b;">{{ reservation.trajet.depart }} → {{ reservation.trajet.arrivee }}</strong><br>
+                            Départ : {{ reservation.trajet.dateTrajet|date_fr('d F Y') }} à {{ reservation.trajet.heureTrajet|date('H:i') }}<br>
+                            Places : {{ reservation.places }}<br>
+                            Montant enregistré : <strong>{{ reservation.prixTotal|number_format(2, ',', '.') }} €</strong>
+                        </td>
+                    </tr>
+                </table>
 
-                <div style="margin-top: 18px; background-color: #eef8f1; border: 1px solid #b9e6c6; padding: 16px; border-radius: 6px; text-align: center;">
-                    <p style="margin: 0 0 8px; color: #1f6b3a; font-size: 15px; font-weight: bold;">
+                <div style="background-color: #fff4e8; border: 1px solid #ffb25a; padding: 18px; border-radius: 10px; text-align: center;">
+                    <p style="margin: 0 0 8px; color: #176b3a; font-size: 14px; font-weight: bold; text-transform: uppercase;">
                         Code de montée
                     </p>
-                    <p style="margin: 0; font-size: 28px; letter-spacing: 4px; font-weight: bold; color: #122018;">
+                    <p style="margin: 0; font-size: 34px; letter-spacing: 5px; font-weight: bold; color: #ff7900;">
                         {{ boardingCode|default(reservation.boardingCode) }}
                     </p>
-                    <p style="margin: 8px 0 0; color: #555; font-size: 14px;">
+                    <p style="margin: 10px 0 0; color: #526157; font-size: 14px; line-height: 1.5;">
                         Montrez ce code au conducteur au moment de monter.
                     </p>
                 </div>
 
-                <p style="margin-top: 20px; font-size: 14px; text-align: center; color: #666;">
+                <div style="text-align: center; margin-top: 24px;">
+                    <a href="{{ url('app_user_reservation', {id: reservation.id}) }}" style="display: inline-block; background: linear-gradient(90deg, #ff7900, #ffad45); color: #ffffff; text-decoration: none; padding: 14px 22px; border-radius: 8px; font-weight: bold;">
+                        Voir ma réservation
+                    </a>
+                </div>
+
+                <p style="margin: 22px 0 0; font-size: 13px; line-height: 1.6; text-align: center; color: #6a766e;">
+                    Un reçu officiel Stripe peut aussi vous être envoyé séparément au nom de WEB976, l'association qui porte HaloGari.
+                </p>
+
+                <p style="margin-top: 18px; font-size: 14px; text-align: center; color: #6a766e;">
                     Merci pour votre confiance.<br>
                     L'équipe HaloGari
                 </p>
