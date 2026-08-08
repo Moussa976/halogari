@@ -83,11 +83,11 @@
       },
       {
         question: "Les paiements sont-ils sécurisés ?",
-        reponse: "Oui. Les paiements sont gérés via Stripe. Après acceptation du conducteur, vous enregistrez votre paiement, puis HaloGari le finalise selon le déroulement du trajet. HaloGari ne stocke pas les numéros complets de carte bancaire."
+        reponse: "Oui. Le paiement est sécurisé par HaloGari via Stripe. Après acceptation du conducteur, vous enregistrez votre paiement, puis le trajet est validé avec le code de montée. HaloGari ne stocke pas les numéros complets de carte bancaire."
       },
       {
         question: "Quand le conducteur reçoit-il son argent ?",
-        reponse: "Le conducteur ne reçoit pas sa part tout de suite. HaloGari attend que le trajet soit terminé, que le dossier soit cohérent et que le solde du paiement soit disponible avant de lancer le versement conducteur."
+        reponse: "Le versement n'est pas immédiat. Après validation du trajet, HaloGari traite la part conducteur lorsque le paiement est disponible. Stripe puis la banque peuvent ajouter quelques jours avant l'arrivée de l'argent sur le compte du conducteur."
       },
       {
         question: "Quelle est la politique de remboursement ?",
@@ -159,7 +159,7 @@
           "name": "Les paiements sont-ils sécurisés ?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Oui. Les paiements sont gérés via Stripe et HaloGari ne stocke pas les numéros complets de carte bancaire."
+            "text": "Oui. Le paiement est sécurisé par HaloGari via Stripe. Après acceptation du conducteur, le trajet est validé avec le code de montée. HaloGari ne stocke pas les numéros complets de carte bancaire."
           }
         },
         {
@@ -167,7 +167,7 @@
           "name": "Quand le conducteur reçoit-il son argent ?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Le conducteur reçoit sa part après la fin du trajet, les contrôles nécessaires et la disponibilité du solde du paiement."
+            "text": "Le versement n'est pas immédiat. Après validation du trajet, HaloGari traite la part conducteur lorsque le paiement est disponible. Stripe puis la banque peuvent ajouter quelques jours avant l'arrivée de l'argent sur le compte du conducteur."
           }
         }
       ]

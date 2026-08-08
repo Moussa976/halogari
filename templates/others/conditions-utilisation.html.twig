@@ -50,14 +50,17 @@
     <h2>4. Paiements</h2>
     <p>
       Le passager enregistre le paiement uniquement après acceptation de sa réservation par le conducteur.
-      Le paiement est traité par Stripe : la carte est vérifiée au moment de la confirmation, puis HaloGari finalise
-      le paiement selon le déroulement du trajet. HaloGari ne stocke pas les données complètes de carte bancaire.
+      Le paiement est sécurisé par HaloGari via Stripe : la carte est vérifiée au moment de la confirmation et
+      HaloGari ne stocke pas les données complètes de carte bancaire. Le trajet est ensuite validé avec le code
+      de montée, afin de confirmer que le passager a bien été pris en charge.
     </p>
     <p>
-      Après finalisation du paiement et fin du trajet, HaloGari traite le reversement de la part conducteur lorsque le solde est disponible et conserve sa commission de service :
-      12 % du montant de la réservation, avec une commission minimale de 0,50 €. Les frais de paiement sont pris en compte dans le calcul du net conducteur.
-      Ils peuvent varier selon la carte utilisée, son pays d'émission et les règles du prestataire de paiement : les montants affichés avant reversement sont donc indicatifs.
-      Le conducteur est informé que le versement n'est pas immédiat après le paiement du passager.
+      Après validation du trajet, HaloGari traite le versement de la part conducteur lorsque le solde du paiement
+      est disponible. Ce versement n'est pas immédiat : Stripe puis la banque peuvent ajouter un délai bancaire
+      de quelques jours avant l'arrivée de l'argent sur le compte du conducteur. HaloGari conserve sa commission
+      de service : 12 % du montant de la réservation, avec une commission minimale de 0,50 €. Les frais de paiement
+      sont pris en compte dans le calcul du net conducteur. Ils peuvent varier selon la carte utilisée, son pays
+      d'émission et les règles du prestataire de paiement : les montants affichés avant versement sont donc indicatifs.
       En cas d'annulation ou de litige, le remboursement est étudié selon la politique ci-dessous.
     </p>
 

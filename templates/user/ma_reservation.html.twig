@@ -121,7 +121,7 @@
           <span><i class="bi bi-qr-code"></i></span>
           <div>
             <strong>Code de montée : {{ reservation.boardingCode }}</strong>
-            <p>{{ reservation.boardingValidatedAt ? 'Code déjà validé par le conducteur.' : 'Montrez ce code au conducteur avant de monter.' }}</p>
+            <p>{{ reservation.boardingValidatedAt ? 'Code déjà validé par le conducteur.' : 'Montrez ce code au conducteur avant de monter : il valide le trajet.' }}</p>
           </div>
         </div>
       {% endif %}
@@ -166,7 +166,7 @@
               {% if reservation.boardingValidatedAt %}
                 Code validé par le conducteur.
               {% elseif reservation.boardingCode %}
-                Montrez le code au conducteur avant de monter.
+                Montrez le code au conducteur avant de monter : il valide le trajet.
               {% else %}
                 Le code sera envoyé après le paiement enregistré.
               {% endif %}
